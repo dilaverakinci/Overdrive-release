@@ -79,7 +79,8 @@ var VC = {
             supported: null,
             available: false,
             checked: false
-        }
+        },
+        diagnostics: null
     },
 
     pollInterval: null,
@@ -2151,9 +2152,9 @@ var VC = {
         panel.classList.add('open');
         if (dock) dock.classList.add('is-open');
         // Tall panels: Windows (4×5 preset grid), Charging (schedule + cap stacked),
-        // Climate (controls + remote preconditioning row).
+        // Climate (controls + remote preconditioning row), Diagnostics (9 ECU health grid).
         if (panelId === 'panelWindows' || panelId === 'panelCharging'
-                || panelId === 'panelClimate') {
+                || panelId === 'panelClimate' || panelId === 'panelDiagnostics') {
             panel.classList.add('vc-panel-tall');
         } else panel.classList.remove('vc-panel-tall');
         this._activePanel = panelId;
@@ -2164,6 +2165,9 @@ var VC = {
         }
         if (panelId === 'panelClimate') {
             this.fetchClimateSchedule();
+        }
+        if (panelId === 'panelDiagnostics') {
+            this.fetchDiagnostics(false);
         }
         if (panelId === 'panelLights') {
             var self = this;
@@ -2242,6 +2246,16 @@ var VC = {
         if (climateTab) {
             if (this.vehicleState.acOn === true) climateTab.classList.add('has-active');
             else climateTab.classList.remove('has-active');
+        }
+
+        // Diagnostics tab — has-fault if any ECU fault reported
+        var diagTab = document.querySelector('.vc-tab[data-panel="panelDiagnostics"]');
+        if (diagTab) {
+            if (this.vehicleState.diagnostics && this.vehicleState.diagnostics.faultCount > 0) {
+                diagTab.classList.add('has-fault');
+            } else {
+                diagTab.classList.remove('has-fault');
+            }
         }
     },
 
@@ -3117,6 +3131,11 @@ var VC = {
             });
         });
 
+        // === DIAGNOSTICS CONTROLS ===
+        this.bindBtn('btnDiagRefresh', function() {
+            self.refreshDiagnostics();
+        });
+
         // Seat heating — cycles 0→1→2→0
         var seatPositions = {
             1: { x: 0.5, y: 0.4, z: 0.2 },   // driver
@@ -3721,6 +3740,11 @@ var VC = {
                 }
             }
 
+            // Diagnostics
+            if (data.diagnostics) {
+                self.vehicleState.diagnostics = data.diagnostics;
+            }
+
             // Update UI
             self.updateHUD();
             self.updateWindowBars();
@@ -3735,6 +3759,9 @@ var VC = {
             self.updateTabIndicators();
             self.updateLightsUI();
             self.updateAdasUI();
+            if (self.vehicleState.diagnostics) {
+                self.updateDiagnosticsUI(self.vehicleState.diagnostics);
+            }
             if (window.BYD && BYD.skeleton) {
                 BYD.skeleton.resolve('vcLock');
                 if (!data.tyres) BYD.skeleton.resolve('vcTyres');
@@ -4329,6 +4356,103 @@ var VC = {
         var btnCPD = document.getElementById('btnCPD');
         var cpdOn = !!(this.vehicleState.setting && this.vehicleState.setting.childPresenceDetection);
         if (btnCPD) { if (cpdOn) btnCPD.classList.add('on'); else btnCPD.classList.remove('on'); }
+    },
+
+    /** Fetch vehicle diagnostics from /api/vehicle/diagnostics */
+    fetchDiagnostics: function(forceRefresh) {
+        var self = this;
+        var url = '/api/vehicle/diagnostics' + (forceRefresh ? '?refresh=true' : '');
+        var refreshBtn = document.getElementById('btnDiagRefresh');
+        if (refreshBtn) refreshBtn.classList.add('loading');
+        fetch(url).then(function(resp) {
+            return resp.json();
+        }).then(function(data) {
+            if (refreshBtn) refreshBtn.classList.remove('loading');
+            if (data && data.success && data.diagnostics) {
+                self.vehicleState.diagnostics = data.diagnostics;
+                self.updateDiagnosticsUI(data.diagnostics);
+                self.updateTabIndicators();
+                if (forceRefresh) {
+                    var isTr = window.BYD && BYD.i18n && BYD.i18n.getLang() === 'tr';
+                    var msg = data.diagnostics.isAllNormal
+                        ? (isTr ? 'Tüm ECU sistemleri normal.' : 'All ECU systems normal.')
+                        : (isTr ? (data.diagnostics.faultCount + ' ECU sisteminde arıza tespit edildi!') : (data.diagnostics.faultCount + ' ECU fault(s) detected!'));
+                    self.toast(msg, data.diagnostics.isAllNormal ? 'success' : 'warning');
+                }
+            }
+        }).catch(function(err) {
+            if (refreshBtn) refreshBtn.classList.remove('loading');
+            console.warn('[VC] Diagnostics fetch error:', err);
+        });
+    },
+
+    refreshDiagnostics: function() {
+        this.fetchDiagnostics(true);
+    },
+
+    /** Update Diagnostics panel UI with 9 ECU status cards */
+    updateDiagnosticsUI: function(diag) {
+        if (!diag) return;
+        var isTr = window.BYD && BYD.i18n && BYD.i18n.getLang() === 'tr';
+
+        // Overall status badge & summary
+        var badge = document.getElementById('diagOverallBadge');
+        var statusEl = document.getElementById('diagOverallStatus');
+        var descEl = document.getElementById('diagOverallDesc');
+
+        if (badge) {
+            if (diag.isAllNormal) {
+                badge.className = 'vc-diag-badge ok';
+                if (statusEl) statusEl.textContent = isTr ? 'TÜM SİSTEMLER NORMAL' : 'ALL SYSTEMS NORMAL';
+                if (descEl) descEl.textContent = isTr ? '9 ECU kontrolü geçti' : '9 ECU checks passed';
+            } else {
+                badge.className = 'vc-diag-badge fault';
+                if (statusEl) statusEl.textContent = (diag.faultCount || 1) + (isTr ? ' ARIZA TESPİT EDİLDİ' : ' FAULT(S) DETECTED');
+                if (descEl) descEl.textContent = isTr ? (diag.summaryTr || 'Arıza tespit edildi') : (diag.summaryEn || 'Fault(s) detected');
+            }
+        }
+
+        // 9 ECU cards
+        var systems = diag.systems;
+        if (!systems) return;
+
+        var keys = ['tpms', 'steering', 'srsAirbag', 'powerSystem', 'tractionBattery',
+                    'escStability', 'chargingSystem', 'epbBrake', 'absBrake'];
+
+        for (var i = 0; i < keys.length; i++) {
+            var k = keys[i];
+            var item = systems[k];
+            if (!item) continue;
+
+            var card = document.getElementById('diagCard_' + k);
+            var cardStatus = document.getElementById('diagStatus_' + k);
+            var cardDesc = document.getElementById('diagDesc_' + k);
+
+            var isNormal = item.isNormal === true || item.fault === false;
+
+            if (card) {
+                if (isNormal) {
+                    card.className = 'vc-diag-card diag-card-ok';
+                } else {
+                    card.className = 'vc-diag-card diag-card-fault';
+                }
+            }
+
+            if (cardStatus) {
+                if (isNormal) {
+                    cardStatus.textContent = 'NORMAL';
+                } else {
+                    cardStatus.textContent = isTr ? (item.statusTr || 'ARIZA') : (item.statusEn || 'FAULT');
+                }
+            }
+
+            if (cardDesc) {
+                var descText = !isNormal
+                    ? (isTr ? item.statusTr : item.statusEn)
+                    : (isTr ? item.nameTr : item.nameEn);
+                if (descText) cardDesc.textContent = descText;
+            }
+        }
     },
 
     /** Custom-mode chargeWay: always emit CSV so server doesn't fall back to "e". */

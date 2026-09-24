@@ -687,6 +687,11 @@ html.vc-mode-immersive .vc-view-to-3d { display: none; }
     display: none;
 }
 .vc-tab.has-active .tab-dot { display: block; }
+.vc-tab.has-fault .tab-dot {
+    display: block;
+    background: var(--status-danger, #ef4444);
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+}
 
 /* Group wrapper — inside expanded panel */
 .vc-group {
@@ -1705,3 +1710,244 @@ html.vc-mode-lite .vc-lite-hero {
 @media (max-height: 560px) {
     .vc-lite-hero { padding: 96px 16px 150px; }
 }
+
+/* ==================== DIAGNOSTICS PANEL (9 ECU HEALTH) ==================== */
+.vc-diagnostics-panel {
+    display: -webkit-flex; display: flex;
+    -webkit-flex-direction: column; flex-direction: column;
+    -webkit-align-items: stretch; align-items: stretch;
+    width: 100%;
+    padding: 2px 4px 6px;
+    box-sizing: border-box;
+}
+
+.vc-diag-header {
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    -webkit-justify-content: space-between; justify-content: space-between;
+    width: 100%;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    border-radius: var(--radius-md);
+    background: var(--surface-container, rgba(255, 255, 255, 0.04));
+    border: 1px solid var(--vc-border-subtle);
+    box-sizing: border-box;
+}
+
+.vc-diag-summary {
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    -webkit-flex-wrap: wrap; flex-wrap: wrap;
+}
+
+.vc-diag-badge {
+    display: -webkit-inline-flex; display: inline-flex;
+    -webkit-align-items: center; align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-right: 10px;
+    border: 1px solid transparent;
+}
+[dir="rtl"] .vc-diag-badge { margin-right: 0; margin-left: 10px; }
+
+.vc-diag-badge.ok {
+    background: var(--status-success-container, rgba(16, 185, 129, 0.15));
+    color: var(--status-success, #10b981);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.vc-diag-badge.fault {
+    background: var(--status-danger-container, rgba(239, 68, 68, 0.18));
+    color: var(--status-danger, #ef4444);
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+.vc-diag-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    margin-right: 6px;
+    -webkit-flex-shrink: 0; flex-shrink: 0;
+}
+[dir="rtl"] .vc-diag-dot { margin-right: 0; margin-left: 6px; }
+
+.vc-diag-badge.ok .vc-diag-dot {
+    background: var(--status-success, #10b981);
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+}
+
+.vc-diag-badge.fault .vc-diag-dot {
+    background: var(--status-danger, #ef4444);
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.7);
+}
+
+.vc-diag-desc {
+    font-size: 12px;
+    color: var(--vc-text-secondary);
+    font-weight: 500;
+}
+
+.vc-diag-refresh-btn {
+    display: -webkit-inline-flex; display: inline-flex;
+    -webkit-align-items: center; align-items: center;
+    -webkit-justify-content: center; justify-content: center;
+    padding: 6px 14px;
+    height: 34px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--vc-border-subtle);
+    background: var(--vc-tile-bg);
+    color: var(--vc-text-strong);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-transition: all .15s; transition: all .15s;
+    touch-action: manipulation;
+}
+.vc-diag-refresh-btn svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+}
+[dir="rtl"] .vc-diag-refresh-btn svg { margin-right: 0; margin-left: 6px; }
+
+.vc-diag-refresh-btn:hover {
+    background: var(--vc-tile-bg-hover);
+    color: var(--vc-text-primary);
+}
+.vc-diag-refresh-btn:active {
+    -webkit-transform: scale(0.95); transform: scale(0.95);
+}
+.vc-diag-refresh-btn.loading svg {
+    -webkit-animation: spin 0.8s linear infinite;
+    animation: spin 0.8s linear infinite;
+}
+
+/* 9 ECU Grid */
+.vc-diag-grid {
+    display: -webkit-flex; display: flex;
+    -webkit-flex-wrap: wrap; flex-wrap: wrap;
+    -webkit-align-items: stretch; align-items: stretch;
+    -webkit-justify-content: flex-start; justify-content: flex-start;
+    width: 100%;
+    margin-right: -8px;
+    box-sizing: border-box;
+}
+[dir="rtl"] .vc-diag-grid { margin-right: 0; margin-left: -8px; }
+
+.vc-diag-card {
+    box-sizing: border-box;
+    width: calc(33.333% - 8px);
+    margin: 0 8px 8px 0;
+    padding: 8px 10px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--vc-border-subtle);
+    background: var(--vc-tile-bg);
+    -webkit-transition: all .15s; transition: all .15s;
+    display: -webkit-flex; display: flex;
+    -webkit-flex-direction: column; flex-direction: column;
+    -webkit-justify-content: space-between; justify-content: space-between;
+}
+[dir="rtl"] .vc-diag-card { margin: 0 0 8px 8px; }
+
+.vc-diag-card.diag-card-ok {
+    border-color: rgba(16, 185, 129, 0.2);
+}
+.vc-diag-card.diag-card-ok:hover {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: var(--vc-tile-bg-hover);
+}
+
+.vc-diag-card.diag-card-fault {
+    border-color: rgba(239, 68, 68, 0.5);
+    background: rgba(239, 68, 68, 0.08);
+}
+.vc-diag-card.diag-card-fault:hover {
+    border-color: var(--status-danger, #ef4444);
+    background: rgba(239, 68, 68, 0.12);
+}
+
+.vc-diag-card-head {
+    display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    margin-bottom: 4px;
+}
+
+.vc-diag-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 6px;
+    -webkit-flex-shrink: 0; flex-shrink: 0;
+    color: var(--vc-text-muted);
+}
+[dir="rtl"] .vc-diag-icon { margin-right: 0; margin-left: 6px; }
+
+.vc-diag-card.diag-card-ok .vc-diag-icon {
+    color: var(--status-success, #10b981);
+}
+.vc-diag-card.diag-card-fault .vc-diag-icon {
+    color: var(--status-danger, #ef4444);
+}
+
+.vc-diag-card-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--vc-text-strong);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    -webkit-flex: 1; flex: 1;
+}
+
+.vc-diag-card-status {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: var(--family-mono);
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    -webkit-flex-shrink: 0; flex-shrink: 0;
+    letter-spacing: 0.3px;
+}
+
+.vc-diag-card.diag-card-ok .vc-diag-card-status {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--status-success, #10b981);
+}
+
+.vc-diag-card.diag-card-fault .vc-diag-card-status {
+    background: rgba(239, 68, 68, 0.25);
+    color: var(--status-danger, #ef4444);
+}
+
+.vc-diag-card-desc {
+    font-size: 10px;
+    color: var(--vc-text-muted);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+}
+
+@media (max-width: 768px) {
+    .vc-diag-card {
+        width: calc(50% - 8px);
+    }
+}
+@media (max-width: 480px) {
+    .vc-diag-header {
+        -webkit-flex-direction: column; flex-direction: column;
+        -webkit-align-items: flex-start; align-items: flex-start;
+    }
+    .vc-diag-refresh-btn {
+        margin-top: 6px;
+        width: 100%;
+    }
+    .vc-diag-card {
+        width: calc(100% - 8px);
+    }
+}
+

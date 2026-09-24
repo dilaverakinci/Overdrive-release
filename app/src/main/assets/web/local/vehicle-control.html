@@ -32,7 +32,7 @@
     </script>
     <script src="../shared/app-shell.js?v=7"></script>
     <link rel="stylesheet" href="../shared/styles.css?v=34">
-    <link rel="stylesheet" href="../shared/vehicle-control.css?v=47">
+    <link rel="stylesheet" href="../shared/vehicle-control.css?v=48">
 </head>
 <body>
     <div class="app-layout">
@@ -581,6 +581,147 @@
                                 </section>
                             </div>
                         </div>
+                        <!-- Health Diagnostics controls (9 ECU check) -->
+                        <div class="vc-panel-row vc-diagnostics-panel" id="panelDiagnostics" style="display:none;">
+                            <div class="vc-diag-header">
+                                <div class="vc-diag-summary">
+                                    <div class="vc-diag-badge ok" id="diagOverallBadge">
+                                        <span class="vc-diag-dot" id="diagOverallDot"></span>
+                                        <span id="diagOverallStatus" data-i18n="vehicle.diag_all_normal">ALL SYSTEMS NORMAL</span>
+                                    </div>
+                                    <div class="vc-diag-desc" id="diagOverallDesc">9 ECU checks passed</div>
+                                </div>
+                                <button class="vc-diag-refresh-btn" id="btnDiagRefresh" title="Refresh Diagnostics">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                                    </svg>
+                                    <span data-i18n="vehicle.diagnostics_scan_now">Scan Now</span>
+                                </button>
+                            </div>
+
+                            <div class="vc-diag-grid" id="diagGrid">
+                                <!-- 1. TPMS -->
+                                <div class="vc-diag-card diag-card-ok" id="diagCard_tpms">
+                                    <div class="vc-diag-card-head">
+                                        <svg class="vc-diag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="9"/>
+                                            <circle cx="12" cy="12" r="4"/>
+                                            <path d="M12 3v2m0 14v2M3 12h2m14 0h2"/>
+                                        </svg>
+                                        <span class="vc-diag-card-name" data-i18n="vehicle.diag_tpms">TPMS</span>
+                                        <span class="vc-diag-card-status" id="diagStatus_tpms">NORMAL</span>
+                                    </div>
+                                    <div class="vc-diag-card-desc" id="diagDesc_tpms">Lastik Basınç Takip</div>
+                                </div>
+
+                                <!-- 2. EPS Steering -->
+                                <div class="vc-diag-card diag-card-ok" id="diagCard_steering">
+                                    <div class="vc-diag-card-head">
+                                        <svg class="vc-diag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="9"/>
+                                            <circle cx="12" cy="12" r="2"/>
+                                            <path d="M12 14v6m-5.8-9.6L12 12l5.8-3.6"/>
+                                        </svg>
+                                        <span class="vc-diag-card-name" data-i18n="vehicle.diag_steering">EPS Steering</span>
+                                        <span class="vc-diag-card-status" id="diagStatus_steering">NORMAL</span>
+                                    </div>
+                                    <div class="vc-diag-card-desc" id="diagDesc_steering">Elektrikli Direksiyon</div>
+                                </div>
+
+                                <!-- 3. SRS Airbag -->
+                                <div class="vc-diag-card diag-card-ok" id="diagCard_srsAirbag">
+                                    <div class="vc-diag-card-head">
+                                        <svg class="vc-diag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="7" r="4"/>
+                                            <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+                                            <circle cx="16" cy="12" r="2.5" stroke-dasharray="2 2"/>
+                                        </svg>
+                                        <span class="vc-diag-card-name" data-i18n="vehicle.diag_srs">SRS Airbag</span>
+                                        <span class="vc-diag-card-status" id="diagStatus_srsAirbag">NORMAL</span>
+                                    </div>
+                                    <div class="vc-diag-card-desc" id="diagDesc_srsAirbag">Hava Yastığı Sistemi</div>
+                                </div>
+
+                                <!-- 4. Powertrain -->
+                                <div class="vc-diag-card diag-card-ok" id="diagCard_powerSystem">
+                                    <div class="vc-diag-card-head">
+                                        <svg class="vc-diag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                                        </svg>
+                                        <span class="vc-diag-card-name" data-i18n="vehicle.diag_powertrain">Powertrain</span>
+                                        <span class="vc-diag-card-status" id="diagStatus_powerSystem">NORMAL</span>
+                                    </div>
+                                    <div class="vc-diag-card-desc" id="diagDesc_powerSystem">Güç Aktarımı & Motor</div>
+                                </div>
+
+                                <!-- 5. Traction Battery (HV) -->
+                                <div class="vc-diag-card diag-card-ok" id="diagCard_tractionBattery">
+                                    <div class="vc-diag-card-head">
+                                        <svg class="vc-diag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="2" y="6" width="18" height="12" rx="2"/>
+                                            <line x1="22" y1="10" x2="22" y2="14"/>
+                                            <line x1="6" y1="12" x2="10" y2="12"/>
+                                            <line x1="12" y1="12" x2="16" y2="12"/>
+                                        </svg>
+                                        <span class="vc-diag-card-name" data-i18n="vehicle.diag_battery">HV Battery</span>
+                                        <span class="vc-diag-card-status" id="diagStatus_tractionBattery">NORMAL</span>
+                                    </div>
+                                    <div class="vc-diag-card-desc" id="diagDesc_tractionBattery">Çekiş Bataryası (HV)</div>
+                                </div>
+
+                                <!-- 6. ESC / ESP -->
+                                <div class="vc-diag-card diag-card-ok" id="diagCard_escStability">
+                                    <div class="vc-diag-card-head">
+                                        <svg class="vc-diag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M4 19c2-2 3-5 5-5s3 3 5 3 3-5 5-5"/>
+                                            <circle cx="6" cy="7" r="3"/>
+                                        </svg>
+                                        <span class="vc-diag-card-name" data-i18n="vehicle.diag_esc">ESC / ESP</span>
+                                        <span class="vc-diag-card-status" id="diagStatus_escStability">NORMAL</span>
+                                    </div>
+                                    <div class="vc-diag-card-desc" id="diagDesc_escStability">Elektronik Denge Kontrolü</div>
+                                </div>
+
+                                <!-- 7. Charger (OBC) -->
+                                <div class="vc-diag-card diag-card-ok" id="diagCard_chargingSystem">
+                                    <div class="vc-diag-card-head">
+                                        <svg class="vc-diag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M13 2 3 14h8l-1 8 10-12h-8z"/>
+                                        </svg>
+                                        <span class="vc-diag-card-name" data-i18n="vehicle.diag_charger">OBC Charger</span>
+                                        <span class="vc-diag-card-status" id="diagStatus_chargingSystem">NORMAL</span>
+                                    </div>
+                                    <div class="vc-diag-card-desc" id="diagDesc_chargingSystem">Şarj Sistemi (OBC)</div>
+                                </div>
+
+                                <!-- 8. EPB Brake -->
+                                <div class="vc-diag-card diag-card-ok" id="diagCard_epbBrake">
+                                    <div class="vc-diag-card-head">
+                                        <svg class="vc-diag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="9"/>
+                                            <path d="M9 9h4a2 2 0 0 1 0 4H9m0-4v6"/>
+                                        </svg>
+                                        <span class="vc-diag-card-name" data-i18n="vehicle.diag_epb">EPB Brake</span>
+                                        <span class="vc-diag-card-status" id="diagStatus_epbBrake">NORMAL</span>
+                                    </div>
+                                    <div class="vc-diag-card-desc" id="diagDesc_epbBrake">Elektronik Park Freni</div>
+                                </div>
+
+                                <!-- 9. ABS Brake -->
+                                <div class="vc-diag-card diag-card-ok" id="diagCard_absBrake">
+                                    <div class="vc-diag-card-head">
+                                        <svg class="vc-diag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="9"/>
+                                            <path d="M8 15h8M8 9h8m-4-3v12"/>
+                                        </svg>
+                                        <span class="vc-diag-card-name" data-i18n="vehicle.diag_abs">ABS Brake</span>
+                                        <span class="vc-diag-card-status" id="diagStatus_absBrake">NORMAL</span>
+                                    </div>
+                                    <div class="vc-diag-card-desc" id="diagDesc_absBrake">Kilitlenme Karşıtı Fren</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Category tabs — always visible -->
@@ -630,6 +771,13 @@
                             <!-- Speaker + sound waves — exterior speaker glyph. -->
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
                             <span data-i18n="vehicle.tab_sound">Sound</span>
+                        </button>
+                        <button class="vc-tab" data-panel="panelDiagnostics" onclick="VC.togglePanel('panelDiagnostics', this)">
+                            <span class="tab-dot"></span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                            </svg>
+                            <span data-i18n="vehicle.tab_diagnostics">Diagnostics</span>
                         </button>
                         <button class="vc-tab" data-panel="panelSystem"
                                 onclick="VC.togglePanel('panelSystem', this)">
@@ -687,7 +835,7 @@
                 '../shared/vendor/gsap.min.js?v=12'
             ];
             var chain = window.VC_LITE ? [] : window.VC_VENDOR_CHAIN.slice();
-            chain.push('../shared/vehicle-control.js?v=vclite31');
+            chain.push('../shared/vehicle-control.js?v=vclite32');
             for (var i = 0; i < chain.length; i++) {
                 var s = document.createElement('script');
                 s.src = chain[i];

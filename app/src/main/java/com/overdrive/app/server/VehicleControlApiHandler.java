@@ -126,6 +126,13 @@ public class VehicleControlApiHandler {
             return true;
         }
 
+        // GET /api/vehicle/diagnostics — 9 ECU modules live health & status
+        if (cleanPath.equals("/api/vehicle/diagnostics") && method.equals("GET")) {
+            boolean force = path.contains("refresh=true") || path.contains("force=true");
+            handleGetDiagnostics(out, force);
+            return true;
+        }
+
         // GET /api/vehicle/state
         if (cleanPath.equals("/api/vehicle/state") && method.equals("GET")) {
             handleGetState(out);
@@ -1174,8 +1181,24 @@ public class VehicleControlApiHandler {
         // refuses to display). Don't reintroduce without verifying each
         // field against the cluster's own readout first.
 
+        // 9 ECU Health Diagnostics (TPMS, EPS, SRS, Powertrain, HV Battery, ESC, Charger, EPB, ABS)
+        try {
+            JSONObject diagReport = com.overdrive.app.byd.diagnostics.VehicleHealthDiagnostics.getHealthReport(false);
+            response.put("diagnostics", diagReport);
+        } catch (Throwable t) {
+            logger.debug("Diagnostics in handleGetState failed: " + t.getMessage());
+        }
+
         response.put("timestamp", data.timestamp);
         HttpResponse.sendJson(out, response.toString());
+    }
+
+    /**
+     * Returns full 9 ECU modules live health & diagnostics report.
+     */
+    private static void handleGetDiagnostics(OutputStream out, boolean forceRefresh) throws Exception {
+        JSONObject report = com.overdrive.app.byd.diagnostics.VehicleHealthDiagnostics.getHealthReport(forceRefresh);
+        HttpResponse.sendJson(out, report.toString());
     }
 
     /**
