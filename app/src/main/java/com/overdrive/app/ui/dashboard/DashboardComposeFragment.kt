@@ -11,12 +11,12 @@ import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.overdrive.app.R
 import com.overdrive.app.auth.AuthManager
+import com.overdrive.app.ui.component.OverdriveComposeContainer
 import com.overdrive.app.ui.model.DaemonStatus
 import com.overdrive.app.ui.theme.OverdriveTheme
 import com.overdrive.app.ui.util.QrCodeGenerator
@@ -44,7 +44,12 @@ class DashboardComposeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        return ComposeView(requireContext()).apply {
+        return OverdriveComposeContainer(requireContext()).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            setViewCompositionStrategy(androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 OverdriveTheme {
                     DashboardScreen(

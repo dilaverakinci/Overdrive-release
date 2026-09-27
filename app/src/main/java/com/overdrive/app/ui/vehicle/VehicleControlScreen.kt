@@ -92,7 +92,7 @@ fun VehicleControlScreen(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .verticalScroll(scrollState)
                 .padding(
                     start = OverdriveDimensions.pagePaddingHorizontal,

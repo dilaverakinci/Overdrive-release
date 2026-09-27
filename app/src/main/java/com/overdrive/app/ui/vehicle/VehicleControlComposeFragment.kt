@@ -9,8 +9,8 @@ import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
+import com.overdrive.app.ui.component.OverdriveComposeContainer
 import com.overdrive.app.ui.theme.OverdriveTheme
 
 /**
@@ -26,7 +26,12 @@ class VehicleControlComposeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        return ComposeView(requireContext()).apply {
+        return OverdriveComposeContainer(requireContext()).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            setViewCompositionStrategy(androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 OverdriveTheme {
                     VehicleControlScreen(
