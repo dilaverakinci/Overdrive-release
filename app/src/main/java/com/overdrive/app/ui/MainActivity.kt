@@ -479,7 +479,7 @@ open class MainActivity : AppCompatActivity() {
         return headless
     }
     
-    override fun onNewIntent(intent: android.content.Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         val requestedHeadlessLaunch = consumeHeadlessLaunchIntent(intent)
         val headlessLaunch = !remoteDevSession && requestedHeadlessLaunch
