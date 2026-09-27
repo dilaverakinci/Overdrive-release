@@ -105,17 +105,11 @@
             android:defaultValue="/trips" />
     </fragment>
 
-    <!-- Charging (web canonical) -->
+    <!-- Charging (100% Jetpack Compose Native) -->
     <fragment
         android:id="@+id/chargingFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_charging"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/charging" />
-    </fragment>
+        android:name="com.overdrive.app.ui.charging.ChargingComposeFragment"
+        android:label="@string/rail_charging" />
 
     <!-- Automations (web canonical) -->
     <fragment
