@@ -129,17 +129,11 @@
             android:defaultValue="/automations" />
     </fragment>
 
-    <!-- Seat Positions (web canonical) -->
+    <!-- Seat Positions (100% Jetpack Compose Native) -->
     <fragment
         android:id="@+id/seatPositionsFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_seat_positions"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/seat-positions" />
-    </fragment>
+        android:name="com.overdrive.app.ui.seats.SeatPositionsComposeFragment"
+        android:label="@string/rail_seat_positions" />
 
     <!-- Key Mapping (web canonical) -->
     <fragment
