@@ -93,17 +93,11 @@
         android:label="@string/rail_projection"
         tools:layout="@layout/fragment_projection" />
 
-    <!-- Trips (web canonical) -->
+    <!-- Trips (100% Jetpack Compose Native) -->
     <fragment
         android:id="@+id/tripsFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_trips"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/trips" />
-    </fragment>
+        android:name="com.overdrive.app.ui.trips.TripsComposeFragment"
+        android:label="@string/rail_trips" />
 
     <!-- Charging (100% Jetpack Compose Native) -->
     <fragment
