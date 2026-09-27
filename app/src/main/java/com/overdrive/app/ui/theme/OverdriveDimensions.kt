@@ -58,8 +58,33 @@ data class OverdriveDimensions(
     val dialogMinWidth: Dp = 320.dp,
     val dialogMaxWidth: Dp = 560.dp,
 
+    // Navigation rail pill metrics
+    val railItemPillInsetHorizontal: Dp = 12.dp,
+    val railItemPillInsetVertical: Dp = 4.dp,
+    val railItemPillRadius: Dp = 8.dp,
+
     // Hairline borders
     val borderHairline: Dp = 1.dp
-)
+) {
+    companion object {
+        val Default = OverdriveDimensions()
+        val appBarHeight: Dp get() = Default.appBarHeight
+        val pagePaddingHorizontal: Dp get() = Default.pagePaddingHorizontal
+        val pagePaddingTop: Dp get() = Default.pagePaddingTop
+        val pagePaddingBottom: Dp get() = Default.pagePaddingBottom
+        val cardGapVertical: Dp get() = Default.cardGapVertical
+        val cardGapHorizontal: Dp get() = Default.cardGapHorizontal
+        val cardRadiusStandard: Dp get() = Default.cardRadiusStandard
+        val cardRadiusHero: Dp get() = Default.cardRadiusHero
+        val cardPaddingStandard: Dp get() = Default.cardPaddingStandard
+        val cardPaddingHero: Dp get() = Default.cardPaddingHero
+        val railCompactWidth: Dp get() = Default.railCompactWidth
+        val railExpandedWidth: Dp get() = Default.railExpandedWidth
+        val railRowHeight: Dp get() = Default.railRowHeight
+        val railItemPillInsetHorizontal: Dp get() = Default.railItemPillInsetHorizontal
+        val railItemPillInsetVertical: Dp get() = Default.railItemPillInsetVertical
+        val railItemPillRadius: Dp get() = Default.railItemPillRadius
+    }
+}
 
 val DefaultOverdriveDimensions = OverdriveDimensions()
