@@ -68,7 +68,7 @@ fun OverdriveButton(
                 }
                 Text(
                     text = text,
-                    style = typography.labelLarge.copy(color = colors.onPrimary)
+                    style = typography.labelLarge
                 )
             }
         }
@@ -90,7 +90,7 @@ fun OverdriveButton(
                 }
                 Text(
                     text = text,
-                    style = typography.labelLarge.copy(color = colors.onPrimaryContainer)
+                    style = typography.labelLarge
                 )
             }
         }
@@ -112,7 +112,7 @@ fun OverdriveButton(
                 }
                 Text(
                     text = text,
-                    style = typography.labelLarge.copy(color = colors.onSurface)
+                    style = typography.labelLarge
                 )
             }
         }
@@ -133,7 +133,7 @@ fun OverdriveButton(
                 }
                 Text(
                     text = text,
-                    style = typography.labelLarge.copy(color = colors.primary)
+                    style = typography.labelLarge
                 )
             }
         }
@@ -155,7 +155,7 @@ fun OverdriveButton(
                 }
                 Text(
                     text = text,
-                    style = typography.labelLarge.copy(color = colors.onError)
+                    style = typography.labelLarge
                 )
             }
         }

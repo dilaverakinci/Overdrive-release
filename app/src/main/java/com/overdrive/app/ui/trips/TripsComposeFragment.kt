@@ -39,7 +39,26 @@ class TripsComposeFragment : Fragment() {
                             uiState = uiState.copy(filter = filter)
                         },
                         onTripClick = { trip ->
-                            showFeedback("Seyahat #${trip.id}: ${trip.distanceKm} km · ${trip.durationMinutes} dk")
+                            uiState = uiState.copy(
+                                selectedTripForDetail = trip,
+                                scrubberIndex = 0,
+                                isPlaying = false
+                            )
+                        },
+                        onBackToList = {
+                            uiState = uiState.copy(
+                                selectedTripForDetail = null,
+                                isPlaying = false
+                            )
+                        },
+                        onScrubberChange = { index ->
+                            uiState = uiState.copy(scrubberIndex = index)
+                        },
+                        onTogglePlay = {
+                            uiState = uiState.copy(isPlaying = !uiState.isPlaying)
+                        },
+                        onPlaybackSpeedChange = { speed ->
+                            uiState = uiState.copy(playbackSpeed = speed)
                         },
                         onExportClick = {
                             showFeedback("Seyahat kayıtları GPX/CSV olarak dışa aktarılıyor...")

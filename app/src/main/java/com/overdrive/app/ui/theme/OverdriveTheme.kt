@@ -11,6 +11,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 
+import androidx.appcompat.app.AppCompatDelegate
+import com.overdrive.app.ui.util.PreferencesManager
+
 val LocalOverdriveColors = staticCompositionLocalOf { DarkOverdriveColors }
 val LocalOverdriveDimensions = staticCompositionLocalOf { DefaultOverdriveDimensions }
 val LocalOverdriveTelemetryTypography = staticCompositionLocalOf { OverdriveTelemetryTypography() }
@@ -37,14 +40,25 @@ enum class OverdriveThemeMode {
  */
 @Composable
 fun OverdriveTheme(
-    themeMode: OverdriveThemeMode = OverdriveThemeMode.DARK,
+    themeMode: OverdriveThemeMode = OverdriveThemeMode.AUTO,
     isHeadlightOn: Boolean = false,
     content: @Composable () -> Unit
 ) {
+    val isSystemDark = isSystemInDarkTheme()
     val isDark = when (themeMode) {
         OverdriveThemeMode.DARK -> true
         OverdriveThemeMode.LIGHT -> false
-        OverdriveThemeMode.AUTO -> isHeadlightOn || isSystemInDarkTheme()
+        OverdriveThemeMode.AUTO -> {
+            try {
+                when (PreferencesManager.getThemeMode()) {
+                    AppCompatDelegate.MODE_NIGHT_YES -> true
+                    AppCompatDelegate.MODE_NIGHT_NO -> false
+                    else -> isHeadlightOn || isSystemDark
+                }
+            } catch (_: Throwable) {
+                isHeadlightOn || isSystemDark
+            }
+        }
     }
 
     val colors = if (isDark) DarkOverdriveColors else LightOverdriveColors
