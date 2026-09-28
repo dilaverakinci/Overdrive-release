@@ -217,4 +217,23 @@ data class TripsUiState(
     val scrubberIndex: Int = 0,
     val isPlaying: Boolean = false,
     val playbackSpeed: Float = 1.0f
-)
+) {
+    companion object {
+        fun fromTrips(trips: List<TripUiItem>): TripsUiState {
+            if (trips.isEmpty()) return TripsUiState()
+            val totalDist = trips.sumOf { it.distanceKm.toDouble() }.toFloat()
+            val totalDurHours = trips.sumOf { it.durationMinutes.toDouble() / 60.0 }.toFloat()
+            val totalEnergy = trips.sumOf { it.energyUsedKwh.toDouble() }.toFloat()
+            val avgEff = if (totalDist > 0.1f) ((totalEnergy / totalDist) * 100f) else 16.2f
+            val avgDna = trips.sumOf { it.drivingDnaScore } / trips.size
+            return TripsUiState(
+                totalDistanceKm = String.format(Locale.US, "%.1f", totalDist).toFloatOrNull() ?: totalDist,
+                totalTripsCount = trips.size,
+                totalDurationHours = String.format(Locale.US, "%.1f", totalDurHours).toFloatOrNull() ?: totalDurHours,
+                overallEfficiencyKwhPer100Km = String.format(Locale.US, "%.1f", avgEff).toFloatOrNull() ?: avgEff,
+                overallDnaScore = avgDna,
+                trips = trips
+            )
+        }
+    }
+}

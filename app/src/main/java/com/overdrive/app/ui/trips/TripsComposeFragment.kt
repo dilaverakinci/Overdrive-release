@@ -69,6 +69,20 @@ class TripsComposeFragment : Fragment() {
         }
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        loadRealTrips()
+    }
+
+    private fun loadRealTrips() {
+        context?.let { ctx ->
+            val loaded = TripTelemetryLoader.loadTrips(ctx)
+            if (loaded.isNotEmpty()) {
+                uiState = TripsUiState.fromTrips(loaded)
+            }
+        }
+    }
+
     private fun showFeedback(message: String) {
         context?.let {
             Toast.makeText(it, message, Toast.LENGTH_SHORT).show()

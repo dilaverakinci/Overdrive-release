@@ -82,4 +82,45 @@ class TripsComposeParityTest {
         assertNull(listState.selectedTripForDetail)
         assertFalse(listState.isPlaying)
     }
+
+    @Test
+    fun fromTrips_calculatesAggregatedMetrics() {
+        val testTrips = listOf(
+            TripUiItem(
+                id = 100L,
+                startTimeMs = 1000L,
+                endTimeMs = 2000L,
+                distanceKm = 10f,
+                durationMinutes = 20,
+                avgSpeedKmh = 30f,
+                maxSpeedKmh = 60,
+                socStart = 80,
+                socEnd = 75,
+                energyUsedKwh = 1.6f,
+                efficiencyKwhPer100Km = 16.0f,
+                drivingDnaScore = 90
+            ),
+            TripUiItem(
+                id = 99L,
+                startTimeMs = 3000L,
+                endTimeMs = 4000L,
+                distanceKm = 20f,
+                durationMinutes = 40,
+                avgSpeedKmh = 30f,
+                maxSpeedKmh = 70,
+                socStart = 75,
+                socEnd = 70,
+                energyUsedKwh = 3.2f,
+                efficiencyKwhPer100Km = 16.0f,
+                drivingDnaScore = 94
+            )
+        )
+        val state = TripsUiState.fromTrips(testTrips)
+        assertEquals(2, state.totalTripsCount)
+        assertEquals(30f, state.totalDistanceKm, 0.1f)
+        assertEquals(1.0f, state.totalDurationHours, 0.1f)
+        assertEquals(92, state.overallDnaScore)
+        assertEquals(16.0f, state.overallEfficiencyKwhPer100Km, 0.5f)
+        assertEquals(2, state.trips.size)
+    }
 }
