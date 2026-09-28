@@ -418,7 +418,7 @@ private fun ChargingStatusCard(
                 if (charging.timeToFullMinutes != null) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "${charging.timeToFullMinutes} dk",
+                            text = stringResource(R.string.format_minutes, charging.timeToFullMinutes),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -484,7 +484,7 @@ private fun RecordingsAndStorageCard(
 
                 val clipCount = (recordingState as? DashboardUiState.RecordingState.Ready)?.todayClipCount
                 val clipText = if (clipCount != null) {
-                    "$clipCount klip kaydedildi"
+                    stringResource(R.string.dashboard_modern_clips_today, clipCount)
                 } else {
                     stringResource(R.string.dashboard_metric_value_pending)
                 }
@@ -511,7 +511,7 @@ private fun RecordingsAndStorageCard(
                 val usedGb = String.format("%.1f", storage.usedBytes / (1024.0 * 1024 * 1024))
                 val totalGb = String.format("%.1f", storage.totalBytes / (1024.0 * 1024 * 1024))
                 Text(
-                    text = "$usedGb GB / $totalGb GB depolama alanı",
+                    text = stringResource(R.string.dashboard_modern_storage_used_total, usedGb, totalGb),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -567,7 +567,7 @@ private fun RecentActivityCard(
                 is DashboardUiState.ActivityState.Ready -> {
                     if (activityState.rows.isEmpty()) {
                         Text(
-                            text = "Yakın zamanda kayıtlı etkinlik bulunmuyor.",
+                            text = stringResource(R.string.dashboard_modern_no_activity),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -600,7 +600,7 @@ private fun RecentActivityCard(
                 }
                 is DashboardUiState.ActivityState.Unavailable -> {
                     Text(
-                        text = "Etkinlik verisi alınamadı.",
+                        text = stringResource(R.string.dashboard_modern_activity_unavailable),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -329,7 +330,7 @@ fun TripMapLibreCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
-                        text = "Rota Haritası (MapLibre Native)",
+                        text = stringResource(R.string.trips_map_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -352,7 +353,7 @@ fun TripMapLibreCard(
                                 .background(Color(0xFF10B981))
                         )
                         Text(
-                            text = "Başlangıç",
+                            text = stringResource(R.string.trips_start_label),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -369,7 +370,7 @@ fun TripMapLibreCard(
                                 .background(Color(0xFFEF4444))
                         )
                         Text(
-                            text = "Bitiş",
+                            text = stringResource(R.string.trips_end_label),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -377,7 +378,7 @@ fun TripMapLibreCard(
 
                     if (currentPoint != null) {
                         Text(
-                            text = "Yön: ${currentPoint.headingDegrees.toInt()}° · İrtifa: ${currentPoint.altitudeM.toInt()} m",
+                            text = stringResource(R.string.trips_heading_altitude_fmt, currentPoint.headingDegrees.toInt(), currentPoint.altitudeM.toInt()),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontFamily = FontFamily.Monospace,
@@ -407,7 +408,7 @@ fun TripMapLibreCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     OverdriveButton(
-                        text = if (followCar) "Takip Açık" else "Aracı Takip Et",
+                        text = if (followCar) stringResource(R.string.trips_follow_active) else stringResource(R.string.trips_follow_vehicle),
                         variant = if (followCar) OverdriveButtonVariant.PRIMARY else OverdriveButtonVariant.TONAL,
                         onClick = {
                             followCar = !followCar
@@ -424,7 +425,7 @@ fun TripMapLibreCard(
                     )
 
                     OverdriveButton(
-                        text = "Rotaya Odakla",
+                        text = stringResource(R.string.trips_focus_route),
                         variant = OverdriveButtonVariant.TONAL,
                         onClick = {
                             followCar = false
@@ -444,7 +445,7 @@ fun TripMapLibreCard(
                             .padding(horizontal = 10.dp, vertical = 6.dp)
                     ) {
                         Text(
-                            text = "GPS: ${String.format(Locale.US, "%.5f, %.5f", currentPoint.lat, currentPoint.lon)} · Hız: ${currentPoint.speedKmh} km/s",
+                            text = stringResource(R.string.trips_gps_speed_fmt, String.format(Locale.US, "%.5f, %.5f", currentPoint.lat, currentPoint.lon), currentPoint.speedKmh.toInt()),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurface,

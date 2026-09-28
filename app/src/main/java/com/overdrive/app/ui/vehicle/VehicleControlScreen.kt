@@ -197,11 +197,11 @@ private fun VehicleControlHeader(
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OverdriveStatusPill(
-                label = if (isLocked) "KİLİTLİ" else "KİLİTSİZ",
+                label = if (isLocked) stringResource(R.string.status_locked) else stringResource(R.string.status_unlocked),
                 status = if (isLocked) OverdrivePillStatus.SUCCESS else OverdrivePillStatus.WARNING,
             )
             OverdriveStatusPill(
-                label = "Bulut: $cloudStatusText",
+                label = stringResource(R.string.vehicle_control_cloud_fmt, cloudStatusText),
                 status = if (isCloudConnected) OverdrivePillStatus.SUCCESS else OverdrivePillStatus.INFO,
             )
         }
@@ -223,7 +223,7 @@ private fun TyresPressureCard(
                 .padding(OverdriveDimensions.cardPaddingStandard)
         ) {
             Text(
-                text = "Lastik Basınçları & Sıcaklıkları",
+                text = stringResource(R.string.vehicle_control_tyre_pressures),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -236,25 +236,25 @@ private fun TyresPressureCard(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 TyreCell(
-                    title = "Ön Sol",
+                    title = stringResource(R.string.vehicle_control_front_left),
                     psi = tyres.flPsi,
                     temp = tyres.flTemp,
                     modifier = Modifier.weight(1f),
                 )
                 TyreCell(
-                    title = "Ön Sağ",
+                    title = stringResource(R.string.vehicle_control_front_right),
                     psi = tyres.frPsi,
                     temp = tyres.frTemp,
                     modifier = Modifier.weight(1f),
                 )
                 TyreCell(
-                    title = "Arka Sol",
+                    title = stringResource(R.string.vehicle_control_rear_left),
                     psi = tyres.rlPsi,
                     temp = tyres.rlTemp,
                     modifier = Modifier.weight(1f),
                 )
                 TyreCell(
-                    title = "Arka Sağ",
+                    title = stringResource(R.string.vehicle_control_rear_right),
                     psi = tyres.rrPsi,
                     temp = tyres.rrTemp,
                     modifier = Modifier.weight(1f),
@@ -295,7 +295,7 @@ private fun TyreCell(
                 color = if (isLow) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                text = "PSI",
+                text = stringResource(R.string.vehicle_control_psi),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -328,7 +328,7 @@ private fun SecurityAndLocksCard(
                 .padding(OverdriveDimensions.cardPaddingStandard)
         ) {
             Text(
-                text = "Güvenlik & Kilitler",
+                text = stringResource(R.string.vehicle_control_security_locks),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -341,27 +341,27 @@ private fun SecurityAndLocksCard(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 ActionTile(
-                    title = "Kilitle",
+                    title = stringResource(R.string.vehicle_control_lock),
                     iconRes = R.drawable.ic_parking,
                     isActive = isLocked,
                     onClick = onLockClick,
                     modifier = Modifier.weight(1f),
                 )
                 ActionTile(
-                    title = "Kilit Aç",
+                    title = stringResource(R.string.vehicle_control_unlock),
                     iconRes = R.drawable.ic_vehicle_control,
                     isActive = !isLocked,
                     onClick = onUnlockClick,
                     modifier = Modifier.weight(1f),
                 )
                 ActionTile(
-                    title = "Flaşör Yak",
+                    title = stringResource(R.string.vehicle_control_flash),
                     iconRes = R.drawable.ic_roadsense,
                     onClick = onFlashClick,
                     modifier = Modifier.weight(1f),
                 )
                 ActionTile(
-                    title = "Aracı Bul",
+                    title = stringResource(R.string.vehicle_control_find_car),
                     iconRes = R.drawable.ic_roadsense_map,
                     onClick = onFindCarClick,
                     modifier = Modifier.weight(1f),
@@ -388,7 +388,7 @@ private fun DoorsAndTrunkCard(
                 .padding(OverdriveDimensions.cardPaddingStandard)
         ) {
             Text(
-                text = "Kapılar & Bagaj",
+                text = stringResource(R.string.vehicle_control_doors_trunk),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -401,10 +401,10 @@ private fun DoorsAndTrunkCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                DoorStatusPill(label = "Ön Sol", isOpen = doors.frontLeftOpen, modifier = Modifier.weight(1f))
-                DoorStatusPill(label = "Ön Sağ", isOpen = doors.frontRightOpen, modifier = Modifier.weight(1f))
-                DoorStatusPill(label = "Arka Sol", isOpen = doors.rearLeftOpen, modifier = Modifier.weight(1f))
-                DoorStatusPill(label = "Arka Sağ", isOpen = doors.rearRightOpen, modifier = Modifier.weight(1f))
+                DoorStatusPill(label = stringResource(R.string.vehicle_control_front_left), isOpen = doors.frontLeftOpen, modifier = Modifier.weight(1f))
+                DoorStatusPill(label = stringResource(R.string.vehicle_control_front_right), isOpen = doors.frontRightOpen, modifier = Modifier.weight(1f))
+                DoorStatusPill(label = stringResource(R.string.vehicle_control_rear_left), isOpen = doors.rearLeftOpen, modifier = Modifier.weight(1f))
+                DoorStatusPill(label = stringResource(R.string.vehicle_control_rear_right), isOpen = doors.rearRightOpen, modifier = Modifier.weight(1f))
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -415,14 +415,14 @@ private fun DoorsAndTrunkCard(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 ActionTile(
-                    title = if (doors.trunkOpen) "Bagajı Kapat" else "Bagajı Aç",
+                    title = if (doors.trunkOpen) stringResource(R.string.vehicle_control_trunk_close) else stringResource(R.string.vehicle_control_trunk_open),
                     iconRes = R.drawable.ic_vehicle_control,
                     isActive = doors.trunkOpen,
                     onClick = onToggleTrunk,
                     modifier = Modifier.weight(1f),
                 )
                 ActionTile(
-                    title = if (doors.hoodOpen) "Kaput Açık" else "Ön Kaput",
+                    title = if (doors.hoodOpen) stringResource(R.string.vehicle_control_hood_open) else stringResource(R.string.vehicle_control_hood_closed),
                     iconRes = R.drawable.ic_vehicle_control,
                     isActive = doors.hoodOpen,
                     onClick = onToggleHood,
@@ -453,7 +453,7 @@ private fun DoorStatusPill(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                text = if (isOpen) "AÇIK" else "KAPALI",
+                text = if (isOpen) stringResource(R.string.status_open) else stringResource(R.string.status_closed),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
                 color = if (isOpen) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
@@ -481,7 +481,7 @@ private fun WindowsControlCard(
                 .padding(OverdriveDimensions.cardPaddingStandard)
         ) {
             Text(
-                text = "Camlar & Havalandırma",
+                text = stringResource(R.string.vehicle_control_windows_vent),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -494,27 +494,27 @@ private fun WindowsControlCard(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 ActionTile(
-                    title = "Tümünü Kapat",
+                    title = stringResource(R.string.vehicle_control_close_all),
                     iconRes = R.drawable.ic_vehicle_control,
                     onClick = onCloseAll,
                     modifier = Modifier.weight(1f),
                 )
                 ActionTile(
-                    title = "Havalandır",
-                    subtitle = "2-3 cm arala",
+                    title = stringResource(R.string.vehicle_control_vent),
+                    subtitle = stringResource(R.string.vehicle_control_vent_subtitle),
                     iconRes = R.drawable.ic_vehicle_control,
                     isActive = windows.isVentMode,
                     onClick = onVentMode,
                     modifier = Modifier.weight(1f),
                 )
                 ActionTile(
-                    title = "Tümünü Aç",
+                    title = stringResource(R.string.vehicle_control_open_all),
                     iconRes = R.drawable.ic_vehicle_control,
                     onClick = onOpenAll,
                     modifier = Modifier.weight(1f),
                 )
                 ActionTile(
-                    title = "Sunroof / Perde",
+                    title = stringResource(R.string.vehicle_control_sunroof),
                     iconRes = R.drawable.ic_vehicle_control,
                     isActive = windows.sunroofOpen,
                     onClick = onToggleSunroof,
@@ -551,14 +551,14 @@ private fun ClimateControlCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    text = "Kabin İklimlendirme (Klima)",
+                    text = stringResource(R.string.vehicle_control_climate_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
 
                 OverdriveButton(
-                    text = if (climate.isAcOn) "KLİMA AÇIK" else "KLİMA KAPALI",
+                    text = if (climate.isAcOn) stringResource(R.string.vehicle_control_ac_on) else stringResource(R.string.vehicle_control_ac_off),
                     variant = if (climate.isAcOn) OverdriveButtonVariant.PRIMARY else OverdriveButtonVariant.OUTLINED,
                     onClick = onToggleClimate,
                 )
@@ -580,7 +580,7 @@ private fun ClimateControlCard(
                 ) {
                     Column {
                         Text(
-                            text = "Hedef Sıcaklık",
+                            text = stringResource(R.string.vehicle_control_target_temp),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -594,7 +594,7 @@ private fun ClimateControlCard(
                                 Text("-", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
                             }
                             Text(
-                                text = "${climate.targetTemp}°C",
+                                text = stringResource(R.string.vehicle_control_temp_celsius, climate.targetTemp),
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -616,7 +616,7 @@ private fun ClimateControlCard(
                 ) {
                     Column {
                         Text(
-                            text = "Fan Gücü",
+                            text = stringResource(R.string.vehicle_control_fan_speed),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -630,7 +630,7 @@ private fun ClimateControlCard(
                                 Text("-", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
                             }
                             Text(
-                                text = "${climate.fanLevel} / 7",
+                                text = stringResource(R.string.vehicle_control_fan_level_fmt, climate.fanLevel),
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -647,8 +647,8 @@ private fun ClimateControlCard(
 
             // Battery Pre-Heating Action
             ActionTile(
-                title = "Batarya Ön Isıtma",
-                subtitle = if (climate.isBatteryHeatOn) "Isıtma Aktif" else "Kapalı",
+                title = stringResource(R.string.vehicle_control_battery_preheat),
+                subtitle = if (climate.isBatteryHeatOn) stringResource(R.string.vehicle_control_battery_heat_active) else stringResource(R.string.status_off),
                 iconRes = R.drawable.ic_charging,
                 isActive = climate.isBatteryHeatOn,
                 onClick = onToggleBatteryHeat,
@@ -680,7 +680,7 @@ private fun ConvenienceAndHardwareCard(
                 .padding(OverdriveDimensions.cardPaddingStandard)
         ) {
             Text(
-                text = "Koltuk & Donanım Kolaylıkları",
+                text = stringResource(R.string.vehicle_control_convenience_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -694,7 +694,7 @@ private fun ConvenienceAndHardwareCard(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 ActionTile(
-                    title = "Sürücü Isıtma",
+                    title = stringResource(R.string.vehicle_control_driver_heat),
                     subtitle = seatLevelLabel(comfort.driverSeatHeat),
                     iconRes = R.drawable.ic_seat_positions,
                     isActive = comfort.driverSeatHeat > 0,
@@ -702,7 +702,7 @@ private fun ConvenienceAndHardwareCard(
                     modifier = Modifier.weight(1f),
                 )
                 ActionTile(
-                    title = "Sürücü Havalandırma",
+                    title = stringResource(R.string.vehicle_control_driver_vent),
                     subtitle = seatLevelLabel(comfort.driverSeatVent),
                     iconRes = R.drawable.ic_seat_positions,
                     isActive = comfort.driverSeatVent > 0,
@@ -710,7 +710,7 @@ private fun ConvenienceAndHardwareCard(
                     modifier = Modifier.weight(1f),
                 )
                 ActionTile(
-                    title = "Yolcu Isıtma",
+                    title = stringResource(R.string.vehicle_control_passenger_heat),
                     subtitle = seatLevelLabel(comfort.passengerSeatHeat),
                     iconRes = R.drawable.ic_seat_positions,
                     isActive = comfort.passengerSeatHeat > 0,
@@ -718,7 +718,7 @@ private fun ConvenienceAndHardwareCard(
                     modifier = Modifier.weight(1f),
                 )
                 ActionTile(
-                    title = "Yolcu Havalandırma",
+                    title = stringResource(R.string.vehicle_control_passenger_vent),
                     subtitle = seatLevelLabel(comfort.passengerSeatVent),
                     iconRes = R.drawable.ic_seat_positions,
                     isActive = comfort.passengerSeatVent > 0,
@@ -735,24 +735,24 @@ private fun ConvenienceAndHardwareCard(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 ActionTile(
-                    title = "Direksiyon Isıtma",
-                    subtitle = if (comfort.steeringHeatOn) "Açık" else "Kapalı",
+                    title = stringResource(R.string.vehicle_control_steering_heat),
+                    subtitle = if (comfort.steeringHeatOn) stringResource(R.string.status_on) else stringResource(R.string.status_off),
                     iconRes = R.drawable.ic_vehicle_control,
                     isActive = comfort.steeringHeatOn,
                     onClick = onToggleSteeringHeat,
                     modifier = Modifier.weight(1f),
                 )
                 ActionTile(
-                    title = "Ayna Katlama",
-                    subtitle = if (mirrorsFolded) "Katlı" else "Açık",
+                    title = stringResource(R.string.vehicle_control_mirror_fold),
+                    subtitle = if (mirrorsFolded) stringResource(R.string.vehicle_control_mirrors_folded) else stringResource(R.string.vehicle_control_mirrors_unfolded),
                     iconRes = R.drawable.ic_vehicle_control,
                     isActive = mirrorsFolded,
                     onClick = onToggleMirrors,
                     modifier = Modifier.weight(1f),
                 )
                 ActionTile(
-                    title = "Döner Ekran",
-                    subtitle = "15.6\" Çevir",
+                    title = stringResource(R.string.vehicle_control_rotate_screen),
+                    subtitle = stringResource(R.string.vehicle_control_rotate_screen_subtitle),
                     iconRes = R.drawable.ic_projection,
                     onClick = onRotateScreen,
                     modifier = Modifier.weight(1f),
@@ -762,12 +762,13 @@ private fun ConvenienceAndHardwareCard(
     }
 }
 
+@Composable
 private fun seatLevelLabel(level: Int): String {
     return when (level) {
-        1 -> "Düşük (1)"
-        2 -> "Orta (2)"
-        3 -> "Yüksek (3)"
-        else -> "Kapalı"
+        1 -> stringResource(R.string.level_low_1)
+        2 -> stringResource(R.string.level_med_2)
+        3 -> stringResource(R.string.level_high_3)
+        else -> stringResource(R.string.status_off)
     }
 }
 

@@ -532,6 +532,7 @@ open class MainActivity : AppCompatActivity() {
             "parking" -> R.id.parkingFragment
             "live" -> R.id.liveViewFragment
             "vehicle" -> R.id.vehicleControlFragment
+            "seat_positions", "seats" -> R.id.seatPositionsFragment
             "dashboard" -> R.id.dashboardFragment
             "assistant" -> R.id.genAiFragment
             else -> return

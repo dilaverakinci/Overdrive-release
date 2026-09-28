@@ -137,7 +137,7 @@ private fun TripsMasterView(
 
         // Section Title
         Text(
-            text = "Son Sürüş Oturumları (${state.trips.size})",
+            text = stringResource(R.string.trips_recent_trips_fmt, state.trips.size),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
@@ -173,7 +173,7 @@ private fun TripsHeader(
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                text = "Sürüş Tüketimi, Verimlilik ve Driving DNA Analizi",
+                text = stringResource(R.string.trips_header_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -192,24 +192,24 @@ private fun TripsHeader(
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 FilterTabButton(
-                    text = "Tümü",
+                    text = stringResource(R.string.trips_filter_all),
                     isSelected = filter == TripsFilterPeriod.ALL,
                     onClick = { onFilterSelected(TripsFilterPeriod.ALL) }
                 )
                 FilterTabButton(
-                    text = "Bu Hafta",
+                    text = stringResource(R.string.trips_filter_this_week),
                     isSelected = filter == TripsFilterPeriod.THIS_WEEK,
                     onClick = { onFilterSelected(TripsFilterPeriod.THIS_WEEK) }
                 )
                 FilterTabButton(
-                    text = "Bu Ay",
+                    text = stringResource(R.string.trips_filter_this_month),
                     isSelected = filter == TripsFilterPeriod.THIS_MONTH,
                     onClick = { onFilterSelected(TripsFilterPeriod.THIS_MONTH) }
                 )
             }
 
             OverdriveButton(
-                text = "Dışa Aktar",
+                text = stringResource(R.string.trips_export_button),
                 leadingIcon = {
                     Icon(
                         painter = painterResource(R.drawable.ic_copy),
@@ -275,7 +275,7 @@ private fun TripsHeroCard(
             // Distance Metric
             Column {
                 Text(
-                    text = "Toplam Sürüş Mesafesi",
+                    text = stringResource(R.string.trips_total_distance_label),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -299,7 +299,7 @@ private fun TripsHeroCard(
                 }
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "${state.totalTripsCount} Seyahat · ${String.format(Locale.US, "%.1f", state.totalDurationHours)} Saat Toplam",
+                    text = stringResource(R.string.trips_total_trips_duration_fmt, state.totalTripsCount, state.totalDurationHours),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -309,7 +309,7 @@ private fun TripsHeroCard(
             Row(horizontalArrangement = Arrangement.spacedBy(28.dp)) {
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = "Ort. Verimlilik",
+                        text = stringResource(R.string.trips_avg_efficiency_label),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -322,7 +322,7 @@ private fun TripsHeroCard(
                         fontFamily = FontFamily.Monospace,
                     )
                     Text(
-                        text = "kWh / 100km",
+                        text = stringResource(R.string.trips_kwh_per_100km),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -330,7 +330,7 @@ private fun TripsHeroCard(
 
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = "Sürüş DNA",
+                        text = stringResource(R.string.trips_driving_dna_label),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -343,7 +343,7 @@ private fun TripsHeroCard(
                         fontFamily = FontFamily.Monospace,
                     )
                     Text(
-                        text = "100 Puan Üzerinden",
+                        text = stringResource(R.string.trips_dna_out_of_100),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -402,7 +402,7 @@ private fun TripItemCard(
                 ) {
                     OverdriveStatusPill(
                         status = if (trip.drivingDnaScore >= 90) OverdrivePillStatus.SUCCESS else OverdrivePillStatus.WARNING,
-                        label = "${trip.drivingDnaScore} DNA Skoru",
+                        label = stringResource(R.string.trips_dna_score_fmt, trip.drivingDnaScore),
                     )
                     Text(
                         text = "→",
@@ -425,12 +425,12 @@ private fun TripItemCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                TripStatColumn(label = "Mesafe", value = "${String.format(Locale.US, "%.1f", trip.distanceKm)} km")
-                TripStatColumn(label = "Süre", value = "${trip.durationMinutes} dk")
-                TripStatColumn(label = "Ort. Hız", value = "${trip.avgSpeedKmh.toInt()} km/s")
-                TripStatColumn(label = "Tüketim", value = "${String.format(Locale.US, "%.1f", trip.energyUsedKwh)} kWh")
-                TripStatColumn(label = "Verimlilik", value = "${String.format(Locale.US, "%.1f", trip.efficiencyKwhPer100Km)} kWh/100km")
-                TripStatColumn(label = "Batarya (SoC)", value = "%${trip.socStart} ➔ %${trip.socEnd}")
+                TripStatColumn(label = stringResource(R.string.trips_stat_distance), value = "${String.format(Locale.US, "%.1f", trip.distanceKm)} km")
+                TripStatColumn(label = stringResource(R.string.trips_stat_duration), value = "${trip.durationMinutes} dk")
+                TripStatColumn(label = stringResource(R.string.trips_stat_avg_speed), value = "${trip.avgSpeedKmh.toInt()} km/s")
+                TripStatColumn(label = stringResource(R.string.trips_stat_consumption), value = "${String.format(Locale.US, "%.1f", trip.energyUsedKwh)} kWh")
+                TripStatColumn(label = stringResource(R.string.trips_stat_efficiency), value = "${String.format(Locale.US, "%.1f", trip.efficiencyKwhPer100Km)} kWh/100km")
+                TripStatColumn(label = stringResource(R.string.trips_stat_battery_soc), value = "%${trip.socStart} ➔ %${trip.socEnd}")
             }
         }
     }
@@ -519,7 +519,7 @@ private fun TripDetailView(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 OverdriveButton(
-                    text = "← Seyahatlere Dön",
+                    text = stringResource(R.string.trips_back_button),
                     variant = OverdriveButtonVariant.TONAL,
                     onClick = onBackClick,
                 )
@@ -531,7 +531,7 @@ private fun TripDetailView(
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                     Text(
-                        text = "Seyahat #${trip.id} · Detaylı GPS Telemetrisi ve Sürüş Simülasyonu",
+                        text = stringResource(R.string.trips_detail_header_subtitle_fmt, trip.id),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -545,7 +545,7 @@ private fun TripDetailView(
                 )
                 OverdriveStatusPill(
                     status = if (trip.drivingDnaScore >= 90) OverdrivePillStatus.SUCCESS else OverdrivePillStatus.WARNING,
-                    label = "${trip.drivingDnaScore} DNA Skoru",
+                    label = stringResource(R.string.trips_dna_score_fmt, trip.drivingDnaScore),
                 )
             }
         }
@@ -599,7 +599,7 @@ private fun DetailSummaryCard(trip: TripUiItem) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Seyahat Özeti ve Enerji Metrikleri",
+                text = stringResource(R.string.trips_summary_section_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -609,10 +609,10 @@ private fun DetailSummaryCard(trip: TripUiItem) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                DetailKpiTile(label = "Mesafe", value = "${String.format(Locale.US, "%.1f", trip.distanceKm)} km", highlight = true)
-                DetailKpiTile(label = "Süre", value = "${trip.durationMinutes} dk")
-                DetailKpiTile(label = "SoC Tüketimi", value = "%${trip.socStart - trip.socEnd}", subtext = "%${trip.socStart} ➔ %${trip.socEnd}")
-                DetailKpiTile(label = "Harcanan Enerji", value = "${String.format(Locale.US, "%.1f", trip.energyUsedKwh)} kWh")
+                DetailKpiTile(label = stringResource(R.string.trips_stat_distance), value = "${String.format(Locale.US, "%.1f", trip.distanceKm)} km", highlight = true)
+                DetailKpiTile(label = stringResource(R.string.trips_stat_duration), value = "${trip.durationMinutes} dk")
+                DetailKpiTile(label = stringResource(R.string.trips_kpi_soc_consumption), value = "%${trip.socStart - trip.socEnd}", subtext = "%${trip.socStart} ➔ %${trip.socEnd}")
+                DetailKpiTile(label = stringResource(R.string.trips_kpi_energy_used), value = "${String.format(Locale.US, "%.1f", trip.energyUsedKwh)} kWh")
             }
 
             HorizontalDivider(
@@ -624,11 +624,11 @@ private fun DetailSummaryCard(trip: TripUiItem) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                DetailKpiTile(label = "Ortalama Hız", value = "${trip.avgSpeedKmh.toInt()} km/s")
-                DetailKpiTile(label = "Azami Hız", value = "${trip.maxSpeedKmh} km/s")
-                DetailKpiTile(label = "Verimlilik", value = "${String.format(Locale.US, "%.1f", trip.efficiencyKwhPer100Km)} kWh/100km")
-                DetailKpiTile(label = "Seyahat Maliyeti", value = trip.tripCostFormatted ?: "--")
-                DetailKpiTile(label = "Yükseklik", value = "↑ ${trip.elevationGainM}m · ↓ ${trip.elevationLossM}m")
+                DetailKpiTile(label = stringResource(R.string.trips_kpi_avg_speed), value = "${trip.avgSpeedKmh.toInt()} km/s")
+                DetailKpiTile(label = stringResource(R.string.trips_kpi_max_speed), value = "${trip.maxSpeedKmh} km/s")
+                DetailKpiTile(label = stringResource(R.string.trips_stat_efficiency), value = "${String.format(Locale.US, "%.1f", trip.efficiencyKwhPer100Km)} kWh/100km")
+                DetailKpiTile(label = stringResource(R.string.trips_kpi_trip_cost), value = trip.tripCostFormatted ?: "--")
+                DetailKpiTile(label = stringResource(R.string.trips_kpi_elevation), value = "↑ ${trip.elevationGainM}m · ↓ ${trip.elevationLossM}m")
             }
         }
     }
@@ -710,7 +710,7 @@ private fun TripTimelineScrubberCard(
                         )
                     }
                     Text(
-                        text = "Seyahat Zaman Çizelgesi (Timeline Scrubber)",
+                        text = stringResource(R.string.trips_timeline_scrubber_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -722,11 +722,11 @@ private fun TripTimelineScrubberCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                 ) {
-                    HudBadge(label = "Hız", value = "${currentPoint.speedKmh} km/s", isAccent = true)
-                    HudBadge(label = "Gaz", value = "%${currentPoint.accelPedalPercent}")
-                    HudBadge(label = "Fren", value = "%${currentPoint.brakePedalPercent}")
-                    HudBadge(label = "SoC", value = String.format(Locale.US, "%%%.1f", currentPoint.socPercent))
-                    HudBadge(label = "Güç", value = String.format(Locale.US, "%.1f kW", currentPoint.powerKw))
+                    HudBadge(label = stringResource(R.string.trips_hud_speed), value = "${currentPoint.speedKmh} km/s", isAccent = true)
+                    HudBadge(label = stringResource(R.string.trips_hud_accel), value = "%${currentPoint.accelPedalPercent}")
+                    HudBadge(label = stringResource(R.string.trips_hud_brake), value = "%${currentPoint.brakePedalPercent}")
+                    HudBadge(label = stringResource(R.string.trips_hud_soc), value = String.format(Locale.US, "%%%.1f", currentPoint.socPercent))
+                    HudBadge(label = stringResource(R.string.trips_hud_power), value = String.format(Locale.US, "%.1f kW", currentPoint.powerKw))
                 }
             }
 
@@ -787,7 +787,7 @@ private fun TripTimelineScrubberCard(
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     OverdriveButton(
-                        text = if (isPlaying) "⏸ Duraklat" else "▶ Oynat",
+                        text = if (isPlaying) stringResource(R.string.trips_playback_pause) else stringResource(R.string.trips_playback_play),
                         variant = if (isPlaying) OverdriveButtonVariant.PRIMARY else OverdriveButtonVariant.TONAL,
                         onClick = onTogglePlay,
                     )
@@ -821,7 +821,7 @@ private fun TripTimelineScrubberCard(
                 }
 
                 Text(
-                    text = "Nokta ${currentIndex + 1} / ${points.size} · GPS: ${String.format(Locale.US, "%.4f, %.4f", currentPoint.lat, currentPoint.lon)}",
+                    text = stringResource(R.string.trips_point_progress_fmt, currentIndex + 1, points.size, currentPoint.lat, currentPoint.lon),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontFamily = FontFamily.Monospace,
@@ -878,13 +878,13 @@ private fun SpeedTimelineChartCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    text = "Hız ve Pedal Grafiği (Dynamics Profile)",
+                    text = stringResource(R.string.trips_dynamics_chart_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    text = "Hız (km/s) / Zaman",
+                    text = stringResource(R.string.trips_dynamics_chart_subtitle),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -971,17 +971,17 @@ private fun DrivingDnaBreakdownCard(trip: TripUiItem) {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "Driving DNA Puanlama Dağılımı",
+                text = stringResource(R.string.trips_dna_breakdown_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
             )
 
-            DnaScoreBar(title = "Öngörü & Mesafe Kontrolü", score = trip.anticipationScore)
-            DnaScoreBar(title = "Akıcılık & G-Kuvveti Dengesi", score = trip.smoothnessScore)
-            DnaScoreBar(title = "Hız Disiplini & Limit Uyumu", score = trip.speedDisciplineScore)
-            DnaScoreBar(title = "Enerji Verimliliği & Rejenerasyon", score = trip.efficiencyScore)
-            DnaScoreBar(title = "Tutarlılık & Sürüş Stabilitesi", score = trip.consistencyScore)
+            DnaScoreBar(title = stringResource(R.string.trips_dna_anticipation), score = trip.anticipationScore)
+            DnaScoreBar(title = stringResource(R.string.trips_dna_smoothness), score = trip.smoothnessScore)
+            DnaScoreBar(title = stringResource(R.string.trips_dna_speed_discipline), score = trip.speedDisciplineScore)
+            DnaScoreBar(title = stringResource(R.string.trips_dna_regen_efficiency), score = trip.efficiencyScore)
+            DnaScoreBar(title = stringResource(R.string.trips_dna_consistency), score = trip.consistencyScore)
         }
     }
 }

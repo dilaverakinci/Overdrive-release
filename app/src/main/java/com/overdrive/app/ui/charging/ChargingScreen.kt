@@ -147,7 +147,7 @@ private fun ChargingHeader(
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                text = "Yüksek Voltaj Batarya ve Şarj Yönetimi",
+                text = stringResource(R.string.charging_screen_title),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -158,11 +158,11 @@ private fun ChargingHeader(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             val (pillText, pillStatus) = when (status) {
-                ChargingStatus.CHARGING -> "ŞARJ EDİLİYOR" to OverdrivePillStatus.SUCCESS
-                ChargingStatus.PLUGGED_IN -> "FİŞ TAKILI" to OverdrivePillStatus.INFO
-                ChargingStatus.COMPLETE -> "TAM DOLU" to OverdrivePillStatus.SUCCESS
-                ChargingStatus.DISCONNECTED -> "BOŞTA" to OverdrivePillStatus.WARNING
-                ChargingStatus.FAULT -> "HATA" to OverdrivePillStatus.DANGER
+                ChargingStatus.CHARGING -> stringResource(R.string.charging_status_charging) to OverdrivePillStatus.SUCCESS
+                ChargingStatus.PLUGGED_IN -> stringResource(R.string.charging_status_plugged) to OverdrivePillStatus.INFO
+                ChargingStatus.COMPLETE -> stringResource(R.string.charging_status_complete) to OverdrivePillStatus.SUCCESS
+                ChargingStatus.DISCONNECTED -> stringResource(R.string.charging_status_disconnected) to OverdrivePillStatus.WARNING
+                ChargingStatus.FAULT -> stringResource(R.string.charging_status_fault) to OverdrivePillStatus.DANGER
             }
 
             OverdriveStatusPill(label = pillText, status = pillStatus)
@@ -176,12 +176,12 @@ private fun ChargingHeader(
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 TabButton(
-                    text = "Canlı Şarj",
+                    text = stringResource(R.string.charging_tab_live),
                     isSelected = selectedTab == ChargingTab.LIVE,
                     onClick = { onTabSelected(ChargingTab.LIVE) }
                 )
                 TabButton(
-                    text = "Oturumlar",
+                    text = stringResource(R.string.charging_tab_sessions),
                     isSelected = selectedTab == ChargingTab.SESSIONS,
                     onClick = { onTabSelected(ChargingTab.SESSIONS) }
                 )
@@ -265,7 +265,7 @@ private fun LiveChargingHeroCard(
 
                     Column {
                         Text(
-                            text = "Kalan Tahmini Menzil",
+                            text = stringResource(R.string.charging_remaining_range_label),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -276,7 +276,7 @@ private fun LiveChargingHeroCard(
                             color = MaterialTheme.colorScheme.onSurface,
                         )
                         Text(
-                            text = "Kapasite: ${state.batteryCapacityKwh} kWh",
+                            text = stringResource(R.string.charging_capacity_fmt, state.batteryCapacityKwh),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -294,12 +294,12 @@ private fun LiveChargingHeroCard(
                             color = MaterialTheme.colorScheme.primary,
                         )
                         Text(
-                            text = "%${state.targetSocLimit} hedefe ${state.remainingMinutesToTarget} dk kaldı",
+                            text = stringResource(R.string.charging_target_eta_fmt, state.targetSocLimit, state.remainingMinutesToTarget),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
-                            text = "Eklenen: +${state.sessionEnergyAddedKwh} kWh",
+                            text = stringResource(R.string.charging_energy_added_fmt, state.sessionEnergyAddedKwh),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary,
                         )
@@ -312,7 +312,7 @@ private fun LiveChargingHeroCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
-                            text = "Şarj Akımı Yok",
+                            text = stringResource(R.string.charging_no_current),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -330,22 +330,22 @@ private fun LiveChargingHeroCard(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 MetricTile(
-                    title = "Voltaj",
+                    title = stringResource(R.string.charging_metric_voltage),
                     value = "${state.liveVoltageV.toInt()} V",
                     modifier = Modifier.weight(1f),
                 )
                 MetricTile(
-                    title = "Akım",
+                    title = stringResource(R.string.charging_metric_current),
                     value = String.format("%.1f A", state.liveCurrentA),
                     modifier = Modifier.weight(1f),
                 )
                 MetricTile(
-                    title = "Akım Limiti",
+                    title = stringResource(R.string.charging_metric_current_limit),
                     value = "${state.targetCurrentLimitA} A",
                     modifier = Modifier.weight(1f),
                 )
                 MetricTile(
-                    title = "Hedef SoC",
+                    title = stringResource(R.string.charging_metric_target_soc),
                     value = "%${state.targetSocLimit}",
                     modifier = Modifier.weight(1f),
                 )
@@ -403,7 +403,7 @@ private fun ChargingLimitsCard(
                 .padding(OverdriveDimensions.cardPaddingStandard)
         ) {
             Text(
-                text = "Şarj ve Akım Sınırları",
+                text = stringResource(R.string.charging_limits_section),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -418,12 +418,12 @@ private fun ChargingLimitsCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    text = "Hedef Şarj Sınırı",
+                    text = stringResource(R.string.charging_target_limit_label),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
-                    text = "%$targetSoc (Önerilen: %80)",
+                    text = stringResource(R.string.charging_recommended_80, targetSoc),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
@@ -447,7 +447,7 @@ private fun ChargingLimitsCard(
 
             // AC Current Limit Chips
             Text(
-                text = "Maksimum AC Şarj Akımı",
+                text = stringResource(R.string.charging_max_ac_current),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -514,13 +514,13 @@ private fun HardwareActionsCard(
         ) {
             Column {
                 Text(
-                    text = "Batarya Sağlığı & Sıcaklığı",
+                    text = stringResource(R.string.charging_battery_health_temp),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    text = "Hücre Sıcaklığı: $batteryTemp°C · Termal Durum Normal",
+                    text = stringResource(R.string.charging_battery_temp_status_fmt, batteryTemp.toInt()),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -528,13 +528,13 @@ private fun HardwareActionsCard(
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 OverdriveButton(
-                    text = if (isPreHeating) "Ön Isıtma Açık" else "Ön Isıtma",
+                    text = if (isPreHeating) stringResource(R.string.charging_btn_preheat_on) else stringResource(R.string.charging_btn_preheat),
                     variant = if (isPreHeating) OverdriveButtonVariant.PRIMARY else OverdriveButtonVariant.OUTLINED,
                     onClick = onTogglePreHeat,
                 )
 
                 OverdriveButton(
-                    text = if (isPortUnlocked) "Port Açık" else "Port Kilidini Çöz",
+                    text = if (isPortUnlocked) stringResource(R.string.charging_btn_port_unlocked) else stringResource(R.string.charging_btn_unlock_port),
                     variant = OverdriveButtonVariant.OUTLINED,
                     onClick = onTogglePortLock,
                 )
@@ -562,13 +562,13 @@ private fun SessionsSummaryCard(
         ) {
             Column {
                 Text(
-                    text = "Toplam Şarj Geçmişi",
+                    text = stringResource(R.string.charging_history_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    text = "Kaydedilen tüm AC ve DC şarj oturumları",
+                    text = stringResource(R.string.charging_history_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -577,13 +577,13 @@ private fun SessionsSummaryCard(
             Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = "$totalSessions Oturum",
+                        text = stringResource(R.string.charging_sessions_count_fmt, totalSessions),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
                     )
                     Text(
-                        text = String.format("%.1f kWh Toplam", totalEnergy),
+                        text = stringResource(R.string.charging_total_energy_fmt, totalEnergy),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -623,7 +623,7 @@ private fun SessionItemCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "%${session.startSoc} ➔ %${session.endSoc} · ${session.durationMinutes} dakika",
+                    text = stringResource(R.string.charging_session_soc_duration_fmt, session.startSoc, session.endSoc, session.durationMinutes),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -631,14 +631,14 @@ private fun SessionItemCard(
 
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "+${session.energyKwh} kWh",
+                    text = stringResource(R.string.charging_session_energy_fmt, session.energyKwh),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.Monospace,
                     color = MaterialTheme.colorScheme.primary,
                 )
                 Text(
-                    text = "Maks ${session.peakPowerKw} kW",
+                    text = stringResource(R.string.charging_session_peak_fmt, session.peakPowerKw),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

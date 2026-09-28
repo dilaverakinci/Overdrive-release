@@ -108,7 +108,7 @@ fun SeatPositionsScreen(
 
             // Section Title: Saved Positions
             Text(
-                text = "Kayıtlı Koltuk ve Ayna Konumları",
+                text = stringResource(R.string.seats_saved_positions_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -180,7 +180,7 @@ private fun SeatPositionsHeader(
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                text = "Hafızalı Sürücü Koltuğu ve Ayna Geometrisi",
+                text = stringResource(R.string.seats_memory_driver_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -188,12 +188,12 @@ private fun SeatPositionsHeader(
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OverdriveStatusPill(
-                label = if (isAccOn) "MOTORLAR AKTİF" else "GÜÇ YOK (ACC KAPALI)",
+                label = if (isAccOn) stringResource(R.string.seats_status_motors_active) else stringResource(R.string.seats_status_no_power),
                 status = if (isAccOn) OverdrivePillStatus.SUCCESS else OverdrivePillStatus.WARNING,
             )
             if (isMovementBlocked) {
                 OverdriveStatusPill(
-                    label = if (blockReason == "not_park") "VİTES P'DE DEĞİL" else "HAREKET KİLİTLİ",
+                    label = if (blockReason == "not_park") stringResource(R.string.seats_status_not_in_park) else stringResource(R.string.seats_status_movement_locked),
                     status = OverdrivePillStatus.DANGER,
                 )
             }
@@ -246,12 +246,12 @@ private fun CurrentPositionCard(
 
                     Column {
                         Text(
-                            text = "Mevcut Koltuk Konumu",
+                            text = stringResource(R.string.seats_current_position_title),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
-                            text = matchName ?: "Özel Konum (Hafıza Dışı)",
+                            text = matchName ?: stringResource(R.string.seats_custom_position_unmatched),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
@@ -260,7 +260,7 @@ private fun CurrentPositionCard(
                 }
 
                 OverdriveButton(
-                    text = "Yeni Olarak Kaydet",
+                    text = stringResource(R.string.seats_save_as_new),
                     leadingIcon = {
                         Icon(
                             painter = painterResource(R.drawable.ic_copy),
@@ -289,7 +289,7 @@ private fun CurrentPositionCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    text = if (isDetailsExpanded) "Ayrıntılı Eksen Değerlerini Gizle" else "Ayrıntılı Eksen Değerlerini Göster",
+                    text = if (isDetailsExpanded) stringResource(R.string.seats_hide_axes) else stringResource(R.string.seats_show_axes),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
                 )
@@ -307,12 +307,12 @@ private fun CurrentPositionCard(
                         .padding(top = 10.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    AxesRow(label = "İleri / Geri", value = axes.horizontal, max = 100)
-                    AxesRow(label = "Sırtlık Eğimi", value = axes.backrest, max = 100)
-                    AxesRow(label = "Koltuk Yüksekliği", value = axes.height, max = 100)
-                    AxesRow(label = "Minder Açısı", value = axes.sitpoint, max = 100)
-                    AxesRow(label = "Sol Yan Ayna", value = axes.leftMirrorH, max = 100)
-                    AxesRow(label = "Sağ Yan Ayna", value = axes.rightMirrorH, max = 100)
+                    AxesRow(label = stringResource(R.string.seats_axis_horizontal), value = axes.horizontal, max = 100)
+                    AxesRow(label = stringResource(R.string.seats_axis_backrest), value = axes.backrest, max = 100)
+                    AxesRow(label = stringResource(R.string.seats_axis_height), value = axes.height, max = 100)
+                    AxesRow(label = stringResource(R.string.seats_axis_cushion), value = axes.sitpoint, max = 100)
+                    AxesRow(label = stringResource(R.string.seats_axis_left_mirror), value = axes.leftMirrorH, max = 100)
+                    AxesRow(label = stringResource(R.string.seats_axis_right_mirror), value = axes.rightMirrorH, max = 100)
                 }
             }
         }
@@ -383,7 +383,7 @@ private fun SavedPositionCard(
                     )
                     if (position.slot != null) {
                         OverdriveStatusPill(
-                            label = "Yuva ${position.slot}",
+                            label = stringResource(R.string.seats_slot_label, position.slot),
                             status = OverdrivePillStatus.INFO,
                         )
                     }
@@ -401,10 +401,10 @@ private fun SavedPositionCard(
 
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     if (position.hasGeometry) {
-                        PartTag(label = "Koltuk & Aynalar")
+                        PartTag(label = stringResource(R.string.seats_tag_seat_mirrors))
                     }
                     if (position.hasAmbient) {
-                        PartTag(label = "Ambiyans")
+                        PartTag(label = stringResource(R.string.seats_tag_ambient))
                     }
                 }
             }
@@ -415,7 +415,7 @@ private fun SavedPositionCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 OverdriveButton(
-                    text = if (isApplying) "Uygulanıyor..." else "Uygula",
+                    text = if (isApplying) stringResource(R.string.seats_applying) else stringResource(R.string.seats_apply),
                     leadingIcon = {
                         Icon(
                             painter = painterResource(R.drawable.ic_seat_positions),
@@ -429,7 +429,7 @@ private fun SavedPositionCard(
                 )
 
                 OverdriveButton(
-                    text = "Buraya Kaydet",
+                    text = stringResource(R.string.seats_save_here),
                     variant = OverdriveButtonVariant.OUTLINED,
                     enabled = canSaveHere,
                     onClick = onSaveHere,
@@ -439,7 +439,7 @@ private fun SavedPositionCard(
                 IconButton(onClick = onRename) {
                     Icon(
                         painter = painterResource(R.drawable.ic_settings),
-                        contentDescription = "Düzenle",
+                        contentDescription = stringResource(R.string.seats_cd_edit),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -448,7 +448,7 @@ private fun SavedPositionCard(
                     IconButton(onClick = onDelete) {
                         Icon(
                             painter = painterResource(R.drawable.ic_delete),
-                            contentDescription = "Sil",
+                            contentDescription = stringResource(R.string.seats_cd_delete),
                             tint = MaterialTheme.colorScheme.error,
                         )
                     }
@@ -488,19 +488,19 @@ private fun CreatePositionDialog(
 
     OverdriveDialog(
         onDismissRequest = onDismiss,
-        title = "Yeni Konum Olarak Kaydet",
-        positiveButtonText = "Kaydet",
+        title = stringResource(R.string.seats_dialog_new_title),
+        positiveButtonText = stringResource(R.string.seats_dialog_btn_save),
         onPositiveClick = {
             if (name.isNotBlank()) {
                 onConfirm(name.trim(), includeGeometry, includeAmbient)
             }
         },
-        negativeButtonText = "İptal",
+        negativeButtonText = stringResource(R.string.seats_dialog_btn_cancel),
         onNegativeClick = onDismiss,
         content = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    text = "Aracın mevcut koltuk ve ayna ayarlarını yeni bir profil olarak saklayın.",
+                    text = stringResource(R.string.seats_dialog_new_message),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -508,8 +508,8 @@ private fun CreatePositionDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Konum Adı") },
-                    placeholder = { Text("Örn: Rahat Yolculuk") },
+                    label = { Text(stringResource(R.string.seats_dialog_name_label)) },
+                    placeholder = { Text(stringResource(R.string.seats_dialog_name_placeholder)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -528,7 +528,7 @@ private fun CreatePositionDialog(
                         colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary),
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Koltuk ve Ayna Geometrisi Dahil Edilsin", style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(R.string.seats_dialog_include_geometry), style = MaterialTheme.typography.bodyMedium)
                 }
 
                 Row(
@@ -541,7 +541,7 @@ private fun CreatePositionDialog(
                         colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary),
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Ortam Aydınlatması Dahil Edilsin", style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(R.string.seats_dialog_include_ambient), style = MaterialTheme.typography.bodyMedium)
                 }
             }
         }
@@ -558,21 +558,21 @@ private fun RenamePositionDialog(
 
     OverdriveDialog(
         onDismissRequest = onDismiss,
-        title = "Konumu Yeniden Adlandır",
-        positiveButtonText = "Güncelle",
+        title = stringResource(R.string.seats_dialog_rename_title),
+        positiveButtonText = stringResource(R.string.seats_dialog_btn_update),
         onPositiveClick = {
             if (name.isNotBlank()) {
                 onConfirm(name.trim())
             }
         },
-        negativeButtonText = "İptal",
+        negativeButtonText = stringResource(R.string.seats_dialog_btn_cancel),
         onNegativeClick = onDismiss,
         content = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Yeni Ad") },
+                    label = { Text(stringResource(R.string.seats_dialog_rename_new_name)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -593,14 +593,14 @@ private fun DeletePositionDialog(
 ) {
     OverdriveDialog(
         onDismissRequest = onDismiss,
-        title = "Konumu Sil",
-        positiveButtonText = "Sil",
+        title = stringResource(R.string.seats_dialog_delete_title),
+        positiveButtonText = stringResource(R.string.seats_dialog_btn_delete),
         onPositiveClick = onConfirm,
-        negativeButtonText = "Vazgeç",
+        negativeButtonText = stringResource(R.string.seats_dialog_btn_dismiss),
         onNegativeClick = onDismiss,
         content = {
             Text(
-                text = "'${position.name}' konumunu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+                text = stringResource(R.string.seats_dialog_delete_confirm, position.name),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

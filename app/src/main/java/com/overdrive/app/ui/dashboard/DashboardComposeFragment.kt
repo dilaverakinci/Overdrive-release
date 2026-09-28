@@ -149,7 +149,7 @@ class DashboardComposeFragment : Fragment() {
             )
 
             heroState = heroState.copy(
-                tunnelChipText = if (isOnline) "Online" else "Offline",
+                tunnelChipText = if (isOnline) getString(R.string.dashboard_tunnel_online) else getString(R.string.dashboard_tunnel_offline),
                 isTunnelOnline = isOnline
             )
         }
