@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="72dp"
+    android:height="150dp"
+    android:viewportWidth="72"
+    android:viewportHeight="150">
+
+    <!-- Tires / Wheels (Shorter wheelbase) -->
+    <path
+        android:fillColor="#1C1C1E"
+        android:pathData="M 4,26 h 5 v 18 h -5 z" />
+    <path
+        android:fillColor="#1C1C1E"
+        android:pathData="M 63,26 h 5 v 18 h -5 z" />
+    <path
+        android:fillColor="#1C1C1E"
+        android:pathData="M 4,102 h 5 v 18 h -5 z" />
+    <path
+        android:fillColor="#1C1C1E"
+        android:pathData="M 63,102 h 5 v 18 h -5 z" />
+
+    <!-- Side Mirrors -->
+    <path
+        android:fillColor="#F0F0F2"
+        android:strokeColor="#2C2C2E"
+        android:strokeWidth="1.2"
+        android:pathData="M 8,50 C 3,51 3,55 7,57 L 11,55 Z" />
+    <path
+        android:fillColor="#F0F0F2"
+        android:strokeColor="#2C2C2E"
+        android:strokeWidth="1.2"
+        android:pathData="M 64,50 C 69,51 69,55 65,57 L 61,55 Z" />
+
+    <!-- Hatchback Outer Body (Compact, rounded nose, steep rear) -->
+    <path
+        android:fillColor="#F4F4F6"
+        android:strokeColor="#1E1E20"
+        android:strokeWidth="1.6"
+        android:pathData="M 24,12 C 30,11 42,11 48,12 C 57,14 62,20 63,30 C 64,45 64,80 63,110 C 62,125 56,134 48,136 C 40,137 32,137 24,136 C 16,134 10,125 9,110 C 8,80 8,45 9,30 C 10,20 15,14 24,12 Z" />
+
+    <!-- Dolphin Curved Headlights -->
+    <path
+        android:fillColor="#A4B0BE"
+        android:strokeColor="#2F3542"
+        android:strokeWidth="0.8"
+        android:pathData="M 13,18 C 17,14 22,14 26,17 L 24,22 C 20,20 16,20 13,23 Z" />
+    <path
+        android:fillColor="#A4B0BE"
+        android:strokeColor="#2F3542"
+        android:strokeWidth="0.8"
+        android:pathData="M 59,18 C 55,14 50,14 46,17 L 48,22 C 52,20 56,20 59,23 Z" />
+
+    <!-- Windshield -->
+    <path
+        android:fillColor="#28333E"
+        android:strokeColor="#1C1C1E"
+        android:strokeWidth="1.2"
+        android:pathData="M 14,40 C 24,37 48,37 58,40 L 55,65 C 45,63 27,63 17,65 Z" />
+
+    <!-- Compact Glass Roof -->
+    <path
+        android:fillColor="#1F2833"
+        android:strokeColor="#3A4750"
+        android:strokeWidth="1"
+        android:pathData="M 18,69 C 27,67 45,67 54,69 L 52,106 C 44,105 28,105 20,106 Z" />
+
+    <!-- Rear Hatch Window (Steep & Wide) -->
+    <path
+        android:fillColor="#28333E"
+        android:strokeColor="#1C1C1E"
+        android:strokeWidth="1.2"
+        android:pathData="M 17,110 C 26,108 46,108 55,110 L 52,126 C 44,127 28,127 20,126 Z" />
+
+    <!-- Rear Integrated Hatch Spoiler & Lightbar -->
+    <path
+        android:fillColor="#DCDDE1"
+        android:pathData="M 16,108 h 40 v 3 h -40 z" />
+    <path
+        android:strokeColor="#FF4757"
+        android:strokeWidth="1.6"
+        android:pathData="M 14,130 C 24,132 48,132 58,130" />
+</vector>

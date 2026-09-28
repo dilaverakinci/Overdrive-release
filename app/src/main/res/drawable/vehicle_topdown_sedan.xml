@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="72dp"
+    android:height="150dp"
+    android:viewportWidth="72"
+    android:viewportHeight="150">
+
+    <!-- Tires / Wheels -->
+    <path
+        android:fillColor="#1C1C1E"
+        android:pathData="M 3,24 h 6 v 20 h -6 z" />
+    <path
+        android:fillColor="#1C1C1E"
+        android:pathData="M 63,24 h 6 v 20 h -6 z" />
+    <path
+        android:fillColor="#1C1C1E"
+        android:pathData="M 3,110 h 6 v 20 h -6 z" />
+    <path
+        android:fillColor="#1C1C1E"
+        android:pathData="M 63,110 h 6 v 20 h -6 z" />
+
+    <!-- Side Mirrors -->
+    <path
+        android:fillColor="#F0F0F2"
+        android:strokeColor="#2C2C2E"
+        android:strokeWidth="1.2"
+        android:pathData="M 7,50 C 2,51 2,55 6,57 L 10,55 Z" />
+    <path
+        android:fillColor="#F0F0F2"
+        android:strokeColor="#2C2C2E"
+        android:strokeWidth="1.2"
+        android:pathData="M 65,50 C 70,51 70,55 66,57 L 62,55 Z" />
+
+    <!-- Executive Sedan Body Outline (Long, sleek, tapered) -->
+    <path
+        android:fillColor="#F4F4F6"
+        android:strokeColor="#1E1E20"
+        android:strokeWidth="1.6"
+        android:pathData="M 24,5 C 31,4 41,4 48,5 C 57,7 62,14 63,26 C 64,40 64,80 63,114 C 62,130 56,143 47,146 C 40,147 32,147 25,146 C 16,143 10,130 9,114 C 8,80 8,40 9,26 C 10,14 15,7 24,5 Z" />
+
+    <!-- Han Dragon Face Hood Lines -->
+    <path
+        android:strokeColor="#A0A0A8"
+        android:strokeWidth="1"
+        android:pathData="M 22,6 L 24,36 M 50,6 L 48,36" />
+    <!-- Sharp Headlights -->
+    <path
+        android:fillColor="#C8D6E5"
+        android:strokeColor="#2C2C2E"
+        android:strokeWidth="0.8"
+        android:pathData="M 12,12 C 17,9 22,8 26,9 L 24,15 C 19,15 15,16 12,18 Z" />
+    <path
+        android:fillColor="#C8D6E5"
+        android:strokeColor="#2C2C2E"
+        android:strokeWidth="0.8"
+        android:pathData="M 60,12 C 55,9 50,8 46,9 L 48,15 C 53,15 57,16 60,18 Z" />
+
+    <!-- Windshield -->
+    <path
+        android:fillColor="#28333E"
+        android:strokeColor="#1C1C1E"
+        android:strokeWidth="1.2"
+        android:pathData="M 13,40 C 23,37 49,37 59,40 L 56,66 C 46,64 26,64 16,66 Z" />
+
+    <!-- Fastback Panoramic Glass Roof -->
+    <path
+        android:fillColor="#1F2833"
+        android:strokeColor="#3A4750"
+        android:strokeWidth="1"
+        android:pathData="M 17,70 C 26,68 46,68 55,70 L 53,108 C 45,107 27,107 19,108 Z" />
+
+    <!-- Rear Window Glass -->
+    <path
+        android:fillColor="#28333E"
+        android:strokeColor="#1C1C1E"
+        android:strokeWidth="1.2"
+        android:pathData="M 18,112 C 27,110 45,110 54,112 L 51,130 C 43,131 29,131 21,130 Z" />
+
+    <!-- Sleek Trunk Lid & Chinese Knot Taillight Bar -->
+    <path
+        android:strokeColor="#EE5253"
+        android:strokeWidth="1.6"
+        android:pathData="M 14,142 C 24,144 48,144 58,142" />
+</vector>

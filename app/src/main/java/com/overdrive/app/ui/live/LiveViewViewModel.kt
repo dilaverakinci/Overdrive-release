@@ -3,8 +3,10 @@ package com.overdrive.app.ui.live
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.overdrive.app.config.UnifiedConfigManager
 import com.overdrive.app.monitor.GpsMonitor
 import com.overdrive.app.server.StreamingApiHandler
+import com.overdrive.app.ui.vehicle.VehicleTopDownArt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +26,9 @@ class LiveViewViewModel(application: Application) : AndroidViewModel(application
     val uiState: StateFlow<LiveViewUiState> = _uiState.asStateFlow()
 
     init {
+        // Load selected vehicle model
+        loadVehicleModel()
+
         // Restore last desired view mode if previously selected
         val lastModeId = StreamingApiHandler.getLastDesiredViewMode()
         if (lastModeId in 0..6) {
@@ -41,6 +46,38 @@ class LiveViewViewModel(application: Application) : AndroidViewModel(application
         // Fetch streaming status & quality from backend
         viewModelScope.launch {
             fetchInitialStatus()
+        }
+    }
+
+    private fun loadVehicleModel() {
+        val modelId = UnifiedConfigManager.getSelectedVehicleModelId()
+            ?: UnifiedConfigManager.getVehicle().optString("modelId", "seal").ifEmpty { "seal" }
+        val name = VehicleTopDownArt.displayNameFor(modelId)
+        _uiState.update { it.copy(vehicleModelId = modelId, vehicleModelName = name) }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val url = URL("http://127.0.0.1:8080/api/models/selected")
+                val conn = url.openConnection() as HttpURLConnection
+                conn.connectTimeout = 1500
+                conn.readTimeout = 1500
+                if (conn.responseCode == 200) {
+                    val text = conn.inputStream.bufferedReader().use { it.readText() }
+                    val json = JSONObject(text)
+                    val effectiveId = if (json.has("selectedModelId") && !json.isNull("selectedModelId")) {
+                        json.optString("selectedModelId", modelId)
+                    } else {
+                        json.optString("modelId", modelId)
+                    }
+                    val effectiveName = VehicleTopDownArt.displayNameFor(effectiveId)
+                    withContext(Dispatchers.Main) {
+                        _uiState.update { it.copy(vehicleModelId = effectiveId, vehicleModelName = effectiveName) }
+                    }
+                }
+                conn.disconnect()
+            } catch (_: Throwable) {
+                // Fallback already set
+            }
         }
     }
 
@@ -62,6 +99,7 @@ class LiveViewViewModel(application: Application) : AndroidViewModel(application
                     current.copy(
                         vehicleLatitude = fix.latitude,
                         vehicleLongitude = fix.longitude,
+                        vehicleHeading = fix.heading,
                         lastGpsUpdateText = freshness
                     )
                 }

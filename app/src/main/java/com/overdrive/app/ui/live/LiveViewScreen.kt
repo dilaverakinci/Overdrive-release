@@ -2,6 +2,10 @@ package com.overdrive.app.ui.live
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Path
 import android.net.Uri
 import android.view.MotionEvent
 import android.view.ViewGroup
@@ -9,17 +13,20 @@ import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.Canvas
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -30,9 +37,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,15 +53,16 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.VolumeOff
 import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -67,18 +72,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.overdrive.app.R
+import com.overdrive.app.navmap.nav.MapNetworking
 import com.overdrive.app.ui.component.OverdriveButton
 import com.overdrive.app.ui.component.OverdriveButtonVariant
 import com.overdrive.app.ui.component.OverdriveCard
@@ -86,6 +95,19 @@ import com.overdrive.app.ui.component.OverdriveDialog
 import com.overdrive.app.ui.component.OverdrivePillStatus
 import com.overdrive.app.ui.component.OverdriveStatusPill
 import com.overdrive.app.ui.theme.OverdriveTheme
+import com.overdrive.app.ui.vehicle.VehicleTopDownArt
+import org.maplibre.android.MapLibre
+import org.maplibre.android.camera.CameraUpdateFactory
+import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.maps.MapLibreMap
+import org.maplibre.android.maps.MapView
+import org.maplibre.android.maps.Style
+import org.maplibre.android.style.layers.CircleLayer
+import org.maplibre.android.style.layers.PropertyFactory
+import org.maplibre.android.style.layers.SymbolLayer
+import org.maplibre.android.style.sources.GeoJsonSource
+import org.maplibre.geojson.Point
+import java.util.Locale
 
 @Composable
 fun LiveViewScreen(
@@ -126,7 +148,7 @@ fun LiveViewScreen(
                 }
             }
         } else {
-            // Standard OverDrive Dashboard Two-Pane Layout
+            // Standard OverDrive Two-Pane Layout
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -154,7 +176,7 @@ fun LiveViewScreen(
                             modifier = Modifier.fillMaxSize(),
                             horizontalArrangement = Arrangement.spacedBy(14.dp)
                         ) {
-                            // Left Column: Camera Video Stage
+                            // Left Column: Live Camera Video Stage
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
@@ -168,22 +190,24 @@ fun LiveViewScreen(
                                 )
                             }
 
-                            // Right Column: Utility Rail
+                            // Right Column: Cameras Selector & Vehicle Location Map
                             Column(
                                 modifier = Modifier
                                     .width(360.dp)
                                     .fillMaxHeight()
                                     .verticalScroll(rememberScrollState()),
-                                verticalArrangement = Arrangement.spacedBy(14.dp)
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
-                                // Camera Selector Card
+                                // Camera Selector Card (Top-Down Car Visual with Hotspots)
                                 CameraSelectorCard(
                                     activeCamera = state.activeCamera,
                                     hasOemDashcam = state.hasOemDashcam,
+                                    vehicleModelId = state.vehicleModelId,
+                                    vehicleModelName = state.vehicleModelName,
                                     onSelectCamera = { viewModel.selectCamera(it) }
                                 )
 
-                                // Vehicle Location Card
+                                // Vehicle Location Card (Mini MapLibre Preview)
                                 VehicleLocationCard(
                                     state = state,
                                     onOpenDirections = {
@@ -217,6 +241,8 @@ fun LiveViewScreen(
                             CameraSelectorCard(
                                 activeCamera = state.activeCamera,
                                 hasOemDashcam = state.hasOemDashcam,
+                                vehicleModelId = state.vehicleModelId,
+                                vehicleModelName = state.vehicleModelName,
                                 onSelectCamera = { viewModel.selectCamera(it) }
                             )
 
@@ -236,7 +262,7 @@ fun LiveViewScreen(
             }
         }
 
-        // Deterrent Confirmation Dialog
+        // Deterrent Confirmation Dialog (Horn / Flash)
         if (state.confirmDeterrentKind != null) {
             val isHorn = state.confirmDeterrentKind == "horn"
             OverdriveDialog(
@@ -379,14 +405,14 @@ private fun LiveCameraStageCard(
         contentPadding = 0.dp
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // Live Stream Video Viewport
+            // Live Stream Video Viewport (No flash glitch)
             LiveCameraViewport(
                 state = state,
                 onSelectCamera = onSelectCamera,
                 modifier = Modifier.fillMaxSize()
             )
 
-            // Top Badges Overlay: Camera Label & Recording Dot
+            // Top Badges Overlay: Active Camera Label & Recording Dot
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -520,6 +546,10 @@ private fun LiveCameraStageCard(
     }
 }
 
+/**
+ * Live Camera Viewport: renders the H.264/WebRTC stream without any visual flash glitch.
+ * The WebView stays invisible until the utility rail hiding CSS is confirmed.
+ */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 private fun LiveCameraViewport(
@@ -528,6 +558,26 @@ private fun LiveCameraViewport(
     modifier: Modifier = Modifier,
 ) {
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
+    var isWebViewReady by remember { mutableStateOf(false) }
+
+    val hideRailCssJs = remember {
+        """
+        (function() {
+            var s = document.getElementById('od-hide-rail-style');
+            if (!s) {
+                s = document.createElement('style');
+                s.id = 'od-hide-rail-style';
+                s.innerHTML = '#liveUtilityRail, .camera-top-bar, #mobileHeader, #app-shell-mount, .deterrent-controls, #expandMapBtn, .location-expand-button, .location-map-frame { display: none !important; } .seamless-camera-view, .camera-stage, .video-display-area { height: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }';
+                document.head.appendChild(s);
+            }
+            var hideIds = ['mobileHeader', 'app-shell-mount', 'liveUtilityRail', 'deterrentControls', 'expandMapBtn'];
+            hideIds.forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.style.setProperty('display', 'none', 'important');
+            });
+        })();
+        """.trimIndent()
+    }
 
     LaunchedEffect(state.activeCamera) {
         webViewRef?.evaluateJavascript(
@@ -543,75 +593,91 @@ private fun LiveCameraViewport(
         )
     }
 
-    AndroidView(
-        factory = { ctx ->
-            object : WebView(ctx) {
-                override fun onTouchEvent(event: MotionEvent?): Boolean = false
-            }.apply {
-                layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-                )
-                setBackgroundColor(android.graphics.Color.BLACK)
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        // Native WebView Feed
+        AndroidView(
+            factory = { ctx ->
+                object : WebView(ctx) {
+                    override fun onTouchEvent(event: MotionEvent?): Boolean = false
+                }.apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                    setBackgroundColor(android.graphics.Color.BLACK)
+                    visibility = android.view.View.INVISIBLE
 
-                settings.apply {
-                    javaScriptEnabled = true
-                    domStorageEnabled = true
-                    mediaPlaybackRequiresUserGesture = false
-                    cacheMode = WebSettings.LOAD_NO_CACHE
-                    loadWithOverviewMode = true
-                    useWideViewPort = true
-                }
-
-                webChromeClient = WebChromeClient()
-                webViewClient = object : WebViewClient() {
-                    override fun onPageFinished(view: WebView?, url: String?) {
-                        super.onPageFinished(view, url)
-                        // Inject seamless viewport style: remove headers, sidebar, duplicate cards, deterrents
-                        val js = """
-                            (function() {
-                                document.documentElement.classList.add('is-app-webview');
-                                var hideIds = ['mobileHeader', 'app-shell-mount', 'liveUtilityRail', 'deterrentControls', 'expandMapBtn'];
-                                hideIds.forEach(function(id) {
-                                    var el = document.getElementById(id);
-                                    if (el) el.style.setProperty('display', 'none', 'important');
-                                });
-                                var topBar = document.querySelector('.camera-top-bar');
-                                if (topBar) topBar.style.setProperty('display', 'none', 'important');
-                                var deterrents = document.querySelectorAll('.deterrent-controls, .deterrent-btn');
-                                deterrents.forEach(function(el) {
-                                    el.style.setProperty('display', 'none', 'important');
-                                });
-                                var seamless = document.querySelector('.seamless-camera-view');
-                                if (seamless) {
-                                    seamless.style.setProperty('padding', '0', 'important');
-                                    seamless.style.setProperty('margin', '0', 'important');
-                                    seamless.style.setProperty('height', '100%', 'important');
-                                }
-                                var stage = document.querySelector('.camera-stage');
-                                if (stage) stage.style.setProperty('height', '100%', 'important');
-                                var area = document.querySelector('.video-display-area');
-                                if (area) area.style.setProperty('height', '100%', 'important');
-                                if (window.BYD && window.BYD.stream && window.BYD.stream.selectCamera) {
-                                    window.BYD.stream.selectCamera(${state.activeCamera.id});
-                                }
-                            })();
-                        """.trimIndent()
-                        view?.evaluateJavascript(js, null)
+                    settings.apply {
+                        javaScriptEnabled = true
+                        domStorageEnabled = true
+                        mediaPlaybackRequiresUserGesture = false
+                        cacheMode = WebSettings.LOAD_NO_CACHE
+                        loadWithOverviewMode = true
+                        useWideViewPort = true
                     }
+
+                    webChromeClient = WebChromeClient()
+                    webViewClient = object : WebViewClient() {
+                        override fun onPageCommitVisible(view: WebView?, url: String?) {
+                            super.onPageCommitVisible(view, url)
+                            view?.evaluateJavascript(hideRailCssJs, null)
+                        }
+
+                        override fun onPageFinished(view: WebView?, url: String?) {
+                            super.onPageFinished(view, url)
+                            view?.evaluateJavascript(hideRailCssJs) {
+                                view.visibility = android.view.View.VISIBLE
+                                isWebViewReady = true
+                                view.evaluateJavascript(
+                                    "if (window.BYD && window.BYD.stream && window.BYD.stream.selectCamera) { window.BYD.stream.selectCamera(${state.activeCamera.id}); }",
+                                    null
+                                )
+                            }
+                        }
+                    }
+                    loadUrl(state.streamUrl)
+                    webViewRef = this
                 }
-                loadUrl("http://127.0.0.1:8080/live-view.html")
-                webViewRef = this
+            },
+            modifier = Modifier.fillMaxSize()
+        )
+
+        // Loading indicator until video view is ready
+        if (!isWebViewReady) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                CircularProgressIndicator(
+                    color = OverdriveTheme.colors.statusSuccess,
+                    strokeWidth = 3.dp,
+                    modifier = Modifier.size(36.dp)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = stringResource(R.string.live_stream_status_connecting),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White.copy(alpha = 0.7f)
+                )
             }
-        },
-        modifier = modifier
-    )
+        }
+    }
 }
 
+/**
+ * Camera Selector Card: Displays the user's selected vehicle top-down view
+ * with interactive pulsing camera angle hotspots placed directly on/around the car.
+ * (Redundant bottom button grid removed per user feedback).
+ */
 @Composable
 private fun CameraSelectorCard(
     activeCamera: LiveCameraMode,
     hasOemDashcam: Boolean,
+    vehicleModelId: String,
+    vehicleModelName: String,
     onSelectCamera: (LiveCameraMode) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -619,259 +685,238 @@ private fun CameraSelectorCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(OverdriveTheme.dimensions.cardPaddingStandard),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = stringResource(R.string.live_selector_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.live_selector_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
 
-            // Car Top-down Hotspot Visual
+                // Vehicle Model Badge
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    Text(
+                        text = vehicleModelName,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
+
+            // Top-down Car Visual with Camera Hotspots
             CarHotspotDiagram(
                 activeCamera = activeCamera,
                 hasOemDashcam = hasOemDashcam,
+                vehicleModelId = vehicleModelId,
+                vehicleModelName = vehicleModelName,
                 onSelectCamera = onSelectCamera,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(180.dp)
+                    .height(185.dp)
             )
 
+            // Hint Text
             Text(
                 text = stringResource(R.string.live_tap_camera_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-
-            // Quick Camera Mode Chips Grid
-            val row1 = listOf(LiveCameraMode.ALL, LiveCameraMode.FRONT, LiveCameraMode.RIGHT)
-            val row2 = if (hasOemDashcam) {
-                listOf(LiveCameraMode.REAR, LiveCameraMode.LEFT, LiveCameraMode.DVR)
-            } else {
-                listOf(LiveCameraMode.REAR, LiveCameraMode.LEFT)
-            }
-
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    row1.forEach { cam ->
-                        CameraGridItem(
-                            cam = cam,
-                            isSelected = cam == activeCamera,
-                            onClick = { onSelectCamera(cam) },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    row2.forEach { cam ->
-                        CameraGridItem(
-                            cam = cam,
-                            isSelected = cam == activeCamera,
-                            onClick = { onSelectCamera(cam) },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                    if (row2.size < 3) {
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
-                }
-            }
         }
     }
 }
 
-@Composable
-private fun CameraGridItem(
-    cam: LiveCameraMode,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val containerColor by animateColorAsState(
-        if (isSelected) MaterialTheme.colorScheme.primaryContainer
-        else MaterialTheme.colorScheme.surfaceVariant
-    )
-    val contentColor by animateColorAsState(
-        if (isSelected) MaterialTheme.colorScheme.primary
-        else MaterialTheme.colorScheme.onSurfaceVariant
-    )
-
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(10.dp),
-        color = containerColor,
-        border = if (isSelected) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary) else null,
-        modifier = modifier
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = cam.shortCode,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
-                color = contentColor
-            )
-        }
-    }
-}
-
+/**
+ * Interactive Car Diagram with Top-Down Vehicle Silhouette & Pulsing Hotspots.
+ */
 @Composable
 private fun CarHotspotDiagram(
     activeCamera: LiveCameraMode,
     hasOemDashcam: Boolean,
+    vehicleModelId: String,
+    vehicleModelName: String,
     onSelectCamera: (LiveCameraMode) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val primaryColor = MaterialTheme.colorScheme.primary
-    val outlineColor = MaterialTheme.colorScheme.outlineVariant
-    val surfaceColor = MaterialTheme.colorScheme.surfaceVariant
+    val topDownDrawableRes = remember(vehicleModelId) {
+        VehicleTopDownArt.drawableFor(vehicleModelId)
+    }
 
-    BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.Center) {
-        val w = maxWidth
-        val h = maxHeight
-
-        // Draw Stylized Car Silhouette
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val carWidth = size.width * 0.32f
-            val carHeight = size.height * 0.85f
-            val left = (size.width - carWidth) / 2f
-            val top = (size.height - carHeight) / 2f
-
-            // Car body
-            drawRoundRect(
-                color = surfaceColor,
-                topLeft = Offset(left, top),
-                size = Size(carWidth, carHeight),
-                cornerRadius = CornerRadius(28f, 28f)
-            )
-            drawRoundRect(
-                color = outlineColor,
-                topLeft = Offset(left, top),
-                size = Size(carWidth, carHeight),
-                cornerRadius = CornerRadius(28f, 28f),
-                style = Stroke(width = 2.dp.toPx())
-            )
-
-            // Windshield outline
-            val windshieldTop = top + carHeight * 0.22f
-            val windshieldHeight = carHeight * 0.18f
-            drawRoundRect(
-                color = outlineColor.copy(alpha = 0.5f),
-                topLeft = Offset(left + 8.dp.toPx(), windshieldTop),
-                size = Size(carWidth - 16.dp.toPx(), windshieldHeight),
-                cornerRadius = CornerRadius(12f, 12f)
-            )
-
-            // Rear window outline
-            val rearWindowTop = top + carHeight * 0.62f
-            drawRoundRect(
-                color = outlineColor.copy(alpha = 0.5f),
-                topLeft = Offset(left + 8.dp.toPx(), rearWindowTop),
-                size = Size(carWidth - 16.dp.toPx(), windshieldHeight * 0.8f),
-                cornerRadius = CornerRadius(12f, 12f)
-            )
-        }
-
-        // Camera Hotspots positioned on the car
-        // Front (Mode 1)
-        CameraHotspotBadge(
-            label = "ÖN",
-            isSelected = activeCamera == LiveCameraMode.FRONT,
-            onClick = { onSelectCamera(LiveCameraMode.FRONT) },
-            modifier = Modifier.align(Alignment.TopCenter).padding(top = 4.dp)
+    BoxWithConstraints(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        // Vehicle Top-Down Silhouette
+        Image(
+            painter = painterResource(topDownDrawableRes),
+            contentDescription = vehicleModelName,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .height(165.dp)
+                .width(82.dp)
+                .align(Alignment.Center)
         )
 
-        // DVR (Mode 6)
+        // 1. FRONT (ÖN) — Bumper top center
+        CameraHotspotBadge(
+            shortLabel = "ÖN",
+            isSelected = activeCamera == LiveCameraMode.FRONT,
+            onClick = { onSelectCamera(LiveCameraMode.FRONT) },
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 0.dp)
+        )
+
+        // 2. DVR (OEM Dashcam) — Hood right-of-center
         if (hasOemDashcam) {
             CameraHotspotBadge(
-                label = "DVR",
+                shortLabel = "DVR",
                 isSelected = activeCamera == LiveCameraMode.DVR,
                 onClick = { onSelectCamera(LiveCameraMode.DVR) },
-                modifier = Modifier.align(Alignment.TopCenter).padding(top = 36.dp)
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 34.dp, start = 32.dp)
             )
         }
 
-        // Center 360° (Mode 0)
+        // 3. ALL (360°) — Roof center
         CameraHotspotBadge(
-            label = "360°",
+            shortLabel = "360°",
             isSelected = activeCamera == LiveCameraMode.ALL,
             onClick = { onSelectCamera(LiveCameraMode.ALL) },
             modifier = Modifier.align(Alignment.Center)
         )
 
-        // Left (Mode 4)
+        // 4. LEFT (SOL) — Left mirror side
         CameraHotspotBadge(
-            label = "SOL",
+            shortLabel = "SOL",
             isSelected = activeCamera == LiveCameraMode.LEFT,
             onClick = { onSelectCamera(LiveCameraMode.LEFT) },
-            modifier = Modifier.align(Alignment.CenterStart).padding(start = 16.dp)
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(start = 12.dp)
         )
 
-        // Right (Mode 2)
+        // 5. RIGHT (SAĞ) — Right mirror side
         CameraHotspotBadge(
-            label = "SAĞ",
+            shortLabel = "SAĞ",
             isSelected = activeCamera == LiveCameraMode.RIGHT,
             onClick = { onSelectCamera(LiveCameraMode.RIGHT) },
-            modifier = Modifier.align(Alignment.CenterEnd).padding(end = 16.dp)
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 12.dp)
         )
 
-        // Rear (Mode 3)
+        // 6. REAR (ARKA) — Rear bumper bottom center
         CameraHotspotBadge(
-            label = "ARKA",
+            shortLabel = "ARKA",
             isSelected = activeCamera == LiveCameraMode.REAR,
             onClick = { onSelectCamera(LiveCameraMode.REAR) },
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 4.dp)
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 0.dp)
         )
     }
 }
 
+/**
+ * Camera Hotspot Badge with pulsating animated ring when selected.
+ */
 @Composable
 private fun CameraHotspotBadge(
-    label: String,
+    shortLabel: String,
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val primaryColor = MaterialTheme.colorScheme.primary
-    val containerColor = if (isSelected) primaryColor else MaterialTheme.colorScheme.surface
-    val textColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
 
-    Surface(
-        onClick = onClick,
-        modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
-        color = containerColor,
-        border = androidx.compose.foundation.BorderStroke(
-            1.5.dp,
-            if (isSelected) Color.White.copy(alpha = 0.8f) else primaryColor.copy(alpha = 0.5f)
+    // Pulsing halo animation for selected hotspot
+    val infiniteTransition = rememberInfiniteTransition(label = "hotspotPulse")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.25f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
         ),
-        shadowElevation = if (isSelected) 4.dp else 1.dp
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
-            color = textColor,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-        )
+        label = "pulseScale"
+    )
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.6f,
+        targetValue = 0.0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseAlpha"
+    )
+
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        // Pulsing halo when active
+        if (isSelected) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .graphicsLayer {
+                        scaleX = pulseScale
+                        scaleY = pulseScale
+                        alpha = pulseAlpha
+                    }
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(primaryColor)
+            )
+        }
+
+        Surface(
+            onClick = onClick,
+            shape = RoundedCornerShape(12.dp),
+            color = if (isSelected) primaryColor else MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+            border = androidx.compose.foundation.BorderStroke(
+                width = if (isSelected) 2.dp else 1.5.dp,
+                color = if (isSelected) Color.White else primaryColor.copy(alpha = 0.5f)
+            ),
+            shadowElevation = if (isSelected) 6.dp else 2.dp
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                if (isSelected) {
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .clip(CircleShape)
+                            .background(Color.White)
+                    )
+                }
+                Text(
+                    text = shortLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
     }
 }
 
+/**
+ * Vehicle Location Card: Displays real-time vehicle GPS coordinates and
+ * a compact native MapLibre vector map showing the vehicle's position.
+ */
 @Composable
 private fun VehicleLocationCard(
     state: LiveViewUiState,
@@ -882,9 +927,10 @@ private fun VehicleLocationCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(OverdriveTheme.dimensions.cardPaddingStandard),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            // Header: Title + GPS Freshness
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -911,7 +957,7 @@ private fun VehicleLocationCard(
                 // GPS Freshness Pill
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
                     Box(
                         modifier = Modifier
@@ -927,41 +973,300 @@ private fun VehicleLocationCard(
                 }
             }
 
-            // GPS Coordinates Display
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                modifier = Modifier.fillMaxWidth()
+            // Compact Native MapLibre Map Preview
+            LiveLocationMiniMap(
+                latitude = state.vehicleLatitude,
+                longitude = state.vehicleLongitude,
+                heading = state.vehicleHeading,
+                onOpenDirections = onOpenDirections,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(130.dp)
+                    .clip(RoundedCornerShape(12.dp))
+            )
+
+            // Coordinates Display & Quick Directions Button
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier.weight(1f)
                 ) {
-                    Text(
-                        text = String.format("%.5f, %.5f", state.vehicleLatitude, state.vehicleLongitude),
-                        style = MaterialTheme.typography.bodySmall,
-                        fontFamily = FontFamily.Monospace,
-                        color = MaterialTheme.colorScheme.onSurface
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = String.format(Locale.US, "%.5f°, %.5f°", state.vehicleLatitude, state.vehicleLongitude),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                OverdriveButton(
+                    text = stringResource(R.string.live_directions),
+                    variant = OverdriveButtonVariant.PRIMARY,
+                    onClick = onOpenDirections
+                )
+            }
+        }
+    }
+}
+
+private const val MINI_MAP_PUCK_SOURCE = "live-mini-puck-source"
+private const val MINI_MAP_PUCK_HALO = "live-mini-puck-halo"
+private const val MINI_MAP_PUCK_SYMBOL = "live-mini-puck-symbol"
+private const val MINI_MAP_ARROW_IMG = "live-mini-arrow-img"
+
+/**
+ * Compact MapLibre vector map showing real road network basemap and vehicle location.
+ */
+@Composable
+private fun LiveLocationMiniMap(
+    latitude: Double,
+    longitude: Double,
+    heading: Float,
+    onOpenDirections: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val isDark = isSystemInDarkTheme()
+    val brandTeal = MaterialTheme.colorScheme.primary.toArgb()
+
+    var mapInstance by remember { mutableStateOf<MapLibreMap?>(null) }
+    var puckSourceRef by remember { mutableStateOf<GeoJsonSource?>(null) }
+
+    val mapView = remember {
+        try {
+            MapLibre.getInstance(context)
+            MapNetworking.installMapLibreHttpClient()
+            MapView(context).apply {
+                onCreate(null)
+            }
+        } catch (_: Throwable) {
+            null
+        }
+    }
+
+    // Forward Android lifecycle events to MapView
+    if (mapView != null) {
+        DisposableEffect(lifecycleOwner, mapView) {
+            val observer = LifecycleEventObserver { _, event ->
+                when (event) {
+                    Lifecycle.Event.ON_START -> mapView.onStart()
+                    Lifecycle.Event.ON_RESUME -> mapView.onResume()
+                    Lifecycle.Event.ON_PAUSE -> mapView.onPause()
+                    Lifecycle.Event.ON_STOP -> mapView.onStop()
+                    Lifecycle.Event.ON_DESTROY -> mapView.onDestroy()
+                    else -> Unit
+                }
+            }
+            lifecycleOwner.lifecycle.addObserver(observer)
+            onDispose {
+                lifecycleOwner.lifecycle.removeObserver(observer)
+                mapView.onDestroy()
+            }
+        }
+    }
+
+    // Update puck geometry and camera on coordinates change
+    LaunchedEffect(latitude, longitude, heading, mapInstance, puckSourceRef) {
+        if (latitude != 0.0 && longitude != 0.0) {
+            puckSourceRef?.setGeoJson(Point.fromLngLat(longitude, latitude))
+            mapInstance?.easeCamera(
+                CameraUpdateFactory.newLatLngZoom(LatLng(latitude, longitude), 15.2),
+                600
+            )
+        }
+    }
+
+    // Initialize MapLibre Style
+    if (mapView != null) {
+        LaunchedEffect(mapView, isDark) {
+            mapView.getMapAsync { map ->
+                mapInstance = map
+                map.uiSettings.isAttributionEnabled = false
+                map.uiSettings.isLogoEnabled = false
+                map.uiSettings.isCompassEnabled = false
+
+                val styleAsset = if (isDark) "maps/dark_style.json" else "maps/liberty_style.json"
+                val json = try {
+                    context.assets.open(styleAsset).bufferedReader(Charsets.UTF_8).use { it.readText() }
+                } catch (_: Throwable) {
+                    null
+                }
+
+                val styleBuilder = if (json != null) {
+                    Style.Builder().fromJson(json)
+                } else {
+                    Style.Builder().fromUri(
+                        if (isDark) "https://tiles.openfreemap.org/styles/dark"
+                        else "https://tiles.openfreemap.org/styles/liberty"
+                    )
+                }
+
+                map.setStyle(styleBuilder) { style ->
+                    val arrowBmp = createMiniPuckArrow(brandTeal)
+                    style.addImage(MINI_MAP_ARROW_IMG, arrowBmp)
+
+                    val initialPoint = Point.fromLngLat(longitude, latitude)
+                    val puckSource = GeoJsonSource(MINI_MAP_PUCK_SOURCE, initialPoint)
+                    style.addSource(puckSource)
+                    puckSourceRef = puckSource
+
+                    // Outer Halo
+                    style.addLayer(
+                        CircleLayer(MINI_MAP_PUCK_HALO, MINI_MAP_PUCK_SOURCE).withProperties(
+                            PropertyFactory.circleColor(brandTeal),
+                            PropertyFactory.circleRadius(16f),
+                            PropertyFactory.circleOpacity(0.25f),
+                            PropertyFactory.circleStrokeColor(0xFFFFFFFF.toInt()),
+                            PropertyFactory.circleStrokeWidth(1.5f),
+                            PropertyFactory.circleStrokeOpacity(0.6f)
+                        )
+                    )
+
+                    // Vehicle Heading Arrow
+                    style.addLayer(
+                        SymbolLayer(MINI_MAP_PUCK_SYMBOL, MINI_MAP_PUCK_SOURCE).withProperties(
+                            PropertyFactory.iconImage(MINI_MAP_ARROW_IMG),
+                            PropertyFactory.iconRotate(heading),
+                            PropertyFactory.iconAllowOverlap(true),
+                            PropertyFactory.iconIgnorePlacement(true)
+                        )
+                    )
+
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(latitude, longitude), 15.2))
+                }
+            }
+        }
+    }
+
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        if (mapView != null) {
+            AndroidView(
+                factory = { mapView },
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            // Elegant Vector Fallback Grid
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.DirectionsCar,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(28.dp)
                     )
                     Text(
-                        text = "GPS FIX",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = OverdriveTheme.colors.statusSuccess
+                        text = String.format(Locale.US, "%.5f°, %.5f°", latitude, longitude),
+                        style = MaterialTheme.typography.bodySmall,
+                        fontFamily = FontFamily.Monospace,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+
+        // Overlay Action Buttons: Recenter on car & Directions
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = Color.Black.copy(alpha = 0.65f),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
+            ) {
+                IconButton(
+                    onClick = {
+                        mapInstance?.easeCamera(
+                            CameraUpdateFactory.newLatLngZoom(LatLng(latitude, longitude), 15.2),
+                            500
+                        )
+                    },
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.MyLocation,
+                        contentDescription = stringResource(R.string.live_my_location),
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
             }
 
-            // Directions Action Button
-            OverdriveButton(
-                text = stringResource(R.string.live_directions),
-                variant = OverdriveButtonVariant.OUTLINED,
-                modifier = Modifier.fillMaxWidth(),
-                onClick = onOpenDirections
-            )
+            Surface(
+                shape = CircleShape,
+                color = Color.Black.copy(alpha = 0.65f),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
+            ) {
+                IconButton(
+                    onClick = onOpenDirections,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Directions,
+                        contentDescription = stringResource(R.string.live_directions),
+                        tint = OverdriveTheme.colors.statusSuccess,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
         }
     }
+}
+
+/**
+ * Creates a navigation arrow bitmap pointing North for the mini map puck.
+ */
+private fun createMiniPuckArrow(accentColor: Int): Bitmap {
+    val s = 56
+    val bmp = Bitmap.createBitmap(s, s, Bitmap.Config.ARGB_8888)
+    val c = Canvas(bmp)
+    val cx = s / 2f
+    val cy = s / 2f
+    val r = s * 0.40f
+
+    fun arrowPath(scale: Float, dy: Float) = Path().apply {
+        moveTo(cx, cy - r * 0.78f * scale + dy)
+        lineTo(cx + r * 0.62f * scale, cy + r * 0.66f * scale + dy)
+        lineTo(cx, cy + r * 0.30f * scale + dy)
+        lineTo(cx - r * 0.62f * scale, cy + r * 0.66f * scale + dy)
+        close()
+    }
+
+    val outline = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = 0xFFFFFFFF.toInt()
+        style = Paint.Style.FILL
+    }
+    c.drawPath(arrowPath(1.22f, 0f), outline)
+
+    val body = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+        color = accentColor
+    }
+    c.drawPath(arrowPath(1.0f, 0f), body)
+    return bmp
 }

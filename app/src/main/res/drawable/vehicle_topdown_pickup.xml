@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="72dp"
+    android:height="150dp"
+    android:viewportWidth="72"
+    android:viewportHeight="150">
+
+    <!-- Tires / Rugged All-Terrain Wheels -->
+    <path
+        android:fillColor="#1C1C1E"
+        android:pathData="M 2,24 h 7 v 22 h -7 z" />
+    <path
+        android:fillColor="#1C1C1E"
+        android:pathData="M 63,24 h 7 v 22 h -7 z" />
+    <path
+        android:fillColor="#1C1C1E"
+        android:pathData="M 2,112 h 7 v 22 h -7 z" />
+    <path
+        android:fillColor="#1C1C1E"
+        android:pathData="M 63,112 h 7 v 22 h -7 z" />
+
+    <!-- Side Mirrors (Truck Style) -->
+    <path
+        android:fillColor="#F0F0F2"
+        android:strokeColor="#2C2C2E"
+        android:strokeWidth="1.2"
+        android:pathData="M 7,46 C 1,47 1,53 5,55 L 10,53 Z" />
+    <path
+        android:fillColor="#F0F0F2"
+        android:strokeColor="#2C2C2E"
+        android:strokeWidth="1.2"
+        android:pathData="M 65,46 C 71,47 71,53 67,55 L 62,53 Z" />
+
+    <!-- Truck Outer Cab & Bed Outline (Muscular Shark profile) -->
+    <path
+        android:fillColor="#F4F4F6"
+        android:strokeColor="#1E1E20"
+        android:strokeWidth="1.6"
+        android:pathData="M 20,6 C 30,5 42,5 52,6 C 60,8 65,14 66,26 C 67,42 66,86 66,94 L 65,94 L 65,142 C 65,146 62,147 56,147 C 44,147 28,147 16,147 C 10,147 7,146 7,142 L 7,94 L 6,94 C 6,86 5,42 6,26 C 7,14 12,8 20,6 Z" />
+
+    <!-- Shark Aggressive Block Grille & Lights -->
+    <path
+        android:fillColor="#2F3542"
+        android:pathData="M 22,7 h 28 v 5 h -28 z" />
+    <path
+        android:fillColor="#FFA502"
+        android:strokeColor="#2F3542"
+        android:strokeWidth="0.8"
+        android:pathData="M 11,11 C 16,9 20,9 22,10 L 21,16 C 17,16 14,17 11,18 Z" />
+    <path
+        android:fillColor="#FFA502"
+        android:strokeColor="#2F3542"
+        android:strokeWidth="0.8"
+        android:pathData="M 61,11 C 56,9 52,9 50,10 L 51,16 C 55,16 58,17 61,18 Z" />
+
+    <!-- Windshield -->
+    <path
+        android:fillColor="#28333E"
+        android:strokeColor="#1C1C1E"
+        android:strokeWidth="1.2"
+        android:pathData="M 12,36 C 22,33 50,33 60,36 L 57,60 C 47,58 25,58 15,60 Z" />
+
+    <!-- Crew Cab Roof -->
+    <path
+        android:fillColor="#1F2833"
+        android:strokeColor="#3A4750"
+        android:strokeWidth="1"
+        android:pathData="M 16,64 C 26,62 46,62 56,64 L 55,90 C 45,89 27,89 17,90 Z" />
+
+    <!-- Cab-to-Bed Separation Gap -->
+    <path
+        android:strokeColor="#1E272E"
+        android:strokeWidth="2"
+        android:pathData="M 8,94 L 64,94" />
+
+    <!-- Rear Open Cargo Bed Interior (Dark textured liner) -->
+    <path
+        android:fillColor="#2F3542"
+        android:strokeColor="#1E272E"
+        android:strokeWidth="1.2"
+        android:pathData="M 11,98 h 50 v 44 h -50 z" />
+
+    <!-- Bed Floor Ribs (Tough pickup floor) -->
+    <path
+        android:strokeColor="#57606F"
+        android:strokeWidth="1"
+        android:pathData="M 21,102 v 36 M 31,102 v 36 M 41,102 v 36 M 51,102 v 36" />
+
+    <!-- Tailgate Stamped Handle -->
+    <path
+        android:fillColor="#747D8C"
+        android:pathData="M 30,144 h 12 v 2 h -12 z" />
+</vector>

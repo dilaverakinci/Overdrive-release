@@ -52,7 +52,10 @@ data class LiveViewUiState(
     val bitrateKbps: Int = 1000,
     val vehicleLatitude: Double = 39.9255,
     val vehicleLongitude: Double = 32.8663,
+    val vehicleHeading: Float = 0f,
     val lastGpsUpdateText: String = "Şimdi",
     val distanceToVehicleMeters: Float = 0f,
+    val vehicleModelId: String = "seal",
+    val vehicleModelName: String = "BYD Seal",
     val streamUrl: String = "http://127.0.0.1:8080/live-view.html"
 )
