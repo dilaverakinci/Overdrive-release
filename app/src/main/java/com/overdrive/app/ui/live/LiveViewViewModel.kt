@@ -35,6 +35,14 @@ class LiveViewViewModel(application: Application) : AndroidViewModel(application
             _uiState.update { it.copy(activeCamera = LiveCameraMode.fromId(lastModeId)) }
         }
 
+        // Feature-gate OEM Dashcam on car diagram
+        val hasOem = try {
+            UnifiedConfigManager.isAnyOemDashcamTriggerEnabled()
+        } catch (_: Throwable) {
+            false
+        }
+        _uiState.update { it.copy(hasOemDashcam = hasOem) }
+
         // Periodically refresh GPS fix snapshot
         viewModelScope.launch {
             while (isActive) {

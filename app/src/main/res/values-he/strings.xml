@@ -1715,6 +1715,12 @@
     <string name="live_stream_status_connecting">מתחבר…</string>
     <string name="live_stream_status_idle">בהמתנה</string>
     <string name="live_stream_status_error">שגיאת שידור</string>
+    <string name="live_hotspot_all">הכל</string>
+    <string name="live_hotspot_front">קדמית</string>
+    <string name="live_hotspot_rear">אחורית</string>
+    <string name="live_hotspot_left">שמאלית</string>
+    <string name="live_hotspot_right">ימנית</string>
+    <string name="live_hotspot_dvr">DVR</string>
     <string name="live_deterrent_horn">צופר</string>
     <string name="live_deterrent_flash">הבהוב</string>
     <string name="live_deterrent_horn_confirm_title">להפעיל צופר ואורות?</string>

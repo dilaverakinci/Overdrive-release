@@ -2032,9 +2032,15 @@ Cihaz bu çalışırken bile "internet yok" ve kendi mobil veri simgesini göste
     <string name="live_camera_dvr">DVR Araç Kamerası</string>
     <string name="live_stream_quality">Yayın Kalitesi</string>
     <string name="live_stream_status_live">CANLI</string>
-    <string name="live_stream_status_connecting">BAĞLANILIYOR…</string>
+    <string name="live_stream_status_connecting">Kamera başlatılıyor…</string>
     <string name="live_stream_status_idle">BEKLEMEDE</string>
     <string name="live_stream_status_error">YAYIN HATASI</string>
+    <string name="live_hotspot_all">Hepsi</string>
+    <string name="live_hotspot_front">Ön</string>
+    <string name="live_hotspot_rear">Arka</string>
+    <string name="live_hotspot_left">Sol</string>
+    <string name="live_hotspot_right">Sağ</string>
+    <string name="live_hotspot_dvr">DVR</string>
     <string name="live_deterrent_horn">Korna</string>
     <string name="live_deterrent_flash">Flaş</string>
     <string name="live_deterrent_horn_confirm_title">Korna ve Işıklar Çalıştırılsın mı?</string>

@@ -2209,9 +2209,15 @@
     <string name="live_camera_dvr">DVR Dashcam</string>
     <string name="live_stream_quality">Stream Quality</string>
     <string name="live_stream_status_live">LIVE</string>
-    <string name="live_stream_status_connecting">CONNECTING…</string>
+    <string name="live_stream_status_connecting">Starting camera…</string>
     <string name="live_stream_status_idle">IDLE</string>
     <string name="live_stream_status_error">STREAM ERROR</string>
+    <string name="live_hotspot_all">All</string>
+    <string name="live_hotspot_front">Front</string>
+    <string name="live_hotspot_rear">Rear</string>
+    <string name="live_hotspot_left">Left</string>
+    <string name="live_hotspot_right">Right</string>
+    <string name="live_hotspot_dvr">DVR</string>
     <string name="live_deterrent_horn">Horn</string>
     <string name="live_deterrent_flash">Flash</string>
     <string name="live_deterrent_horn_confirm_title">Activate Horn &amp; Lights?</string>
