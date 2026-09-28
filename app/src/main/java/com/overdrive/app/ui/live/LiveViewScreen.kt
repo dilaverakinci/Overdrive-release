@@ -560,7 +560,17 @@ private fun LiveCameraViewport(
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
     var isWebViewReady by remember { mutableStateOf(false) }
 
-    val hideRailCssJs = remember {
+    val idleHintText = stringResource(R.string.live_tap_camera_hint)
+    val localeCode = remember {
+        try {
+            val appLocale = com.overdrive.app.server.LocaleManager.get()
+            if (appLocale.isNullOrBlank()) java.util.Locale.getDefault().language else appLocale
+        } catch (e: Exception) {
+            java.util.Locale.getDefault().language
+        }
+    }
+
+    val hideRailCssJs = remember(localeCode, idleHintText) {
         """
         (function() {
             var s = document.getElementById('od-hide-rail-style');
@@ -575,6 +585,16 @@ private fun LiveCameraViewport(
                 var el = document.getElementById(id);
                 if (el) el.style.setProperty('display', 'none', 'important');
             });
+            try {
+                localStorage.setItem('overdrive_locale', '$localeCode');
+                if (window.BYD && window.BYD.i18n && typeof window.BYD.i18n.setLanguage === 'function') {
+                    window.BYD.i18n.setLanguage('$localeCode');
+                }
+                var idleEl = document.querySelector('.idle-text');
+                if (idleEl) {
+                    idleEl.textContent = '$idleHintText';
+                }
+            } catch(e) {}
         })();
         """.trimIndent()
     }
