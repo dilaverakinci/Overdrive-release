@@ -29,17 +29,11 @@
         android:name="com.overdrive.app.ui.recordings.RecordingsComposeFragment"
         android:label="@string/rail_recordings" />
 
-    <!-- Parking Intelligence (web canonical): sessions, neighbour timeline, stills -->
+    <!-- Parking Intelligence (100% Jetpack Compose Native): sessions, neighbour timeline, stills -->
     <fragment
         android:id="@+id/parkingFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_parking"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/parking" />
-    </fragment>
+        android:name="com.overdrive.app.ui.parking.ParkingComposeFragment"
+        android:label="@string/rail_parking" />
 
     <!-- Surveillance settings (web) — kept reachable from Recordings → Settings ↗ button -->
     <fragment
