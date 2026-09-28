@@ -2197,4 +2197,40 @@
     <string name="assistant_tab_provider">Provider &amp; Model</string>
     <string name="assistant_thinking">OverDrive is thinking…</string>
     <string name="assistant_title">AI Assistant</string>
+
+    <!-- Live View Jetpack Compose Native -->
+    <string name="live_view_title">Live View</string>
+    <string name="live_view_subtitle">Multi-Camera &amp; Live Security Monitoring</string>
+    <string name="live_camera_all">360° Surround</string>
+    <string name="live_camera_front">Front Camera</string>
+    <string name="live_camera_rear">Rear Camera</string>
+    <string name="live_camera_left">Left Camera</string>
+    <string name="live_camera_right">Right Camera</string>
+    <string name="live_camera_dvr">DVR Dashcam</string>
+    <string name="live_stream_quality">Stream Quality</string>
+    <string name="live_stream_status_live">LIVE</string>
+    <string name="live_stream_status_connecting">CONNECTING…</string>
+    <string name="live_stream_status_idle">IDLE</string>
+    <string name="live_stream_status_error">STREAM ERROR</string>
+    <string name="live_deterrent_horn">Horn</string>
+    <string name="live_deterrent_flash">Flash</string>
+    <string name="live_deterrent_horn_confirm_title">Activate Horn &amp; Lights?</string>
+    <string name="live_deterrent_horn_confirm_desc">This will sound the vehicle horn and flash exterior lights to deter intruders.</string>
+    <string name="live_deterrent_flash_confirm_title">Flash Exterior Lights?</string>
+    <string name="live_deterrent_flash_confirm_desc">This will flash the headlights and taillights without sounding the horn.</string>
+    <string name="live_deterrent_confirm_btn">Activate</string>
+    <string name="live_deterrent_cancel_btn">Cancel</string>
+    <string name="live_cabin_listen">Listen to Cabin</string>
+    <string name="live_cabin_listening">Cabin Audio Active</string>
+    <string name="live_expand_map">Expand Map</string>
+    <string name="live_collapse_map">Collapse Map</string>
+    <string name="live_vehicle_location">Vehicle Location</string>
+    <string name="live_my_location">My Location</string>
+    <string name="live_directions">Directions</string>
+    <string name="live_gps_freshness_now">Just now</string>
+    <string name="live_recording_active">REC</string>
+    <string name="live_tap_camera_hint">Tap a camera angle or hotspot to switch view</string>
+    <string name="live_fullscreen">Fullscreen</string>
+    <string name="live_exit_fullscreen">Exit Fullscreen</string>
+    <string name="live_selector_title">Cameras</string>
 </resources>

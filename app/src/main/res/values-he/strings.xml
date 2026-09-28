@@ -1700,4 +1700,40 @@
     <string name="assistant_tab_provider">Provider &amp; Model</string>
     <string name="assistant_thinking">OverDrive is thinking…</string>
     <string name="assistant_title">AI Assistant</string>
+
+    <!-- Live View Jetpack Compose Native -->
+    <string name="live_view_title">תצוגה חיה</string>
+    <string name="live_view_subtitle">ריבוי מצלמות ומעקב אבטחה חי</string>
+    <string name="live_camera_all">סראונד 360°</string>
+    <string name="live_camera_front">מצלמה קדמית</string>
+    <string name="live_camera_rear">מצלמה אחורית</string>
+    <string name="live_camera_left">מצלמה שמאלית</string>
+    <string name="live_camera_right">מצלמה ימנית</string>
+    <string name="live_camera_dvr">מצלמת דרך DVR</string>
+    <string name="live_stream_quality">איכות שידור</string>
+    <string name="live_stream_status_live">חי</string>
+    <string name="live_stream_status_connecting">מתחבר…</string>
+    <string name="live_stream_status_idle">בהמתנה</string>
+    <string name="live_stream_status_error">שגיאת שידור</string>
+    <string name="live_deterrent_horn">צופר</string>
+    <string name="live_deterrent_flash">הבהוב</string>
+    <string name="live_deterrent_horn_confirm_title">להפעיל צופר ואורות?</string>
+    <string name="live_deterrent_horn_confirm_desc">פעולה זו תפעיל את צופר הרכב ותהבהב באורות החיצוניים להרתעת פולשים.</string>
+    <string name="live_deterrent_flash_confirm_title">להבהב באורות החיצוניים?</string>
+    <string name="live_deterrent_flash_confirm_desc">פעולה זו תהבהב בפנסים ללא הפעלת צופר.</string>
+    <string name="live_deterrent_confirm_btn">הפעל</string>
+    <string name="live_deterrent_cancel_btn">ביטול</string>
+    <string name="live_cabin_listen">האזנה לתא הנוסעים</string>
+    <string name="live_cabin_listening">שמע תא נוסעים פעיל</string>
+    <string name="live_expand_map">הרחב מפה</string>
+    <string name="live_collapse_map">כווץ מפה</string>
+    <string name="live_vehicle_location">מיקום הרכב</string>
+    <string name="live_my_location">המיקום שלי</string>
+    <string name="live_directions">הוראות הגעה</string>
+    <string name="live_gps_freshness_now">זה עתה</string>
+    <string name="live_recording_active">הקלטה</string>
+    <string name="live_tap_camera_hint">הקש על זווית מצלמה כדי להחליף תצוגה</string>
+    <string name="live_fullscreen">מסך מלא</string>
+    <string name="live_exit_fullscreen">יציאה ממסך מלא</string>
+    <string name="live_selector_title">מצלמות</string>
 </resources>

@@ -2020,4 +2020,40 @@ Cihaz bu çalışırken bile "internet yok" ve kendi mobil veri simgesini göste
     <string name="assistant_tab_provider">Sağlayıcı ve Model</string>
     <string name="assistant_thinking">OverDrive düşünüyor…</string>
     <string name="assistant_title">Yapay Zeka Asistanı</string>
+
+    <!-- Live View Jetpack Compose Native -->
+    <string name="live_view_title">Canlı Kamera</string>
+    <string name="live_view_subtitle">Çoklu Kamera ve Canlı Güvenlik İzleme</string>
+    <string name="live_camera_all">360° Kuşbakışı</string>
+    <string name="live_camera_front">Ön Kamera</string>
+    <string name="live_camera_rear">Arka Kamera</string>
+    <string name="live_camera_left">Sol Kamera</string>
+    <string name="live_camera_right">Sağ Kamera</string>
+    <string name="live_camera_dvr">DVR Araç Kamerası</string>
+    <string name="live_stream_quality">Yayın Kalitesi</string>
+    <string name="live_stream_status_live">CANLI</string>
+    <string name="live_stream_status_connecting">BAĞLANILIYOR…</string>
+    <string name="live_stream_status_idle">BEKLEMEDE</string>
+    <string name="live_stream_status_error">YAYIN HATASI</string>
+    <string name="live_deterrent_horn">Korna</string>
+    <string name="live_deterrent_flash">Flaş</string>
+    <string name="live_deterrent_horn_confirm_title">Korna ve Işıklar Çalıştırılsın mı?</string>
+    <string name="live_deterrent_horn_confirm_desc">Yetkisiz kişileri caydırmak için aracın kornası çalınacak ve dış farları yanıp sönecektir.</string>
+    <string name="live_deterrent_flash_confirm_title">Dış Farlar Yakılıp Söndürülsün mü?</string>
+    <string name="live_deterrent_flash_confirm_desc">Korna çalmadan yalnızca ön ve arka farlar yanıp sönecektir.</string>
+    <string name="live_deterrent_confirm_btn">Çalıştır</string>
+    <string name="live_deterrent_cancel_btn">İptal</string>
+    <string name="live_cabin_listen">Kabini Dinle</string>
+    <string name="live_cabin_listening">Kabin Sesi Etkin</string>
+    <string name="live_expand_map">Haritayı Genişlet</string>
+    <string name="live_collapse_map">Haritayı Daralt</string>
+    <string name="live_vehicle_location">Araç Konumu</string>
+    <string name="live_my_location">Konumuma Git</string>
+    <string name="live_directions">Yol Tarifi</string>
+    <string name="live_gps_freshness_now">Az önce</string>
+    <string name="live_recording_active">KAYIT</string>
+    <string name="live_tap_camera_hint">Görüntüyü değiştirmek için bir kamera açısına dokunun</string>
+    <string name="live_fullscreen">Tam Ekran</string>
+    <string name="live_exit_fullscreen">Tam Ekrandan Çık</string>
+    <string name="live_selector_title">Kameralar</string>
 </resources>
