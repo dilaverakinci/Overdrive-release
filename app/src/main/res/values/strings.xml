@@ -2233,4 +2233,39 @@
     <string name="live_fullscreen">Fullscreen</string>
     <string name="live_exit_fullscreen">Exit Fullscreen</string>
     <string name="live_selector_title">Cameras</string>
+
+    <!-- Recordings Compose Native -->
+    <string name="recordings_select_mode_btn">Select recordings</string>
+    <string name="recordings_cancel_select_btn">Cancel</string>
+    <string name="recordings_select_all_btn">Select all</string>
+    <string name="recordings_delete_selected_btn">Delete selected (%1$d)</string>
+    <string name="recordings_fullscreen_btn">Fullscreen</string>
+    <string name="recordings_refresh_btn">Refresh</string>
+    <string name="recordings_camera_view_all">All</string>
+    <string name="recordings_camera_view_front">Front</string>
+    <string name="recordings_camera_view_rear">Rear</string>
+    <string name="recordings_camera_view_left">Left</string>
+    <string name="recordings_camera_view_right">Right</string>
+    <string name="recordings_filter_all">All</string>
+    <string name="recordings_filter_today">Today</string>
+    <string name="recordings_filter_yesterday">Yesterday</string>
+    <string name="recordings_filter_person">Person</string>
+    <string name="recordings_filter_vehicle">Vehicle</string>
+    <string name="recordings_filter_bike">Bike</string>
+    <string name="recordings_filter_animal">Animal</string>
+    <string name="recordings_filter_internal">Internal</string>
+    <string name="recordings_filter_sd">SD Card</string>
+    <string name="recordings_filter_clear">Clear filters</string>
+    <string name="recordings_batch_delete_dialog_title">Delete Recordings</string>
+    <string name="recordings_batch_delete_dialog_msg">Permanently delete %1$d selected recordings? This cannot be undone.</string>
+    <string name="recordings_storage_overview">Storage Overview</string>
+    <string name="recordings_internal_storage">Internal Storage</string>
+    <string name="recordings_sd_storage">SD Card</string>
+    <string name="recordings_free_space">%1$s free</string>
+    <string name="recordings_total_space">%1$s total</string>
+    <string name="recordings_location_label">Location</string>
+    <string name="recordings_detected_label">Detections</string>
+    <string name="recordings_severity_label">Severity</string>
+    <string name="recordings_delete_clip_confirm_title">Delete Recording</string>
+    <string name="recordings_delete_clip_confirm_msg">Delete %1$s? This cannot be undone.</string>
 </resources>

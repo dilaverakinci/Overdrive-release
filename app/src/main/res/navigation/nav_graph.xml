@@ -23,12 +23,11 @@
         android:name="com.overdrive.app.ui.live.LiveViewComposeFragment"
         android:label="@string/rail_live" />
 
-    <!-- Recordings: native two-pane (library + player) with M3 segmented Dashcam/Surveillance -->
+    <!-- Recordings: 100% Jetpack Compose Native two-pane (library + player) -->
     <fragment
         android:id="@+id/recordingsFragment"
-        android:name="com.overdrive.app.ui.fragment.RecordingsFragment"
-        android:label="@string/rail_recordings"
-        tools:layout="@layout/fragment_recordings" />
+        android:name="com.overdrive.app.ui.recordings.RecordingsComposeFragment"
+        android:label="@string/rail_recordings" />
 
     <!-- Parking Intelligence (web canonical): sessions, neighbour timeline, stills -->
     <fragment

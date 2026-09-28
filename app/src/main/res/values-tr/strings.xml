@@ -2056,4 +2056,39 @@ Cihaz bu çalışırken bile "internet yok" ve kendi mobil veri simgesini göste
     <string name="live_fullscreen">Tam Ekran</string>
     <string name="live_exit_fullscreen">Tam Ekrandan Çık</string>
     <string name="live_selector_title">Kameralar</string>
+
+    <!-- Recordings Compose Native -->
+    <string name="recordings_select_mode_btn">Kayıtları seç</string>
+    <string name="recordings_cancel_select_btn">Vazgeç</string>
+    <string name="recordings_select_all_btn">Tümünü seç</string>
+    <string name="recordings_delete_selected_btn">Seçilenleri sil (%1$d)</string>
+    <string name="recordings_fullscreen_btn">Tam Ekran</string>
+    <string name="recordings_refresh_btn">Yenile</string>
+    <string name="recordings_camera_view_all">360°</string>
+    <string name="recordings_camera_view_front">ÖN</string>
+    <string name="recordings_camera_view_rear">ARKA</string>
+    <string name="recordings_camera_view_left">SOL</string>
+    <string name="recordings_camera_view_right">SAĞ</string>
+    <string name="recordings_filter_all">Tümü</string>
+    <string name="recordings_filter_today">Bugün</string>
+    <string name="recordings_filter_yesterday">Dün</string>
+    <string name="recordings_filter_person">Kişi</string>
+    <string name="recordings_filter_vehicle">Araç</string>
+    <string name="recordings_filter_bike">Bisiklet</string>
+    <string name="recordings_filter_animal">Hayvan</string>
+    <string name="recordings_filter_internal">Dahili</string>
+    <string name="recordings_filter_sd">SD Kart</string>
+    <string name="recordings_filter_clear">Filtreleri temizle</string>
+    <string name="recordings_batch_delete_dialog_title">Kayıtları Sil</string>
+    <string name="recordings_batch_delete_dialog_msg">Seçilen %1$d kayıt kalıcı olarak silinsin mi? Bu işlem geri alınamaz.</string>
+    <string name="recordings_storage_overview">Depolama Genel Bakış</string>
+    <string name="recordings_internal_storage">Dahili Hafıza</string>
+    <string name="recordings_sd_storage">SD Kart</string>
+    <string name="recordings_free_space">%1$s boş</string>
+    <string name="recordings_total_space">%1$s toplam</string>
+    <string name="recordings_location_label">Konum</string>
+    <string name="recordings_detected_label">Tespitler</string>
+    <string name="recordings_severity_label">Önem</string>
+    <string name="recordings_delete_clip_confirm_title">Kaydı Sil</string>
+    <string name="recordings_delete_clip_confirm_msg">%1$s kalıcı olarak silinsin mi? Bu işlem geri alınamaz.</string>
 </resources>
