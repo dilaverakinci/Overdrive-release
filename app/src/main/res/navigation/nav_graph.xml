@@ -83,17 +83,11 @@
         android:name="com.overdrive.app.ui.charging.ChargingComposeFragment"
         android:label="@string/rail_charging" />
 
-    <!-- Automations (web canonical) -->
+    <!-- Automations (100% Jetpack Compose Native) -->
     <fragment
         android:id="@+id/automationsFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_automations"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/automations" />
-    </fragment>
+        android:name="com.overdrive.app.ui.automations.AutomationsComposeFragment"
+        android:label="@string/rail_automations" />
 
     <!-- Seat Positions (100% Jetpack Compose Native) -->
     <fragment
