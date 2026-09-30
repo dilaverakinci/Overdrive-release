@@ -86,7 +86,7 @@ class ZoomableVideoView @JvmOverloads constructor(
         DASHCAM
     }
 
-    private var mediaPlayer: MediaPlayer? = null
+    private var codecPlayer: CodecVideoPlayer? = null
     // Strong ref to the producer Surface so the finalizer doesn't collect
     // it while MediaPlayer still has a soft reference. On the BYD
     // head-unit (Android 10 / DiLink) the platform's aggressive GC
@@ -275,22 +275,20 @@ class ZoomableVideoView @JvmOverloads constructor(
     }
 
     fun start() {
-        val mp = mediaPlayer ?: run {
-            Log.w(TAG, "start() with no mediaPlayer (surfaceReady=$surfaceReady prepared=$prepared)")
+        val player = codecPlayer ?: run {
+            Log.w(TAG, "start() with no player (surfaceReady=$surfaceReady prepared=$prepared)")
             return
         }
-        Log.d(TAG, "start() prepared=$prepared isPlaying=${try { mp.isPlaying } catch (_: Exception) { "?" }}")
+        Log.d(TAG, "start() prepared=$prepared isPlaying=${player.isPlaying}")
         if (prepared) {
-            try { mp.start() } catch (e: IllegalStateException) {
-                Log.e(TAG, "start() IllegalStateException", e)
-            }
+            player.start()
         }
     }
 
     fun pause() {
-        val mp = mediaPlayer ?: return
-        if (prepared && mp.isPlaying) {
-            try { mp.pause() } catch (_: IllegalStateException) {}
+        val player = codecPlayer ?: return
+        if (prepared) {
+            player.pause()
         }
     }
 
@@ -304,36 +302,26 @@ class ZoomableVideoView @JvmOverloads constructor(
     }
 
     /**
-     * Set this view's MediaPlayer gain without changing its audio attributes or stream.
-     * The value is retained across player/surface recreation. While prepareAsync is in
-     * flight only the field changes; the latest value is applied once PREPARED, before
-     * the host can start playback.
+     * Set this view's player gain without changing its audio attributes or stream.
+     * The value is retained across player/surface recreation.
      */
     fun setPlaybackVolume(volume: Float) {
         playbackVolume = if (volume.isFinite()) volume.coerceIn(0f, 1f) else 1f
-        if (!prepared) return
-        try {
-            mediaPlayer?.setVolume(playbackVolume, playbackVolume)
-        } catch (_: Throwable) {
-        }
+        codecPlayer?.setVolume(playbackVolume)
     }
 
     val isPlaying: Boolean
-        get() = try { mediaPlayer?.isPlaying == true } catch (_: IllegalStateException) { false }
+        get() = codecPlayer?.isPlaying == true
 
     val currentPosition: Int
-        get() = try {
-            if (prepared) mediaPlayer?.currentPosition ?: 0 else 0
-        } catch (_: IllegalStateException) { 0 }
+        get() = if (prepared) codecPlayer?.currentPosition ?: 0 else 0
 
     val duration: Int
-        get() = try {
-            if (prepared) mediaPlayer?.duration ?: 0 else 0
-        } catch (_: IllegalStateException) { 0 }
+        get() = if (prepared) codecPlayer?.duration ?: 0 else 0
 
     fun seekTo(ms: Int) {
         if (prepared) {
-            try { mediaPlayer?.seekTo(ms) } catch (_: IllegalStateException) {}
+            codecPlayer?.seekTo(ms)
         }
     }
 
@@ -356,15 +344,10 @@ class ZoomableVideoView @JvmOverloads constructor(
      * [pause] — otherwise the snapshot always reads false.
      */
     fun snapshotPlayingState() {
-        val mp = mediaPlayer ?: return
+        val player = codecPlayer ?: return
         if (!prepared) return
-        try {
-            resumeOnPrepare = mp.isPlaying
-            hostSnapshotted = true
-        } catch (_: IllegalStateException) {
-            resumeOnPrepare = false
-            hostSnapshotted = true
-        }
+        resumeOnPrepare = player.isPlaying
+        hostSnapshotted = true
     }
 
     /**
@@ -467,93 +450,56 @@ class ZoomableVideoView @JvmOverloads constructor(
         val uri = pendingUri ?: return
         val texture = surfaceTexture ?: return
         prepared = false
-        val mp = MediaPlayer()
-        mediaPlayer = mp
+        updateCount = 0
+        firstFrameSeen = false
+
         try {
-            // Use MediaPlayer's default audio attributes (USAGE_MEDIA +
-            // CONTENT_TYPE_MOVIE). The previous attempt to use
-            // USAGE_ASSISTANCE_SONIFICATION to mix with the radio caused
-            // a mid-prepare stream-type reassignment (visible as
-            // "reassignAudioAttributes streamType=3 → streamType=1" in
-            // logcat) which on the BYD/DiLink audio stack stalled the
-            // codec — playback "stuck" with audio system registered but
-            // no frames delivered.
-            try {
-                mp.setVolume(playbackVolume, playbackVolume)
-            } catch (_: Throwable) {
-            }
-            mp.setDataSource(context, uri)
-            // Hold a strong ref so the GC doesn't collect this Surface
-            // while MediaPlayer is using it (see producerSurface field
-            // comment for the the BYD head-unit (Android 10) ramifications).
             val surface = Surface(texture)
             producerSurface = surface
-            mp.setSurface(surface)
-            mp.setOnPreparedListener { player ->
+            val player = CodecVideoPlayer(context, surface, uri)
+            codecPlayer = player
+            player.setVolume(playbackVolume)
+
+            player.onPreparedListener = MediaPlayer.OnPreparedListener { mp ->
                 prepared = true
-                // A RoadSense duck transition may have happened during prepareAsync.
-                // Apply the latest retained gain in PREPARED before the host starts.
-                try {
-                    player.setVolume(playbackVolume, playbackVolume)
-                } catch (_: Throwable) {
-                }
                 videoWidth = player.videoWidth
                 videoHeight = player.videoHeight
                 Log.d(TAG, "onPrepared: dims=${videoWidth}x${videoHeight} viewSize=${width}x${height}")
-                // DO NOT call applyTransform here. On the BYD head-unit (Android 10), calling
-                // setTransform() before the first frame is queued silently
-                // breaks the SurfaceTexture binding — start() succeeds but
-                // no frames paint. The first applyTransform fires from
-                // onSurfaceTextureUpdated once the producer is alive.
-                // Restore playback position when this prepare follows a
-                // SurfaceTexture re-create (background → resume). Skip
-                // when the seek would be at zero — start-of-clip seeks
-                // are wasteful and on some BYD-era MediaPlayer builds
-                // emit a stuttery first frame. We don't start() here —
-                // the host's prepared listener owns the auto-play decision
-                // (it also has to apply mute first to avoid a louder-
-                // than-expected first frame).
+
                 if (pendingSeekMs > 0) {
-                    try { player.seekTo(pendingSeekMs) } catch (_: IllegalStateException) {}
+                    player.seekTo(pendingSeekMs)
                 }
-                preparedListener?.onPrepared(player)
-                // Reset the resume flags now that we've handed off to the
-                // host. Subsequent surface-destroy events will repopulate.
-                // hostSnapshotted resets too so the next destroy path can
-                // snapshot fresh — either via the host's onPause hook or
-                // via our own fallback in onSurfaceTextureDestroyed.
+                preparedListener?.onPrepared(mp)
+
                 pendingSeekMs = 0
                 resumeOnPrepare = true
                 hostSnapshotted = false
             }
-            mp.setOnCompletionListener { player ->
-                completionListener?.onCompletion(player)
+
+            player.onCompletionListener = MediaPlayer.OnCompletionListener { mp ->
+                completionListener?.onCompletion(mp)
             }
-            mp.setOnErrorListener { player, what, extra ->
-                Log.e(TAG, "MediaPlayer error: what=$what extra=$extra")
+
+            player.onErrorListener = MediaPlayer.OnErrorListener { mp, what, extra ->
+                Log.e(TAG, "CodecPlayer error: what=$what extra=$extra")
                 prepared = false
-                errorListener?.onError(player, what, extra) ?: false
+                errorListener?.onError(mp, what, extra) ?: false
             }
-            mp.setOnInfoListener { _, what, extra ->
-                Log.d(TAG, "MediaPlayer info: what=$what extra=$extra")
-                false
-            }
-            mp.setOnVideoSizeChangedListener { _, w, h ->
+
+            player.onVideoSizeChangedListener = MediaPlayer.OnVideoSizeChangedListener { _, w, h ->
                 if (w > 0 && h > 0 && (w != videoWidth || h != videoHeight)) {
                     videoWidth = w
                     videoHeight = h
-                    // Same gate as onPrepared — applyTransform only after
-                    // the first frame is on the surface. If frames are
-                    // already flowing (size-change mid-clip, rare), it's
-                    // safe to repaint now.
                     if (firstFrameSeen) {
                         applyTransform(progress = 1f, from = quadrant, to = quadrant)
                     }
                 }
             }
-            mp.prepareAsync()
+
+            player.prepare()
         } catch (e: Exception) {
-            errorListener?.onError(mp, MediaPlayer.MEDIA_ERROR_UNKNOWN, 0)
+            Log.e(TAG, "startPreparing failed: ${e.message}", e)
+            errorListener?.onError(null, MediaPlayer.MEDIA_ERROR_UNKNOWN, 0)
             releasePlayer()
         }
     }
@@ -562,21 +508,15 @@ class ZoomableVideoView @JvmOverloads constructor(
         prepared = false
         transformAnimator?.cancel()
         transformAnimator = null
-        val mp = mediaPlayer
-        if (mp != null) {
-            try { mp.setOnPreparedListener(null) } catch (_: Exception) {}
-            try { mp.setOnCompletionListener(null) } catch (_: Exception) {}
-            try { mp.setOnErrorListener(null) } catch (_: Exception) {}
-            try { mp.setOnVideoSizeChangedListener(null) } catch (_: Exception) {}
-            try { mp.setOnInfoListener(null) } catch (_: Exception) {}
-            try { mp.reset() } catch (_: Exception) {}
-            try { mp.release() } catch (_: Exception) {}
-            mediaPlayer = null
+        val player = codecPlayer
+        if (player != null) {
+            player.onPreparedListener = null
+            player.onCompletionListener = null
+            player.onErrorListener = null
+            player.onVideoSizeChangedListener = null
+            player.release()
+            codecPlayer = null
         }
-        // Release the Surface AFTER the player so MediaPlayer's internal
-        // teardown doesn't touch a freed producer. Tracker field cleared
-        // unconditionally so a partial-init failure doesn't leave a
-        // dangling reference around.
         try { producerSurface?.release() } catch (_: Exception) {}
         producerSurface = null
     }
@@ -677,26 +617,7 @@ class ZoomableVideoView @JvmOverloads constructor(
     override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
         Log.d(TAG, "onSurfaceTextureAvailable: ${width}x${height}")
         surfaceReady = true
-        // Constrain the SurfaceTexture's default buffer size to the view's
-        // pixel size. Without this, BYD-era SurfaceTexture allocates
-        // buffers at the producer's native dimensions (2560×1920 = ~30MB
-        // each × 3 buffers), and on a 770×541 view the head-unit's GPU
-        // sometimes fails to allocate the third buffer silently — producer
-        // queue stalls without an error event.
-        try {
-            surface.setDefaultBufferSize(width, height)
-        } catch (_: Exception) { /* best effort */ }
-        // Kick the TextureView matrix binding with the identity matrix.
-        // On some the BYD head-unit (Android 10) builds (BYD head-unit included) the
-        // TextureView won't pump frames from its SurfaceTexture to its
-        // hardware layer until setTransform has been called at least
-        // once — even with the identity matrix. Without this, MediaPlayer
-        // produces frames into the SurfaceTexture forever and they never
-        // make it onto the screen.
-        try {
-            setTransform(scratchMatrix.apply { reset() })
-        } catch (_: Exception) { /* best effort */ }
-        if (pendingUri != null && mediaPlayer == null) startPreparing()
+        if (pendingUri != null && codecPlayer == null) startPreparing()
     }
 
     override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
@@ -711,28 +632,11 @@ class ZoomableVideoView @JvmOverloads constructor(
 
     override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
         Log.d(TAG, "onSurfaceTextureDestroyed (prepared=$prepared)")
-        // Snapshot the playhead BEFORE releasing so the re-prepared player
-        // can seek back to where the user left off.
-        //
-        // resumeOnPrepare: the host captures this via [snapshotPlayingState]
-        // in its onPause (which sets [hostSnapshotted]). For transient
-        // surface destroys without onPause (DialogFragment overlay,
-        // picture-in-picture, system permission dialog) the host hasn't
-        // set the flag — fall back to reading isPlaying ourselves so a
-        // paused-by-user clip doesn't silently resume on surface re-create.
-        val mp = mediaPlayer
-        if (mp != null && prepared) {
-            try {
-                pendingSeekMs = mp.currentPosition
-                if (!hostSnapshotted) {
-                    resumeOnPrepare = mp.isPlaying
-                }
-            } catch (_: IllegalStateException) {
-                // Transitioned out of a valid state during teardown;
-                // explicitly zero so the next prepare doesn't carry a
-                // stale seek from an earlier clip.
-                pendingSeekMs = 0
-                if (!hostSnapshotted) resumeOnPrepare = false
+        val player = codecPlayer
+        if (player != null && prepared) {
+            pendingSeekMs = player.currentPosition
+            if (!hostSnapshotted) {
+                resumeOnPrepare = player.isPlaying
             }
         }
         surfaceReady = false
@@ -740,16 +644,19 @@ class ZoomableVideoView @JvmOverloads constructor(
         return true  // safe to release the texture
     }
 
+    private var updateCount = 0
+
     override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
-        // Fires every time the producer queues a frame. The first one is
-        // the OS's signal that the texture binding is alive, which is
-        // when it's finally safe to apply our matrix transform on Android
-        // 7.1. Doing it earlier silently breaks playback (start() works,
-        // audio runs, but no frames paint — see firstFrameSeen comment).
+        updateCount++
+        if (updateCount <= 5 || updateCount % 30 == 0) {
+            Log.d(TAG, "onSurfaceTextureUpdated #$updateCount firstFrameSeen=$firstFrameSeen quadrant=$quadrant")
+        }
         if (!firstFrameSeen) {
             firstFrameSeen = true
-            Log.d(TAG, "first frame queued — applying transform")
-            applyTransform(progress = 1f, from = quadrant, to = quadrant)
+            Log.d(TAG, "first frame queued — quadrant=$quadrant")
+            if (quadrant != Quadrant.ALL) {
+                applyTransform(progress = 1f, from = quadrant, to = quadrant)
+            }
         }
     }
 

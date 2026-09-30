@@ -2,6 +2,7 @@ package com.overdrive.app.ui.recordings
 
 import android.graphics.Bitmap
 import android.net.Uri
+import android.util.Log
 import android.view.ViewGroup
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -30,6 +31,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -68,6 +70,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -78,6 +81,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
@@ -107,28 +111,22 @@ fun RecordingsScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(colors.background)
-            .padding(horizontal = 24.dp, vertical = 16.dp)
+            .padding(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 12.dp)
     ) {
-        // 1. Header Bar: Title, Storage Subtitle & Top Actions
-        RecordingsHeader(
+        // 1. Header Row: Summary (Left) + Segmented Tabs (Center) + Selection/Refresh Actions (Right)
+        RecordingsHeaderBar(
             summaryText = uiState.stats.formattedSummary,
+            selectedTab = uiState.selectedTab,
+            stats = uiState.stats,
+            onTabSelected = { viewModel.selectTab(it) },
             isSelectionMode = uiState.isSelectionMode,
             onToggleSelectionMode = { viewModel.toggleSelectionMode() },
             onRefresh = { viewModel.loadRecordings() }
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        // 2. Segmented Tabs: Tümü · Dashcam · Tekrarlar · Gözetim
-        RecordingsSegmentedTabs(
-            selectedTab = uiState.selectedTab,
-            stats = uiState.stats,
-            onTabSelected = { viewModel.selectTab(it) }
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // 3. Filter Bar: Search Box + Filter Chips (Date, Actor, Storage)
+        // 3. Filter Bar: Search Box + Filter Chips (Date, Actor)
         RecordingsFilterBar(
             searchQuery = uiState.searchQuery,
             onSearchQueryChange = { viewModel.setSearchQuery(it) },
@@ -136,12 +134,10 @@ fun RecordingsScreen(
             onDateSelected = { viewModel.setDateFilter(it) },
             selectedActor = uiState.selectedActorFilter,
             onActorSelected = { viewModel.setActorFilter(it) },
-            selectedStorage = uiState.selectedStorageFilter,
-            onStorageSelected = { viewModel.setStorageFilter(it) },
             onClearFilters = { viewModel.clearFilters() }
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         // 4. Two-Pane Content Area (Left: Library, Right: Player/Telemetry)
         Row(
@@ -230,8 +226,11 @@ fun RecordingsScreen(
 }
 
 @Composable
-private fun RecordingsHeader(
+private fun RecordingsHeaderBar(
     summaryText: String,
+    selectedTab: RecordingTab,
+    stats: StorageStats,
+    onTabSelected: (RecordingTab) -> Unit,
     isSelectionMode: Boolean,
     onToggleSelectionMode: () -> Unit,
     onRefresh: () -> Unit
@@ -240,35 +239,63 @@ private fun RecordingsHeader(
 
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Filled.VideoLibrary,
-                    contentDescription = null,
-                    tint = colors.primary,
-                    modifier = Modifier.size(24.dp)
+        // Left: Storage summary (Count and Size)
+        Text(
+            text = summaryText,
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+            color = colors.onSurfaceVariant
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        // Center: Segmented Tabs (Tümü · Dashcam · Tekrarlar · Gözetim)
+        Surface(
+            shape = RoundedCornerShape(10.dp),
+            color = colors.surfaceContainer,
+            border = androidx.compose.foundation.BorderStroke(1.dp, colors.outlineVariant)
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 3.dp),
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val tabs = listOf(
+                    RecordingTab.ALL to stringResource(R.string.recordings_segment_all_count, stats.totalCount),
+                    RecordingTab.DASHCAM to stringResource(R.string.recordings_segment_dashcam_count, stats.dashcamCount),
+                    RecordingTab.REPLAYS to stringResource(R.string.recordings_segment_replays_count, stats.replaysCount),
+                    RecordingTab.SURVEILLANCE to stringResource(R.string.recordings_segment_surveillance_count, stats.surveillanceCount)
                 )
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                    text = stringResource(R.string.recordings_title),
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.5.sp
-                    ),
-                    color = colors.onBackground
-                )
+
+                for ((tab, label) in tabs) {
+                    val isSelected = selectedTab == tab
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(7.dp))
+                            .background(if (isSelected) colors.primary else Color.Transparent)
+                            .clickable(
+                                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                                indication = null
+                            ) { onTabSelected(tab) }
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                            ),
+                            color = if (isSelected) colors.onPrimary else colors.onSurfaceVariant
+                        )
+                    }
+                }
             }
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = summaryText,
-                style = MaterialTheme.typography.bodyMedium,
-                color = colors.onSurfaceVariant
-            )
         }
 
+        Spacer(modifier = Modifier.weight(1f))
+
+        // Right: Select Mode & Refresh Action Buttons
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -284,7 +311,7 @@ private fun RecordingsHeader(
                 )
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
@@ -313,9 +340,9 @@ private fun RecordingsHeader(
                 color = colors.surfaceContainer,
                 border = androidx.compose.foundation.BorderStroke(1.dp, colors.outlineVariant)
             ) {
-                IconButton(
-                    onClick = onRefresh,
-                    modifier = Modifier.size(36.dp)
+                Box(
+                    modifier = Modifier.size(34.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Refresh,
@@ -330,59 +357,6 @@ private fun RecordingsHeader(
 }
 
 @Composable
-private fun RecordingsSegmentedTabs(
-    selectedTab: RecordingTab,
-    stats: StorageStats,
-    onTabSelected: (RecordingTab) -> Unit
-) {
-    val colors = LocalOverdriveColors.current
-
-    Surface(
-        shape = RoundedCornerShape(14.dp),
-        color = colors.surfaceContainer,
-        border = androidx.compose.foundation.BorderStroke(1.dp, colors.outlineVariant),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            val tabs = listOf(
-                RecordingTab.ALL to stringResource(R.string.recordings_segment_all_count, stats.totalCount),
-                RecordingTab.DASHCAM to stringResource(R.string.recordings_segment_dashcam_count, stats.dashcamCount),
-                RecordingTab.REPLAYS to stringResource(R.string.recordings_segment_replays_count, stats.replaysCount),
-                RecordingTab.SURVEILLANCE to stringResource(R.string.recordings_segment_surveillance_count, stats.surveillanceCount)
-            )
-
-            for ((tab, label) in tabs) {
-                val isSelected = selectedTab == tab
-                Surface(
-                    onClick = { onTabSelected(tab) },
-                    shape = RoundedCornerShape(10.dp),
-                    color = if (isSelected) colors.primary else Color.Transparent,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Box(
-                        modifier = Modifier.padding(vertical = 10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = label,
-                            style = MaterialTheme.typography.labelLarge.copy(
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                            ),
-                            color = if (isSelected) colors.onPrimary else colors.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
 private fun RecordingsFilterBar(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
@@ -390,14 +364,11 @@ private fun RecordingsFilterBar(
     onDateSelected: (DateFilter) -> Unit,
     selectedActor: ActorFilter,
     onActorSelected: (ActorFilter) -> Unit,
-    selectedStorage: StorageFilter,
-    onStorageSelected: (StorageFilter) -> Unit,
     onClearFilters: () -> Unit
 ) {
     val colors = LocalOverdriveColors.current
     val hasActiveFilter = selectedDate != DateFilter.ALL ||
             selectedActor != ActorFilter.ALL ||
-            selectedStorage != StorageFilter.ALL ||
             searchQuery.isNotEmpty()
 
     Row(
@@ -407,15 +378,19 @@ private fun RecordingsFilterBar(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Search Input Field
+        // Search Input Field - Compact, sleek automotive height (34dp)
         Surface(
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(10.dp),
             color = colors.surfaceContainer,
             border = androidx.compose.foundation.BorderStroke(1.dp, colors.outlineVariant),
-            modifier = Modifier.width(220.dp)
+            modifier = Modifier
+                .width(220.dp)
+                .height(34.dp)
         ) {
             Row(
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
@@ -424,27 +399,29 @@ private fun RecordingsFilterBar(
                     tint = colors.onSurfaceVariant,
                     modifier = Modifier.size(16.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                OutlinedTextField(
+                Spacer(modifier = Modifier.width(6.dp))
+                BasicTextField(
                     value = searchQuery,
                     onValueChange = onSearchQueryChange,
-                    placeholder = {
-                        Text(
-                            text = stringResource(R.string.recording_lib_place_search_hint),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = colors.onSurfaceVariant
-                        )
-                    },
                     singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent,
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        cursorColor = colors.primary
-                    ),
-                    modifier = Modifier.weight(1f),
-                    textStyle = MaterialTheme.typography.bodySmall.copy(color = colors.onSurface)
+                    textStyle = MaterialTheme.typography.bodySmall.copy(color = colors.onSurface),
+                    cursorBrush = SolidColor(colors.primary),
+                    decorationBox = { innerTextField ->
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            if (searchQuery.isEmpty()) {
+                                Text(
+                                    text = stringResource(R.string.recording_lib_place_search_hint),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = colors.onSurfaceVariant
+                                )
+                            }
+                            innerTextField()
+                        }
+                    },
+                    modifier = Modifier.weight(1f)
                 )
                 if (searchQuery.isNotEmpty()) {
                     IconButton(
@@ -471,12 +448,12 @@ private fun RecordingsFilterBar(
         FilterChipPill(
             label = stringResource(R.string.recordings_filter_today),
             isSelected = selectedDate == DateFilter.TODAY,
-            onClick = { onDateSelected(DateFilter.TODAY) }
+            onClick = { onDateSelected(if (selectedDate == DateFilter.TODAY) DateFilter.ALL else DateFilter.TODAY) }
         )
         FilterChipPill(
             label = stringResource(R.string.recordings_filter_yesterday),
             isSelected = selectedDate == DateFilter.YESTERDAY,
-            onClick = { onDateSelected(DateFilter.YESTERDAY) }
+            onClick = { onDateSelected(if (selectedDate == DateFilter.YESTERDAY) DateFilter.ALL else DateFilter.YESTERDAY) }
         )
 
         // Actor Chips
@@ -491,28 +468,16 @@ private fun RecordingsFilterBar(
             onClick = { onActorSelected(if (selectedActor == ActorFilter.VEHICLE) ActorFilter.ALL else ActorFilter.VEHICLE) }
         )
 
-        // Storage Chips
-        FilterChipPill(
-            label = stringResource(R.string.recordings_filter_internal),
-            isSelected = selectedStorage == StorageFilter.INTERNAL,
-            onClick = { onStorageSelected(if (selectedStorage == StorageFilter.INTERNAL) StorageFilter.ALL else StorageFilter.INTERNAL) }
-        )
-        FilterChipPill(
-            label = stringResource(R.string.recordings_filter_sd),
-            isSelected = selectedStorage == StorageFilter.SD_CARD,
-            onClick = { onStorageSelected(if (selectedStorage == StorageFilter.SD_CARD) StorageFilter.ALL else StorageFilter.SD_CARD) }
-        )
-
         // Clear Filters button
         if (hasActiveFilter) {
             Surface(
                 onClick = onClearFilters,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(10.dp),
                 color = colors.errorContainer,
                 border = androidx.compose.foundation.BorderStroke(1.dp, colors.error)
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
@@ -543,7 +508,7 @@ private fun FilterChipPill(
 
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(10.dp),
         color = if (isSelected) colors.primaryContainer else colors.surfaceContainer,
         border = androidx.compose.foundation.BorderStroke(
             1.dp,
@@ -552,11 +517,11 @@ private fun FilterChipPill(
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.labelMedium.copy(
+            style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
             ),
             color = if (isSelected) colors.onPrimaryContainer else colors.onSurface,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
         )
     }
 }
@@ -1071,13 +1036,15 @@ private fun RecordingsInspectorPane(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Interactive Video Player Stage
-                VideoPlayerStage(
-                    recording = selectedRecording,
-                    selectedQuadrant = selectedQuadrant,
-                    onQuadrantSelected = onQuadrantSelected,
-                    onFullscreen = { onFullscreen(selectedRecording) }
-                )
+                // Interactive Video Player Stage (keyed to force fresh player instance on clip switch)
+                key(selectedRecording.recordingId ?: selectedRecording.path) {
+                    VideoPlayerStage(
+                        recording = selectedRecording,
+                        selectedQuadrant = selectedQuadrant,
+                        onQuadrantSelected = onQuadrantSelected,
+                        onFullscreen = { onFullscreen(selectedRecording) }
+                    )
+                }
 
                 // Telemetry & Inspector Details Card
                 RecordingTelemetryCard(
@@ -1101,21 +1068,31 @@ private fun VideoPlayerStage(
     var videoViewRef by remember { mutableStateOf<ZoomableVideoView?>(null) }
     var isPlaying by remember { mutableStateOf(false) }
     var currentPosMs by remember { mutableLongStateOf(0L) }
-    var durationMs by remember { mutableLongStateOf(0L) }
+    var durationMs by remember { mutableLongStateOf(recording.durationMs) }
     var isMuted by remember { mutableStateOf(false) }
 
-    DisposableEffect(recording) {
+    val uri = remember(recording) {
+        when {
+            recording.file.exists() && recording.file.canRead() -> Uri.fromFile(recording.file)
+            !recording.videoUrl.isNullOrEmpty() -> Uri.parse(recording.videoUrl)
+            recording.contentUri != null -> recording.contentUri
+            else -> Uri.fromFile(recording.file)
+        }
+    }
+
+    DisposableEffect(Unit) {
         onDispose {
             videoViewRef?.stopPlayback()
         }
     }
 
     // Polling ticker for playhead progress
-    LaunchedEffect(recording, isPlaying) {
+    LaunchedEffect(isPlaying) {
         while (isPlaying) {
             videoViewRef?.let { vv ->
                 currentPosMs = vv.currentPosition.toLong()
-                durationMs = vv.duration.toLong().coerceAtLeast(recording.durationMs)
+                val d = vv.duration.toLong()
+                if (d > 0) durationMs = d
             }
             delay(250)
         }
@@ -1138,75 +1115,43 @@ private fun VideoPlayerStage(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.MATCH_PARENT
                         )
+                        if (recording.type == RecordingFile.RecordingType.OEM_DASHCAM) {
+                            setLayout(ZoomableVideoView.Layout.DASHCAM)
+                        } else {
+                            setLayout(ZoomableVideoView.Layout.STANDARD)
+                        }
+                        setOnDoubleTapListener { target ->
+                            onQuadrantSelected(target)
+                            setQuadrant(target, true)
+                        }
                         setOnPreparedListener { mp ->
                             mp.isLooping = true
+                            if (isMuted) {
+                                setPlaybackVolume(0f)
+                            }
                             start()
                             isPlaying = true
-                            durationMs = duration.toLong()
+                            val d = duration.toLong()
+                            if (d > 0) durationMs = d
                         }
+                        setOnErrorListener { _, what, extra ->
+                            Log.w("VideoPlayerStage", "MediaPlayer error: what=$what extra=$extra")
+                            false
+                        }
+                        setQuadrant(selectedQuadrant, false)
+                        setVideoURI(uri)
                         videoViewRef = this
                     }
                 },
                 update = { view ->
                     videoViewRef = view
-                    val uri = when {
-                        recording.videoUrl != null -> Uri.parse(recording.videoUrl)
-                        recording.contentUri != null -> recording.contentUri
-                        else -> Uri.fromFile(recording.file)
+                    if (view.getQuadrant() != selectedQuadrant) {
+                        view.setQuadrant(selectedQuadrant, true)
                     }
-                    view.setVideoURI(uri)
-                    view.setQuadrant(selectedQuadrant, true)
                 },
                 modifier = Modifier.fillMaxSize()
             )
 
-            // Quadrant Switching Bar (Top Overlay)
-            Row(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = Color.Black.copy(alpha = 0.65f),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.15f))
-                ) {
-                    Row(
-                        modifier = Modifier.padding(3.dp),
-                        horizontalArrangement = Arrangement.spacedBy(2.dp)
-                    ) {
-                        val quadrants = listOf(
-                            ZoomableVideoView.Quadrant.ALL to stringResource(R.string.recordings_camera_view_all),
-                            ZoomableVideoView.Quadrant.FRONT to stringResource(R.string.recordings_camera_view_front),
-                            ZoomableVideoView.Quadrant.REAR to stringResource(R.string.recordings_camera_view_rear),
-                            ZoomableVideoView.Quadrant.LEFT to stringResource(R.string.recordings_camera_view_left),
-                            ZoomableVideoView.Quadrant.RIGHT to stringResource(R.string.recordings_camera_view_right)
-                        )
-                        for ((quadrant, label) in quadrants) {
-                            val active = selectedQuadrant == quadrant
-                            Surface(
-                                onClick = {
-                                    onQuadrantSelected(quadrant)
-                                    videoViewRef?.setQuadrant(quadrant, true)
-                                },
-                                shape = RoundedCornerShape(16.dp),
-                                color = if (active) colors.primary else Color.Transparent
-                            ) {
-                                Text(
-                                    text = label,
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = if (active) FontWeight.Bold else FontWeight.Medium
-                                    ),
-                                    color = if (active) colors.onPrimary else Color.White,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
 
             // Transport Control Overlay (Bottom Overlay)
             Column(
@@ -1279,6 +1224,22 @@ private fun VideoPlayerStage(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        // Mute toggle button
+                        IconButton(
+                            onClick = {
+                                val nextMuted = !isMuted
+                                isMuted = nextMuted
+                                videoViewRef?.setPlaybackVolume(if (nextMuted) 0f else 1f)
+                            },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (isMuted) Icons.Filled.VolumeOff else Icons.Filled.VolumeUp,
+                                contentDescription = null,
+                                tint = Color.White
+                            )
+                        }
+
                         // Fullscreen button
                         IconButton(
                             onClick = onFullscreen,

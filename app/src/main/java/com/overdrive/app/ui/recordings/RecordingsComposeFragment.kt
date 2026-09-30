@@ -43,8 +43,10 @@ class RecordingsComposeFragment : Fragment() {
                                 putBoolean(VideoPlayerFragment.ARG_INLINE, false)
                             }
                             try {
-                                findNavController().navigate(R.id.videoPlayerFragment, bundle)
-                            } catch (_: Throwable) {}
+                                findNavController().navigate(R.id.action_global_videoPlayer, bundle)
+                            } catch (e: Throwable) {
+                                android.util.Log.e("RecordingsCompose", "Fullscreen nav failed", e)
+                            }
                         }
                     )
                 }
