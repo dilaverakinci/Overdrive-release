@@ -40,17 +40,11 @@
         android:name="com.overdrive.app.ui.surveillance.SurveillanceComposeFragment"
         android:label="@string/settings_section_surveillance" />
 
-    <!-- Recording settings (web) — same path -->
+    <!-- Recording settings (100% Jetpack Compose Native) -->
     <fragment
         android:id="@+id/recordingSettingsWebFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/settings_section_recording"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/recording" />
-    </fragment>
+        android:name="com.overdrive.app.ui.recording.RecordingComposeFragment"
+        android:label="@string/settings_section_recording" />
 
     <!-- Vehicle (100% Jetpack Compose Native) -->
     <fragment
