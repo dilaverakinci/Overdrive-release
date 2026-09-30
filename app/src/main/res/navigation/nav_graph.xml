@@ -118,14 +118,8 @@
 
     <fragment
         android:id="@+id/bydCloudFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/nav_page_byd_cloud"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/byd-cloud" />
-    </fragment>
+        android:name="com.overdrive.app.ui.bydcloud.BydCloudComposeFragment"
+        android:label="@string/nav_page_byd_cloud" />
 
     <!-- RoadSense: hazard / road-surface sensing surface (web). Hosts the
          /road-sense page via WebViewFragment, mirroring the other web
