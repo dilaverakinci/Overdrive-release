@@ -153,18 +153,8 @@
     <!-- Settings: native, with sub-rail of sections -->
     <fragment
         android:id="@+id/settingsFragment"
-        android:name="com.overdrive.app.ui.fragment.SettingsFragment"
-        android:label="@string/rail_settings"
-        tools:layout="@layout/fragment_settings">
-        <argument
-            android:name="settings_subrail_section"
-            app:argType="string"
-            android:defaultValue="" />
-        <argument
-            android:name="settings_from_recordings"
-            app:argType="boolean"
-            android:defaultValue="false" />
-    </fragment>
+        android:name="com.overdrive.app.ui.settings.SettingsComposeFragment"
+        android:label="@string/rail_settings" />
 
     <!-- Daemons (100% Jetpack Compose Native) -->
     <fragment
