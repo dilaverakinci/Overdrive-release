@@ -215,12 +215,11 @@
             android:defaultValue="false" />
     </fragment>
 
-    <!-- Daemons (used to be its own rail item, now lives under Settings) -->
+    <!-- Daemons (100% Jetpack Compose Native) -->
     <fragment
         android:id="@+id/daemonsFragment"
-        android:name="com.overdrive.app.ui.fragment.DaemonsFragment"
-        android:label="@string/settings_section_daemons"
-        tools:layout="@layout/fragment_daemons" />
+        android:name="com.overdrive.app.ui.daemons.DaemonsComposeFragment"
+        android:label="@string/settings_section_daemons" />
 
     <!-- About — reachable from the portrait Settings hub's About row.
          Hosts the SettingsAboutFragment that shows version, license,
