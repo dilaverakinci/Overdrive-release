@@ -177,9 +177,8 @@
          source link, support links, and the Check for Updates action. -->
     <fragment
         android:id="@+id/settingsAboutFragment"
-        android:name="com.overdrive.app.ui.fragment.settings.SettingsAboutFragment"
-        android:label="@string/settings_section_about"
-        tools:layout="@layout/fragment_settings_about" />
+        android:name="com.overdrive.app.ui.about.AboutComposeFragment"
+        android:label="@string/settings_section_about" />
 
     <!-- Security — PIN lock controls. Reachable from the portrait Settings
          hub's Security card and from the landscape sub-rail Security row. -->
