@@ -103,14 +103,8 @@
          touching native layouts every time. -->
     <fragment
         android:id="@+id/telegramSettingsFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/nav_page_telegram"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/telegram" />
-    </fragment>
+        android:name="com.overdrive.app.ui.telegram.TelegramComposeFragment"
+        android:label="@string/nav_page_telegram" />
 
     <fragment
         android:id="@+id/abrpSettingsFragment"
