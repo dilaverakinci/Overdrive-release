@@ -108,14 +108,8 @@
 
     <fragment
         android:id="@+id/abrpSettingsFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/nav_page_abrp"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/abrp" />
-    </fragment>
+        android:name="com.overdrive.app.ui.abrp.AbrpComposeFragment"
+        android:label="@string/nav_page_abrp" />
 
     <fragment
         android:id="@+id/mqttFragment"
