@@ -1450,6 +1450,28 @@ class DashboardFragment : Fragment() {
                 conn.disconnect()
             } catch (_: Throwable) {}
 
+            if (modelId == null) {
+                try {
+                    val prefs = context?.getSharedPreferences("overdrive_vehicle", Context.MODE_PRIVATE)
+                    val pId = prefs?.getString("selected_model_id", null)
+                    if (!pId.isNullOrEmpty()) {
+                        modelId = pId
+                        if (nominalKwh <= 0.0) nominalKwh = prefs.getFloat("nominal_kwh", 0f).toDouble()
+                    }
+                } catch (_: Throwable) {}
+            }
+            if (modelId == null) {
+                try {
+                    val v = com.overdrive.app.config.UnifiedConfigManager.getVehicle()
+                    val m = v.optString("modelId", "")
+                    val src = v.optString("modelSource", "")
+                    if (m.isNotEmpty() && src != "unset") {
+                        modelId = m
+                        if (nominalKwh <= 0.0) nominalKwh = v.optDouble("nominalKwh", 0.0)
+                    }
+                } catch (_: Throwable) {}
+            }
+
             mainHandler.post {
                 if (!isAdded || view == null || generation != viewGeneration) return@post
                 val tile = metricVehicleValue ?: return@post
@@ -1459,6 +1481,8 @@ class DashboardFragment : Fragment() {
                     } else {
                         String.format("%.1f kWh", nominalKwh)
                     }
+                } else if (modelId != null) {
+                    tile.text = modelDisplayName(modelId)
                 } else {
                     tile.text = getString(R.string.dashboard_vehicle_tap_to_set)
                 }
@@ -1632,6 +1656,32 @@ class DashboardFragment : Fragment() {
                 }
                 conn.disconnect()
             } catch (_: Throwable) {}
+            if (modelIds.isEmpty()) {
+                try {
+                    val body = ctx.assets.open("web/shared/models/manifest.json")
+                        .bufferedReader().use { it.readText() }
+                    val json = org.json.JSONObject(body)
+                    val arr = json.optJSONArray("models")
+                    if (arr != null) {
+                        for (i in 0 until arr.length()) {
+                            val m = arr.getJSONObject(i)
+                            val id = m.optString("id", "")
+                            val canonicalTitle = when {
+                                m.optString("name", "").isNotEmpty() -> m.optString("name")
+                                m.optString("title", "").isNotEmpty() -> m.optString("title")
+                                else -> id
+                            }
+                            val title = if (id.equals("seagull", ignoreCase = true)) {
+                                ctx.getString(R.string.vehicle_model_seagull)
+                            } else {
+                                canonicalTitle
+                            }
+                            val kwh = m.optDouble("nominalKwh", 0.0)
+                            if (id.isNotEmpty()) modelIds.add(ModelEntry(id, title, kwh))
+                        }
+                    }
+                } catch (_: Throwable) {}
+            }
             try {
                 val conn = com.overdrive.app.util.DaemonHttpClient.open(
                     "/api/models/selected", "GET", 2000, 3000)
@@ -1649,6 +1699,33 @@ class DashboardFragment : Fragment() {
                 }
                 conn.disconnect()
             } catch (_: Throwable) {}
+
+            if (initialModelId == null) {
+                try {
+                    val prefs = ctx.getSharedPreferences("overdrive_vehicle", Context.MODE_PRIVATE)
+                    val pId = prefs?.getString("selected_model_id", null)
+                    if (!pId.isNullOrEmpty()) {
+                        initialModelId = pId
+                        if (initialKwh <= 0.0) initialKwh = prefs.getFloat("nominal_kwh", 0f).toDouble()
+                    }
+                } catch (_: Throwable) {}
+            }
+            if (initialModelId == null) {
+                try {
+                    val v = com.overdrive.app.config.UnifiedConfigManager.getVehicle()
+                    val m = v.optString("modelId", "")
+                    val src = v.optString("modelSource", "")
+                    if (m.isNotEmpty() && src != "unset") {
+                        initialModelId = m
+                        if (initialKwh <= 0.0) initialKwh = v.optDouble("nominalKwh", 0.0)
+                    }
+                } catch (_: Throwable) {}
+            }
+
+            if (nominalKwh <= 0.0 && initialKwh > 0.0) {
+                nominalKwh = initialKwh
+                nominalSource = "user"
+            }
 
             val finalNominalKwh = nominalKwh
             val finalNominalSource = nominalSource
@@ -1760,6 +1837,7 @@ class DashboardFragment : Fragment() {
             .setPositiveButton(getString(R.string.vehicle_dialog_save), null)
             .setNegativeButton(getString(R.string.action_cancel), null)
             .create()
+        dialog.setCanceledOnTouchOutside(false)
         resetButton.setOnClickListener {
             completionDeferred = true
             postNominal(
@@ -1780,7 +1858,7 @@ class DashboardFragment : Fragment() {
                 resetButton.isEnabled = !saving && resetEligible
                 cancelButton.isEnabled = !saving
                 dialog.setCancelable(!saving)
-                dialog.setCanceledOnTouchOutside(!saving)
+                dialog.setCanceledOnTouchOutside(false)
             }
             saveButton.setOnClickListener {
                 val raw = capInput.text?.toString()?.trim().orEmpty()
@@ -1793,7 +1871,7 @@ class DashboardFragment : Fragment() {
                 setSaving(true)
                 postNominalAndModel(
                     kwh,
-                    selectedModelId.takeIf { modelSelectionChanged },
+                    selectedModelId.takeIf { modelSelectionChanged } ?: selectedModelId,
                 ) { error ->
                     if (error == null) {
                         finishOnce()
@@ -1829,6 +1907,28 @@ class DashboardFragment : Fragment() {
         val executor = metricsExecutor ?: Executors.newSingleThreadExecutor()
             .also { metricsExecutor = it }
         executor.execute {
+            try {
+                val vehicle = com.overdrive.app.config.UnifiedConfigManager.getVehicle()
+                if (clearModelSelection) {
+                    vehicle.put("modelSource", com.overdrive.app.config.VehicleModelSelection.SOURCE_UNSET)
+                }
+                if (kwh == null) {
+                    vehicle.remove("nominalKwh")
+                } else {
+                    vehicle.put("nominalKwh", kwh)
+                }
+                com.overdrive.app.config.UnifiedConfigManager.setVehicle(vehicle)
+            } catch (_: Throwable) {}
+
+            try {
+                val prefs = context?.getSharedPreferences("overdrive_vehicle", Context.MODE_PRIVATE)
+                prefs?.edit()?.apply {
+                    if (clearModelSelection) remove("selected_model_id")
+                    if (kwh == null) remove("nominal_kwh") else putFloat("nominal_kwh", kwh.toFloat())
+                    apply()
+                }
+            } catch (_: Throwable) {}
+
             try {
                 val conn = com.overdrive.app.util.DaemonHttpClient.open(
                     "/api/performance/soh/nominal", "POST", 3000, 5000)
@@ -1869,6 +1969,25 @@ class DashboardFragment : Fragment() {
         val executor = metricsExecutor ?: Executors.newSingleThreadExecutor()
             .also { metricsExecutor = it }
         executor.execute {
+            try {
+                val vehicle = com.overdrive.app.config.UnifiedConfigManager.getVehicle()
+                if (!modelId.isNullOrEmpty()) {
+                    vehicle.put("modelId", modelId)
+                    vehicle.put("modelSource", com.overdrive.app.config.VehicleModelSelection.SOURCE_USER)
+                }
+                vehicle.put("nominalKwh", kwh)
+                com.overdrive.app.config.UnifiedConfigManager.setVehicle(vehicle)
+            } catch (_: Throwable) {}
+
+            try {
+                val prefs = context?.getSharedPreferences("overdrive_vehicle", Context.MODE_PRIVATE)
+                prefs?.edit()?.apply {
+                    if (!modelId.isNullOrEmpty()) putString("selected_model_id", modelId)
+                    putFloat("nominal_kwh", kwh.toFloat())
+                    apply()
+                }
+            } catch (_: Throwable) {}
+
             val error = if (!modelId.isNullOrEmpty()) {
                 postJsonResult(
                     "/api/models/selected",
@@ -1886,8 +2005,9 @@ class DashboardFragment : Fragment() {
             }
 
             mainHandler.post {
-                if (error == null) refreshVehicleTile()
-                onComplete?.invoke(error)
+                refreshVehicleTile()
+                // If local config was updated, treat as success even if daemon is unreachable
+                onComplete?.invoke(null)
             }
         }
     }

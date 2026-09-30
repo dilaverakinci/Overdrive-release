@@ -1,18 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Landscape page padding — tightened to fit the 540dp height viewport -->
+    <dimen name="page_padding_horizontal">16dp</dimen>
+    <dimen name="page_padding_top">8dp</dimen>
+    <dimen name="page_padding_bottom">8dp</dimen>
+
+    <!-- Landscape dashboard modern gaps and paddings -->
+    <dimen name="dashboard_modern_gap">8dp</dimen>
+    <dimen name="dashboard_modern_card_padding">12dp</dimen>
+    <dimen name="dashboard_modern_action_min_height">52dp</dimen>
+
     <!-- Landscape hero is full-bleed. Panels are a fixed width so they do not
          stretch with the card, and the render is capped so the nodpi bitmap
          does not measure at 338dp. -->
-    <dimen name="dashboard_hero_metric_width">260dp</dimen>
-    <dimen name="dashboard_hero_metric_min_height">100dp</dimen>
-    <dimen name="dashboard_hero_art_max_height">200dp</dimen>
-    <dimen name="dashboard_hero_art_inset">64dp</dimen>
+    <dimen name="dashboard_hero_metric_width">240dp</dimen>
+    <dimen name="dashboard_hero_metric_min_height">78dp</dimen>
+    <dimen name="dashboard_hero_art_max_height">160dp</dimen>
+    <dimen name="dashboard_hero_art_inset">48dp</dimen>
     <dimen name="dashboard_hero_ribbon_width">1040dp</dimen>
 
     <!-- Hero status chips. Sized against the metric row above rather than to
          their content, so the three read as one row. -->
-    <dimen name="dashboard_hero_chip_width">160dp</dimen>
-    <dimen name="dashboard_hero_chip_min_height">42dp</dimen>
+    <dimen name="dashboard_hero_chip_width">150dp</dimen>
+    <dimen name="dashboard_hero_chip_min_height">34dp</dimen>
 
     <style name="Widget.Overdrive.HeroChip" parent="Widget.Material3.Chip.Assist">
         <item name="android:layout_width">@dimen/dashboard_hero_chip_width</item>
