@@ -2086,9 +2086,18 @@ public final class RecordingsIndex {
             for (String s : f.storages) args.add(s);
             boolean wantInternal = f.storages.contains("INTERNAL");
             boolean wantSd = f.storages.contains("SD_CARD");
+            boolean wantUsb = f.storages.contains("USB");
             if (wantInternal) {
                 clause.append(" OR (storage IS NULL AND (abs_path LIKE '/storage/emulated/%'"
                         + " OR abs_path LIKE '/storage/emulated/0/Overdrive/%'))");
+            }
+            if (wantUsb) {
+                try {
+                    String usb = com.overdrive.app.storage.StorageManager.getInstance().getUsbPath();
+                    if (usb != null && !usb.isEmpty()) {
+                        clause.append(" OR abs_path LIKE '").append(usb).append("/%'");
+                    }
+                } catch (Throwable ignored) {}
             }
             if (wantSd) {
                 clause.append(" OR (storage IS NULL AND abs_path NOT LIKE '/storage/emulated/%'"
@@ -2425,10 +2434,10 @@ public final class RecordingsIndex {
         // Best-effort throughout: null/unknown is simply omitted so the badge
         // degrades gracefully rather than mislabeling.
         try {
-            String storage = rs.getString("storage");
+            String storage = com.overdrive.app.storage.StorageManager
+                    .getInstance().classifyStorageForPath(absPath);
             if (storage == null || storage.isEmpty()) {
-                storage = com.overdrive.app.storage.StorageManager
-                        .getInstance().classifyStorageForPath(absPath);
+                storage = rs.getString("storage");
             }
             if (storage != null) rec.put("storage", storage);
         } catch (Throwable ignored) {

@@ -233,6 +233,7 @@ public class StorageManager {
     // tiny (~10 bytes), atomic-write semantics not required because a stale
     // value still resolves to the same physical card.
     private static final String LEARNED_SD_UUID_FILE = "/data/local/tmp/overdrive_sd_uuid";
+    private static final String LEARNED_USB_UUID_FILE = "/data/local/tmp/overdrive_usb_uuid";
 
     /**
      * Cross-process proof that CameraDaemon recently observed the configured
@@ -2114,6 +2115,10 @@ public class StorageManager {
             return StorageType.INTERNAL.name();
         }
         if (absPath.startsWith("/storage/") || absPath.startsWith("/mnt/")) {
+            String learnedUsb = readLearnedUsbUuid();
+            if (!learnedUsb.isEmpty() && absPath.contains("/" + learnedUsb)) {
+                return StorageType.USB.name();
+            }
             return StorageType.SD_CARD.name();
         }
         return null;
@@ -2331,10 +2336,13 @@ public class StorageManager {
      */
     private String classifyPublicVolume(int major, int minor, String volumeUuid) {
         // Signal 1 (vendor-authoritative, live-only): does this volume's UUID
-        // match the BYD SD-slot UUID prop? Most reliable WHEN populated, but
-        // BYD only writes the prop while the card is mounted, so this misses
-        // during the unmount window between ACC OFF and our remount attempt.
+        // match the BYD SD-slot or USB-OTG UUID prop? Most reliable WHEN populated, but
+        // BYD only writes the prop while the device is mounted.
         if (volumeUuid != null && !volumeUuid.isEmpty()) {
+            String otgUuid = getSystemProperty("sys.byd.mUsbotgUuid");
+            if (otgUuid != null && !otgUuid.isEmpty() && otgUuid.equalsIgnoreCase(volumeUuid)) {
+                return "USB";
+            }
             String sdUuid = getSystemProperty("sys.byd.mSdcardUuid");
             if (sdUuid != null && !sdUuid.isEmpty() && sdUuid.equalsIgnoreCase(volumeUuid)) {
                 return "SD";
@@ -2342,13 +2350,15 @@ public class StorageManager {
         }
 
         // Signal 1b (vendor-authoritative, persistent): UUID we previously
-        // confirmed as SD via a successful mount. Survives the unmount
-        // window where the BYD vendor prop returns empty. The FAT volume
-        // serial in `volumeUuid` is stable across remount cycles for the
-        // same physical card, so a match here is conclusive.
+        // confirmed as USB or SD via a successful mount or file marker. Survives
+        // the unmount window where the BYD vendor props return empty.
         if (volumeUuid != null && !volumeUuid.isEmpty()) {
-            String learned = readLearnedSdUuid();
-            if (!learned.isEmpty() && learned.equalsIgnoreCase(volumeUuid)) {
+            String learnedUsb = readLearnedUsbUuid();
+            if (!learnedUsb.isEmpty() && learnedUsb.equalsIgnoreCase(volumeUuid)) {
+                return "USB";
+            }
+            String learnedSd = readLearnedSdUuid();
+            if (!learnedSd.isEmpty() && learnedSd.equalsIgnoreCase(volumeUuid)) {
                 return "SD";
             }
         }
@@ -2542,6 +2552,7 @@ public class StorageManager {
                 } else if ("USB".equals(klass) && !foundUsbAvail) {
                     foundUsbPath = mountPath;
                     foundUsbAvail = true;
+                    learnUsbUuid(volumeUuid);
                     logInfo("Found USB drive via sm list-volumes (" + major + ":" + minor + "): " + mountPath);
                 }
                 // Keep iterating — both kinds may be present.
@@ -2628,7 +2639,13 @@ public class StorageManager {
         // mispromoted to SD — that case still falls through, exactly as today.
         // Then the lone volume is, by elimination, the SD slot.
         boolean m4NoUsb = !isUsbDeviceAttached();
-        if (!foundSdAvail && ambiguousMounts.size() == 1
+        String learnedUsbUuid = readLearnedUsbUuid();
+        String otgUuidProp = getSystemProperty("sys.byd.mUsbotgUuid");
+        boolean isExplicitUsbVolume = ambiguousMounts.size() == 1 && (
+                (!learnedUsbUuid.isEmpty() && learnedUsbUuid.equalsIgnoreCase(ambiguousMounts.get(0)[1]))
+                || (!otgUuidProp.isEmpty() && otgUuidProp.equalsIgnoreCase(ambiguousMounts.get(0)[1]))
+        );
+        if (!isExplicitUsbVolume && !foundSdAvail && ambiguousMounts.size() == 1
                 && (m4NoUsb || isSdCardPhysicallyPresent())) {
             String[] only = ambiguousMounts.get(0);
             String mountPath = only[0];
@@ -3070,6 +3087,8 @@ public class StorageManager {
      */
     private void learnSdUuid(String uuid) {
         if (uuid == null || uuid.isEmpty()) return;
+        String learnedUsb = readLearnedUsbUuid();
+        if (!learnedUsb.isEmpty() && learnedUsb.equalsIgnoreCase(uuid)) return;
         if (uuid.equalsIgnoreCase(readLearnedSdUuid())) return;  // unchanged, skip write
         try (FileWriter w = new FileWriter(LEARNED_SD_UUID_FILE, false)) {
             w.write(uuid);
@@ -3079,6 +3098,41 @@ public class StorageManager {
             logInfo("Learned SD UUID for future classification: " + uuid);
         } catch (Exception e) {
             logDebug("learnSdUuid write failed: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Read the persisted UUID of the volume previously confirmed as USB. See
+     * {@link #LEARNED_USB_UUID_FILE} for why this exists. Returns empty string
+     * if no learned value (first boot, or file missing).
+     */
+    private String readLearnedUsbUuid() {
+        File f = new File(LEARNED_USB_UUID_FILE);
+        if (!f.exists() || !f.canRead()) return "";
+        try (BufferedReader r = new BufferedReader(new FileReader(f))) {
+            String line = r.readLine();
+            return line != null ? line.trim() : "";
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /**
+     * Persist the UUID of a volume just confirmed as USB.
+     */
+    private void learnUsbUuid(String uuid) {
+        if (uuid == null || uuid.isEmpty()) return;
+        File sdFile = new File(LEARNED_SD_UUID_FILE);
+        if (sdFile.exists() && uuid.equalsIgnoreCase(readLearnedSdUuid())) {
+            sdFile.delete();
+        }
+        if (uuid.equalsIgnoreCase(readLearnedUsbUuid())) return;  // unchanged, skip write
+        try (FileWriter w = new FileWriter(LEARNED_USB_UUID_FILE, false)) {
+            w.write(uuid);
+            try { new File(LEARNED_USB_UUID_FILE).setReadable(true, false); } catch (Exception ignored) {}
+            logInfo("Learned USB UUID for future classification: " + uuid);
+        } catch (Exception e) {
+            logDebug("learnUsbUuid write failed: " + e.getMessage());
         }
     }
 
