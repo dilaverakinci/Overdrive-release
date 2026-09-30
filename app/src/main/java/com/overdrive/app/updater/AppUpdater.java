@@ -952,6 +952,17 @@ public class AppUpdater {
                         return;
                     }
 
+                    // If remote version is strictly older than installed version on this channel,
+                    // do not offer it as an update even if asset timestamps differ.
+                    if (!remoteNumeric.isEmpty() && !installedNumeric.isEmpty()
+                            && isNewerVersion(remoteNumeric, installedNumeric)) {
+                        Log.i(TAG, "Remote version (" + remoteNumeric + ") is older than installed ("
+                                + installedNumeric + ") — suppressing update offer");
+                        saveLastUpdateTimestamp(channel, updatedAt);
+                        runCallback(() -> callback.onNoUpdate(currentVersion));
+                        return;
+                    }
+
                     // Update detection: compare asset updated_at timestamp only.
                     // Version comparison is unreliable since versionName may not be bumped
                     // when the APK is replaced on the same release tag.
@@ -3592,6 +3603,15 @@ public class AppUpdater {
         if (runningChannel != null && !runningChannel.isEmpty()
                 && !labelChannel.equals(runningChannel)) {
             return "";   // stale cross-channel label — let the caller fall back
+        }
+        // Staleness guard: If BuildConfig's installed version is newer than the
+        // file's version, the file is stale and must not override the higher installed version.
+        String installedNum = BuildConfig.VERSION_NAME;
+        String fileNum = numericVersion(label);
+        if (installedNum != null && !installedNum.isEmpty() && !fileNum.isEmpty()) {
+            if (isNewerVersion(fileNum, installedNum)) {
+                return "";   // installedNum > fileNum: fall back to getInstalledVersion()
+            }
         }
         return label;
     }
