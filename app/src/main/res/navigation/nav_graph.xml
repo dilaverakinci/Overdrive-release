@@ -7,9 +7,8 @@
 
     <fragment
         android:id="@+id/dashboardFragment"
-        android:name="com.overdrive.app.ui.fragment.DashboardFragment"
-        android:label="@string/rail_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        android:name="com.overdrive.app.ui.dashboard.DashboardComposeFragment"
+        android:label="@string/rail_dashboard" />
 
     <!-- Assistant / GenAI (100% Jetpack Compose Native) -->
     <fragment

@@ -1,11 +1,7 @@
 package com.overdrive.app.ui.dashboard
 
 import android.graphics.Bitmap
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,15 +10,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,16 +34,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -56,9 +52,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.overdrive.app.R
 import com.overdrive.app.ui.component.OverdriveCard
-import com.overdrive.app.ui.component.OverdrivePillStatus
-import com.overdrive.app.ui.component.OverdriveStatusPill
 import com.overdrive.app.ui.theme.OverdriveDimensions
+import com.overdrive.app.ui.vehicle.VehicleArt
 
 /**
  * State container for Dashboard Remote / Web portal card.
@@ -81,6 +76,7 @@ data class DashboardHeroState(
     val greeting: String = "",
     val subtitle: String = "",
     val vehicleModel: String? = null,
+    val modelId: String? = null,
     val tunnelChipText: String = "",
     val isTunnelOnline: Boolean = false,
     val daemonsChipText: String = "",
@@ -91,7 +87,11 @@ data class DashboardHeroState(
 
 /**
  * Complete 100% Jetpack Compose Native Dashboard Screen.
- * Fully replaces fragment_dashboard.xml preserving 1:1 layout, tokens, card padding and behavior.
+ * Fully matches the perfected native XML landscape layout (fragment_dashboard.xml) with:
+ * - Full-bleed Hero Card on top (Ribbon backdrop + 3D Vehicle render + SOC/Range boxes + Gauge + 3 Status Chips)
+ * - 2-Column landscape grid below Hero Card:
+ *   Left column: Quick Actions (2x2) + Remote Access card
+ *   Right column: Recordings & Storage + Recent Activity card
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -123,62 +123,79 @@ fun DashboardScreen(
                 .fillMaxWidth()
                 .verticalScroll(scrollState)
                 .padding(
-                    start = OverdriveDimensions.pagePaddingHorizontal,
-                    end = OverdriveDimensions.pagePaddingHorizontal,
-                    top = OverdriveDimensions.pagePaddingTop,
-                    bottom = OverdriveDimensions.pagePaddingBottom,
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 8.dp,
+                    bottom = 8.dp,
                 ),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            // 1. HERO CARD
+            // 1. HERO STATUS CARD (Top Full-Width)
             HeroStatusCard(
                 uiState = uiState,
                 heroState = heroState,
                 onClick = onVehicleCardClick,
             )
 
-            // 2. CONDITIONAL CHARGING CARD
-            val snapshot = (uiState.vehicle as? DashboardUiState.VehicleState.Ready)?.snapshot
-            val charging = snapshot?.charging
-            if (charging != null && (charging.charging || charging.plugged)) {
-                ChargingStatusCard(charging = charging)
+            // 2. TWO-COLUMN LANDSCAPE CONTENT GRID
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                // LEFT COLUMN (Quick Actions, Remote Access, Charging)
+                Column(
+                    modifier = Modifier.weight(1.08f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    // CONDITIONAL CHARGING CARD
+                    val snapshot = (uiState.vehicle as? DashboardUiState.VehicleState.Ready)?.snapshot
+                    val charging = snapshot?.charging
+                    if (charging != null && (charging.charging || charging.plugged)) {
+                        ChargingStatusCard(charging = charging)
+                    }
+
+                    // QUICK ACTIONS TILES (2x2)
+                    QuickActionsGrid(
+                        daemonsRunningText = heroState.daemonsChipText,
+                        onLiveClick = onLiveClick,
+                        onDaemonsClick = onDaemonsClick,
+                        onTripsClick = onTripsClick,
+                        onVehicleControlClick = onVehicleControlClick,
+                    )
+
+                    // REMOTE WEB ACCESS PORTAL CARD (:8080)
+                    RemoteAccessCard(
+                        remoteState = remoteState,
+                        onToggleExpand = onToggleRemoteExpanded,
+                        onToggleTokenMask = onToggleTokenMask,
+                        onCopyToken = onCopyToken,
+                        onCopyUrl = onCopyUrl,
+                        onRegenerateToken = onRegenerateToken,
+                    )
+                }
+
+                // RIGHT COLUMN (Recordings & Storage, Recent Activity)
+                Column(
+                    modifier = Modifier.weight(0.92f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    // RECORDINGS & STORAGE CARD
+                    RecordingsAndStorageCard(
+                        recordingState = uiState.recordings,
+                        onClick = onRecordingsClick,
+                    )
+
+                    // RECENT ACTIVITY CARD
+                    RecentActivityCard(activityState = uiState.activity)
+                }
             }
-
-            // 3. RECORDINGS & STORAGE CARD
-            RecordingsAndStorageCard(
-                recordingState = uiState.recordings,
-                onClick = onRecordingsClick,
-            )
-
-            // 4. RECENT ACTIVITY CARD
-            RecentActivityCard(activityState = uiState.activity)
-
-            // 5. QUICK ACTIONS TILES (2x2)
-            QuickActionsGrid(
-                daemonsRunningText = heroState.daemonsChipText,
-                onLiveClick = onLiveClick,
-                onDaemonsClick = onDaemonsClick,
-                onTripsClick = onTripsClick,
-                onVehicleControlClick = onVehicleControlClick,
-            )
-
-            // 6. REMOTE WEB ACCESS PORTAL CARD (:8080)
-            RemoteAccessCard(
-                remoteState = remoteState,
-                onToggleExpand = onToggleRemoteExpanded,
-                onToggleTokenMask = onToggleTokenMask,
-                onCopyToken = onCopyToken,
-                onCopyUrl = onCopyUrl,
-                onRegenerateToken = onRegenerateToken,
-            )
         }
     }
 }
 
 // -----------------------------------------------------------------------------
-// HERO CARD
+// HERO STATUS CARD
 // -----------------------------------------------------------------------------
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun HeroStatusCard(
     uiState: DashboardUiState,
@@ -189,129 +206,196 @@ private fun HeroStatusCard(
     val vehicleSnapshot = (uiState.vehicle as? DashboardUiState.VehicleState.Ready)?.snapshot
 
     OverdriveCard(
-        onClick = onClick,
         modifier = modifier.fillMaxWidth(),
+        contentPadding = 0.dp,
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(OverdriveDimensions.cardPaddingStandard)
-        ) {
-            // Top Header: Greeting, Subtitle, Model Name
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = heroState.greeting.ifEmpty { stringResource(R.string.dashboard_modern_vehicle_status) },
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Text(
-                        text = heroState.subtitle.ifEmpty { stringResource(R.string.dashboard_modern_updating) },
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 2.dp),
-                    )
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(start = 12.dp),
-                ) {
-                    Text(
-                        text = heroState.vehicleModel ?: stringResource(R.string.dashboard_vehicle_tap_to_set),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Icon(
-                        painter = painterResource(R.drawable.ic_chevron_right),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .size(18.dp)
-                            .padding(start = 2.dp),
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Battery (SOC) & Range Metric Boxes
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                // Battery Box
-                val socValue = vehicleSnapshot?.socPercent
-                MetricBox(
-                    label = stringResource(R.string.dashboard_modern_battery),
-                    value = if (socValue != null) "${socValue.toInt()}%" else stringResource(R.string.dashboard_metric_value_pending),
-                    isLoading = uiState.vehicle is DashboardUiState.VehicleState.Loading,
-                    modifier = Modifier.weight(1f),
-                )
-
-                // Range Box
-                val rangeValue = vehicleSnapshot?.range?.value
-                val rangeUnit = vehicleSnapshot?.range?.unit?.label ?: "km"
-                MetricBox(
-                    label = stringResource(R.string.dashboard_modern_range),
-                    value = if (rangeValue != null) "$rangeValue $rangeUnit" else stringResource(R.string.dashboard_metric_value_pending),
-                    isLoading = uiState.vehicle is DashboardUiState.VehicleState.Loading,
-                    modifier = Modifier.weight(1f),
-                )
-            }
-
-            // SOC Progress Bar
-            val socPercent = vehicleSnapshot?.socPercent?.toFloat() ?: 0f
-            val progressColor = if (socPercent <= 20f && socPercent > 0f) {
-                MaterialTheme.colorScheme.error
-            } else {
-                MaterialTheme.colorScheme.primary
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-            LinearProgressIndicator(
-                progress = { (socPercent / 100f).coerceIn(0f, 1f) },
+        Box(modifier = Modifier.fillMaxWidth()) {
+            // Layer 1: Ribbon backdrop (aligned to BottomEnd)
+            Image(
+                painter = painterResource(R.drawable.dashboard_hero_ribbon),
+                contentDescription = null,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(6.dp)
-                    .clip(RoundedCornerShape(3.dp)),
-                color = progressColor,
-                trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    .align(Alignment.BottomEnd)
+                    .width(520.dp)
+                    .height(160.dp)
+                    .alpha(0.3f),
+                contentScale = ContentScale.Crop,
             )
 
-            // Status Chips
-            Spacer(modifier = Modifier.height(14.dp))
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
+            // Layer 2: Vehicle 3D Render Art (aligned to BottomEnd with inset)
+            Image(
+                painter = painterResource(VehicleArt.drawableFor(heroState.modelId)),
+                contentDescription = null,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 48.dp)
+                    .heightIn(max = 145.dp)
+                    .wrapContentWidth(),
+                contentScale = ContentScale.Fit,
+            )
+
+            // Layer 3: Foreground Interactive Content
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp)
             ) {
-                // Tunnel Chip
-                OverdriveStatusPill(
-                    label = heroState.tunnelChipText.ifEmpty { stringResource(R.string.dashboard_tunnel_offline) },
-                    status = if (heroState.isTunnelOnline) OverdrivePillStatus.SUCCESS else OverdrivePillStatus.INFO,
+                // Header Row: Greeting & Subtitle on left, Model / "Tap to set" on right
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = heroState.greeting.ifEmpty { stringResource(R.string.dashboard_modern_vehicle_status) },
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            text = heroState.subtitle.ifEmpty { stringResource(R.string.dashboard_modern_updating) },
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 2.dp),
+                        )
+                    }
+
+                    // Clickable touch target to open Vehicle Model & Capacity dialog
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = ripple(bounded = true),
+                                onClick = onClick,
+                            )
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                    ) {
+                        Text(
+                            text = heroState.vehicleModel ?: stringResource(R.string.dashboard_vehicle_tap_to_set),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Icon(
+                            painter = painterResource(R.drawable.ic_chevron_right),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .size(18.dp)
+                                .padding(start = 2.dp),
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Battery (SOC) & Range Metric Boxes (240dp fixed width to match landscape XML)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    // Battery Box
+                    val socValue = vehicleSnapshot?.socPercent
+                    MetricBox(
+                        label = stringResource(R.string.dashboard_modern_battery).uppercase(),
+                        value = if (socValue != null) "${socValue.toInt()}%" else stringResource(R.string.dashboard_metric_value_pending),
+                        isLoading = uiState.vehicle is DashboardUiState.VehicleState.Loading,
+                        modifier = Modifier.width(240.dp),
+                    )
+
+                    // Range Box
+                    val rangeValue = vehicleSnapshot?.range?.value
+                    val rangeUnit = vehicleSnapshot?.range?.unit?.label ?: "km"
+                    MetricBox(
+                        label = stringResource(R.string.dashboard_modern_range).uppercase(),
+                        value = if (rangeValue != null) "$rangeValue $rangeUnit" else stringResource(R.string.dashboard_metric_value_pending),
+                        isLoading = uiState.vehicle is DashboardUiState.VehicleState.Loading,
+                        modifier = Modifier.width(240.dp),
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Battery Gauge (LinearProgressIndicator, 492dp width to match metric boxes)
+                val socPercent = vehicleSnapshot?.socPercent?.toFloat() ?: 0f
+                val progressColor = if (socPercent <= 20f && socPercent > 0f) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.primary
+                }
+
+                LinearProgressIndicator(
+                    progress = { (socPercent / 100f).coerceIn(0f, 1f) },
+                    modifier = Modifier
+                        .width(492.dp)
+                        .height(6.dp)
+                        .clip(RoundedCornerShape(3.dp)),
+                    color = progressColor,
+                    trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                 )
 
-                // Daemons Chip
-                OverdriveStatusPill(
-                    label = heroState.daemonsChipText.ifEmpty { stringResource(R.string.dashboard_daemons_running_default) },
-                    status = if (heroState.areDaemonsRunning) OverdrivePillStatus.SUCCESS else OverdrivePillStatus.DANGER,
-                )
+                Spacer(modifier = Modifier.height(12.dp))
 
-                // Recording Chip
-                OverdriveStatusPill(
-                    label = heroState.recordingChipText.ifEmpty { stringResource(R.string.dashboard_chip_recording_idle) },
-                    status = if (heroState.isRecordingActive) OverdrivePillStatus.DANGER else OverdrivePillStatus.INFO,
-                )
+                // Status Chips Row (150dp width, 34dp min height each)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    // Tunnel Chip
+                    HeroStatusChip(
+                        text = heroState.tunnelChipText.ifEmpty { stringResource(R.string.dashboard_tunnel_offline) },
+                        containerColor = if (heroState.isTunnelOnline) Color(0xFFC8E6C9) else Color(0xFFFFDAD6),
+                        textColor = if (heroState.isTunnelOnline) Color(0xFF1B5E20) else Color(0xFFBA1A1A),
+                    )
+
+                    // Services Chip
+                    HeroStatusChip(
+                        text = heroState.daemonsChipText.ifEmpty { stringResource(R.string.dashboard_daemons_running_default) },
+                        containerColor = if (heroState.areDaemonsRunning) Color(0xFFC8E6C9) else Color(0xFFFFDAD6),
+                        textColor = if (heroState.areDaemonsRunning) Color(0xFF1B5E20) else Color(0xFFBA1A1A),
+                    )
+
+                    // Recording Chip
+                    HeroStatusChip(
+                        text = heroState.recordingChipText.ifEmpty { stringResource(R.string.dashboard_chip_recording_idle) },
+                        containerColor = if (heroState.isRecordingActive) Color(0xFFFFDAD6) else Color(0xFFFFDDB8),
+                        textColor = if (heroState.isRecordingActive) Color(0xFFBA1A1A) else Color(0xFFA6601C),
+                    )
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun HeroStatusChip(
+    text: String,
+    containerColor: Color,
+    textColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .width(150.dp)
+            .heightIn(min = 34.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(containerColor)
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = textColor,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
@@ -324,11 +408,15 @@ private fun MetricBox(
 ) {
     Box(
         modifier = modifier
+            .heightIn(min = 78.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
             .padding(12.dp)
     ) {
-        Column {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.SpaceBetween,
+        ) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelMedium,
@@ -364,13 +452,13 @@ private fun ChargingStatusCard(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(OverdriveDimensions.cardRadiusStandard),
+        shape = RoundedCornerShape(8.dp),
         color = MaterialTheme.colorScheme.primaryContainer,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(OverdriveDimensions.cardPaddingStandard)
+                .padding(12.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -391,18 +479,18 @@ private fun ChargingStatusCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 // Power (kW)
                 if (charging.powerKw != null) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "${charging.powerKw} kW",
-                            style = MaterialTheme.typography.titleLarge,
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
@@ -419,7 +507,7 @@ private fun ChargingStatusCard(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = stringResource(R.string.format_minutes, charging.timeToFullMinutes),
-                            style = MaterialTheme.typography.titleLarge,
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
@@ -436,7 +524,7 @@ private fun ChargingStatusCard(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "${charging.sessionKwh} kWh",
-                            style = MaterialTheme.typography.titleLarge,
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
@@ -464,11 +552,10 @@ private fun RecordingsAndStorageCard(
     OverdriveCard(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
+        contentPadding = 12.dp,
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(OverdriveDimensions.cardPaddingStandard)
+            modifier = Modifier.fillMaxWidth()
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -507,7 +594,7 @@ private fun RecordingsAndStorageCard(
 
             val storage = (recordingState as? DashboardUiState.RecordingState.Ready)?.storage
             if (storage != null) {
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
                 val usedGb = String.format("%.1f", storage.usedBytes / (1024.0 * 1024 * 1024))
                 val totalGb = String.format("%.1f", storage.totalBytes / (1024.0 * 1024 * 1024))
                 Text(
@@ -526,6 +613,13 @@ private fun RecordingsAndStorageCard(
                     color = MaterialTheme.colorScheme.primary,
                     trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                 )
+            } else {
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = stringResource(R.string.dashboard_modern_storage_unavailable),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }
@@ -541,11 +635,10 @@ private fun RecentActivityCard(
 ) {
     OverdriveCard(
         modifier = modifier.fillMaxWidth(),
+        contentPadding = 12.dp,
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(OverdriveDimensions.cardPaddingStandard)
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text(
                 text = stringResource(R.string.dashboard_modern_recent_activity),
@@ -554,7 +647,7 @@ private fun RecentActivityCard(
                 color = MaterialTheme.colorScheme.onSurface,
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             when (activityState) {
                 is DashboardUiState.ActivityState.Loading -> {
@@ -572,7 +665,7 @@ private fun RecentActivityCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     } else {
-                        activityState.rows.forEachIndexed { index, row ->
+                        activityState.rows.forEach { row ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -611,7 +704,7 @@ private fun RecentActivityCard(
 }
 
 // -----------------------------------------------------------------------------
-// QUICK ACTIONS GRID
+// QUICK ACTIONS GRID (2x2)
 // -----------------------------------------------------------------------------
 @Composable
 private fun QuickActionsGrid(
@@ -624,12 +717,9 @@ private fun QuickActionsGrid(
 ) {
     OverdriveCard(
         modifier = modifier.fillMaxWidth(),
+        contentPadding = 12.dp,
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(OverdriveDimensions.cardPaddingStandard)
-        ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = stringResource(R.string.dashboard_modern_quick_actions),
                 style = MaterialTheme.typography.titleMedium,
@@ -637,7 +727,7 @@ private fun QuickActionsGrid(
                 color = MaterialTheme.colorScheme.onSurface,
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Row 1: Live & Daemons
             Row(
@@ -659,7 +749,7 @@ private fun QuickActionsGrid(
                 )
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Row 2: Trips & Vehicle Control
             Row(
@@ -693,14 +783,14 @@ private fun QuickActionTile(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(OverdriveDimensions.cardRadiusStandard))
+            .clip(RoundedCornerShape(8.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = ripple(bounded = true),
                 onClick = onClick,
             )
-            .padding(12.dp)
+            .padding(horizontal = 12.dp, vertical = 8.dp)
             .height(52.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
@@ -752,8 +842,8 @@ private fun RemoteAccessCard(
     modifier: Modifier = Modifier,
 ) {
     OverdriveCard(
-        onClick = onToggleExpand,
         modifier = modifier.fillMaxWidth(),
+        contentPadding = 0.dp,
     ) {
         Column(
             modifier = Modifier
@@ -764,7 +854,13 @@ private fun RemoteAccessCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(OverdriveDimensions.cardPaddingStandard),
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = ripple(color = MaterialTheme.colorScheme.primary),
+                        onClick = onToggleExpand,
+                    )
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 // Online Dot
@@ -808,16 +904,12 @@ private fun RemoteAccessCard(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(
-                            start = OverdriveDimensions.cardPaddingStandard,
-                            end = OverdriveDimensions.cardPaddingStandard,
-                            bottom = OverdriveDimensions.cardPaddingStandard,
-                        )
+                        .padding(start = 12.dp, end = 12.dp, bottom = 12.dp)
                 ) {
                     HorizontalDivider(
                         color = MaterialTheme.colorScheme.outlineVariant,
                         thickness = 1.dp,
-                        modifier = Modifier.padding(bottom = 12.dp),
+                        modifier = Modifier.padding(bottom = 10.dp),
                     )
 
                     // Device ID Row
@@ -840,7 +932,7 @@ private fun RemoteAccessCard(
                     }
 
                     // QR Code Box
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     if (remoteState.qrBitmap != null) {
                         Box(
                             modifier = Modifier
@@ -881,7 +973,7 @@ private fun RemoteAccessCard(
                     }
 
                     // Security Token Section
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = stringResource(R.string.dashboard_access_code),
                         style = MaterialTheme.typography.labelLarge,
@@ -894,7 +986,7 @@ private fun RemoteAccessCard(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
                             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                            .padding(horizontal = 12.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         val displayToken = if (remoteState.isTokenMasked) {

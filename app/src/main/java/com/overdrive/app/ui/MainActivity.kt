@@ -4910,19 +4910,26 @@ open class MainActivity : AppCompatActivity() {
     fun openVehicleProfileForOnboarding(onFinished: () -> Unit): Boolean {
         val nav = supportFragmentManager.findFragmentById(R.id.navHostFragment)
                 as? androidx.navigation.fragment.NavHostFragment
-        val dash = nav?.childFragmentManager?.primaryNavigationFragment
-                as? com.overdrive.app.ui.fragment.DashboardFragment
-                ?: return false
-        return dash.showVehicleCapacityDialog(onFinished)
+        val primary = nav?.childFragmentManager?.primaryNavigationFragment
+        return when (primary) {
+            is com.overdrive.app.ui.dashboard.DashboardComposeFragment ->
+                primary.showVehicleCapacityDialog(onFinished)
+            is com.overdrive.app.ui.fragment.DashboardFragment ->
+                primary.showVehicleCapacityDialog(onFinished)
+            else -> false
+        }
     }
 
     /** Live DashboardFragment root for the orientation tour anchors (null if not current). */
     fun currentDashboardRoot(): android.view.View? {
         val nav = supportFragmentManager.findFragmentById(R.id.navHostFragment)
                 as? androidx.navigation.fragment.NavHostFragment
-        val dash = nav?.childFragmentManager?.primaryNavigationFragment
-                as? com.overdrive.app.ui.fragment.DashboardFragment
-        return dash?.view
+        val primary = nav?.childFragmentManager?.primaryNavigationFragment
+        return when (primary) {
+            is com.overdrive.app.ui.dashboard.DashboardComposeFragment -> primary.view
+            is com.overdrive.app.ui.fragment.DashboardFragment -> primary.view
+            else -> null
+        }
     }
 
     /** Expert-tour entry: land the user on Diagnostics (advanced camera knobs live there). */
