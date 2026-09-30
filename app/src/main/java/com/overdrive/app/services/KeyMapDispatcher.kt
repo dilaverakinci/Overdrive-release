@@ -369,6 +369,9 @@ object KeyMapDispatcher {
         }
     }
 
+    @Volatile
+    var nativeCaptureListener: ((Int) -> Unit)? = null
+
     /**
      * Returns true if the key was mapped and should be CONSUMED (not passed to
      * the OEM handler). Called from the a11y input-filter thread — reads only the
@@ -379,6 +382,20 @@ object KeyMapDispatcher {
      * @param repeatCount KeyEvent.getRepeatCount() (>0 ⇒ held → long-press)
      */
     fun onKey(keyCode: Int, isDown: Boolean, repeatCount: Int): Boolean {
+        // Native Compose capture mode: if a Compose screen is actively listening for key capture,
+        // forward the keycode directly to it and consume the event.
+        val nativeCapture = nativeCaptureListener
+        if (nativeCapture != null) {
+            if (isDown && repeatCount == 0) {
+                try {
+                    nativeCapture(keyCode)
+                } catch (t: Throwable) {
+                    Log.w(TAG, "nativeCaptureListener error", t)
+                }
+            }
+            return true
+        }
+
         // Capture mode: the Key Mapping "press a button to capture it" box (in the
         // WebView) can't see hardware keys — they arrive HERE, not as WebView DOM
         // keydown. While the page has armed capture, forward the keycode into the
@@ -937,6 +954,11 @@ object KeyMapDispatcher {
     /** Punt the bound action's daemon POST to the pooled I/O executor. */
     private fun fire(binding: JSONObject) {
         val action = binding.optJSONObject("action") ?: return
+        fireAction(action, null)
+    }
+
+    /** Public test-fire execution for Compose UI or other callers. */
+    fun fireAction(action: JSONObject, onResult: ((Boolean, String) -> Unit)? = null) {
         io.submit {
             try {
                 // Local loopback to the in-process daemon — keep timeouts tight so
@@ -959,8 +981,10 @@ object KeyMapDispatcher {
                     Log.w(TAG, "keymap fire HTTP $code kind=${action.optString("kind")} resp=$body")
                 }
                 conn.disconnect()
+                onResult?.invoke(code in 200..299, body)
             } catch (t: Throwable) {
                 Log.w(TAG, "keymap fire failed: ${t.message}")
+                onResult?.invoke(false, t.message ?: "Failed")
             }
         }
     }

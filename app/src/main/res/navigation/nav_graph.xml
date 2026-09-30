@@ -95,17 +95,11 @@
         android:name="com.overdrive.app.ui.seats.SeatPositionsComposeFragment"
         android:label="@string/rail_seat_positions" />
 
-    <!-- Key Mapping (web canonical) -->
+    <!-- Key Mapping (100% Jetpack Compose Native) -->
     <fragment
         android:id="@+id/keyMappingFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_key_mapping"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/key-mapping" />
-    </fragment>
+        android:name="com.overdrive.app.ui.keymapping.KeyMappingComposeFragment"
+        android:label="@string/rail_key_mapping" />
 
     <!-- Integrations: roll-up of Telegram + ABRP + MQTT -->
     <fragment
