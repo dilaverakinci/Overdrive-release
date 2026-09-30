@@ -134,9 +134,8 @@
          the radio and has a live client/stats surface. -->
     <fragment
         android:id="@+id/networkFragment"
-        android:name="com.overdrive.app.ui.fragment.NetworkFragment"
-        android:label="@string/network_title"
-        tools:layout="@layout/fragment_network" />
+        android:name="com.overdrive.app.ui.network.NetworkComposeFragment"
+        android:label="@string/network_title" />
 
     <!-- Diagnostics: logs + ADB console + utilities -->
     <fragment
