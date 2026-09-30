@@ -113,14 +113,8 @@
 
     <fragment
         android:id="@+id/mqttFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/nav_page_mqtt"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/mqtt" />
-    </fragment>
+        android:name="com.overdrive.app.ui.mqtt.MqttComposeFragment"
+        android:label="@string/nav_page_mqtt" />
 
     <fragment
         android:id="@+id/bydCloudFragment"
