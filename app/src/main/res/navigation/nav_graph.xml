@@ -162,7 +162,7 @@
          destinations on a single renderer. -->
     <fragment
         android:id="@+id/roadSenseFragment"
-        android:name="com.overdrive.app.ui.fragment.RoadSenseFragment"
+        android:name="com.overdrive.app.ui.roadsense.RoadSenseComposeFragment"
         android:label="@string/rail_roadsense" />
 
     <!-- Network & Hotspot: SIM-data sharing, clients, data limit, proxy.
