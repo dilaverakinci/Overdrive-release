@@ -154,8 +154,8 @@ fun LiveViewScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(
-                        horizontal = OverdriveTheme.dimensions.pagePaddingHorizontal,
-                        vertical = 8.dp
+                        horizontal = 12.dp,
+                        vertical = 6.dp
                     )
             ) {
                 val isWide = maxWidth >= 840.dp
@@ -163,7 +163,7 @@ fun LiveViewScreen(
                 if (isWide) {
                     Row(
                         modifier = Modifier.fillMaxSize(),
-                        horizontalArrangement = Arrangement.spacedBy(14.dp)
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         // Left Column: Live Camera Video Stage (Takes full available height)
                         Box(
@@ -184,9 +184,9 @@ fun LiveViewScreen(
                         // Right Column: Cameras Selector & Vehicle Location Map
                         Column(
                             modifier = Modifier
-                                .width(330.dp)
+                                .width(340.dp)
                                 .fillMaxHeight(),
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             // Camera Selector Card (Top-Down Car Visual with Hotspots)
                             CameraSelectorCard(
@@ -740,11 +740,14 @@ private fun CameraSelectorCard(
     onSelectCamera: (LiveCameraMode) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    OverdriveCard(modifier = modifier.fillMaxWidth()) {
+    OverdriveCard(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = 0.dp
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 14.dp, vertical = 10.dp),
+                .padding(horizontal = 10.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Row(
@@ -801,8 +804,8 @@ private fun CarHotspotDiagram(
             contentDescription = vehicleModelName,
             contentScale = ContentScale.Fit,
             modifier = Modifier
-                .fillMaxHeight(0.92f)
-                .width(96.dp)
+                .fillMaxHeight(0.96f)
+                .width(120.dp)
                 .align(Alignment.Center)
         )
 
@@ -813,7 +816,7 @@ private fun CarHotspotDiagram(
             onClick = { onSelectCamera(LiveCameraMode.FRONT) },
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 4.dp)
+                .padding(top = 2.dp)
         )
 
         // 2. DVR (OEM Dashcam) — Hood right-of-center
@@ -824,7 +827,7 @@ private fun CarHotspotDiagram(
                 onClick = { onSelectCamera(LiveCameraMode.DVR) },
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = 40.dp, start = 48.dp)
+                    .padding(top = 36.dp, start = 48.dp)
             )
         }
 
@@ -843,7 +846,7 @@ private fun CarHotspotDiagram(
             onClick = { onSelectCamera(LiveCameraMode.LEFT) },
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .padding(start = 6.dp)
+                .padding(start = 2.dp)
         )
 
         // 5. RIGHT (SAĞ) — Right mirror side
@@ -853,7 +856,7 @@ private fun CarHotspotDiagram(
             onClick = { onSelectCamera(LiveCameraMode.RIGHT) },
             modifier = Modifier
                 .align(Alignment.CenterEnd)
-                .padding(end = 6.dp)
+                .padding(end = 2.dp)
         )
 
         // 6. REAR (ARKA) — Rear bumper bottom center
@@ -863,7 +866,7 @@ private fun CarHotspotDiagram(
             onClick = { onSelectCamera(LiveCameraMode.REAR) },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 4.dp)
+                .padding(bottom = 2.dp)
         )
     }
 }
@@ -953,12 +956,15 @@ private fun VehicleLocationCard(
     onExpandMap: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    OverdriveCard(modifier = modifier.fillMaxWidth()) {
+    OverdriveCard(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = 0.dp
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 14.dp, vertical = 10.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+                .padding(horizontal = 10.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             // Header: Title + GPS Freshness
             Row(
@@ -968,13 +974,13 @@ private fun VehicleLocationCard(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.LocationOn,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                     Text(
                         text = stringResource(R.string.live_vehicle_location),
@@ -987,11 +993,11 @@ private fun VehicleLocationCard(
                 // GPS Freshness Pill
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(8.dp)
+                            .size(7.dp)
                             .clip(CircleShape)
                             .background(OverdriveTheme.colors.statusSuccess)
                     )
@@ -1008,7 +1014,7 @@ private fun VehicleLocationCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(8.dp))
             ) {
                 LiveLocationMiniMap(
                     latitude = state.vehicleLatitude,
@@ -1020,23 +1026,23 @@ private fun VehicleLocationCard(
 
                 // Coordinate Pill at bottom left of map
                 Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = Color.Black.copy(alpha = 0.65f),
+                    shape = RoundedCornerShape(6.dp),
+                    color = Color.Black.copy(alpha = 0.7f),
                     border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.2f)),
                     modifier = Modifier
                         .align(Alignment.BottomStart)
-                        .padding(8.dp)
+                        .padding(6.dp)
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(3.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.LocationOn,
                             contentDescription = null,
                             tint = Color.White,
-                            modifier = Modifier.size(13.dp)
+                            modifier = Modifier.size(11.dp)
                         )
                         Text(
                             text = String.format(Locale.US, "%.5f°, %.5f°", state.vehicleLatitude, state.vehicleLongitude),
@@ -1052,11 +1058,11 @@ private fun VehicleLocationCard(
             // Full-width Expand Map Action Button
             Surface(
                 onClick = onExpandMap,
-                shape = RoundedCornerShape(10.dp),
+                shape = RoundedCornerShape(8.dp),
                 color = MaterialTheme.colorScheme.primaryContainer,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(38.dp)
+                    .height(34.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxSize(),
@@ -1067,7 +1073,7 @@ private fun VehicleLocationCard(
                         imageVector = Icons.Default.Fullscreen,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
