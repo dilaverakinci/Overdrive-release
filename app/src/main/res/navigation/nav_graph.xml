@@ -34,17 +34,11 @@
         android:name="com.overdrive.app.ui.parking.ParkingComposeFragment"
         android:label="@string/rail_parking" />
 
-    <!-- Surveillance settings (web) — kept reachable from Recordings → Settings ↗ button -->
+    <!-- Surveillance settings (100% Jetpack Compose Native) — reachable from Recordings → Settings ↗ button -->
     <fragment
         android:id="@+id/surveillanceSettingsWebFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/settings_section_surveillance"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/surveillance" />
-    </fragment>
+        android:name="com.overdrive.app.ui.surveillance.SurveillanceComposeFragment"
+        android:label="@string/settings_section_surveillance" />
 
     <!-- Recording settings (web) — same path -->
     <fragment
