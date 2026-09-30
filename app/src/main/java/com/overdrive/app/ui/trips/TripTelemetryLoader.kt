@@ -34,52 +34,61 @@ object TripTelemetryLoader {
 
         val trips = mutableListOf<TripUiItem>()
 
-        // 1. Check storage directory first
-        val storageDir = try {
-            StorageManager.getInstance()?.tripsDir
-        } catch (_: Throwable) {
-            null
-        }
+        val seenTripIds = mutableSetOf<Long>()
+        val searchDirs = mutableListOf<File>()
 
-        if (storageDir != null && storageDir.exists() && storageDir.isDirectory) {
-            val files = storageDir.listFiles { _, name -> name.endsWith(".jsonl.gz") }
-            if (files != null && files.isNotEmpty()) {
-                files.sortedByDescending { it.lastModified() }.forEach { file ->
-                    val tripId = file.name.substringBefore('.').toLongOrNull() ?: 100L
-                    try {
-                        parseTripFile(file.inputStream(), tripId)?.let { trips.add(it) }
-                    } catch (_: Throwable) {}
+        try {
+            StorageManager.getInstance()?.let { sm ->
+                sm.allTripsDirs?.filterNotNull()?.forEach { dir ->
+                    if (!searchDirs.any { it.absolutePath == dir.absolutePath }) {
+                        searchDirs.add(dir)
+                    }
                 }
+            }
+        } catch (_: Throwable) {}
+
+        listOf(
+            File("/storage/0000-0000/Overdrive/trips"),
+            File("/storage/emulated/0/Overdrive/trips"),
+            File("/sdcard/Overdrive/trips"),
+            File("/sdcard/OverDrive/trips")
+        ).forEach { dir ->
+            if (!searchDirs.any { it.absolutePath == dir.absolutePath }) {
+                searchDirs.add(dir)
             }
         }
 
-        // 2. Also check /sdcard/OverDrive/trips/
-        if (trips.isEmpty()) {
-            val sdDir = File("/sdcard/OverDrive/trips")
-            if (sdDir.exists() && sdDir.isDirectory) {
-                val files = sdDir.listFiles { _, name -> name.endsWith(".jsonl.gz") }
+        for (storageDir in searchDirs) {
+            if (storageDir.exists() && storageDir.isDirectory) {
+                val files = storageDir.listFiles { _, name -> name.endsWith(".jsonl.gz") }
                 if (files != null && files.isNotEmpty()) {
                     files.sortedByDescending { it.lastModified() }.forEach { file ->
                         val tripId = file.name.substringBefore('.').toLongOrNull() ?: 100L
-                        try {
-                            parseTripFile(file.inputStream(), tripId)?.let { trips.add(it) }
-                        } catch (_: Throwable) {}
+                        if (!seenTripIds.contains(tripId)) {
+                            try {
+                                parseTripFile(file.inputStream(), tripId)?.let {
+                                    seenTripIds.add(tripId)
+                                    trips.add(it)
+                                }
+                            } catch (_: Throwable) {}
+                        }
                     }
                 }
             }
         }
 
-        // 3. Fallback to bundled APK assets (100.jsonl.gz, 99.jsonl.gz, 98.jsonl.gz, 66.jsonl.gz)
-        if (trips.isEmpty()) {
-            val assetNames = listOf("100.jsonl.gz", "99.jsonl.gz", "98.jsonl.gz", "66.jsonl.gz")
-            assetNames.forEach { name ->
+        // 3. Fallback or complete with bundled APK assets (100.jsonl.gz, 99.jsonl.gz, 98.jsonl.gz, 66.jsonl.gz)
+        val assetNames = listOf("100.jsonl.gz", "99.jsonl.gz", "98.jsonl.gz", "66.jsonl.gz")
+        assetNames.forEach { name ->
+            val tripId = name.substringBefore('.').toLongOrNull() ?: 100L
+            if (!seenTripIds.contains(tripId)) {
                 try {
                     val stream = context.assets.open("trips/$name")
-                    val tripId = name.substringBefore('.').toLongOrNull() ?: 100L
-                    parseTripFile(stream, tripId)?.let { trips.add(it) }
-                } catch (_: Throwable) {
-                    // Asset not found or unreadable
-                }
+                    parseTripFile(stream, tripId)?.let {
+                        seenTripIds.add(tripId)
+                        trips.add(it)
+                    }
+                } catch (_: Throwable) {}
             }
         }
 
