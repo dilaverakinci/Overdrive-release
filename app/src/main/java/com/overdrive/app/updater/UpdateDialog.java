@@ -19,9 +19,17 @@ import com.overdrive.app.R;
 
 public class UpdateDialog {
 
-    public static void showUpdateAvailable(Context context, String currentVersion,
+    private static androidx.appcompat.app.AlertDialog sActiveDialog;
+
+    public static synchronized void showUpdateAvailable(Context context, String currentVersion,
                                            String newVersion, String releaseNotes,
                                            Runnable onUpdate, Runnable onDismiss) {
+        if (context instanceof android.app.Activity && ((android.app.Activity) context).isFinishing()) {
+            return;
+        }
+        if (sActiveDialog != null && sActiveDialog.isShowing()) {
+            return;
+        }
         View view = LayoutInflater.from(context).inflate(R.layout.dialog_update_available, null);
         // currentVersion (getDisplayVersion) and newVersion (extractVersion) are
         // already self-prefixed labels like "alpha-v26.1" / "v26.1" — do NOT add
@@ -40,19 +48,37 @@ public class UpdateDialog {
             notes.setText(rendered);
         }
 
-        new com.google.android.material.dialog.MaterialAlertDialogBuilder(
+        androidx.appcompat.app.AlertDialog dialog = new com.google.android.material.dialog.MaterialAlertDialogBuilder(
                 context, R.style.Theme_Overdrive_M3_Dialog)
                 .setView(view)
-                .setPositiveButton(R.string.update_dialog_install_now, (d, w) -> { d.dismiss(); onUpdate.run(); })
-                .setNegativeButton(R.string.update_dialog_later, (d, w) -> { d.dismiss(); if (onDismiss != null) onDismiss.run(); })
+                .setPositiveButton(R.string.update_dialog_install_now, (d, w) -> {
+                    sActiveDialog = null;
+                    d.dismiss();
+                    onUpdate.run();
+                })
+                .setNegativeButton(R.string.update_dialog_later, (d, w) -> {
+                    sActiveDialog = null;
+                    d.dismiss();
+                    if (onDismiss != null) onDismiss.run();
+                })
                 // Route back-press / outside-tap dismissal through onDismiss
                 // too. setCancelable(true) without this listener silently
                 // skipped the dismiss callback, leaking the AppUpdater
                 // instance (its lazy-allocated AdbDaemonLauncher's executor
                 // + tunnel-poll scheduler) until process death.
-                .setOnCancelListener(d -> { if (onDismiss != null) onDismiss.run(); })
+                .setOnCancelListener(d -> {
+                    sActiveDialog = null;
+                    if (onDismiss != null) onDismiss.run();
+                })
+                .setOnDismissListener(d -> {
+                    if (sActiveDialog == d) {
+                        sActiveDialog = null;
+                    }
+                })
                 .setCancelable(true)
-                .show();
+                .create();
+        sActiveDialog = dialog;
+        dialog.show();
     }
 
     /** Callback for the alpha version picker \u2014 receives the chosen entry. */
