@@ -406,7 +406,8 @@ android {
             if (stripConsole.exists()) proguardFilesList.add(stripConsole)
             proguardFiles(*proguardFilesList.toTypedArray())
             
-            signingConfig = signingConfigs.getByName("release")
+            val hasReleaseKey = file("release.jks").exists() || System.getenv("KEYSTORE_FILE") != null
+            signingConfig = if (hasReleaseKey) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
             
             // Update channel: "alpha" for release builds (checks alpha tag on GitHub)
             buildConfigField("String", "UPDATE_CHANNEL", "\"alpha\"")
@@ -432,9 +433,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 file("proguard-rules.pro")
             )
-            // Release signing carries over via initWith; set explicitly so a future
-            // release-block change can't silently drop it.
-            signingConfig = signingConfigs.getByName("release")
+            val hasReleaseKey = file("release.jks").exists() || System.getenv("KEYSTORE_FILE") != null
+            signingConfig = if (hasReleaseKey) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
             // Rolling channel + diagnostics on.
             buildConfigField("String", "UPDATE_CHANNEL", "\"braveheart\"")
             buildConfigField("boolean", "LOG_CAPTURE", "true")
