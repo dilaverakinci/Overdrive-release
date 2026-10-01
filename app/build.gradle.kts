@@ -9,12 +9,12 @@ val openh264Version = "2.6.0"
 // Auto-download OpenH264 from Cisco's official binary releases
 tasks.register("downloadOpenH264") {
     val openh264Dir = file("src/main/cpp/openh264")
-    
+    val isOffline = project.hasProperty("offlineBuild") || gradle.startParameter.isOffline
+
     doLast {
         // Cisco's official binary URLs - only arm64-v8a for BYD cars
         val abiMap = mapOf(
             "arm64-v8a" to "http://ciscobinary.openh264.org/libopenh264-${openh264Version}-android-arm64.8.so.bz2"
-            // Removed armeabi-v7a to reduce APK size
         )
         
         abiMap.forEach { (abi, url) ->
@@ -23,34 +23,49 @@ tasks.register("downloadOpenH264") {
             
             val soFile = file("${libDir}/libopenh264.so")
             if (!soFile.exists()) {
-                println("Downloading OpenH264 ${openh264Version} for ${abi}...")
-                val bzFile = file("${libDir}/temp.bz2")
-                
-                try {
-                    ant.invokeMethod("get", mapOf("src" to url, "dest" to bzFile.absolutePath))
-                    if (bzFile.exists() && bzFile.length() > 1000) {
-                        ant.invokeMethod("bunzip2", mapOf("src" to bzFile.absolutePath))
-                        file("${libDir}/temp").renameTo(soFile)
-                        println("✓ OpenH264 downloaded for ${abi}")
+                if (isOffline) {
+                    println("⚠ [Offline Mode] OpenH264 missing for $abi and cannot be downloaded offline.")
+                } else {
+                    println("Downloading OpenH264 ${openh264Version} for ${abi}...")
+                    val bzFile = file("${libDir}/temp.bz2")
+                    
+                    try {
+                        ant.invokeMethod("get", mapOf("src" to url, "dest" to bzFile.absolutePath, "ignoreerrors" to "true"))
+                        if (bzFile.exists() && bzFile.length() > 1000) {
+                            ant.invokeMethod("bunzip2", mapOf("src" to bzFile.absolutePath))
+                            file("${libDir}/temp").renameTo(soFile)
+                            println("✓ OpenH264 downloaded for ${abi}")
+                        }
+                    } catch (e: Exception) {
+                        println("⚠ OpenH264 download failed: ${e.message}")
                     }
-                } catch (e: Exception) {
-                    println("⚠ Download failed: ${e.message}")
                 }
+            } else {
+                println("✓ OpenH264 library found for $abi (${soFile.length() / 1024} KB)")
             }
         }
         
-        // Download headers from Cisco's GitHub
+        // Download headers from Cisco's GitHub if missing
         val includeDir = file("${openh264Dir}/include/wels")
         includeDir.mkdirs()
-        listOf("codec_api.h", "codec_app_def.h", "codec_def.h", "codec_ver.h").forEach { h ->
-            val f = file("${includeDir}/${h}")
-            if (!f.exists()) {
+        val headers = listOf("codec_api.h", "codec_app_def.h", "codec_def.h", "codec_ver.h")
+        val missingHeaders = headers.filter { !file("${includeDir}/$it").exists() }
+        if (missingHeaders.isEmpty()) {
+            println("✓ OpenH264 headers present")
+        } else if (isOffline) {
+            println("⚠ [Offline Mode] Some OpenH264 headers missing: $missingHeaders")
+        } else {
+            missingHeaders.forEach { h ->
+                val f = file("${includeDir}/${h}")
                 try {
                     ant.invokeMethod("get", mapOf(
                         "src" to "https://raw.githubusercontent.com/cisco/openh264/v${openh264Version}/codec/api/wels/${h}",
-                        "dest" to f.absolutePath
+                        "dest" to f.absolutePath,
+                        "ignoreerrors" to "true"
                     ))
-                } catch (e: Exception) { }
+                } catch (e: Exception) {
+                    println("⚠ Could not download OpenH264 header $h: ${e.message}")
+                }
             }
         }
     }
@@ -81,7 +96,8 @@ tasks.configureEach {
 val opencvMobileVersion = "4.10.0"
 tasks.register("downloadOpenCV") {
     val opencvDir = file("src/main/cpp/opencv")
-    
+    val isOffline = project.hasProperty("offlineBuild") || gradle.startParameter.isOffline
+
     doLast {
         val libDir = file("${opencvDir}/lib/arm64-v8a")
         libDir.mkdirs()
@@ -90,76 +106,81 @@ tasks.register("downloadOpenCV") {
         // opencv-mobile uses static library (.a)
         val staticLib = file("${libDir}/libopencv_core.a")
         
-        if (!staticLib.exists()) {
-            println("Downloading opencv-mobile ${opencvMobileVersion} for Android...")
+        if (staticLib.exists() && file("${includeDir}/opencv2").exists()) {
+            println("✓ opencv-mobile found at ${libDir}")
+            return@doLast
+        }
+
+        if (isOffline) {
+            println("ℹ [Offline Mode] OpenCV static libraries not present. Native CMake will build with HAVE_OPENCV=0 fallback.")
+            return@doLast
+        }
+
+        println("Downloading opencv-mobile ${opencvMobileVersion} for Android...")
+        
+        // Correct URL format: /releases/download/vVERSION/
+        val zipUrl = "https://github.com/nihui/opencv-mobile/releases/download/v${opencvMobileVersion}/opencv-mobile-${opencvMobileVersion}-android.zip"
+        val zipFile = file("${opencvDir}/opencv-mobile-android.zip")
+        
+        try {
+            // Download opencv-mobile
+            println("Downloading from: $zipUrl")
+            ant.invokeMethod("get", mapOf(
+                "src" to zipUrl,
+                "dest" to zipFile.absolutePath,
+                "ignoreerrors" to "true"
+            ))
             
-            // Correct URL format: /releases/download/vVERSION/
-            val zipUrl = "https://github.com/nihui/opencv-mobile/releases/download/v${opencvMobileVersion}/opencv-mobile-${opencvMobileVersion}-android.zip"
-            val zipFile = file("${opencvDir}/opencv-mobile-android.zip")
-            
-            try {
-                // Download opencv-mobile
-                println("Downloading from: $zipUrl")
-                ant.invokeMethod("get", mapOf(
-                    "src" to zipUrl,
-                    "dest" to zipFile.absolutePath
+            if (zipFile.exists() && zipFile.length() > 100000) {
+                println("Extracting opencv-mobile (${zipFile.length() / 1024 / 1024}MB)...")
+                
+                ant.invokeMethod("unzip", mapOf(
+                    "src" to zipFile.absolutePath,
+                    "dest" to opencvDir.absolutePath
                 ))
                 
-                if (zipFile.exists() && zipFile.length() > 100000) {
-                    println("Extracting opencv-mobile (${zipFile.length() / 1024 / 1024}MB)...")
-                    
-                    ant.invokeMethod("unzip", mapOf(
-                        "src" to zipFile.absolutePath,
-                        "dest" to opencvDir.absolutePath
-                    ))
-                    
-                    // List extracted contents for debugging
-                    opencvDir.listFiles()?.forEach { println("  Found: ${it.name}") }
-                    
-                    // opencv-mobile extracts to opencv-mobile-VERSION-android/
-                    val extractedDir = file("${opencvDir}/opencv-mobile-${opencvMobileVersion}-android")
-                    
-                    if (extractedDir.exists()) {
-                        // Copy arm64-v8a static libs
-                        val extractedLibDir = file("${extractedDir}/arm64-v8a/lib")
-                        if (extractedLibDir.exists()) {
-                            extractedLibDir.listFiles()?.forEach { f ->
-                                println("  Copying lib: ${f.name}")
-                                f.copyTo(file("${libDir}/${f.name}"), overwrite = true)
-                            }
-                            println("✓ opencv-mobile libraries copied")
-                        } else {
-                            println("⚠ Lib dir not found: ${extractedLibDir}")
+                // List extracted contents for debugging
+                opencvDir.listFiles()?.forEach { println("  Found: ${it.name}") }
+                
+                // opencv-mobile extracts to opencv-mobile-VERSION-android/
+                val extractedDir = file("${opencvDir}/opencv-mobile-${opencvMobileVersion}-android")
+                
+                if (extractedDir.exists()) {
+                    // Copy arm64-v8a static libs
+                    val extractedLibDir = file("${extractedDir}/arm64-v8a/lib")
+                    if (extractedLibDir.exists()) {
+                        extractedLibDir.listFiles()?.forEach { f ->
+                            println("  Copying lib: ${f.name}")
+                            f.copyTo(file("${libDir}/${f.name}"), overwrite = true)
                         }
-                        
-                        // Copy headers
-                        val extractedInclude = file("${extractedDir}/arm64-v8a/include")
-                        if (extractedInclude.exists()) {
-                            if (includeDir.exists()) includeDir.deleteRecursively()
-                            extractedInclude.copyRecursively(includeDir, overwrite = true)
-                            println("✓ opencv-mobile headers copied")
-                        } else {
-                            println("⚠ Include dir not found: ${extractedInclude}")
-                        }
-                        
-                        // Cleanup
-                        zipFile.delete()
-                        extractedDir.deleteRecursively()
-                        
-                        println("✓ opencv-mobile ${opencvMobileVersion} installed (~3MB vs ~20MB)")
+                        println("✓ opencv-mobile libraries copied")
                     } else {
-                        println("⚠ Extracted dir not found: ${extractedDir}")
-                        println("  Available: ${opencvDir.listFiles()?.map { it.name }}")
+                        println("⚠ Lib dir not found: ${extractedLibDir}")
                     }
+                    
+                    // Copy headers
+                    val extractedInclude = file("${extractedDir}/arm64-v8a/include")
+                    if (extractedInclude.exists()) {
+                        if (includeDir.exists()) includeDir.deleteRecursively()
+                        extractedInclude.copyRecursively(includeDir, overwrite = true)
+                        println("✓ opencv-mobile headers copied")
+                    } else {
+                        println("⚠ Include dir not found: ${extractedInclude}")
+                    }
+                    
+                    // Cleanup
+                    zipFile.delete()
+                    extractedDir.deleteRecursively()
+                    
+                    println("✓ opencv-mobile ${opencvMobileVersion} installed (~3MB vs ~20MB)")
                 } else {
-                    println("⚠ Download failed or file too small: ${zipFile.length()} bytes")
+                    println("⚠ Extracted dir not found: ${extractedDir}")
                 }
-            } catch (e: Exception) {
-                println("⚠ opencv-mobile download failed: ${e.message}")
-                e.printStackTrace()
+            } else {
+                println("⚠ OpenCV download skipped or incomplete. CMake will build with HAVE_OPENCV=0 fallback.")
             }
-        } else {
-            println("✓ opencv-mobile found at ${libDir}")
+        } catch (e: Exception) {
+            println("⚠ opencv-mobile download failed: ${e.message}. Continuing with HAVE_OPENCV=0 fallback.")
         }
     }
 }
@@ -174,80 +195,84 @@ tasks.register("downloadFastCam") {
     val jniLib = file("src/main/jniLibs/arm64-v8a/libfast_cam_client.so")
     val assetBin = file("src/main/assets/dilink5/fast_cam_capture")
     val header = file("src/main/cpp/include/fast_cam_bridge.h")
+    val isOffline = project.hasProperty("offlineBuild") || gradle.startParameter.isOffline
 
     doLast {
-        if (!jniLib.exists() || !assetBin.exists() || !header.exists()) {
-            val relArchive = rootProject.file("releases/overdrive_fast_cam_release.tar.gz")
-            val localArchive = if (relArchive.exists()) relArchive else rootProject.file("frame_grabber_light/release/overdrive_fast_cam_release.tar.gz")
-            val altLocal = rootProject.file("frame_grabber_light/fast_cam_capture")
+        if (jniLib.exists() && assetBin.exists() && header.exists()) {
+            println("✓ fast_cam precompiled binaries present (offline-ready)")
+            return@doLast
+        }
 
-            if (localArchive.exists()) {
-                println("Extracting fast_cam binaries from local release archive: ${localArchive.absolutePath}")
-                ant.invokeMethod("untar", mapOf(
-                    "src" to localArchive.absolutePath,
-                    "dest" to layout.buildDirectory.dir("fast_cam_unpack").get().asFile.absolutePath,
-                    "compression" to "gzip"
-                ))
-                val tempDir = layout.buildDirectory.dir("fast_cam_unpack").get().asFile
-                val unpackedLib = file("${tempDir}/jniLibs/arm64-v8a/libfast_cam_client.so")
-                if (unpackedLib.exists()) {
-                    jniLib.parentFile.mkdirs()
-                    unpackedLib.copyTo(jniLib, overwrite = true)
-                }
-                val unpackedBin = file("${tempDir}/bin/fast_cam_capture")
-                if (unpackedBin.exists()) {
-                    assetBin.parentFile.mkdirs()
-                    unpackedBin.copyTo(assetBin, overwrite = true)
-                }
-                val unpackedH = file("${tempDir}/include/fast_cam_bridge.h")
-                if (unpackedH.exists()) {
-                    header.parentFile.mkdirs()
-                    unpackedH.copyTo(header, overwrite = true)
-                }
-                println("✓ fast_cam binaries unpacked and configured successfully")
-            } else if (altLocal.exists()) {
-                println("Copying fast_cam binaries from local fast_cam_capture directory...")
-                val libSrc = file("${altLocal}/jniLibs/arm64-v8a/libfast_cam_client.so")
-                val binSrc = file("${altLocal}/bin/fast_cam_capture")
-                val hSrc = file("${altLocal}/include/fast_cam_bridge.h")
-                if (libSrc.exists()) {
-                    jniLib.parentFile.mkdirs()
-                    libSrc.copyTo(jniLib, overwrite = true)
-                }
-                if (binSrc.exists()) {
-                    assetBin.parentFile.mkdirs()
-                    binSrc.copyTo(assetBin, overwrite = true)
-                }
-                if (hSrc.exists()) {
-                    header.parentFile.mkdirs()
-                    hSrc.copyTo(header, overwrite = true)
-                }
-                println("✓ fast_cam binaries synchronized from source project")
-            } else {
-                println("Downloading fast_cam binaries from GitHub release...")
-                val releaseUrl = "https://github.com/francescodoffizi/Overdrive-release/releases/download/fast_cam_v1.0/overdrive_fast_cam_release.tar.gz"
-                val dlFile = layout.buildDirectory.file("overdrive_fast_cam_release.tar.gz").get().asFile
-                dlFile.parentFile.mkdirs()
-                try {
-                    ant.invokeMethod("get", mapOf("src" to releaseUrl, "dest" to dlFile.absolutePath))
-                    if (dlFile.exists() && dlFile.length() > 1000) {
-                        ant.invokeMethod("untar", mapOf(
-                            "src" to dlFile.absolutePath,
-                            "dest" to layout.buildDirectory.dir("fast_cam_unpack").get().asFile.absolutePath,
-                            "compression" to "gzip"
-                        ))
-                        val tempDir = layout.buildDirectory.dir("fast_cam_unpack").get().asFile
-                        file("${tempDir}/jniLibs/arm64-v8a/libfast_cam_client.so").copyTo(jniLib, overwrite = true)
-                        file("${tempDir}/bin/fast_cam_capture").copyTo(assetBin, overwrite = true)
-                        file("${tempDir}/include/fast_cam_bridge.h").copyTo(header, overwrite = true)
-                        println("✓ fast_cam binaries downloaded and configured successfully")
-                    }
-                } catch (e: Exception) {
-                    println("⚠ Could not download fast_cam binaries: ${e.message}")
-                }
+        val relArchive = rootProject.file("releases/overdrive_fast_cam_release.tar.gz")
+        val localArchive = if (relArchive.exists()) relArchive else rootProject.file("frame_grabber_light/release/overdrive_fast_cam_release.tar.gz")
+        val altLocal = rootProject.file("frame_grabber_light/fast_cam_capture")
+
+        if (localArchive.exists()) {
+            println("Extracting fast_cam binaries from local release archive: ${localArchive.absolutePath}")
+            ant.invokeMethod("untar", mapOf(
+                "src" to localArchive.absolutePath,
+                "dest" to layout.buildDirectory.dir("fast_cam_unpack").get().asFile.absolutePath,
+                "compression" to "gzip"
+            ))
+            val tempDir = layout.buildDirectory.dir("fast_cam_unpack").get().asFile
+            val unpackedLib = file("${tempDir}/jniLibs/arm64-v8a/libfast_cam_client.so")
+            if (unpackedLib.exists()) {
+                jniLib.parentFile.mkdirs()
+                unpackedLib.copyTo(jniLib, overwrite = true)
             }
+            val unpackedBin = file("${tempDir}/bin/fast_cam_capture")
+            if (unpackedBin.exists()) {
+                assetBin.parentFile.mkdirs()
+                unpackedBin.copyTo(assetBin, overwrite = true)
+            }
+            val unpackedH = file("${tempDir}/include/fast_cam_bridge.h")
+            if (unpackedH.exists()) {
+                header.parentFile.mkdirs()
+                unpackedH.copyTo(header, overwrite = true)
+            }
+            println("✓ fast_cam binaries unpacked and configured successfully")
+        } else if (altLocal.exists()) {
+            println("Copying fast_cam binaries from local fast_cam_capture directory...")
+            val libSrc = file("${altLocal}/jniLibs/arm64-v8a/libfast_cam_client.so")
+            val binSrc = file("${altLocal}/bin/fast_cam_capture")
+            val hSrc = file("${altLocal}/include/fast_cam_bridge.h")
+            if (libSrc.exists()) {
+                jniLib.parentFile.mkdirs()
+                libSrc.copyTo(jniLib, overwrite = true)
+            }
+            if (binSrc.exists()) {
+                assetBin.parentFile.mkdirs()
+                binSrc.copyTo(assetBin, overwrite = true)
+            }
+            if (hSrc.exists()) {
+                header.parentFile.mkdirs()
+                hSrc.copyTo(header, overwrite = true)
+            }
+            println("✓ fast_cam binaries synchronized from source project")
+        } else if (isOffline) {
+            println("⚠ [Offline Mode] fast_cam binaries missing and cannot be downloaded from GitHub release in offline mode.")
         } else {
-            println("✓ fast_cam precompiled binaries present")
+            println("Downloading fast_cam binaries from GitHub release...")
+            val releaseUrl = "https://github.com/francescodoffizi/Overdrive-release/releases/download/fast_cam_v1.0/overdrive_fast_cam_release.tar.gz"
+            val dlFile = layout.buildDirectory.file("overdrive_fast_cam_release.tar.gz").get().asFile
+            dlFile.parentFile.mkdirs()
+            try {
+                ant.invokeMethod("get", mapOf("src" to releaseUrl, "dest" to dlFile.absolutePath, "ignoreerrors" to "true"))
+                if (dlFile.exists() && dlFile.length() > 1000) {
+                    ant.invokeMethod("untar", mapOf(
+                        "src" to dlFile.absolutePath,
+                        "dest" to layout.buildDirectory.dir("fast_cam_unpack").get().asFile.absolutePath,
+                        "compression" to "gzip"
+                    ))
+                    val tempDir = layout.buildDirectory.dir("fast_cam_unpack").get().asFile
+                    file("${tempDir}/jniLibs/arm64-v8a/libfast_cam_client.so").copyTo(jniLib, overwrite = true)
+                    file("${tempDir}/bin/fast_cam_capture").copyTo(assetBin, overwrite = true)
+                    file("${tempDir}/include/fast_cam_bridge.h").copyTo(header, overwrite = true)
+                    println("✓ fast_cam binaries downloaded and configured successfully")
+                }
+            } catch (e: Exception) {
+                println("⚠ Could not download fast_cam binaries: ${e.message}")
+            }
         }
     }
 }
