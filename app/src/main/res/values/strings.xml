@@ -642,6 +642,23 @@
          ============================================================ -->
 
     <!-- Notifications -->
+    <string name="rail_notifications">Notifications</string>
+    <string name="notif_tab_log">Notification Log</string>
+    <string name="notif_tab_telegram">Telegram Settings</string>
+    <string name="notif_count_fmt">%d notifications</string>
+    <string name="notif_empty">No notifications yet</string>
+    <string name="notif_empty_desc">Emitted surveillance alerts, tyre warnings and system events will appear here.</string>
+    <string name="notif_clear_title">Clear all notifications?</string>
+    <string name="notif_clear_desc">This permanently deletes the entire notification log history.</string>
+    <string name="notif_delete_selected_fmt">Delete %d selected notifications?</string>
+    <string name="notif_filter_all">All</string>
+    <string name="notif_filter_critical">Critical</string>
+    <string name="notif_filter_warn">Warning</string>
+    <string name="notif_filter_info">Info</string>
+    <string name="notif_date_all">All Time</string>
+    <string name="notif_date_today">Today</string>
+    <string name="notif_date_week">7 Days</string>
+    <string name="notif_date_month">30 Days</string>
 
     <!-- Toasts / dialogs -->
 

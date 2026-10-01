@@ -642,6 +642,24 @@
     <!-- Was "About & updates" — Check for Updates row was removed from
          the About page, so the menu / rail label is now just "About". -->
     <string name="settings_section_about">Hakkında</string>
+    <!-- Notifications -->
+    <string name="rail_notifications">Bildirimler</string>
+    <string name="notif_tab_log">Bildirim Günlüğü</string>
+    <string name="notif_tab_telegram">Telegram Ayarları</string>
+    <string name="notif_count_fmt">%d bildirim</string>
+    <string name="notif_empty">Henüz bildirim yok</string>
+    <string name="notif_empty_desc">Oluşan gözetim uyarıları, lastik alarmları ve sistem olayları burada listelenir.</string>
+    <string name="notif_clear_title">Tüm bildirimleri temizle?</string>
+    <string name="notif_clear_desc">Bu işlem tüm bildirim günlüğü geçmişini kalıcı olarak silecektir.</string>
+    <string name="notif_delete_selected_fmt">Seçilen %d bildirim silinsin mi?</string>
+    <string name="notif_filter_all">Tümü</string>
+    <string name="notif_filter_critical">Kritik</string>
+    <string name="notif_filter_warn">Uyarı</string>
+    <string name="notif_filter_info">Bilgi</string>
+    <string name="notif_date_all">Tümü</string>
+    <string name="notif_date_today">Bugün</string>
+    <string name="notif_date_week">7 Gün</string>
+    <string name="notif_date_month">30 Gün</string>
     <!-- Settings sub-rail (landscape) — overline + a11y -->
     <string name="settings_subrail_overline">AYARLAR</string>
     <string name="cd_settings_subrail">Yapılandırma alt demiryolu</string>

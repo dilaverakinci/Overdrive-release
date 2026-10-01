@@ -137,6 +137,12 @@
         android:name="com.overdrive.app.ui.network.NetworkComposeFragment"
         android:label="@string/network_title" />
 
+    <!-- Notifications (100% Jetpack Compose Native) -->
+    <fragment
+        android:id="@+id/notificationsFragment"
+        android:name="com.overdrive.app.ui.notifications.NotificationsComposeFragment"
+        android:label="@string/rail_notifications" />
+
     <!-- Diagnostics: logs + ADB console + utilities -->
     <fragment
         android:id="@+id/diagnosticsFragment"
