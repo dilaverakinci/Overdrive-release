@@ -18,6 +18,8 @@ object RepositoryProvider {
     private var defaultBodyworkRepo = DefaultBodyworkRepository()
     @Volatile
     private var defaultChassisRepo = DefaultChassisRepository()
+    @Volatile
+    private var defaultDiagnosticsRepo = com.overdrive.app.domain.diagnostics.DefaultDiagnosticsRepository()
 
     @Volatile
     private var customBatteryRepo: BatteryRepository? = null
@@ -34,6 +36,9 @@ object RepositoryProvider {
     @Volatile
     private var customChassisRepo: ChassisRepository? = null
 
+    @Volatile
+    private var customDiagnosticsRepo: com.overdrive.app.domain.diagnostics.DiagnosticsRepository? = null
+
     val batteryRepository: BatteryRepository
         get() = customBatteryRepo ?: defaultBatteryRepo
 
@@ -49,6 +54,9 @@ object RepositoryProvider {
     val chassisRepository: ChassisRepository
         get() = customChassisRepo ?: defaultChassisRepo
 
+    val diagnosticsRepository: com.overdrive.app.domain.diagnostics.DiagnosticsRepository
+        get() = customDiagnosticsRepo ?: defaultDiagnosticsRepo
+
     /**
      * Updates all default reactive repositories with the incoming vehicle snapshot.
      */
@@ -59,6 +67,7 @@ object RepositoryProvider {
         defaultHvacRepo.updateFromSnapshot(data)
         defaultBodyworkRepo.updateFromSnapshot(data)
         defaultChassisRepo.updateFromSnapshot(data)
+        defaultDiagnosticsRepo.updateFromSnapshot(data)
     }
 
     // Dependency injection helpers for testing
@@ -67,6 +76,7 @@ object RepositoryProvider {
     fun setHvacRepository(repo: HvacRepository?) { customHvacRepo = repo }
     fun setBodyworkRepository(repo: BodyworkRepository?) { customBodyworkRepo = repo }
     fun setChassisRepository(repo: ChassisRepository?) { customChassisRepo = repo }
+    fun setDiagnosticsRepository(repo: com.overdrive.app.domain.diagnostics.DiagnosticsRepository?) { customDiagnosticsRepo = repo }
 
     fun resetToDefaults() {
         customBatteryRepo = null
@@ -74,10 +84,12 @@ object RepositoryProvider {
         customHvacRepo = null
         customBodyworkRepo = null
         customChassisRepo = null
+        customDiagnosticsRepo = null
         defaultBatteryRepo = DefaultBatteryRepository()
         defaultPowertrainRepo = DefaultPowertrainRepository()
         defaultHvacRepo = DefaultHvacRepository()
         defaultBodyworkRepo = DefaultBodyworkRepository()
         defaultChassisRepo = DefaultChassisRepository()
+        defaultDiagnosticsRepo = com.overdrive.app.domain.diagnostics.DefaultDiagnosticsRepository()
     }
 }
