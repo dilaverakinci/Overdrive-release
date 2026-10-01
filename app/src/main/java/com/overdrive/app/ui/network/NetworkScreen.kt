@@ -118,14 +118,14 @@ fun NetworkScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
-            .padding(16.dp)
+            .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 12.dp)
             .verticalScroll(rememberScrollState())
     ) {
         // Header
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 12.dp),
+                .padding(bottom = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -180,7 +180,7 @@ fun NetworkScreen(
             colors = CardDefaults.cardColors(containerColor = OverdriveTheme.colors.cardBackground),
             border = BorderStroke(1.dp, OverdriveTheme.colors.cardBorder)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(12.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -323,7 +323,7 @@ fun NetworkScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // 2. Session Stats
         Card(
@@ -332,7 +332,7 @@ fun NetworkScreen(
             colors = CardDefaults.cardColors(containerColor = OverdriveTheme.colors.cardBackground),
             border = BorderStroke(1.dp, OverdriveTheme.colors.cardBorder)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(12.dp)) {
                 Text(
                     text = "Oturum İstatistikleri",
                     fontSize = 14.sp,
@@ -353,7 +353,7 @@ fun NetworkScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // 3. Data Limit & Usage Card
         Card(
@@ -362,7 +362,7 @@ fun NetworkScreen(
             colors = CardDefaults.cardColors(containerColor = OverdriveTheme.colors.cardBackground),
             border = BorderStroke(1.dp, OverdriveTheme.colors.cardBorder)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(12.dp)) {
                 Text(
                     text = "Veri Limiti ve Tüketim",
                     fontSize = 14.sp,
@@ -428,7 +428,7 @@ fun NetworkScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // 4. Connected Clients
         Card(
@@ -437,7 +437,7 @@ fun NetworkScreen(
             colors = CardDefaults.cardColors(containerColor = OverdriveTheme.colors.cardBackground),
             border = BorderStroke(1.dp, OverdriveTheme.colors.cardBorder)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(12.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -504,7 +504,7 @@ fun NetworkScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // 5. Behavior Settings
         Card(
@@ -513,7 +513,7 @@ fun NetworkScreen(
             colors = CardDefaults.cardColors(containerColor = OverdriveTheme.colors.cardBackground),
             border = BorderStroke(1.dp, OverdriveTheme.colors.cardBorder)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(12.dp)) {
                 Text(
                     text = "Çalışma Davranışları",
                     fontSize = 14.sp,
@@ -546,7 +546,7 @@ fun NetworkScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // 6. Proxy & Relay Settings
         Card(
@@ -555,7 +555,7 @@ fun NetworkScreen(
             colors = CardDefaults.cardColors(containerColor = OverdriveTheme.colors.cardBackground),
             border = BorderStroke(1.dp, OverdriveTheme.colors.cardBorder)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(12.dp)) {
                 Text(
                     text = "Ağ Yönlendirme ve Proxy",
                     fontSize = 14.sp,

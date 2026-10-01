@@ -103,14 +103,14 @@ fun AboutScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
-            .padding(16.dp)
+            .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 12.dp)
             .verticalScroll(rememberScrollState())
     ) {
         // Top Header
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 12.dp),
+                .padding(bottom = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -157,7 +157,7 @@ fun AboutScreen(
             colors = CardDefaults.cardColors(containerColor = OverdriveTheme.colors.cardBackground),
             border = BorderStroke(1.dp, OverdriveTheme.colors.cardBorder)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(12.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -218,7 +218,7 @@ fun AboutScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // 2. Update Channel Card
         Card(
@@ -227,7 +227,7 @@ fun AboutScreen(
             colors = CardDefaults.cardColors(containerColor = OverdriveTheme.colors.cardBackground),
             border = BorderStroke(1.dp, OverdriveTheme.colors.cardBorder)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(12.dp)) {
                 Text(
                     text = "Güncelleme Kanalı",
                     fontSize = 15.sp,
@@ -270,7 +270,7 @@ fun AboutScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // 3. Vehicle Identity Card
         val info = state.vehicleInfo
@@ -280,7 +280,7 @@ fun AboutScreen(
             colors = CardDefaults.cardColors(containerColor = OverdriveTheme.colors.cardBackground),
             border = BorderStroke(1.dp, OverdriveTheme.colors.cardBorder)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(12.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -333,7 +333,7 @@ fun AboutScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // 4. Backup & Restore Card
         Card(
@@ -342,7 +342,7 @@ fun AboutScreen(
             colors = CardDefaults.cardColors(containerColor = OverdriveTheme.colors.cardBackground),
             border = BorderStroke(1.dp, OverdriveTheme.colors.cardBorder)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(12.dp)) {
                 Text(
                     text = "Yapılandırma Yedekleme ve Geri Yükleme",
                     fontSize = 15.sp,
@@ -389,7 +389,7 @@ fun AboutScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // 5. Open Source Links & Support Card
         Card(
@@ -398,7 +398,7 @@ fun AboutScreen(
             colors = CardDefaults.cardColors(containerColor = OverdriveTheme.colors.cardBackground),
             border = BorderStroke(1.dp, OverdriveTheme.colors.cardBorder)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(12.dp)) {
                 Text(
                     text = "Bağlantılar ve Katkıda Bulunma",
                     fontSize = 15.sp,

@@ -408,8 +408,8 @@ private fun AutomationsListContent(
                 OverdriveCard(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 24.dp),
-                    contentPadding = 24.dp
+                        .padding(vertical = 12.dp),
+                    contentPadding = 12.dp
                 ) {
                     Column(
                         modifier = Modifier.fillMaxWidth(),
@@ -678,16 +678,16 @@ private fun AddEditAutomationContent(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
-            .padding(vertical = 6.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+            .padding(vertical = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         OverdriveCard(
             modifier = Modifier.fillMaxWidth(),
-            contentPadding = 16.dp
+            contentPadding = 12.dp
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
                     text = "Yeni Otomasyon Kuralı Tanımla",
@@ -877,8 +877,8 @@ private fun SafetyGuardsContent(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
-            .padding(vertical = 6.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(vertical = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         // Warning Banner
         OverdriveCard(
@@ -997,8 +997,8 @@ private fun ActionGroupsContent(
                 OverdriveCard(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    contentPadding = 20.dp
+                        .padding(vertical = 12.dp),
+                    contentPadding = 12.dp
                 ) {
                     Column(
                         modifier = Modifier.fillMaxWidth(),
@@ -1077,12 +1077,12 @@ private fun BackupAndToolsContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(vertical = 6.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(vertical = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         OverdriveCard(
             modifier = Modifier.fillMaxWidth(),
-            contentPadding = 16.dp
+            contentPadding = 12.dp
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(

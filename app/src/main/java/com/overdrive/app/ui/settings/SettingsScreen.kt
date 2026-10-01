@@ -104,14 +104,14 @@ fun SettingsScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
-            .padding(16.dp)
+            .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 12.dp)
             .verticalScroll(rememberScrollState())
     ) {
         // Top Header
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 14.dp),
+                .padding(bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
@@ -152,7 +152,7 @@ fun SettingsScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // 2. Preferences Navigation Cards
         Text(
@@ -206,7 +206,7 @@ fun SettingsScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // 3. Remote Integrations Quick Hub
         Text(
@@ -264,7 +264,7 @@ fun SettingsScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // 4. Overlays Card
         Text(
@@ -327,7 +327,7 @@ fun SettingsScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // 5. Destructive Action (Reset Data)
         Text(
@@ -483,7 +483,7 @@ private fun SettingsNavRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -528,7 +528,7 @@ private fun IntegrationNavRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(

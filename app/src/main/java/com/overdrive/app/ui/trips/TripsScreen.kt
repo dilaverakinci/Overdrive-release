@@ -123,7 +123,7 @@ private fun TripsMasterView(
                 top = OverdriveDimensions.pagePaddingTop,
                 bottom = OverdriveDimensions.pagePaddingBottom,
             ),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         // Header Bar
         TripsHeader(
@@ -506,7 +506,7 @@ private fun TripDetailView(
                 top = OverdriveDimensions.pagePaddingTop,
                 bottom = OverdriveDimensions.pagePaddingBottom,
             ),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         // Navigation Header Bar
         Row(

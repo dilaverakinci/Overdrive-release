@@ -16,14 +16,14 @@ data class OverdriveDimensions(
     val appBarHeight: Dp = 60.dp,
 
     // Page padding / outer rhythm
-    val pagePaddingHorizontal: Dp = 24.dp,
-    val pagePaddingTop: Dp = 20.dp,
-    val pagePaddingBottom: Dp = 24.dp,
+    val pagePaddingHorizontal: Dp = 12.dp,
+    val pagePaddingTop: Dp = 8.dp,
+    val pagePaddingBottom: Dp = 12.dp,
 
     // Inter-card gaps
-    val cardGapVertical: Dp = 12.dp,
-    val cardGapHorizontal: Dp = 12.dp,
-    val cardGapHorizontalHalf: Dp = 6.dp,
+    val cardGapVertical: Dp = 10.dp,
+    val cardGapHorizontal: Dp = 10.dp,
+    val cardGapHorizontalHalf: Dp = 5.dp,
 
     // Card radii (Strictly 8dp as defined in dimens_overdrive.xml)
     val cardRadiusStandard: Dp = 8.dp,
@@ -32,8 +32,8 @@ data class OverdriveDimensions(
     val cardRadiusAccent: Dp = 8.dp,
 
     // Card padding
-    val cardPaddingStandard: Dp = 20.dp,
-    val cardPaddingHero: Dp = 24.dp,
+    val cardPaddingStandard: Dp = 12.dp,
+    val cardPaddingHero: Dp = 16.dp,
 
     // Grid tile sizing
     val gridTileMinHeight: Dp = 128.dp,
