@@ -77,26 +77,29 @@ fun DaemonsScreen(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        contentPadding = PaddingValues(
+            horizontal = OverdriveTheme.dimensions.pagePaddingHorizontal,
+            vertical = OverdriveTheme.dimensions.pagePaddingTop
+        ),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         // Hero Header
         item {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 4.dp),
+                    .padding(bottom = 2.dp),
             ) {
                 Text(
                     text = stringResource(R.string.daemons_hero_title),
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = stringResource(R.string.daemons_count_fmt, runningCount, totalCount),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -195,7 +198,7 @@ private fun WifiAutoEnableCard(
                 onCheckedChange = onToggle,
                 enabled = !isLoading,
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = MaterialTheme.colorScheme.surface,
+                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
                     checkedTrackColor = MaterialTheme.colorScheme.primary,
                     uncheckedThumbColor = MaterialTheme.colorScheme.outline,
                     uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
@@ -219,12 +222,13 @@ private fun DaemonCardItem(
     val isRunningOrStarting = state.status == DaemonStatus.RUNNING || state.status == DaemonStatus.STARTING
 
     // Status dot color
+    val colors = OverdriveTheme.colors
     val statusDotColor = when {
-        state.needsConfiguration -> Color(0xFFF9A825) // amber
-        state.status == DaemonStatus.RUNNING -> Color(0xFF00D4AA) // green
+        state.needsConfiguration -> colors.statusWarning
+        state.status == DaemonStatus.RUNNING -> colors.statusSuccess
         state.status == DaemonStatus.STOPPED -> MaterialTheme.colorScheme.outline
-        state.status == DaemonStatus.ERROR -> Color(0xFFBA1A1A) // red
-        else -> Color(0xFFF9A825) // amber for starting/stopping
+        state.status == DaemonStatus.ERROR -> colors.statusDanger
+        else -> colors.statusWarning
     }
 
     // Status text
@@ -331,7 +335,7 @@ private fun DaemonCardItem(
                         Icon(
                             painter = painterResource(R.drawable.ic_settings),
                             contentDescription = stringResource(R.string.cd_configure),
-                            tint = if (state.needsConfiguration) Color(0xFFF9A825) else MaterialTheme.colorScheme.onSurfaceVariant,
+                            tint = if (state.needsConfiguration) OverdriveTheme.colors.statusWarning else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(20.dp),
                         )
                     }
@@ -358,7 +362,7 @@ private fun DaemonCardItem(
                     checked = isRunningOrStarting,
                     onCheckedChange = onToggle,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = MaterialTheme.colorScheme.surface,
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
                         checkedTrackColor = MaterialTheme.colorScheme.primary,
                         uncheckedThumbColor = MaterialTheme.colorScheme.outline,
                         uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
