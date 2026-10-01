@@ -506,11 +506,18 @@ public class BydDataCollector {
     /** Get the latest vehicle data snapshot. Thread-safe. */
     public BydVehicleData getData() {
         BydVehicleData current = snapshot.get();
-        return isDiLink5BridgeConsumer()
+        BydVehicleData result = isDiLink5BridgeConsumer()
                 && !isDiLink5AutomationSnapshotFresh(
                         SystemClock.elapsedRealtime(),
                         diLink5BridgeReceivedAtElapsedMs)
                 ? clearStaleDiLink5VehicleFields(current) : current;
+        if (result != null) {
+            try {
+                com.overdrive.app.domain.engine.VehicleDataDispatcher.dispatch(result);
+            } catch (Throwable ignored) {
+            }
+        }
+        return result;
     }
 
     static BydVehicleData clearStaleDiLink5VehicleFields(BydVehicleData current) {
@@ -1417,6 +1424,10 @@ public class BydDataCollector {
         }
         if (isDiLink5Vehicle() && isMainAppProcess()) {
             return;
+        }
+        try {
+            com.overdrive.app.domain.engine.VehicleDataDispatcher.dispatch(published);
+        } catch (Throwable ignored) {
         }
         try {
             com.overdrive.app.automation.condition.BydEvent.bydEvent(published);
