@@ -199,9 +199,22 @@ class LiveViewViewModel(application: Application) : AndroidViewModel(application
         val kind = _uiState.value.confirmDeterrentKind ?: return
         _uiState.update { it.copy(confirmDeterrentKind = null) }
 
+        val mode = when (kind) {
+            "horn", "sound" -> com.overdrive.app.surveillance.deterrent.DeterrentMode.SOUND_ONLY
+            "flash", "lights" -> com.overdrive.app.surveillance.deterrent.DeterrentMode.LIGHTS_ONLY
+            "full" -> com.overdrive.app.surveillance.deterrent.DeterrentMode.FULL_DETERRENT
+            else -> com.overdrive.app.surveillance.deterrent.DeterrentMode.SOUND_ONLY
+        }
+
+        // Trigger local coordinator immediately
+        try {
+            com.overdrive.app.surveillance.deterrent.SentryDeterrentCoordinator.getInstance()
+                .triggerDeterrent(mode, force = true)
+        } catch (_: Throwable) {}
+
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val endpoint = if (kind == "horn") "horn" else "flash"
+                val endpoint = if (kind == "horn" || kind == "sound") "horn" else if (kind == "flash" || kind == "lights") "flash" else "full"
                 val url = URL("http://127.0.0.1:8080/api/vehicle/deterrent/$endpoint")
                 val conn = url.openConnection() as HttpURLConnection
                 conn.requestMethod = "POST"

@@ -54,6 +54,7 @@ import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -269,25 +270,28 @@ fun LiveViewScreen(
             }
         }
 
-        // Deterrent Confirmation Dialog (Horn / Flash)
+        // Deterrent Confirmation Dialog (Horn / Flash / Full)
         if (state.confirmDeterrentKind != null) {
-            val isHorn = state.confirmDeterrentKind == "horn"
+            val title = when (state.confirmDeterrentKind) {
+                "horn" -> stringResource(R.string.live_deterrent_horn_confirm_title)
+                "flash" -> stringResource(R.string.live_deterrent_flash_confirm_title)
+                else -> "Tam Caydırıcı Alarmı Başlat?"
+            }
+            val desc = when (state.confirmDeterrentKind) {
+                "horn" -> stringResource(R.string.live_deterrent_horn_confirm_desc)
+                "flash" -> stringResource(R.string.live_deterrent_flash_confirm_desc)
+                else -> "Dörtlü flaşörler yakılacak, sesli akustik alarm tonu çalınacak ve kokpit ekranı güvenlik uyarısı moduna geçecektir."
+            }
             OverdriveDialog(
                 onDismissRequest = { viewModel.dismissDeterrentDialog() },
-                title = stringResource(
-                    if (isHorn) R.string.live_deterrent_horn_confirm_title
-                    else R.string.live_deterrent_flash_confirm_title
-                ),
+                title = title,
                 positiveButtonText = stringResource(R.string.live_deterrent_confirm_btn),
                 onPositiveClick = { viewModel.confirmDeterrent() },
                 negativeButtonText = stringResource(R.string.live_deterrent_cancel_btn),
                 onNegativeClick = { viewModel.dismissDeterrentDialog() }
             ) {
                 Text(
-                    text = stringResource(
-                        if (isHorn) R.string.live_deterrent_horn_confirm_desc
-                        else R.string.live_deterrent_flash_confirm_desc
-                    ),
+                    text = desc,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -573,6 +577,32 @@ private fun LiveCameraStageCard(
                             )
                             Text(
                                 text = stringResource(R.string.live_deterrent_flash),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
+
+                    // Full Deterrent Button (Sentry Deterrent 2.0)
+                    Surface(
+                        onClick = { onRequestDeterrent("full") },
+                        shape = RoundedCornerShape(8.dp),
+                        color = OverdriveTheme.colors.statusDanger.copy(alpha = 0.25f)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Security,
+                                contentDescription = null,
+                                tint = OverdriveTheme.colors.statusDanger,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = "Tam Alarm",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
