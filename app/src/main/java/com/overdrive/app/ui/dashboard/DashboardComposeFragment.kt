@@ -17,6 +17,9 @@ import androidx.compose.runtime.setValue
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.overdrive.app.R
 import com.overdrive.app.auth.AuthManager
@@ -32,6 +35,7 @@ import com.overdrive.app.ui.viewmodel.MainViewModel
 import com.overdrive.app.ui.viewmodel.RecordingViewModel
 import com.overdrive.app.util.DaemonHttpClient
 import com.overdrive.app.util.DeviceIdGenerator
+import kotlinx.coroutines.launch
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -45,6 +49,7 @@ class DashboardComposeFragment : Fragment() {
     private val mainViewModel: MainViewModel by activityViewModels()
     private val daemonsViewModel: DaemonsViewModel by activityViewModels()
     private val recordingViewModel: RecordingViewModel by activityViewModels()
+    private val dashboardViewModel: DashboardViewModel by viewModels()
 
     private var uiState by mutableStateOf(DashboardUiState())
     private var heroState by mutableStateOf(DashboardHeroState())
@@ -153,6 +158,20 @@ class DashboardComposeFragment : Fragment() {
     }
 
     private fun observeViewModels() {
+        // Observe Real-time Reactive Vehicle Telemetry via StateFlow (0ms internal latency)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                dashboardViewModel.vehicleSnapshot.collect { snapshot ->
+                    if (snapshot != null) {
+                        uiState = DashboardStateReducer.status(
+                            uiState,
+                            DashboardStatusResult.Available(snapshot)
+                        )
+                    }
+                }
+            }
+        }
+
         // Observe Daemons
         daemonsViewModel.daemonStates.observe(viewLifecycleOwner) { states ->
             val running = states.values.count { it.status == DaemonStatus.RUNNING }
@@ -233,6 +252,7 @@ class DashboardComposeFragment : Fragment() {
     }
 
     private fun refreshVehicleStatus() {
+        dashboardViewModel.refresh()
         val executor = metricsExecutor ?: Executors.newSingleThreadExecutor().also { metricsExecutor = it }
         executor.execute {
             var conn: java.net.HttpURLConnection? = null
