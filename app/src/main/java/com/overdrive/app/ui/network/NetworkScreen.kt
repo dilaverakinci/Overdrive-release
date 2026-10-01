@@ -1,10 +1,7 @@
 package com.overdrive.app.ui.network
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,24 +19,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material.icons.filled.WifiTethering
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,24 +40,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.overdrive.app.ui.component.OverdriveButton
+import com.overdrive.app.ui.component.OverdriveButtonVariant
+import com.overdrive.app.ui.component.OverdriveCard
+import com.overdrive.app.ui.component.OverdriveDialog
 import com.overdrive.app.ui.component.OverdrivePillStatus
 import com.overdrive.app.ui.component.OverdriveStatusPill
-import com.overdrive.app.ui.theme.OverdriveColors
 import com.overdrive.app.ui.theme.OverdriveTheme
-
-private val OverdriveColors.textPrimary: Color get() = onSurface
-private val OverdriveColors.textSecondary: Color get() = onSurfaceVariant
-private val OverdriveColors.cardBackground: Color get() = surfaceContainer
-private val OverdriveColors.cardBorder: Color get() = outlineVariant
-private val OverdriveColors.accentGreen: Color get() = statusSuccess
-private val OverdriveColors.accentAmber: Color get() = statusWarning
-private val OverdriveColors.accentRed: Color get() = statusDanger
 
 data class ConnectedClient(
     val name: String,
@@ -108,536 +93,473 @@ fun NetworkScreen(
     onSaveLimit: (Long) -> Unit,
     onResetUsage: () -> Unit,
     onToggleSwitch: (key: String, value: Boolean) -> Unit,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var limitInput by remember(state.dataCapMb) {
         mutableStateOf(if (state.dataCapMb > 0L) state.dataCapMb.toString() else "")
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
-            .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 12.dp)
-            .verticalScroll(rememberScrollState())
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
-        // Header
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxSize()
+                .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 12.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "Ağ ve Bağlantı Noktası",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = OverdriveTheme.colors.textPrimary
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    OverdriveStatusPill(
-                        label = when {
-                            state.isTransitioning -> "GEÇİŞ YAPILIYOR"
-                            state.isEnabled -> "AÇIK"
-                            else -> "KAPALI"
-                        },
-                        status = when {
-                            state.isTransitioning -> OverdrivePillStatus.WARNING
-                            state.isEnabled -> OverdrivePillStatus.SUCCESS
-                            else -> OverdrivePillStatus.INFO
-                        }
-                    )
-                }
-                Text(
-                    text = "Aracın SIM kart internetini Wi-Fi üzerinden yolcular ve harici cihazlarla paylaşın.",
-                    fontSize = 12.sp,
-                    color = OverdriveTheme.colors.textSecondary,
-                    modifier = Modifier.padding(top = 2.dp)
-                )
-            }
-
-            IconButton(
-                onClick = onRefresh,
-                modifier = Modifier.size(48.dp)
+            // Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.Refresh,
-                    contentDescription = "Yenile",
-                    tint = OverdriveTheme.colors.textSecondary
-                )
-            }
-        }
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "Ağ ve Bağlantı Noktası",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        OverdriveStatusPill(
+                            label = when {
+                                state.isTransitioning -> "GEÇİŞ YAPILIYOR"
+                                state.isEnabled -> "AÇIK"
+                                else -> "KAPALI"
+                            },
+                            status = when {
+                                state.isTransitioning -> OverdrivePillStatus.WARNING
+                                state.isEnabled -> OverdrivePillStatus.SUCCESS
+                                else -> OverdrivePillStatus.INFO
+                            }
+                        )
+                    }
+                    Text(
+                        text = "Aracın SIM kart internetini Wi-Fi üzerinden yolcular ve harici cihazlarla paylaşın.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
 
-        Spacer(modifier = Modifier.height(6.dp))
-
-        // 1. Hotspot Master Card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(containerColor = OverdriveTheme.colors.cardBackground),
-            border = BorderStroke(1.dp, OverdriveTheme.colors.cardBorder)
-        ) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                IconButton(
+                    onClick = onRefresh,
+                    modifier = Modifier.size(40.dp)
                 ) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Yenile",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            // 1. Hotspot Master Card
+            OverdriveCard(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = 12.dp
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
                     Row(
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.WifiTethering,
-                            contentDescription = null,
-                            tint = if (state.isEnabled) OverdriveTheme.colors.accentGreen else OverdriveTheme.colors.textSecondary,
-                            modifier = Modifier.size(28.dp)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = "Mobil Bağlantı Noktası (Hotspot)",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = OverdriveTheme.colors.textPrimary
-                            )
-                            Text(
-                                text = state.stateText,
-                                fontSize = 12.sp,
-                                color = if (state.isEnabled) OverdriveTheme.colors.accentGreen else OverdriveTheme.colors.textSecondary
-                            )
-                        }
-                    }
-
-                    Switch(
-                        checked = state.isEnabled || state.isTransitioning,
-                        onCheckedChange = { onToggleHotspot(it) },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.Black,
-                            checkedTrackColor = OverdriveTheme.colors.accentGreen,
-                            uncheckedThumbColor = Color.LightGray,
-                            uncheckedTrackColor = Color.DarkGray
-                        )
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(OverdriveTheme.colors.cardBorder.copy(alpha = 0.5f))
-                )
-                Spacer(modifier = Modifier.height(14.dp))
-
-                // SSID row
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(6.dp))
-                        .clickable { onCopySsid() }
-                        .padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = "Ağ Adı (SSID)",
-                            fontSize = 12.sp,
-                            color = OverdriveTheme.colors.textSecondary
-                        )
-                        Text(
-                            text = state.ssid.ifEmpty { "—" },
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = FontFamily.Monospace,
-                            color = OverdriveTheme.colors.textPrimary
-                        )
-                    }
-                    IconButton(onClick = onCopySsid) {
-                        Icon(
-                            imageVector = Icons.Default.ContentCopy,
-                            contentDescription = "Kopyala",
-                            tint = OverdriveTheme.colors.textSecondary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Password row
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(6.dp))
-                        .padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { onCopyPassword() }
-                    ) {
-                        Text(
-                            text = "Ağ Şifresi",
-                            fontSize = 12.sp,
-                            color = OverdriveTheme.colors.textSecondary
-                        )
-                        val displayPw = when {
-                            state.password.isEmpty() -> "—"
-                            state.isPasswordRevealed -> state.password
-                            else -> "•".repeat(maxOf(0, state.password.length - 2)) + state.password.takeLast(2)
-                        }
-                        Text(
-                            text = displayPw,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = FontFamily.Monospace,
-                            color = OverdriveTheme.colors.textPrimary
-                        )
-                    }
-                    Row {
-                        IconButton(onClick = onTogglePasswordRevealed) {
-                            Icon(
-                                imageVector = if (state.isPasswordRevealed) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                contentDescription = "Göster/Gizle",
-                                tint = OverdriveTheme.colors.textSecondary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                        IconButton(onClick = onCopyPassword) {
-                            Icon(
-                                imageVector = Icons.Default.ContentCopy,
-                                contentDescription = "Kopyala",
-                                tint = OverdriveTheme.colors.textSecondary,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // 2. Session Stats
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(containerColor = OverdriveTheme.colors.cardBackground),
-            border = BorderStroke(1.dp, OverdriveTheme.colors.cardBorder)
-        ) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                Text(
-                    text = "Oturum İstatistikleri",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = OverdriveTheme.colors.accentGreen
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    StatBox(label = "Çalışma Süresi", value = state.uptimeText, modifier = Modifier.weight(1f))
-                    StatBox(label = "İndirme (RX)", value = state.rxText, modifier = Modifier.weight(1f))
-                    StatBox(label = "Yükleme (TX)", value = state.txText, modifier = Modifier.weight(1f))
-                    StatBox(label = "Bağlı Cihaz", value = "${state.clients.size}", modifier = Modifier.weight(1f))
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // 3. Data Limit & Usage Card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(containerColor = OverdriveTheme.colors.cardBackground),
-            border = BorderStroke(1.dp, OverdriveTheme.colors.cardBorder)
-        ) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                Text(
-                    text = "Veri Limiti ve Tüketim",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = OverdriveTheme.colors.accentGreen
-                )
-                Text(
-                    text = "Belirlenen MB sınırına ulaşıldığında bağlantı noktası otomatik durdurulur (0 limitsizdir).",
-                    fontSize = 12.sp,
-                    color = OverdriveTheme.colors.textSecondary,
-                    modifier = Modifier.padding(top = 2.dp, bottom = 10.dp)
-                )
-
-                Text(
-                    text = "Toplam Kullanım: ${state.usageText}",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = OverdriveTheme.colors.textPrimary
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedTextField(
-                        value = limitInput,
-                        onValueChange = { limitInput = it },
-                        label = { Text("Limit (MB)") },
-                        placeholder = { Text("Limitsiz için 0") },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.weight(1f),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = OverdriveTheme.colors.accentGreen,
-                            unfocusedBorderColor = OverdriveTheme.colors.cardBorder,
-                            focusedTextColor = OverdriveTheme.colors.textPrimary,
-                            unfocusedTextColor = OverdriveTheme.colors.textPrimary
-                        )
-                    )
-
-                    Button(
-                        onClick = {
-                            val cap = limitInput.toLongOrNull() ?: 0L
-                            onSaveLimit(cap)
-                        },
-                        modifier = Modifier.height(54.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = OverdriveTheme.colors.accentGreen),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text("Kaydet", color = Color.Black, fontWeight = FontWeight.Bold)
-                    }
-
-                    TextButton(
-                        onClick = onResetUsage,
-                        modifier = Modifier.height(54.dp)
-                    ) {
-                        Text("Sıfırla", color = OverdriveTheme.colors.accentRed)
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // 4. Connected Clients
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(containerColor = OverdriveTheme.colors.cardBackground),
-            border = BorderStroke(1.dp, OverdriveTheme.colors.cardBorder)
-        ) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Bağlı Cihazlar (${state.clients.size})",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = OverdriveTheme.colors.accentGreen
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                if (state.clients.isEmpty()) {
-                    Text(
-                        text = "Şu anda bağlı cihaz bulunmuyor.",
-                        fontSize = 13.sp,
-                        color = OverdriveTheme.colors.textSecondary,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-                } else {
-                    state.clients.forEachIndexed { index, client ->
-                        if (index > 0) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(1.dp)
-                                    .background(OverdriveTheme.colors.cardBorder.copy(alpha = 0.5f))
-                                    .padding(vertical = 4.dp)
-                            )
-                        }
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Devices,
+                                imageVector = Icons.Default.WifiTethering,
                                 contentDescription = null,
-                                tint = OverdriveTheme.colors.textSecondary,
-                                modifier = Modifier.size(20.dp)
+                                tint = if (state.isEnabled) OverdriveTheme.colors.statusSuccess else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(26.dp)
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(
-                                    text = client.name.ifEmpty { "Cihaz ${index + 1}" },
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = OverdriveTheme.colors.textPrimary
+                                    text = "Mobil Bağlantı Noktası (Hotspot)",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
-                                    text = "${client.ip} • ${client.mac}",
-                                    fontSize = 12.sp,
-                                    fontFamily = FontFamily.Monospace,
-                                    color = OverdriveTheme.colors.textSecondary
+                                    text = state.stateText,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = if (state.isEnabled) OverdriveTheme.colors.statusSuccess else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
+                        Switch(
+                            checked = state.isEnabled || state.isTransitioning,
+                            onCheckedChange = { onToggleHotspot(it) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                                checkedTrackColor = MaterialTheme.colorScheme.primary,
+                                uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                            )
+                        )
+                    }
+
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                        modifier = Modifier.padding(vertical = 10.dp)
+                    )
+
+                    // SSID row
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(6.dp))
+                            .clickable { onCopySsid() }
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "Ağ Adı (SSID)",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = state.ssid.ifEmpty { "—" },
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.Monospace,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        IconButton(onClick = onCopySsid) {
+                            Icon(
+                                imageVector = Icons.Default.ContentCopy,
+                                contentDescription = "Kopyala",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+
+                    // Password row
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(6.dp))
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { onCopyPassword() }
+                        ) {
+                            Text(
+                                text = "Ağ Şifresi",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            val displayPw = when {
+                                state.password.isEmpty() -> "—"
+                                state.isPasswordRevealed -> state.password
+                                else -> "•".repeat(maxOf(0, state.password.length - 2)) + state.password.takeLast(2)
+                            }
+                            Text(
+                                text = displayPw,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.Monospace,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        Row {
+                            IconButton(onClick = onTogglePasswordRevealed) {
+                                Icon(
+                                    imageVector = if (state.isPasswordRevealed) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    contentDescription = "Göster/Gizle",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            IconButton(onClick = onCopyPassword) {
+                                Icon(
+                                    imageVector = Icons.Default.ContentCopy,
+                                    contentDescription = "Kopyala",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(18.dp)
                                 )
                             }
                         }
                     }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(10.dp))
+            // 2. Session Stats
+            OverdriveCard(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = 12.dp
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Oturum İstatistikleri",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
 
-        // 5. Behavior Settings
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(containerColor = OverdriveTheme.colors.cardBackground),
-            border = BorderStroke(1.dp, OverdriveTheme.colors.cardBorder)
-        ) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                Text(
-                    text = "Çalışma Davranışları",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = OverdriveTheme.colors.accentGreen
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-
-                NetworkSwitchRow(
-                    title = "Sürekli Açık Tut (Keep-Alive)",
-                    subtitle = "Hotspot beklenmedik şekilde kapandığında arka planda otomatik yeniden başlatılır.",
-                    checked = state.keepAlive,
-                    onCheckedChange = { onToggleSwitch("keepAlive", it) }
-                )
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(OverdriveTheme.colors.cardBorder.copy(alpha = 0.5f))
-                        .padding(vertical = 6.dp)
-                )
-
-                NetworkSwitchRow(
-                    title = "Açılışta Otomatik Başlat",
-                    subtitle = "Araç ve sistem açıldığında mobil bağlantı noktasını otomatik devreye sokar.",
-                    checked = state.autoStartBoot,
-                    onCheckedChange = { onToggleSwitch("autoStartBoot", it) }
-                )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        StatBox(label = "Çalışma Süresi", value = state.uptimeText, modifier = Modifier.weight(1f))
+                        StatBox(label = "İndirme (RX)", value = state.rxText, modifier = Modifier.weight(1f))
+                        StatBox(label = "Yükleme (TX)", value = state.txText, modifier = Modifier.weight(1f))
+                        StatBox(label = "Bağlı Cihaz", value = "${state.clients.size}", modifier = Modifier.weight(1f))
+                    }
+                }
             }
-        }
 
-        Spacer(modifier = Modifier.height(10.dp))
+            // 3. Data Limit & Usage Card
+            OverdriveCard(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = 12.dp
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Veri Limiti ve Tüketim",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Belirlenen MB sınırına ulaşıldığında bağlantı noktası otomatik durdurulur (0 limitsizdir).",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp, bottom = 8.dp)
+                    )
 
-        // 6. Proxy & Relay Settings
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(containerColor = OverdriveTheme.colors.cardBackground),
-            border = BorderStroke(1.dp, OverdriveTheme.colors.cardBorder)
-        ) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                Text(
-                    text = "Ağ Yönlendirme ve Proxy",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = OverdriveTheme.colors.accentGreen
-                )
-                Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "Toplam Kullanım: ${state.usageText}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
 
-                NetworkSwitchRow(
-                    title = "Sistem Genelinde Proxy",
-                    subtitle = "Araç sistemi üzerindeki tüm HTTP isteklerini yerel tünel proxy'sine yönlendirir.",
-                    checked = state.proxySystemWide,
-                    onCheckedChange = { onToggleSwitch("proxySystemWide", it) }
-                )
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(OverdriveTheme.colors.cardBorder.copy(alpha = 0.5f))
-                        .padding(vertical = 6.dp)
-                )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = limitInput,
+                            onValueChange = { limitInput = it },
+                            label = { Text("Limit (MB)") },
+                            placeholder = { Text("Limitsiz için 0") },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.weight(1f),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                cursorColor = MaterialTheme.colorScheme.primary
+                            )
+                        )
 
-                NetworkSwitchRow(
-                    title = "İstemcilere İnternet Rölesi",
-                    subtitle = state.proxyClientsDesc.ifEmpty { "Hotspot'a bağlı cihazların SIM internetine çıkmasını sağlar." },
-                    checked = state.proxyForClients,
-                    onCheckedChange = { onToggleSwitch("proxyForClients", it) }
-                )
+                        OverdriveButton(
+                            text = "Kaydet",
+                            variant = OverdriveButtonVariant.PRIMARY,
+                            onClick = {
+                                val cap = limitInput.toLongOrNull() ?: 0L
+                                onSaveLimit(cap)
+                            }
+                        )
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(OverdriveTheme.colors.cardBorder.copy(alpha = 0.5f))
-                        .padding(vertical = 6.dp)
-                )
+                        OverdriveButton(
+                            text = "Sıfırla",
+                            variant = OverdriveButtonVariant.DANGER,
+                            onClick = onResetUsage
+                        )
+                    }
+                }
+            }
 
-                NetworkSwitchRow(
-                    title = "İstemci Tüneli",
-                    subtitle = state.clientTunnelDesc.ifEmpty { "İstemci cihazlar için özel port röle tünelini etkinleştirir." },
-                    checked = state.clientTunnel,
-                    onCheckedChange = { onToggleSwitch("clientTunnel", it) }
-                )
+            // 4. Connected Clients
+            OverdriveCard(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = 12.dp
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Bağlı Cihazlar (${state.clients.size})",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    if (state.clients.isEmpty()) {
+                        Text(
+                            text = "Şu anda bağlı cihaz bulunmuyor.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(vertical = 6.dp)
+                        )
+                    } else {
+                        state.clients.forEachIndexed { index, client ->
+                            if (index > 0) {
+                                HorizontalDivider(
+                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                    modifier = Modifier.padding(vertical = 4.dp)
+                                )
+                            }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Devices,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column {
+                                    Text(
+                                        text = client.name.ifEmpty { "Cihaz ${index + 1}" },
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = "${client.ip} • ${client.mac}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontFamily = FontFamily.Monospace,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 5. Behavior Settings
+            OverdriveCard(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = 12.dp
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Çalışma Davranışları",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    NetworkSwitchRow(
+                        title = "Sürekli Açık Tut (Keep-Alive)",
+                        subtitle = "Hotspot beklenmedik şekilde kapandığında arka planda otomatik yeniden başlatılır.",
+                        checked = state.keepAlive,
+                        onCheckedChange = { onToggleSwitch("keepAlive", it) }
+                    )
+
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+
+                    NetworkSwitchRow(
+                        title = "Açılışta Otomatik Başlat",
+                        subtitle = "Araç ve sistem açıldığında mobil bağlantı noktasını otomatik devreye sokar.",
+                        checked = state.autoStartBoot,
+                        onCheckedChange = { onToggleSwitch("autoStartBoot", it) }
+                    )
+                }
+            }
+
+            // 6. Proxy & Relay Settings
+            OverdriveCard(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = 12.dp
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Ağ Yönlendirme ve Proxy",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    NetworkSwitchRow(
+                        title = "Sistem Genelinde Proxy",
+                        subtitle = "Araç sistemi üzerindeki tüm HTTP isteklerini yerel tünel proxy'sine yönlendirir.",
+                        checked = state.proxySystemWide,
+                        onCheckedChange = { onToggleSwitch("proxySystemWide", it) }
+                    )
+
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+
+                    NetworkSwitchRow(
+                        title = "İstemcilere İnternet Rölesi",
+                        subtitle = state.proxyClientsDesc.ifEmpty { "Hotspot'a bağlı cihazların SIM internetine çıkmasını sağlar." },
+                        checked = state.proxyForClients,
+                        onCheckedChange = { onToggleSwitch("proxyForClients", it) }
+                    )
+
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+
+                    NetworkSwitchRow(
+                        title = "İstemci Tüneli",
+                        subtitle = state.clientTunnelDesc.ifEmpty { "İstemci cihazlar için özel port röle tünelini etkinleştirir." },
+                        checked = state.clientTunnel,
+                        onCheckedChange = { onToggleSwitch("clientTunnel", it) }
+                    )
+                }
             }
         }
     }
 
     // Warning dialog on first enable
     if (state.showWarningDialog) {
-        AlertDialog(
+        OverdriveDialog(
             onDismissRequest = onDismissWarningDialog,
-            title = {
-                Text(
-                    text = "Mobil Bağlantı Noktası Etkinleştirilsin mi?",
-                    fontWeight = FontWeight.Bold,
-                    color = OverdriveTheme.colors.textPrimary
-                )
-            },
-            text = {
-                Text(
-                    text = "Aracın Wi-Fi alıcısı ve Hotspot vericisi aynı donanımı paylaşır. Hotspot açıldığında araç mevcut bir Wi-Fi ağına bağlı kalamaz ve kendi SIM kartındaki mobil veriyi kullanmaya başlar.",
-                    color = OverdriveTheme.colors.textSecondary,
-                    fontSize = 14.sp
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = onConfirmEnableHotspot,
-                    colors = ButtonDefaults.buttonColors(containerColor = OverdriveTheme.colors.accentGreen),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("Devam Et", color = Color.Black, fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onDismissWarningDialog) {
-                    Text("İptal", color = OverdriveTheme.colors.textSecondary)
-                }
-            },
-            containerColor = Color(0xFF16181D)
-        )
+            title = "Mobil Bağlantı Noktası Etkinleştirilsin mi?",
+            positiveButtonText = "Devam Et",
+            onPositiveClick = onConfirmEnableHotspot,
+            negativeButtonText = "İptal",
+            onNegativeClick = onDismissWarningDialog
+        ) {
+            Text(
+                text = "Aracın Wi-Fi alıcısı ve Hotspot vericisi aynı donanımı paylaşır. Hotspot açıldığında araç mevcut bir Wi-Fi ağına bağlı kalamaz ve kendi SIM kartındaki mobil veriyi kullanmaya başlar.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
     }
 }
 
@@ -651,9 +573,18 @@ private fun StatBox(
         modifier = modifier.padding(horizontal = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = label, fontSize = 11.sp, color = OverdriveTheme.colors.textSecondary)
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
         Spacer(modifier = Modifier.height(2.dp))
-        Text(text = value, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = OverdriveTheme.colors.textPrimary)
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
 }
 
@@ -673,14 +604,14 @@ private fun NetworkSwitchRow(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
-                fontSize = 14.sp,
+                style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
-                color = OverdriveTheme.colors.textPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = subtitle,
-                fontSize = 12.sp,
-                color = OverdriveTheme.colors.textSecondary,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 2.dp)
             )
         }
@@ -689,10 +620,10 @@ private fun NetworkSwitchRow(
             checked = checked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.Black,
-                checkedTrackColor = OverdriveTheme.colors.accentGreen,
-                uncheckedThumbColor = Color.LightGray,
-                uncheckedTrackColor = Color.DarkGray
+                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                checkedTrackColor = MaterialTheme.colorScheme.primary,
+                uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
             )
         )
     }
