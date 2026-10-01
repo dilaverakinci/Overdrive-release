@@ -184,12 +184,11 @@
         android:label="@string/settings_section_security"
         tools:layout="@layout/fragment_settings_security" />
 
-    <!-- Native video player (entered from Recordings) -->
+    <!-- Native video player (100% Jetpack Compose Native, entered from Recordings) -->
     <fragment
         android:id="@+id/videoPlayerFragment"
         android:name="com.overdrive.app.ui.fragment.VideoPlayerFragment"
-        android:label="@string/nav_page_video_player"
-        tools:layout="@layout/fragment_video_player">
+        android:label="@string/nav_page_video_player">
         <argument
             android:name="video_path"
             app:argType="string" />
