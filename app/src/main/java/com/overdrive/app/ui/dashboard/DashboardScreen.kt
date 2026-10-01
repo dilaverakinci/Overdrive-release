@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import com.overdrive.app.R
 import com.overdrive.app.ui.component.OverdriveCard
 import com.overdrive.app.ui.theme.OverdriveDimensions
+import com.overdrive.app.ui.theme.OverdriveTheme
 import com.overdrive.app.ui.vehicle.VehicleArt
 
 /**
@@ -345,25 +346,26 @@ private fun HeroStatusCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    val colors = OverdriveTheme.colors
                     // Tunnel Chip
                     HeroStatusChip(
                         text = heroState.tunnelChipText.ifEmpty { stringResource(R.string.dashboard_tunnel_offline) },
-                        containerColor = if (heroState.isTunnelOnline) Color(0xFFC8E6C9) else Color(0xFFFFDAD6),
-                        textColor = if (heroState.isTunnelOnline) Color(0xFF1B5E20) else Color(0xFFBA1A1A),
+                        containerColor = if (heroState.isTunnelOnline) colors.statusSuccessContainer else colors.statusDangerContainer,
+                        textColor = if (heroState.isTunnelOnline) colors.statusSuccess else colors.statusDanger,
                     )
 
                     // Services Chip
                     HeroStatusChip(
                         text = heroState.daemonsChipText.ifEmpty { stringResource(R.string.dashboard_daemons_running_default) },
-                        containerColor = if (heroState.areDaemonsRunning) Color(0xFFC8E6C9) else Color(0xFFFFDAD6),
-                        textColor = if (heroState.areDaemonsRunning) Color(0xFF1B5E20) else Color(0xFFBA1A1A),
+                        containerColor = if (heroState.areDaemonsRunning) colors.statusSuccessContainer else colors.statusDangerContainer,
+                        textColor = if (heroState.areDaemonsRunning) colors.statusSuccess else colors.statusDanger,
                     )
 
                     // Recording Chip
                     HeroStatusChip(
                         text = heroState.recordingChipText.ifEmpty { stringResource(R.string.dashboard_chip_recording_idle) },
-                        containerColor = if (heroState.isRecordingActive) Color(0xFFFFDAD6) else Color(0xFFFFDDB8),
-                        textColor = if (heroState.isRecordingActive) Color(0xFFBA1A1A) else Color(0xFFA6601C),
+                        containerColor = if (heroState.isRecordingActive) colors.statusDangerContainer else colors.statusWarningContainer,
+                        textColor = if (heroState.isRecordingActive) colors.statusDanger else colors.statusWarning,
                     )
                 }
             }
