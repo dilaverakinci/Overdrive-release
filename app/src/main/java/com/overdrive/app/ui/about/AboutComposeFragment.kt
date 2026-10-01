@@ -22,11 +22,14 @@ import com.overdrive.app.ui.component.OverdriveComposeContainer
 import com.overdrive.app.ui.theme.OverdriveTheme
 import com.overdrive.app.updater.AppUpdater
 import org.json.JSONObject
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class AboutComposeFragment : Fragment() {
 
-    private val executor = Executors.newSingleThreadExecutor()
+    private var executorService: ExecutorService? = null
+    private val executor: ExecutorService
+        get() = executorService?.takeUnless { it.isShutdown } ?: Executors.newSingleThreadExecutor().also { executorService = it }
     private val mainHandler = Handler(Looper.getMainLooper())
 
     private var uiState by mutableStateOf(AboutUiState())
@@ -92,7 +95,8 @@ class AboutComposeFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        executor.shutdown()
+        executorService?.shutdownNow()
+        executorService = null
     }
 
     private fun loadAllInfo() {
@@ -102,9 +106,12 @@ class AboutComposeFragment : Fragment() {
             buildId = BuildConfig.APPLICATION_ID
         )
 
+        val appContext = context?.applicationContext
+
         executor.execute {
+            if (!isAdded) return@execute
             // Display version from AppUpdater
-            val resolvedVer = AppUpdater.getDisplayVersion(requireContext().applicationContext)
+            val resolvedVer = appContext?.let { AppUpdater.getDisplayVersion(it) } ?: AppUpdater.getInstalledVersion()
 
             // Update channel
             UnifiedConfigManager.forceReload()

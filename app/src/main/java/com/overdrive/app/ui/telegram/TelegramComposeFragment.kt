@@ -17,11 +17,14 @@ import com.overdrive.app.ui.component.OverdriveComposeContainer
 import com.overdrive.app.ui.theme.OverdriveTheme
 import com.overdrive.app.util.DaemonHttpClient
 import org.json.JSONObject
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class TelegramComposeFragment : Fragment() {
 
-    private val executor = Executors.newSingleThreadExecutor()
+    private var executorService: ExecutorService? = null
+    private val executor: ExecutorService
+        get() = executorService?.takeUnless { it.isShutdown } ?: Executors.newSingleThreadExecutor().also { executorService = it }
     private val mainHandler = Handler(Looper.getMainLooper())
 
     private var uiState by mutableStateOf(TelegramUiState())
@@ -67,12 +70,14 @@ class TelegramComposeFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         countdownRunnable?.let { mainHandler.removeCallbacks(it) }
-        executor.shutdown()
+        executorService?.shutdownNow()
+        executorService = null
     }
 
     private fun loadState() {
         uiState = uiState.copy(isLoading = true)
         executor.execute {
+            if (!isAdded) return@execute
             try {
                 val fullConfig = UnifiedConfigManager.loadConfig()
                 val tg = fullConfig.optJSONObject("telegram") ?: JSONObject()

@@ -19,11 +19,14 @@ import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class MqttComposeFragment : Fragment() {
 
-    private val executor = Executors.newSingleThreadExecutor()
+    private var executorService: ExecutorService? = null
+    private val executor: ExecutorService
+        get() = executorService?.takeUnless { it.isShutdown } ?: Executors.newSingleThreadExecutor().also { executorService = it }
     private val mainHandler = Handler(Looper.getMainLooper())
 
     private var uiState by mutableStateOf(MqttUiState())
@@ -100,12 +103,14 @@ class MqttComposeFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        executor.shutdown()
+        executorService?.shutdownNow()
+        executorService = null
     }
 
     private fun loadAllData() {
         uiState = uiState.copy(isLoading = true)
         executor.execute {
+            if (!isAdded) return@execute
             val connections = mutableListOf<MqttConnectionItem>()
             val telemetryMap = mutableMapOf<String, String>()
 

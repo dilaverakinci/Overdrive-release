@@ -15,11 +15,14 @@ import com.overdrive.app.ui.component.OverdriveComposeContainer
 import com.overdrive.app.ui.theme.OverdriveTheme
 import com.overdrive.app.util.DaemonHttpClient
 import org.json.JSONObject
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class BydCloudComposeFragment : Fragment() {
 
-    private val executor = Executors.newSingleThreadExecutor()
+    private var executorService: ExecutorService? = null
+    private val executor: ExecutorService
+        get() = executorService?.takeUnless { it.isShutdown } ?: Executors.newSingleThreadExecutor().also { executorService = it }
     private val mainHandler = Handler(Looper.getMainLooper())
 
     private var uiState by mutableStateOf(BydCloudUiState())
@@ -70,12 +73,14 @@ class BydCloudComposeFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        executor.shutdown()
+        executorService?.shutdownNow()
+        executorService = null
     }
 
     private fun loadStatus() {
         uiState = uiState.copy(isLoading = true)
         executor.execute {
+            if (!isAdded) return@execute
             try {
                 val conn = DaemonHttpClient.open("/api/bydcloud/status", "GET", 3000, 4000)
                 val code = conn.responseCode

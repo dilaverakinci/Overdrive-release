@@ -31,11 +31,14 @@ import com.overdrive.app.updater.AppUpdater
 import com.overdrive.app.util.DaemonHttpClient
 import org.json.JSONObject
 import java.util.Locale
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class SettingsComposeFragment : Fragment() {
 
-    private val executor = Executors.newSingleThreadExecutor()
+    private var executorService: ExecutorService? = null
+    private val executor: ExecutorService
+        get() = executorService?.takeUnless { it.isShutdown } ?: Executors.newSingleThreadExecutor().also { executorService = it }
     private val mainHandler = Handler(Looper.getMainLooper())
 
     private var uiState by mutableStateOf(SettingsUiState())
@@ -87,7 +90,8 @@ class SettingsComposeFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        executor.shutdown()
+        executorService?.shutdownNow()
+        executorService = null
     }
 
     private fun loadInitialState() {
@@ -121,9 +125,12 @@ class SettingsComposeFragment : Fragment() {
             appId = BuildConfig.APPLICATION_ID
         )
 
+        val appContext = context?.applicationContext
+
         // Load config & daemon integration statuses off-thread
         executor.execute {
-            val resolvedVer = AppUpdater.getDisplayVersion(requireContext().applicationContext)
+            if (!isAdded) return@execute
+            val resolvedVer = appContext?.let { AppUpdater.getDisplayVersion(it) } ?: AppUpdater.getInstalledVersion()
 
             // Overlays from UnifiedConfig
             val overlayCfg = try {

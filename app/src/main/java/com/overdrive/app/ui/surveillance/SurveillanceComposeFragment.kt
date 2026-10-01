@@ -18,11 +18,14 @@ import com.overdrive.app.ui.component.OverdriveComposeContainer
 import com.overdrive.app.ui.theme.OverdriveTheme
 import com.overdrive.app.util.DaemonHttpClient
 import org.json.JSONObject
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class SurveillanceComposeFragment : Fragment() {
 
-    private val executor = Executors.newSingleThreadExecutor()
+    private var executorService: ExecutorService? = null
+    private val executor: ExecutorService
+        get() = executorService?.takeUnless { it.isShutdown } ?: Executors.newSingleThreadExecutor().also { executorService = it }
     private val mainHandler = Handler(Looper.getMainLooper())
     private val configManager = SurveillanceConfigManager()
 
@@ -88,12 +91,14 @@ class SurveillanceComposeFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        executor.shutdown()
+        executorService?.shutdownNow()
+        executorService = null
     }
 
     private fun loadState() {
         uiState = uiState.copy(isLoading = true)
         executor.execute {
+            if (!isAdded) return@execute
             try {
                 val fullConfig = UnifiedConfigManager.loadConfig()
                 val surv = fullConfig.optJSONObject("surveillance") ?: JSONObject()

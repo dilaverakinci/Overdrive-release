@@ -20,11 +20,14 @@ import com.overdrive.app.network.HotspotManager
 import com.overdrive.app.ui.component.OverdriveComposeContainer
 import com.overdrive.app.ui.theme.OverdriveTheme
 import org.json.JSONObject
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class NetworkComposeFragment : Fragment() {
 
-    private val io = Executors.newSingleThreadExecutor()
+    private var ioService: ExecutorService? = null
+    private val io: ExecutorService
+        get() = ioService?.takeUnless { it.isShutdown } ?: Executors.newSingleThreadExecutor().also { ioService = it }
     private val mainHandler = Handler(Looper.getMainLooper())
 
     private var uiState by mutableStateOf(NetworkUiState())
@@ -114,7 +117,8 @@ class NetworkComposeFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        io.shutdownNow()
+        ioService?.shutdownNow()
+        ioService = null
     }
 
     private fun handleToggleHotspot(on: Boolean) {
