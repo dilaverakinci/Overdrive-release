@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -51,6 +53,7 @@ import com.overdrive.app.ui.component.OverdriveDialog
 import com.overdrive.app.ui.component.OverdrivePillStatus
 import com.overdrive.app.ui.component.OverdriveStatusPill
 import com.overdrive.app.ui.theme.OverdriveDimensions
+import com.overdrive.app.ui.theme.OverdriveTheme
 
 /**
  * Diagnostics Screen tabs.
@@ -656,9 +659,9 @@ private fun DtcScannerSection(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.status_dot_online),
+                        imageVector = Icons.Default.CheckCircle,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = OverdriveTheme.colors.statusSuccess,
                         modifier = Modifier.size(24.dp)
                     )
                     Column {
