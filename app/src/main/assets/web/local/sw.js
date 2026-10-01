@@ -48,7 +48,7 @@
 // cache bump, existing installs keep the brightness-only detector and
 // Dolphin paint changes continue targeting its wheel accent instead of
 // the body shell.
-const CACHE_VERSION = 'overdrive-pwa-v1';
+const CACHE_VERSION = 'overdrive-3d-v4';
 
 // Static, APK-bundled assets that the EV card and PWA shell need on every page.
 // Same-origin only — the daemon serves these with public, max-age=86400,

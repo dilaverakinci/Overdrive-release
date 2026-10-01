@@ -502,6 +502,10 @@ public class MotionPipelineV2 {
      * Initialize the pipeline. Must be called after native library is loaded.
      */
     public boolean init() {
+        if (!NativeMotion.isLibraryLoaded()) {
+            logger.warn("Native surveillance library not loaded, skipping V2 pipeline initialization");
+            return false;
+        }
         try {
             // Query native struct sizes
             configStructSize = NativeMotion.getPipelineConfigSize();
@@ -611,8 +615,8 @@ public class MotionPipelineV2 {
             logger.info("Motion Pipeline V2 initialized");
             return true;
             
-        } catch (Exception e) {
-            logger.error("Failed to initialize V2 pipeline: " + e.getMessage(), e);
+        } catch (Throwable t) {
+            logger.error("Failed to initialize V2 pipeline: " + t.getMessage(), t);
             return false;
         }
     }

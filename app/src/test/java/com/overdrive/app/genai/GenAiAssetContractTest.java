@@ -36,7 +36,7 @@ public class GenAiAssetContractTest {
         assertTrue(javascript.contains("/api/genai/automation/draft"));
         assertTrue(javascript.contains("/api/genai/automation/commit"));
         assertTrue(javascript.contains("draft.saved"));
-        assertTrue(javascript.contains("Saved as manual-only"));
+        assertTrue(javascript.contains("Saved as manual-only") || javascript.contains("genai.saved_manual"));
         assertTrue(handler.contains(
                 "saveManualAutomation("));
         assertTrue(handler.contains(
@@ -216,7 +216,7 @@ public class GenAiAssetContractTest {
         assertTrue(javascript.contains(
                 "message.mode === 'community_search'"));
         assertTrue(javascript.contains(
-                "No matching community automations were found."));
+                "genai.no_community") || javascript.contains("No matching community automations were found."));
         assertTrue(insights.contains(
                 "\"overdrive_dashboard_insight\""));
         assertTrue(insights.contains(

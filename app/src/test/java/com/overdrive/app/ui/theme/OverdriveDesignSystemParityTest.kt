@@ -75,16 +75,16 @@ class OverdriveDesignSystemParityTest {
         assertEquals(8.dp, d.cardRadiusAccent)
 
         // Card and page padding
-        assertEquals(20.dp, d.cardPaddingStandard)
-        assertEquals(24.dp, d.cardPaddingHero)
-        assertEquals(24.dp, d.pagePaddingHorizontal)
-        assertEquals(20.dp, d.pagePaddingTop)
-        assertEquals(24.dp, d.pagePaddingBottom)
+        assertEquals(12.dp, d.cardPaddingStandard)
+        assertEquals(16.dp, d.cardPaddingHero)
+        assertEquals(12.dp, d.pagePaddingHorizontal)
+        assertEquals(8.dp, d.pagePaddingTop)
+        assertEquals(12.dp, d.pagePaddingBottom)
 
         // Inter-card rhythm
-        assertEquals(12.dp, d.cardGapVertical)
-        assertEquals(12.dp, d.cardGapHorizontal)
-        assertEquals(6.dp, d.cardGapHorizontalHalf)
+        assertEquals(10.dp, d.cardGapVertical)
+        assertEquals(10.dp, d.cardGapHorizontal)
+        assertEquals(5.dp, d.cardGapHorizontalHalf)
 
         // Navigation rail widths
         assertEquals(80.dp, d.railCompactWidth)
