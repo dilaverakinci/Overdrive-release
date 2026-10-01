@@ -210,9 +210,9 @@
     <string name="adb_console_hero_title">ADB Konsolu</string>
     <string name="adb_console_hero_subtitle">Cihazda Shell komutlarını çalıştır</string>
     <!-- fragment_webview -->
-    <string name="webview_loading">Karga...</string>
-    <string name="webview_camera_daemon_not_running">Kamera Daemon çalışmıyor .</string>
-    <string name="webview_start_camera_daemon">Bu sayfaya erişmek için Kamera Daemon\'unu Daemon ekranından başlatın.</string>
+    <string name="webview_loading">Yükleniyor…</string>
+    <string name="webview_camera_daemon_not_running">Kamera servisi çalışmıyor.</string>
+    <string name="webview_start_camera_daemon">Bu sayfaya erişmek için Kamera Servisi\'ni Servisler ekranından başlatın.</string>
     <!-- dialog_roi_drawing -->
     <!-- dialog_zrok_token -->
     <string name="zrok_enable_token_hint">İşaret etkinleştir</string>
@@ -312,9 +312,9 @@
     <!-- fragment_daemons -->
     <string name="daemons_hero_title">Arka plan hizmetleri</string>
     <!-- Subtitle on the Daemons hero header before the first state arrives. -->
-    <string name="daemons_count_pending">Kargo hizmetleri...</string>
+    <string name="daemons_count_pending">Servisler yükleniyor…</string>
     <!-- Subtitle on the Daemons hero header. %1$d running, %2$d total. -->
-    <string name="daemons_count_fmt">%1$d\'nin %2$d\'i çalıştırmak</string>
+    <string name="daemons_count_fmt">%1$d / %2$d çalışıyor</string>
     <!-- dialog_time_window -->
     <!-- dialog_update_progress -->
     <string name="update_preparing">Güncellemeye hazırlanıyorum...</string>
@@ -420,15 +420,15 @@
     <string name="toast_storage_permission_required">Kayıtlar için gerekli depolama izni</string>
     <string name="toast_url_copied_short">URL kopyalandı!</string>
     <string name="toast_camera_set_to_auto">Otomatik olarak ayarlanmış kamera</string>
-    <string name="toast_failed_to_save_short">Kurtaramadım.</string>
+    <string name="toast_failed_to_save_short">Kaydedilemedi.</string>
     <string name="toast_failed_with_message">Başarısız: %1$s</string>
-    <string name="toast_camera_id_set">Kamera %1$d seti  sonraki ACC döngüsü</string>
-    <string name="toast_clearing_camera_config">Kamera konfigürasyonunu temizliyorum...</string>
-    <string name="toast_restarting_camera_daemon">Kamera demonu yeniden başlatmak...</string>
-    <string name="toast_camera_daemon_restarting">Kamera demonu tam sonda ile yeniden başlatılıyor</string>
-    <string name="toast_camera_restart_failed">Yapılandırma temizlendi ama daemon yeniden başlatılamadı. Lütfen elle yeniden başlatın.</string>
-    <string name="toast_camera_settings_saved_restarting">Kamera ayarları kaydedildi  kamera demonu yeniden başlatmak...</string>
-    <string name="toast_camera_settings_restart_failed">Kamera ayarları kaydedildi ama daemon yeniden başlatılamadı.</string>
+    <string name="toast_camera_id_set">Kamera ID %1$d olarak ayarlandı · sonraki ACC döngüsünde geçerli olacak</string>
+    <string name="toast_clearing_camera_config">Kamera yapılandırması temizleniyor…</string>
+    <string name="toast_restarting_camera_daemon">Kamera servisi yeniden başlatılıyor…</string>
+    <string name="toast_camera_daemon_restarting">Kamera servisi tam tarama ile yeniden başlatılıyor</string>
+    <string name="toast_camera_restart_failed">Yapılandırma temizlendi ancak servis yeniden başlatılamadı. Lütfen elle yeniden başlatın.</string>
+    <string name="toast_camera_settings_saved_restarting">Kamera ayarları kaydedildi, kamera servisi yeniden başlatılıyor…</string>
+    <string name="toast_camera_settings_restart_failed">Kamera ayarları kaydedildi ancak servis yeniden başlatılamadı.</string>
     <string name="toast_failed_with_message_x">Başarısız: %1$s</string>
     <string name="toast_soh_reset_success">SOH tahminini yeniden ayarlamak  sonraki verilerden yeniden hesaplanacak</string>
     <string name="toast_soh_reset_failed_no_daemon">Yeniden ayarlama başarısız  daemon cevap vermiyor ve dosya yazılamaz</string>
@@ -487,18 +487,18 @@
     <string name="dashboard_starting_cloudflared">Cloudflared tüneli başlatılıyor…</string>
     <string name="dashboard_starting_tailscale">Tailscale tünelini başlatıyorum...</string>
     <string name="dashboard_waiting_url">URL tünelini bekliyoruz...</string>
-    <string name="dashboard_daemons_running">%1$d/%2$d Çalışma</string>
+    <string name="dashboard_daemons_running">%1$d/%2$d Çalışıyor</string>
     <string name="tunnel_label_cloudflared">Cloudflared</string>
     <string name="tunnel_label_zrok">Zrok</string>
     <string name="tunnel_label_tailscale">Tailscale</string>
     <!-- Daemon names — shown on the Daemons list and dashboard. -->
-    <string name="daemon_name_camera">Kamera Daemon</string>
-    <string name="daemon_name_surveillance">Gözlem Daemon</string>
+    <string name="daemon_name_camera">Kamera Servisi</string>
+    <string name="daemon_name_surveillance">Gözetim Servisi</string>
     <string name="daemon_name_acc_surveillance">ACC Denetim</string>
     <string name="daemon_name_singbox">Sing-box Proxy</string>
-    <string name="daemon_name_cloudflared">Cloudflared Tunel</string>
-    <string name="daemon_name_zrok">Zrok Tunel</string>
-    <string name="daemon_name_tailscale">Tailscale Tunel</string>
+    <string name="daemon_name_cloudflared">Cloudflared Tüneli</string>
+    <string name="daemon_name_zrok">Zrok Tüneli</string>
+    <string name="daemon_name_tailscale">Tailscale Tüneli</string>
     <string name="daemon_name_telegram">Telegram Bot</string>
     <string name="clip_label_access_code">Erişim Kodu</string>
     <string name="clip_label_url">URL</string>
@@ -630,9 +630,9 @@
     <string name="settings_section_appearance">Görünüm</string>
     <string name="settings_section_recording">Kayıt</string>
     <string name="settings_section_surveillance">Gözetim</string>
-    <string name="settings_section_daemons">Şeytanlar</string>
+    <string name="settings_section_daemons">Servisler</string>
     <string name="settings_section_privacy">Gizlilik &amp; Veriler</string>
-    <string name="settings_section_overlay">Durum örtüsü</string>
+    <string name="settings_section_overlay">Durum Göstergesi</string>
     <string name="settings_section_security">Güvenlik</string>
     <string name="settings_overlay_subtitle">Uçan durum hapının hangi bölümlerinin görünür kalmasını seçin.</string>
     <string name="settings_overlay_camera_title">Kamera göstergesi</string>
