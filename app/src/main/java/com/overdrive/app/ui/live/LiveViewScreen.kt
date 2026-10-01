@@ -599,6 +599,17 @@ private fun LiveCameraViewport(
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
     var isWebViewReady by remember { mutableStateOf(false) }
 
+    DisposableEffect(Unit) {
+        onDispose {
+            webViewRef?.let { wv ->
+                wv.stopLoading()
+                wv.loadUrl("about:blank")
+                wv.destroy()
+            }
+            webViewRef = null
+        }
+    }
+
     val idleHintText = stringResource(R.string.live_tap_camera_hint)
     val localeCode = remember {
         try {
