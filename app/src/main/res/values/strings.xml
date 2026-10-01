@@ -1353,6 +1353,8 @@
     <string name="dashboard_metric_storage_chip">%1$s used · %2$s free</string>
     <string name="dashboard_metric_storage_chip_pending">Storage —</string>
     <string name="dashboard_tunnel_offline">Offline</string>
+    <string name="dashboard_local_lan_url">Local LAN: %s</string>
+    <string name="dashboard_pwa_install_tip">💡 Open in Chrome on your phone to install OverDrive to your Home Screen as an app.</string>
     <string name="dashboard_tunnel_online">Online</string>
     <string name="dashboard_tunnel_connecting">Connecting…</string>
     <string name="dashboard_tunnel_tile_failed">Error</string>

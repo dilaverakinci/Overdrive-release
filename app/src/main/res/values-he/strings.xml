@@ -975,6 +975,8 @@
     <string name="dashboard_metric_storage_chip">%1$s בשימוש · %2$s פנויים</string>
     <string name="dashboard_metric_storage_chip_pending">אחסון —</string>
     <string name="dashboard_tunnel_offline">לא מקוון</string>
+    <string name="dashboard_local_lan_url">רשת מקומית: %s</string>
+    <string name="dashboard_pwa_install_tip">💡 פתח ב-Chrome בטלפון כדי להתקין את OverDrive במסך הבית כאפליקציה.</string>
     <string name="dashboard_tunnel_online">מקוון</string>
     <string name="dashboard_tunnel_connecting">מתחבר…</string>
     <string name="dashboard_tunnel_tile_failed">שגיאה</string>

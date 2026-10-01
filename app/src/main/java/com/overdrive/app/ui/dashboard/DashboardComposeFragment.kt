@@ -197,11 +197,15 @@ class DashboardComposeFragment : Fragment() {
                 ?: daemonsViewModel.cloudflaredController.tunnelUrl.value
                 ?: daemonsViewModel.tailscaleController.tunnelUrl.value
 
-            val isOnline = !activeUrl.isNullOrEmpty()
-            val statusText = if (isOnline) activeUrl!! else getString(R.string.dashboard_tunnel_offline)
+            val localIp = getLocalIpAddress()
+            val localLanUrl = if (!localIp.isNullOrEmpty()) "http://$localIp:8080" else null
 
-            val qrBitmap = if (isOnline) {
-                QrCodeGenerator.generate(activeUrl!!, 256)
+            val isOnline = !activeUrl.isNullOrEmpty()
+            val effectiveUrl = activeUrl ?: localLanUrl
+            val statusText = if (isOnline) activeUrl!! else if (!localLanUrl.isNullOrEmpty()) localLanUrl else getString(R.string.dashboard_tunnel_offline)
+
+            val qrBitmap = if (!effectiveUrl.isNullOrEmpty()) {
+                QrCodeGenerator.generate(effectiveUrl, 256)
             } else {
                 null
             }
@@ -210,6 +214,7 @@ class DashboardComposeFragment : Fragment() {
                 isOnline = isOnline,
                 statusText = statusText,
                 activeUrl = activeUrl,
+                localLanUrl = localLanUrl,
                 qrBitmap = qrBitmap
             )
 
@@ -866,6 +871,24 @@ class DashboardComposeFragment : Fragment() {
     private fun modelDisplayName(modelId: String?): String {
         if (modelId.isNullOrEmpty()) return "—"
         return VehicleTopDownArt.displayNameFor(modelId, context)
+    }
+
+    private fun getLocalIpAddress(): String? {
+        try {
+            val interfaces = java.net.NetworkInterface.getNetworkInterfaces() ?: return null
+            for (iface in java.util.Collections.list(interfaces)) {
+                if (!iface.isUp || iface.isLoopback) continue
+                for (addr in java.util.Collections.list(iface.inetAddresses)) {
+                    if (!addr.isLoopbackAddress && addr is java.net.Inet4Address) {
+                        val host = addr.hostAddress
+                        if (!host.isNullOrEmpty() && host != "127.0.0.1") {
+                            return host
+                        }
+                    }
+                }
+            }
+        } catch (_: Exception) {}
+        return null
     }
 
     private fun copyToClipboard(label: String, text: String) {

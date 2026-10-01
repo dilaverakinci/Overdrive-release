@@ -64,6 +64,7 @@ data class DashboardRemoteState(
     val statusText: String = "",
     val deviceId: String = "",
     val activeUrl: String? = null,
+    val localLanUrl: String? = null,
     val deviceToken: String = "",
     val isTokenMasked: Boolean = true,
     val qrBitmap: Bitmap? = null,
@@ -973,6 +974,30 @@ private fun RemoteAccessCard(
                                 .clickable { onCopyUrl(remoteState.activeUrl) },
                         )
                     }
+
+                    if (!remoteState.localLanUrl.isNullOrEmpty()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(R.string.dashboard_local_lan_url, remoteState.localLanUrl),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontFamily = FontFamily.Monospace,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onCopyUrl(remoteState.localLanUrl) },
+                        )
+                    }
+
+                    // PWA Info Note
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(R.string.dashboard_pwa_install_tip),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.outline,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
 
                     // Security Token Section
                     Spacer(modifier = Modifier.height(12.dp))

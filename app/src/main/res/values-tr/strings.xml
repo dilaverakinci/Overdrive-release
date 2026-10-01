@@ -810,6 +810,8 @@
     <string name="dashboard_metric_storage_chip">%1$s kullanıldı · %2$s ücretsiz</string>
     <string name="dashboard_metric_storage_chip_pending">Depolama </string>
     <string name="dashboard_tunnel_offline">İletişimden uzak</string>
+    <string name="dashboard_local_lan_url">Yerel Ağ: %s</string>
+    <string name="dashboard_pwa_install_tip">💡 Telefonda Chrome ile açtığınızda \'OverDrive\'ı Yükle\' seçeneği ile ana ekranınıza uygulama olarak ekleyebilirsiniz.</string>
     <string name="dashboard_tunnel_online">Çevrimiçi</string>
     <string name="dashboard_tunnel_connecting">Bağlantı...</string>
     <!-- Quick actions (now rendered as same-size tiles, not chips) -->
