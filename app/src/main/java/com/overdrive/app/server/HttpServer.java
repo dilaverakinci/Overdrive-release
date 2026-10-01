@@ -700,7 +700,7 @@ public class HttpServer {
                 if (!serveStaticFile(out, "local/communicate.html")) {
                     HttpResponse.sendError(out, 404, "communicate.html not found");
                 }
-            } else if (path.startsWith("/manifest.json")) {
+            } else if (path.startsWith("/manifest.json") || path.startsWith("/manifest.webmanifest")) {
                 if (!serveStaticFile(out, "local/manifest.json")) {
                     HttpResponse.sendError(out, 404, "manifest.json not found");
                 }
@@ -1887,7 +1887,8 @@ public class HttpServer {
             String fileName = new File(relativePath).getName();
             if (relativePath.endsWith(".html")
                     || fileName.equals("sw.js")
-                    || fileName.equals("manifest.json")) {
+                    || fileName.equals("manifest.json")
+                    || fileName.equals("manifest.webmanifest")) {
                 cacheControl = "no-store, no-cache, must-revalidate, max-age=0";
             } else {
                 cacheControl = "public, max-age=3600, must-revalidate";
@@ -1912,6 +1913,15 @@ public class HttpServer {
                    .append("Content-Length: ").append(file.length()).append("\r\n")
                    .append("ETag: ").append(etag).append("\r\n")
                    .append("Cache-Control: ").append(cacheControl).append("\r\n");
+            if (fileName.equals("sw.js")) {
+                headers.append("Service-Worker-Allowed: /\r\n");
+            }
+            if (fileName.equals("manifest.json")
+                    || fileName.equals("manifest.webmanifest")
+                    || relativePath.startsWith("shared/icon")
+                    || relativePath.startsWith("shared/app-icon")) {
+                headers.append("Access-Control-Allow-Origin: *\r\n");
+            }
             if (relativePath.endsWith(".html")) {
                 headers.append("Pragma: no-cache\r\n")
                        .append("Expires: 0\r\n");
@@ -2009,10 +2019,13 @@ public class HttpServer {
     }
     
     private String getContentType(String path) {
+        if (path.endsWith("manifest.json") || path.endsWith(".webmanifest")) {
+            return "application/manifest+json; charset=utf-8";
+        }
         if (path.endsWith(".html")) return "text/html; charset=utf-8";
         if (path.endsWith(".css")) return "text/css; charset=utf-8";
         if (path.endsWith(".js")) return "application/javascript; charset=utf-8";
-        if (path.endsWith(".json")) return "application/json";
+        if (path.endsWith(".json")) return "application/json; charset=utf-8";
         if (path.endsWith(".wasm")) return "application/wasm";
         if (path.endsWith(".png")) return "image/png";
         if (path.endsWith(".jpg") || path.endsWith(".jpeg")) return "image/jpeg";
