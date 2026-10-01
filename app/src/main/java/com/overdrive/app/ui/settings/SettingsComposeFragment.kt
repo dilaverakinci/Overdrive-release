@@ -144,7 +144,11 @@ class SettingsComposeFragment : Fragment() {
                         onToggleDiLink5KeepAlive = { v -> updateSurveillanceKey("diLink5KeepAlive", v) },
                         onToggleLowPowerMode = { v -> updateSurveillanceKey("lowPowerMode", v) },
                         onLowSocCutoffChange = { v -> updatePowerKey("lowSocCutoffPercent", v) },
+                        onToggleSurveillanceSchedule = { en -> toggleSurveillanceSchedule(en) },
                         onToggleParkingIntelligence = { v -> updateSurveillanceKey("parkingIntelligenceEnabled", v) },
+                        onToggleParkingStills = { v -> updateSurveillanceParkingSubSetting("snapshots", v) },
+                        onToggleNeighbourTimeline = { v -> updateSurveillanceParkingSubSetting("neighbours", v) },
+                        onToggleGarageSignage = { v -> updateSurveillanceParkingSubSetting("signage", v) },
                         onToggleScreenDeterrent = { v -> updateSurveillanceKey("screenDeterrentEnabled", v) },
                         onScreenDeterrentDurationChange = { v -> updateSurveillanceKey("screenDeterrentDurationSeconds", v) },
                         onScreenDeterrentMessageChange = { msg -> updateSurveillanceKey("screenDeterrentMessage", msg) },
@@ -180,7 +184,7 @@ class SettingsComposeFragment : Fragment() {
                         onSurveillanceRectifyStrengthChange = { s -> updateSurveillanceRectify(s) },
                         onToggleSurveillanceTelemetryOverlay = { v -> updateSurveillanceTelemetryOverlay(v) },
                         onToggleSurveillanceTelemetryField = { field, add -> toggleTelemetryField("surveillance", field, add) },
-                        onSurveillanceOemRecordingModeSelected = { m -> updateOemKey("recordingMode", m) },
+                        onSurveillanceOemRecordingModeSelected = { m -> updateOemKey("surveillanceMode", m) },
                         onToggleSurveillanceOemTelemetryOverlay = { v -> updateOemKey("telemetryOverlay", v) },
                         onToggleSurveillanceOemTelemetryField = { f, add -> toggleTelemetryField("oem", f, add) },
                         onToggleSurveillanceNativeDvr = { toggleNativeDvr() },
@@ -579,7 +583,7 @@ class SettingsComposeFragment : Fragment() {
                 val rectify = rec.optInt("rectifyStrength", 0)
                 val telemetry = rec.optBoolean("telemetryOverlayEnabled", true)
 
-                val oemMode = oem.optString("recordingMode", "off")
+                var oemMode = oem.optString("recordingMode", "off")
                 val oemTelem = oem.optBoolean("telemetryOverlay", false)
                 val oemTelemArray = try { oem.optJSONArray("telemetryFields") } catch (_: Throwable) { null }
                 val oemTelemSet = mutableSetOf<String>()
@@ -623,8 +627,10 @@ class SettingsComposeFragment : Fragment() {
                 var curState = if (mode != "NONE") "Etkin ($mode)" else "Boşta (Idle)"
                 var isRec = false
                 var recToday = 0
-                var oemUnset = true
+                val oemUnset = UnifiedConfigManager.resolveOemDashcamId() < 0
+                var dvrInstalled = false
                 var dvrDisabled = false
+                var oemPipelineStatus = "Boşta"
 
                 try {
                     val conn = DaemonHttpClient.open("/api/recordings/stats", "GET", 1500, 2000)
@@ -641,12 +647,30 @@ class SettingsComposeFragment : Fragment() {
                 } catch (_: Throwable) {}
 
                 try {
-                    val oemConn = DaemonHttpClient.open("/api/oem-dashcam/status", "GET", 1500, 2000)
+                    val dvrConn = DaemonHttpClient.open("/api/oem-dashcam/native-dvr/status", "GET", 1500, 2000)
+                    if (dvrConn.responseCode == 200) {
+                        val dvrBody = dvrConn.inputStream.bufferedReader().readText()
+                        val dvrJson = JSONObject(dvrBody)
+                        val dvrState = dvrJson.optString("state", "")
+                        dvrInstalled = dvrState != "not_installed"
+                        dvrDisabled = dvrState == "disabled"
+                    }
+                    dvrConn.disconnect()
+                } catch (_: Throwable) {}
+
+                try {
+                    val oemConn = DaemonHttpClient.open("/api/oem-dashcam/config", "GET", 1500, 2000)
                     if (oemConn.responseCode == 200) {
                         val oemBody = oemConn.inputStream.bufferedReader().readText()
                         val oemJson = JSONObject(oemBody)
-                        oemUnset = oemJson.optBoolean("cameraProbeUnset", true)
-                        dvrDisabled = oemJson.optBoolean("nativeDvrDisabled", false)
+                        oemMode = oemJson.optString("recordingMode", oemMode)
+                        val isRunning = oemJson.optBoolean("pipelineRunning", false)
+                        val isRecording = oemJson.optBoolean("recording", false)
+                        oemPipelineStatus = when {
+                            isRecording -> "Kaydediliyor"
+                            isRunning -> "Aktif"
+                            else -> "Boşta"
+                        }
                     }
                     oemConn.disconnect()
                 } catch (_: Throwable) {}
@@ -682,6 +706,8 @@ class SettingsComposeFragment : Fragment() {
                             oemRecordingMode = oemMode,
                             oemTelemetryOverlay = oemTelem,
                             oemTelemetryFields = oemTelemSet,
+                            oemPipelineStatus = oemPipelineStatus,
+                            nativeDvrInstalled = dvrInstalled,
                             cameraProbeUnset = oemUnset,
                             nativeDvrDisabled = dvrDisabled,
                             storageType = storType,
@@ -767,13 +793,30 @@ class SettingsComposeFragment : Fragment() {
         }
         val currSurv = uiState.surveillanceState
         val updatedSurv = when (key) {
-            "recordingMode" -> currSurv.copy(oemRecordingMode = value as String)
+            "surveillanceMode", "recordingMode" -> currSurv.copy(oemRecordingMode = value as String)
             "telemetryOverlay" -> currSurv.copy(oemTelemetryOverlay = value as Boolean)
             else -> currSurv
         }
         uiState = uiState.copy(recordingState = updatedRec, surveillanceState = updatedSurv)
         executor.execute {
-            try { UnifiedConfigManager.updateValues("oem", mapOf(key to value)) } catch (_: Throwable) {}
+            try {
+                if (key == "recordingMode" || key == "surveillanceMode") {
+                    try {
+                        val payload = JSONObject().apply { put(key, value) }.toString()
+                        val conn = DaemonHttpClient.open("/api/oem-dashcam/config", "POST", 2000, 3000)
+                        conn.doOutput = true
+                        conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
+                        conn.responseCode
+                        conn.disconnect()
+                    } catch (_: Throwable) {}
+                }
+                UnifiedConfigManager.updateValues("oemDashcam", mapOf(key to value))
+                UnifiedConfigManager.updateValues("oem", mapOf(key to value))
+            } catch (t: Throwable) {
+                mainHandler.post {
+                    Toast.makeText(requireContext(), "OEM ayarı kaydedilemedi: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
@@ -785,7 +828,8 @@ class SettingsComposeFragment : Fragment() {
         )
         executor.execute {
             try {
-                val conn = DaemonHttpClient.open("/api/oem-dashcam/native-dvr/toggle", "POST", 2000, 3000)
+                val endpoint = if (next) "/api/oem-dashcam/native-dvr/disable" else "/api/oem-dashcam/native-dvr/enable"
+                val conn = DaemonHttpClient.open(endpoint, "POST", 2000, 3000)
                 conn.responseCode
                 conn.disconnect()
             } catch (_: Throwable) {}
@@ -874,7 +918,12 @@ class SettingsComposeFragment : Fragment() {
                 val mobData = surv.optBoolean("mobileDataKeepAlive", false)
                 val di5 = surv.optBoolean("di5CloudKeepAlive", false)
                 val diLink5 = surv.optBoolean("diLink5KeepAlive", false)
-                val parkingIntel = surv.optBoolean("parkingIntelligenceEnabled", false)
+                val parking = fullConfig.optJSONObject("parking") ?: JSONObject()
+                val parkingIntel = parking.optBoolean("enabled", surv.optBoolean("parkingIntelligenceEnabled", false))
+                val parkingStills = parking.optBoolean("snapshots", true)
+                val neighbourTimeline = parking.optBoolean("neighbours", true)
+                val garageSignage = parking.optBoolean("signage", true)
+                val scheduleEn = surv.optBoolean("scheduleEnabled", false)
 
                 val env = surv.optString("environmentPreset", "outdoor")
                 val person = surv.optBoolean("detectPerson", true)
@@ -974,24 +1023,68 @@ class SettingsComposeFragment : Fragment() {
                 val cdrMin = cleaner?.minFilesKeep ?: 10
 
                 var isArmed = false
-                var oemUnset = true
+                val oemUnset = UnifiedConfigManager.resolveOemDashcamId() < 0
+                var oemSurvMode = UnifiedConfigManager.getOemSurveillanceMode()
+                var oemPipelineStatus = "Boşta"
+                var dvrInstalled = false
                 var dvrDisabled = false
+                var curState = "Boşta"
+                var eventsToday = 0
+
+                try {
+                    val statsConn = DaemonHttpClient.open("/api/recordings/stats", "GET", 1500, 2000)
+                    if (statsConn.responseCode == 200) {
+                        val statsBody = statsConn.inputStream.bufferedReader().readText()
+                        val statsJson = JSONObject(statsBody)
+                        val byType = statsJson.optJSONObject("byType")
+                        val sentry = byType?.optJSONObject("sentry")
+                        eventsToday = sentry?.optInt("todayCount", 0) ?: statsJson.optInt("sentryTodayCount", 0)
+                    }
+                    statsConn.disconnect()
+                } catch (_: Throwable) {}
+
                 try {
                     val conn = DaemonHttpClient.open("/api/surveillance/status", "GET", 1500, 2000)
                     if (conn.responseCode == 200) {
                         val statusObj = JSONObject(conn.inputStream.bufferedReader().readText())
-                        isArmed = statusObj.optBoolean("armed", isMaster)
+                        val stObj = statusObj.optJSONObject("status") ?: statusObj
+                        isArmed = stObj.optBoolean("armed", isMaster) || stObj.optBoolean("active", false)
+                        val safeZone = stObj.optBoolean("safeZoneSuppressed", false) || stObj.optBoolean("inSafeZone", false)
+                        val active = stObj.optBoolean("active", false) || stObj.optBoolean("recording", false)
+                        curState = when {
+                            safeZone -> "Güvenli Bölge"
+                            active -> "Aktif"
+                            else -> "Boşta"
+                        }
                     }
                     conn.disconnect()
                 } catch (_: Throwable) {}
 
                 try {
-                    val oemConn = DaemonHttpClient.open("/api/oem-dashcam/status", "GET", 1500, 2000)
+                    val dvrConn = DaemonHttpClient.open("/api/oem-dashcam/native-dvr/status", "GET", 1500, 2000)
+                    if (dvrConn.responseCode == 200) {
+                        val dvrBody = dvrConn.inputStream.bufferedReader().readText()
+                        val dvrJson = JSONObject(dvrBody)
+                        val dvrState = dvrJson.optString("state", "")
+                        dvrInstalled = dvrState != "not_installed"
+                        dvrDisabled = dvrState == "disabled"
+                    }
+                    dvrConn.disconnect()
+                } catch (_: Throwable) {}
+
+                try {
+                    val oemConn = DaemonHttpClient.open("/api/oem-dashcam/config", "GET", 1500, 2000)
                     if (oemConn.responseCode == 200) {
                         val oemBody = oemConn.inputStream.bufferedReader().readText()
                         val oemJson = JSONObject(oemBody)
-                        oemUnset = oemJson.optBoolean("cameraProbeUnset", true)
-                        dvrDisabled = oemJson.optBoolean("nativeDvrDisabled", false)
+                        oemSurvMode = oemJson.optString("surveillanceMode", oemSurvMode)
+                        val isRunning = oemJson.optBoolean("pipelineRunning", false)
+                        val isRecording = oemJson.optBoolean("recording", false)
+                        oemPipelineStatus = when {
+                            isRecording -> "Kaydediliyor"
+                            isRunning -> "Aktif"
+                            else -> "Boşta"
+                        }
                     }
                     oemConn.disconnect()
                 } catch (_: Throwable) {}
@@ -1011,7 +1104,13 @@ class SettingsComposeFragment : Fragment() {
                             diLink5KeepAlive = diLink5,
                             lowPowerMode = lowPower,
                             lowSocCutoff = lowSoc,
+                            currentState = curState,
+                            eventsToday = eventsToday,
+                            scheduleEnabled = scheduleEn,
                             parkingIntelligenceEnabled = parkingIntel,
+                            parkingStillsEnabled = parkingStills,
+                            neighbourTimelineEnabled = neighbourTimeline,
+                            garageSignageEnabled = garageSignage,
                             screenDeterrentEnabled = screenDetEn,
                             screenDeterrentDuration = screenDetDur,
                             screenDeterrentMessage = screenDetMsg,
@@ -1051,9 +1150,11 @@ class SettingsComposeFragment : Fragment() {
                             segmentDurationMinutes = clipMins,
                             recordingLayout = layout,
                             rectifyStrength = rectify,
-                            oemRecordingMode = oemMode,
+                            oemRecordingMode = oemSurvMode,
                             oemTelemetryOverlay = oemTelem,
                             oemTelemetryFields = oemTelemSet,
+                            oemPipelineStatus = oemPipelineStatus,
+                            nativeDvrInstalled = dvrInstalled,
                             cameraProbeUnset = oemUnset,
                             nativeDvrDisabled = dvrDisabled,
                             storageType = storType,
@@ -1141,7 +1242,63 @@ class SettingsComposeFragment : Fragment() {
         }
         uiState = uiState.copy(surveillanceState = updated)
         executor.execute {
-            try { UnifiedConfigManager.updateValues("surveillance", mapOf(key to value)) } catch (_: Throwable) {}
+            try {
+                if (key == "parkingIntelligenceEnabled") {
+                    try {
+                        val payload = JSONObject().apply { put("enabled", value) }.toString()
+                        val conn = DaemonHttpClient.open("/api/parking/config", "POST", 2000, 3000)
+                        conn.doOutput = true
+                        conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
+                        conn.responseCode
+                        conn.disconnect()
+                    } catch (_: Throwable) {}
+                    try {
+                        UnifiedConfigManager.updateValues("parking", mapOf("enabled" to value))
+                    } catch (_: Throwable) {}
+                }
+                UnifiedConfigManager.updateValues("surveillance", mapOf(key to value))
+            } catch (_: Throwable) {}
+        }
+    }
+
+    private fun toggleSurveillanceSchedule(enabled: Boolean) {
+        uiState = uiState.copy(surveillanceState = uiState.surveillanceState.copy(scheduleEnabled = enabled))
+        executor.execute {
+            try {
+                try {
+                    val payload = JSONObject().apply { put("scheduleEnabled", enabled) }.toString()
+                    val conn = DaemonHttpClient.open("/api/surveillance/config", "POST", 2000, 3000)
+                    conn.doOutput = true
+                    conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
+                    conn.responseCode
+                    conn.disconnect()
+                } catch (_: Throwable) {}
+                UnifiedConfigManager.updateValues("surveillance", mapOf("scheduleEnabled" to enabled))
+            } catch (_: Throwable) {}
+        }
+    }
+
+    private fun updateSurveillanceParkingSubSetting(key: String, value: Boolean) {
+        val curr = uiState.surveillanceState
+        val updated = when (key) {
+            "snapshots" -> curr.copy(parkingStillsEnabled = value)
+            "neighbours" -> curr.copy(neighbourTimelineEnabled = value)
+            "signage" -> curr.copy(garageSignageEnabled = value)
+            else -> curr
+        }
+        uiState = uiState.copy(surveillanceState = updated)
+        executor.execute {
+            try {
+                try {
+                    val payload = JSONObject().apply { put(key, value) }.toString()
+                    val conn = DaemonHttpClient.open("/api/parking/config", "POST", 2000, 3000)
+                    conn.doOutput = true
+                    conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
+                    conn.responseCode
+                    conn.disconnect()
+                } catch (_: Throwable) {}
+                UnifiedConfigManager.updateValues("parking", mapOf(key to value))
+            } catch (_: Throwable) {}
         }
     }
 

@@ -100,7 +100,13 @@ data class SurveillanceUiState(
     val diLink5KeepAlive: Boolean = false,
     val lowPowerMode: Boolean = true,
     val lowSocCutoff: Int = 20, // 0 - 30% (0 = Kapalı)
+    val currentState: String = "Boşta",
+    val eventsToday: Int = 0,
+    val scheduleEnabled: Boolean = false,
     val parkingIntelligenceEnabled: Boolean = false,
+    val parkingStillsEnabled: Boolean = true,
+    val neighbourTimelineEnabled: Boolean = true,
+    val garageSignageEnabled: Boolean = true,
     val screenDeterrentEnabled: Boolean = false,
     val screenDeterrentDuration: Int = 10,
     val screenDeterrentMessage: String = "",
@@ -146,6 +152,7 @@ data class SurveillanceUiState(
     val oemTelemetryOverlay: Boolean = false,
     val oemTelemetryFields: Set<String> = setOf("speed", "timestamp", "location", "batteryPercent"),
     val oemPipelineStatus: String = "Boşta",
+    val nativeDvrInstalled: Boolean = false,
     val nativeDvrDisabled: Boolean = false,
     val cameraProbeUnset: Boolean = true,
 
@@ -193,7 +200,11 @@ fun SurveillanceScreen(
     onToggleDiLink5KeepAlive: (Boolean) -> Unit = {},
     onToggleLowPowerMode: (Boolean) -> Unit,
     onLowSocCutoffChange: (Int) -> Unit,
+    onToggleSchedule: (Boolean) -> Unit = {},
     onToggleParkingIntelligence: (Boolean) -> Unit = {},
+    onToggleParkingStills: (Boolean) -> Unit = {},
+    onToggleNeighbourTimeline: (Boolean) -> Unit = {},
+    onToggleGarageSignage: (Boolean) -> Unit = {},
     onToggleScreenDeterrent: (Boolean) -> Unit,
     onScreenDeterrentDurationChange: (Int) -> Unit,
     onScreenDeterrentMessageChange: (String) -> Unit,
@@ -326,7 +337,11 @@ fun SurveillanceScreen(
                         onToggleDiLink5KeepAlive = onToggleDiLink5KeepAlive,
                         onToggleLowPowerMode = onToggleLowPowerMode,
                         onLowSocCutoffChange = onLowSocCutoffChange,
+                        onToggleSchedule = onToggleSchedule,
                         onToggleParkingIntelligence = onToggleParkingIntelligence,
+                        onToggleParkingStills = onToggleParkingStills,
+                        onToggleNeighbourTimeline = onToggleNeighbourTimeline,
+                        onToggleGarageSignage = onToggleGarageSignage,
                         onToggleScreenDeterrent = onToggleScreenDeterrent,
                         onScreenDeterrentDurationChange = onScreenDeterrentDurationChange,
                         onScreenDeterrentMessageChange = onScreenDeterrentMessageChange,
@@ -372,8 +387,6 @@ fun SurveillanceScreen(
                     SurveillanceTab.OEM -> DashcamTabContent(
                         state = state,
                         onOemRecordingModeSelected = onOemRecordingModeSelected,
-                        onToggleOemTelemetryOverlay = onToggleOemTelemetryOverlay,
-                        onToggleOemTelemetryField = onToggleOemTelemetryField,
                         onToggleNativeDvr = onToggleNativeDvr
                     )
                     SurveillanceTab.STORAGE -> StorageTabContent(
@@ -606,7 +619,11 @@ private fun GeneralTabContent(
     onToggleDiLink5KeepAlive: (Boolean) -> Unit,
     onToggleLowPowerMode: (Boolean) -> Unit,
     onLowSocCutoffChange: (Int) -> Unit,
+    onToggleSchedule: (Boolean) -> Unit,
     onToggleParkingIntelligence: (Boolean) -> Unit,
+    onToggleParkingStills: (Boolean) -> Unit,
+    onToggleNeighbourTimeline: (Boolean) -> Unit,
+    onToggleGarageSignage: (Boolean) -> Unit,
     onToggleScreenDeterrent: (Boolean) -> Unit,
     onScreenDeterrentDurationChange: (Int) -> Unit,
     onScreenDeterrentMessageChange: (String) -> Unit,
@@ -878,27 +895,165 @@ private fun GeneralTabContent(
                     Text(text = "Kapalı", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(text = "30%", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Bottom Status Box (matching Screenshot_1790775263.png / surveillance.html:302-308)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.4f))
+                        .padding(14.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Durum",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = state.currentState,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Bugünkü Olaylar",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = "${state.eventsToday} →",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
             }
         }
 
-        // Card 2: Parking Intelligence
+        // Card 2: Gözetim Programı (Surveillance Schedule)
         CollapsibleCard(
-            title = "Parking Intelligence",
-            icon = Icons.Default.LocalParking
+            title = "Gözetim Programı",
+            icon = Icons.Default.Adjust,
+            statusBadge = {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(if (state.scheduleEnabled) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceContainerHighest)
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = if (state.scheduleEnabled) "AÇIK" else "KAPALI",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = if (state.scheduleEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 SettingToggleRow(
-                    title = "Akıllı Park Analitiği",
-                    subtitle = "Konum geçmişi ve güvenli park bölgelerini öğrenerek tanıdık ev/iş otoparklarında gözetim hassasiyetini otomatik optimize eder.",
-                    checked = state.parkingIntelligenceEnabled,
-                    onCheckedChange = onToggleParkingIntelligence
+                    title = "Programı etkinleştir",
+                    subtitle = "Sadece belirli günler ve saatler boyunca izlemeyi etkinleştirin.",
+                    checked = state.scheduleEnabled,
+                    onCheckedChange = onToggleSchedule
                 )
+                if (state.scheduleEnabled) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Bu pencerelerin dışında, ACC kapalı olsa bile izleme modu başlamaz.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
 
-        // Card 3: Ekran Deterjantı (Screen Deterrent)
+        // Card 3: Parking Intelligence (matching Screenshot_1790775269.png & surveillance.html:777-882)
         CollapsibleCard(
-            title = "Ekran Deterjantı",
+            title = "Parking Intelligence",
+            icon = Icons.Default.LocalParking,
+            statusBadge = {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(if (state.parkingIntelligenceEnabled) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceContainerHighest)
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = if (state.parkingIntelligenceEnabled) "AÇIK" else "KAPALI",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = if (state.parkingIntelligenceEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Her kapatılışta bir oturum açar: konum ve GPS tazeliği, araçtan uzaklaştığınızda ve geri döndüğünüzde dört kameralı fotoğraflar, nöbetçi izlerken yanınızda gelen veya ayrılan araçlar ve iki bildirim (\"Park edildi\", \"Araca geri dönüldü\"). Kapalı = iş parçacığı yok, depolama yok, hesaplama yok.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+
+                SettingToggleRow(
+                    title = "Parking Intelligence'ı etkinleştir",
+                    subtitle = "Oturum geçmişi ve park zekasını açar.",
+                    checked = state.parkingIntelligenceEnabled,
+                    onCheckedChange = onToggleParkingIntelligence
+                )
+
+                if (state.parkingIntelligenceEnabled) {
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+
+                    SettingToggleRow(
+                        title = "Varış / dönüş anlık görüntüleri",
+                        subtitle = "Kapatıldıktan ~90 s sonra ve ilk kapı açılışında veya kilit açılışında dört kameralı fotoğraflar. Ayrıca bildirimlerdeki resim.",
+                        checked = state.parkingStillsEnabled,
+                        onCheckedChange = onToggleParkingStills
+                    )
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+
+                    SettingToggleRow(
+                        title = "Komşu zaman çizelgesi",
+                        subtitle = "Nöbet temelinden ve tamamlanan olaylardan yanınızda gelen veya ayrılan araçları takip edin ve her birinin en net karelerini saklayın. Nöbetin devrede olmasını gerektirir.",
+                        checked = state.neighbourTimelineEnabled,
+                        onCheckedChange = onToggleNeighbourTimeline
+                    )
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+
+                    SettingToggleRow(
+                        title = "Garaj tabelalarını oku (v2)",
+                        subtitle = "Paketlenmiş yerleşik OCR ile fotoğraf ve yaklaşma klibinden seviye / bölge metnini okur.",
+                        checked = state.garageSignageEnabled,
+                        onCheckedChange = onToggleGarageSignage
+                    )
+                }
+            }
+        }
+
+        // Card 4: Ekran Caydırıcı (Screen Deterrent)
+        CollapsibleCard(
+            title = "Ekran Caydırıcı",
             icon = Icons.Default.Tv
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -1784,8 +1939,6 @@ private fun RecordingTabContent(
 private fun DashcamTabContent(
     state: SurveillanceUiState,
     onOemRecordingModeSelected: (String) -> Unit,
-    onToggleOemTelemetryOverlay: (Boolean) -> Unit,
-    onToggleOemTelemetryField: (String, Boolean) -> Unit,
     onToggleNativeDvr: () -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -1796,32 +1949,34 @@ private fun DashcamTabContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Card 1: OEM Dashcam
+        // Card 1: OEM Dashcam (matching Screenshot_1790775524.png)
         CollapsibleCard(
             title = "OEM Dashcam",
             icon = Icons.Default.CameraAlt,
-            statusBadge = {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
-                ) {
-                    Text(
-                        text = state.oemPipelineStatus,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+            statusBadge = if (!state.cameraProbeUnset) {
+                {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = state.oemPipelineStatus,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
-            }
+            } else null
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 if (state.cameraProbeUnset) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 14.dp)
+                            .padding(vertical = 4.dp)
                     ) {
                         Text(
                             text = "Kamera kimliği yapılandırılmadı",
@@ -1833,97 +1988,108 @@ private fun DashcamTabContent(
                             text = "Hangi AVMCamera kimliğinin ön dashcam sensörü olduğunu seçmek için Diagnostics → Camera Probe'u açın. Auto = pano XOR 1; Seal/Han'da pano id 1'dir, bu yüzden OEM dashcam varsayılan olarak id 0'dır.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                } else {
+                    Text(
+                        text = "Gözetim davranışı",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Ön dashcam sensörünün gözetime (park halindeki araç hareketi / nöbet) yanıt olarak dvr_*.mp4'yi ne zaman yazacağını kontrol eder.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp, bottom = 10.dp)
+                    )
+
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        RadioOptionCard(
+                            title = "Kapalı",
+                            subtitle = "Gözetimde OEM ön sensöründen kayıt yapma. Pano nöbet normal şekilde event_*.mp4 yazmaya devam eder.",
+                            icon = Icons.Default.Block,
+                            isSelected = state.oemRecordingMode == "off",
+                            onClick = { onOemRecordingModeSelected("off") }
+                        )
+                        RadioOptionCard(
+                            title = "Sürekli",
+                            subtitle = "Hareket olsun olmasın, araç park halindeyken sürekli dvr_*.mp4 kaydeder. Depolamayı en hızlı tüketir.",
+                            icon = Icons.Default.Videocam,
+                            isSelected = state.oemRecordingMode == "continuous",
+                            onClick = { onOemRecordingModeSelected("continuous") }
+                        )
+                        RadioOptionCard(
+                            title = "Akıllı",
+                            subtitle = "Pano hareket algılamayı yansıt: gözetim tetiklendiğinde (hareket + AI bir kişiyi/aracı doğrular), event_*.mp4 ile birlikte dvr_*.mp4 yaz. Pano nöbetle aynı Safe Locations, Schedule ve kamera başına filtreleri uygular.",
+                            icon = Icons.Default.Adjust,
+                            isSelected = state.oemRecordingMode == "smart",
+                            onClick = { onOemRecordingModeSelected("smart") }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Pipeline Status Row
+                    Column {
+                        Text(
+                            text = state.oemPipelineStatus,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "OEM ön sensör kaydını etkinleştirmek için yukarıdan Sürekli veya Akıllı seçin.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 2.dp)
                         )
                     }
                 }
-
-                Text(
-                    text = "Kayıt davranışı",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = "Gözetim anında OEM ön dashcam sensörünün nasıl davranacağını belirleyin.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp, bottom = 10.dp)
-                )
-
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    RadioOptionCard(
-                        title = "Kapalı",
-                        subtitle = "Gözetim esnasında OEM sensöründen kayıt yapılmaz.",
-                        icon = Icons.Default.Block,
-                        isSelected = state.oemRecordingMode == "off",
-                        onClick = { onOemRecordingModeSelected("off") }
-                    )
-                    RadioOptionCard(
-                        title = "Sürekli",
-                        subtitle = "Gözetim devredeyken ön sensörden kesintisiz kayıt yapılır.",
-                        icon = Icons.Default.Videocam,
-                        isSelected = state.oemRecordingMode == "continuous",
-                        onClick = { onOemRecordingModeSelected("continuous") }
-                    )
-                    RadioOptionCard(
-                        title = "Akıllı",
-                        subtitle = "Yapay zeka veya hareket tetiklendiğinde OEM sensör kaydı devreye girer.",
-                        icon = Icons.Default.Adjust,
-                        isSelected = state.oemRecordingMode == "smart",
-                        onClick = { onOemRecordingModeSelected("smart") }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                SettingToggleRow(
-                    title = "OEM kliplerinde telemetriyi yerleştir",
-                    subtitle = "Hızı, GPS'i ve zaman damgasını dvr_*.mp4 içine damgalar.",
-                    checked = state.oemTelemetryOverlay,
-                    onCheckedChange = onToggleOemTelemetryOverlay
-                )
             }
         }
 
-        // Card 2: Yerel DVR uygulaması
-        CollapsibleCard(
-            title = "Yerel DVR uygulaması (com.byd.cdr)",
-            icon = Icons.Default.CameraAlt
-        ) {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "Fabrika dashcam uygulaması /sdcard/DCIM/BYDCam'e kaydeder ve her ACC ON'da AVMCamera'yı açar. Devre dışı bırakmak, OverDrive'ın kamerayı çekişme olmadan kullanmasını sağlar.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+        // Card 2: Yerel DVR uygulaması (com.byd.cdr)
+        if (!state.cameraProbeUnset && state.nativeDvrInstalled) {
+            CollapsibleCard(
+                title = "Yerel DVR uygulaması (com.byd.cdr)",
+                icon = Icons.Default.CameraAlt
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = if (state.nativeDvrDisabled) "Durum: OverDrive tarafından devre dışı" else "Durum: Etkin",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = if (state.nativeDvrDisabled) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                        text = "Fabrika dashcam uygulaması /sdcard/DCIM/BYDCam'e kaydeder ve her ACC ON'da AVMCamera'yı açar. Devre dışı bırakmak, OverDrive'ın kamerayı çekişme olmadan kullanmasını sağlar.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 12.dp)
                     )
 
-                    Button(
-                        onClick = onToggleNativeDvr,
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (state.nativeDvrDisabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                            contentColor = Color.White
-                        )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = if (state.nativeDvrDisabled) "Yerel DVR'ı yeniden etkinleştir" else "Yerel DVR'yi devre dışı bırak",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.SemiBold
+                            text = if (state.nativeDvrDisabled) "Durum: OverDrive tarafından devre dışı" else "Durum: Etkin",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = if (state.nativeDvrDisabled) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                         )
+
+                        Button(
+                            onClick = onToggleNativeDvr,
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text(
+                                text = if (state.nativeDvrDisabled) "Yerel DVR'ı yeniden etkinleştir" else "Yerel DVR'yi devre dışı bırak",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
                     }
                 }
             }
@@ -1973,7 +2139,7 @@ private fun StorageTabContent(
                     modifier = Modifier.padding(top = 2.dp, bottom = 10.dp)
                 )
 
-                // 3-Way Segmented Control: İçsel, SD Kartı, USB
+                // 3-Way Segmented Control: Dahili, SD Kart, USB Bellek
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1986,9 +2152,9 @@ private fun StorageTabContent(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         listOf(
-                            "INTERNAL" to "İçsel",
-                            "SD_CARD" to "SD Kartı",
-                            "USB" to "USB"
+                            "INTERNAL" to "Dahili",
+                            "SD_CARD" to "SD Kart",
+                            "USB" to "USB Bellek"
                         ).forEach { (type, label) ->
                             val isSelected = state.storageType == type
                             Box(

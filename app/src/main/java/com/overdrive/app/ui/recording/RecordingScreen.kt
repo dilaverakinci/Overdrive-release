@@ -120,6 +120,7 @@ data class RecordingUiState(
     val oemTelemetryFields: Set<String> = setOf("speed", "timestamp", "location", "batteryPercent"),
     val oemPipelineStatus: String = "Boşta",
     val nativeDvrDisabled: Boolean = false,
+    val nativeDvrInstalled: Boolean = false,
     val cameraProbeUnset: Boolean = true,
 
     // Storage tab
@@ -1200,29 +1201,30 @@ private fun OemDashcamTabContent(
         CollapsibleCard(
             title = "OEM Dashcam",
             icon = Icons.Default.CameraAlt,
-            statusBadge = {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
-                ) {
-                    Text(
-                        text = state.oemPipelineStatus,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+            statusBadge = if (!state.cameraProbeUnset) {
+                {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = state.oemPipelineStatus,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
-            }
+            } else null
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
-                // Info banner for camera probe
                 if (state.cameraProbeUnset) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 14.dp)
+                            .padding(vertical = 4.dp)
                     ) {
                         Text(
                             text = "Kamera kimliği yapılandırılmadı",
@@ -1234,137 +1236,139 @@ private fun OemDashcamTabContent(
                             text = "Hangi AVMCamera kimliğinin ön dashcam sensörü olduğunu seçmek için Diagnostics → Camera Probe'u açın. Auto = pano XOR 1; Seal/Han'da pano id 1'dir, bu yüzden OEM dashcam varsayılan olarak id 0'dır.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                } else {
+                    Text(
+                        text = "Kayıt davranışı",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Ön dashcam sensörünün pano cam_*.mp4 dashcam klipleriyle birlikte dvr_*.mp4'yi ne zaman yazacağını kontrol eder.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp, bottom = 10.dp)
+                    )
+
+                    // 3 Radio cards (Kapalı, Sürekli, Akıllı)
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        RadioOptionCard(
+                            title = "Kapalı",
+                            subtitle = "OEM ön sensöründen kayıt yapma. Pano dashcam normal şekilde cam_*.mp4 yazmaya devam eder.",
+                            icon = Icons.Default.Block,
+                            isSelected = state.oemRecordingMode == "off",
+                            onClick = { onOemRecordingModeSelected("off") }
+                        )
+                        RadioOptionCard(
+                            title = "Sürekli",
+                            subtitle = "Pano dashcam ne yaparsa yapsın, OverDrive çalışırken dvr_*.mp4 kaydeder.",
+                            icon = Icons.Default.Videocam,
+                            isSelected = state.oemRecordingMode == "continuous",
+                            onClick = { onOemRecordingModeSelected("continuous") }
+                        )
+                        RadioOptionCard(
+                            title = "Akıllı",
+                            subtitle = "Pano dashcam'i yansıt: pano kayıt yaparken (Drive Mode / Continuous / Proximity Guard tetiklenir), dvr_*.mp4'yi de kaydet. Pano durunca OEM durur.",
+                            icon = Icons.Default.Adjust,
+                            isSelected = state.oemRecordingMode == "smart",
+                            onClick = { onOemRecordingModeSelected("smart") }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    SettingToggleRow(
+                        title = "OEM klipler üzerine telemetriyi göm",
+                        subtitle = "Hızı, GPS'i ve zaman damgasını dvr_*.mp4 içine damgalar. Pano bindirme ayarından bağımsızdır.",
+                        checked = state.oemTelemetryOverlay,
+                        onCheckedChange = onToggleOemTelemetryOverlay
+                    )
+
+                    if (state.oemTelemetryOverlay) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = "Gömülecek alanlar",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Katmanın OEM araç kamerası kliplerinde ne çizdiğini seçin.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 2.dp, bottom = 8.dp)
+                        )
+
+                        TelemetryFieldPicker(
+                            selectedFields = state.oemTelemetryFields,
+                            onToggleField = onToggleOemTelemetryField
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Pipeline Status Row
+                    Column {
+                        Text(
+                            text = state.oemPipelineStatus,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "OEM ön sensör kaydını etkinleştirmek için yukarıdan Sürekli veya Akıllı seçin.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 2.dp)
                         )
                     }
-                }
-
-                Text(
-                    text = "Kayıt davranışı",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = "Ön dashcam sensörünün dvr_*.mp4 dosyalarını ne zaman yazacağını kontrol eder.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp, bottom = 10.dp)
-                )
-
-                // 3 Radio cards (Kapalı, Sürekli, Akıllı)
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    RadioOptionCard(
-                        title = "Kapalı",
-                        subtitle = "OEM ön sensöründen kayıt yapmayın. Pano araç kamerası cam_*.mp4 dosyalarını normal şekilde yazmaya devam eder.",
-                        icon = Icons.Default.Block,
-                        isSelected = state.oemRecordingMode == "off",
-                        onClick = { onOemRecordingModeSelected("off") }
-                    )
-                    RadioOptionCard(
-                        title = "Sürekli",
-                        subtitle = "Pano araç kamerasının ne yaptığına bakılmaksızın OverDrive çalışırken her zaman dvr_*.mp4 kaydedin.",
-                        icon = Icons.Default.Videocam,
-                        isSelected = state.oemRecordingMode == "continuous",
-                        onClick = { onOemRecordingModeSelected("continuous") }
-                    )
-                    RadioOptionCard(
-                        title = "Akıllı",
-                        subtitle = "Pano araç kamerasını yansıt: pano kayıt yaparken (Sürüş Modu / Sürekli / Yakınlık Muhafızı tetiklendiğinde) dvr_*.mp4 de kaydet. Pano durur, OEM durur.",
-                        icon = Icons.Default.Adjust,
-                        isSelected = state.oemRecordingMode == "smart",
-                        onClick = { onOemRecordingModeSelected("smart") }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                SettingToggleRow(
-                    title = "OEM kliplerinde telemetriyi yerleştir",
-                    subtitle = "Hızı, GPS'i ve zaman damgasını dvr_*.mp4 içine damgalar. Pano bindirme ayarından bağımsızdır.",
-                    checked = state.oemTelemetryOverlay,
-                    onCheckedChange = onToggleOemTelemetryOverlay
-                )
-
-                if (state.oemTelemetryOverlay) {
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(
-                        text = "Fields to burn in",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = "Choose what the overlay draws on OEM dashcam clips.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 2.dp, bottom = 8.dp)
-                    )
-
-                    TelemetryFieldPicker(
-                        selectedFields = state.oemTelemetryFields,
-                        onToggleField = onToggleOemTelemetryField
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Pipeline Status Row
-                Column {
-                    Text(
-                        text = state.oemPipelineStatus,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = "OEM ileri sensör kaydını etkinleştirmek için yukarıdan Sürekli veya Akıllı'yı seçin.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 2.dp)
-                    )
                 }
             }
         }
 
         // Card 2: Native DVR app (com.byd.cdr)
-        CollapsibleCard(
-            title = "Yerel DVR uygulaması (com.byd.cdr)",
-            icon = Icons.Default.CameraAlt
-        ) {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "Fabrika dashcam uygulaması /sdcard/DCIM/BYDCam'e kaydeder ve her ACC ON'da AVMCamera'yı açar. Devre dışı bırakmak, OverDrive'ın kamerayı çekişme olmadan kullanmasını sağlar.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+        if (!state.cameraProbeUnset && state.nativeDvrInstalled) {
+            CollapsibleCard(
+                title = "Yerel DVR uygulaması (com.byd.cdr)",
+                icon = Icons.Default.CameraAlt
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = if (state.nativeDvrDisabled) "Durum: OverDrive tarafından devre dışı" else "Durum: Etkin",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = if (state.nativeDvrDisabled) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                        text = "Fabrika dashcam uygulaması /sdcard/DCIM/BYDCam'e kaydeder ve her ACC ON'da AVMCamera'yı açar. Devre dışı bırakmak, OverDrive'ın kamerayı çekişme olmadan kullanmasını sağlar.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 12.dp)
                     )
 
-                    Button(
-                        onClick = onToggleNativeDvr,
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (state.nativeDvrDisabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                            contentColor = Color.White
-                        )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = if (state.nativeDvrDisabled) "Yerel DVR'ı yeniden etkinleştir" else "Yerel DVR'yi devre dışı bırak",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.SemiBold
+                            text = if (state.nativeDvrDisabled) "Durum: OverDrive tarafından devre dışı" else "Durum: Etkin",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = if (state.nativeDvrDisabled) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                         )
+
+                        Button(
+                            onClick = onToggleNativeDvr,
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text(
+                                text = if (state.nativeDvrDisabled) "Yerel DVR'ı yeniden etkinleştir" else "Yerel DVR'yi devre dışı bırak",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
                     }
                 }
             }
@@ -1427,9 +1431,9 @@ private fun StorageTabContent(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         listOf(
-                            "INTERNAL" to "İçsel",
-                            "SD_CARD" to "SD Kartı",
-                            "USB" to "USB"
+                            "INTERNAL" to "Dahili",
+                            "SD_CARD" to "SD Kart",
+                            "USB" to "USB Bellek"
                         ).forEach { (type, label) ->
                             val isSelected = state.storageType == type
                             Box(
