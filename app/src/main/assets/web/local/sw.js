@@ -48,14 +48,25 @@
 // cache bump, existing installs keep the brightness-only detector and
 // Dolphin paint changes continue targeting its wheel accent instead of
 // the body shell.
-const CACHE_VERSION = 'overdrive-3d-v4';
+const CACHE_VERSION = 'overdrive-pwa-v1';
 
-// Static, APK-bundled assets that the EV card needs on every page.
+// Static, APK-bundled assets that the EV card and PWA shell need on every page.
 // Same-origin only — the daemon serves these with public, max-age=86400,
 // so a SW cache layer underneath gives us "always fast" rather than
 // "fast for 24h then re-fetch". Don't precache HTML or sw.js itself
 // (the daemon explicitly serves those no-store).
 const PRECACHE_URLS = [
+  '/manifest.json',
+  '/shared/icon-192.png',
+  '/shared/icon-512.png',
+  '/shared/icon-maskable-192.png',
+  '/shared/app-icon-dark.webp',
+  '/shared/styles.css',
+  '/shared/app-shell.css',
+  '/shared/app-shell.js',
+  '/shared/theme.js',
+  '/shared/core.js',
+  '/shared/pwa-init.js',
   '/shared/ev-card-3d.js',
   '/shared/ev-card-sprite-cache.js',
   '/shared/vendor/three.min.js',
@@ -98,13 +109,13 @@ self.addEventListener('activate', (event) => {
     // until the browser-level Cache Storage quota evicts them.
     const names = await caches.keys();
     await Promise.all(names
-      .filter((n) => n !== CACHE_VERSION && n.indexOf('overdrive-3d-') === 0)
+      .filter((n) => n !== CACHE_VERSION && (n.indexOf('overdrive-3d-') === 0 || n.indexOf('overdrive-pwa-') === 0))
       .map((n) => caches.delete(n)));
     await self.clients.claim();
   })());
 });
 
-// Cache-first for precached 3D assets; network passthrough for everything
+// Cache-first for precached assets; network passthrough for everything
 // else. Restricting to same-origin GETs is defensive — we must never
 // short-circuit /api/* or push subscription endpoints, and Chrome's SW
 // fetch event also fires for cross-origin subresources (CDN tiles for
@@ -115,9 +126,16 @@ self.addEventListener('fetch', (event) => {
   let url;
   try { url = new URL(req.url); } catch (e) { return; }
   if (url.origin !== self.location.origin) return;
-  // Only intercept the static asset paths we actually precached. Other
-  // same-origin requests (HTML pages, /api/*) flow straight through.
+
   const pathname = url.pathname;
+
+  // Never intercept dynamic API, websocket, or video streaming endpoints
+  if (pathname.startsWith('/api/') || pathname.startsWith('/ws') || pathname.startsWith('/video/')) {
+    return;
+  }
+
+  // Only intercept the static asset paths we actually precached. Other
+  // same-origin requests (HTML pages) flow straight through.
   const isPrecacheTarget = PRECACHE_URLS.indexOf(pathname) !== -1;
   if (!isPrecacheTarget) return;
 
