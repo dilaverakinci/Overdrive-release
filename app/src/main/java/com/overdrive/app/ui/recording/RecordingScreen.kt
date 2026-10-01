@@ -125,22 +125,25 @@ fun RecordingScreen(
     onStorageTypeSelected: (String) -> Unit,
     onStorageLimitChange: (Int) -> Unit,
     onToggleAutoCleanup: (Boolean) -> Unit,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    showHeader: Boolean = true,
+    modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(
-                    horizontal = OverdriveTheme.dimensions.pagePaddingHorizontal,
-                    vertical = OverdriveTheme.dimensions.pagePaddingTop
+                    horizontal = if (showHeader) OverdriveTheme.dimensions.pagePaddingHorizontal else 0.dp,
+                    vertical = if (showHeader) OverdriveTheme.dimensions.pagePaddingTop else 0.dp
                 )
         ) {
-            // Top Header
-            Row(
+            if (showHeader) {
+                // Top Header
+                Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 8.dp),
@@ -189,6 +192,7 @@ fun RecordingScreen(
                         )
                     }
                 }
+            }
             }
 
             // Sub-tabs row

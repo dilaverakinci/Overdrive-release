@@ -88,10 +88,12 @@ fun SettingsSecurityScreen(
     onDisablePinSubmit: (pin: String) -> Unit,
     onChangeStep1Submit: (currentPin: String) -> Unit,
     onChangeStep2Submit: (newPin: String, confirmPin: String) -> Unit,
-    onSelectAutoLock: (ms: Long) -> Unit
+    onSelectAutoLock: (ms: Long) -> Unit,
+    showHeader: Boolean = true,
+    modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         val scrollState = rememberScrollState()
@@ -99,8 +101,8 @@ fun SettingsSecurityScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(
-                    horizontal = OverdriveTheme.dimensions.pagePaddingHorizontal,
-                    vertical = OverdriveTheme.dimensions.pagePaddingTop
+                    horizontal = if (showHeader) OverdriveTheme.dimensions.pagePaddingHorizontal else 0.dp,
+                    vertical = if (showHeader) OverdriveTheme.dimensions.pagePaddingTop else 0.dp
                 )
                 .verticalScroll(scrollState),
             verticalArrangement = Arrangement.spacedBy(10.dp)
