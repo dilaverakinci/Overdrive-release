@@ -58,15 +58,17 @@ class RecordingComposeFragment : Fragment() {
                         onToggleAudioRecording = { v -> updateAudioRecording(v) },
                         onOemRecordingModeSelected = { mode -> updateOemKey("recordingMode", mode) },
                         onToggleOemTelemetryOverlay = { v -> updateOemKey("telemetryOverlay", v) },
+                        onToggleOemTelemetryField = { field, add -> toggleOemTelemetryField(field, add) },
                         onToggleNativeDvr = { toggleNativeDvr() },
-                        onStorageTypeSelected = { t -> updateRecordingKey("storageType", t) },
-                        onStorageLimitChange = { lim -> updateRecordingKey("storageLimitMb", lim) },
+                        onStorageTypeSelected = { t -> updateStorageType(t) },
+                        onStorageLimitChange = { lim -> updateStorageLimit(lim) },
                         onToggleAutoCleanup = { v -> updateRecordingKey("autoCleanup", v) },
                         onToggleCdrCleanup = { v -> updateCdrCleanup(enabled = v) },
                         onCdrReservedSpaceChange = { mb -> updateCdrCleanup(reservedMb = mb.toLong()) },
                         onCdrProtectedHoursChange = { h -> updateCdrCleanup(hours = h) },
                         onCdrMinFilesKeepChange = { count -> updateCdrCleanup(minFiles = count) },
-                        onRefresh = { loadState() }
+                        onRefresh = { loadState() },
+                        onApplyChanges = { Toast.makeText(requireContext(), "Değişiklikler uygulandı", Toast.LENGTH_SHORT).show() }
                     )
                 }
             }
@@ -129,9 +131,30 @@ class RecordingComposeFragment : Fragment() {
                 val oemMode = oem.optString("recordingMode", "off")
                 val oemTelem = oem.optBoolean("telemetryOverlay", false)
 
-                val storType = rec.optString("storageType", "INTERNAL")
-                val storLimit = rec.optInt("storageLimitMb", 20000)
+                val storage = try { com.overdrive.app.storage.StorageManager.getInstance() } catch (_: Throwable) { null }
+                val storType = storage?.recordingsStorageType?.name ?: rec.optString("storageType", "INTERNAL")
+                val storLimit = storage?.recordingsLimitMb?.toInt() ?: rec.optInt("storageLimitMb", 90000)
                 val autoClean = rec.optBoolean("autoCleanup", true)
+
+                val sdAvail = storage?.isSdCardAvailable ?: false
+                val sdStatus = if (sdAvail) "SD Kartı: Kullanılabilir" else "SD Kartı: tespit edilmedi"
+                val sdSpace = if (sdAvail && storage != null) {
+                    "${com.overdrive.app.storage.StorageManager.formatSize(storage.sdCardFreeSpace)} ücretsiz / ${com.overdrive.app.storage.StorageManager.formatSize(storage.sdCardTotalSpace)} toplam"
+                } else null
+
+                val usbAvail = storage?.isUsbAvailable ?: false
+                val usbStatus = if (usbAvail) "USB: Kullanılabilir" else "USB: tespit edilmedi"
+                val usbSpace = if (usbAvail && storage != null) {
+                    "${com.overdrive.app.storage.StorageManager.formatSize(storage.usbFreeSpace)} ücretsiz / ${com.overdrive.app.storage.StorageManager.formatSize(storage.usbTotalSpace)} toplam"
+                } else null
+
+                val recBytes = storage?.recordingsSize ?: 0L
+                val usedText = "${com.overdrive.app.storage.StorageManager.formatSize(recBytes)} kullanılır"
+                val limitText = "$storLimit MB sınırı"
+                val intTotal = storage?.internalTotalSpace ?: (256L * 1024 * 1024 * 1024)
+                val volumeTotalText = com.overdrive.app.storage.StorageManager.formatSize(intTotal)
+                val limitBytes = storLimit.toLong() * 1024L * 1024L
+                val usedPercent = if (limitBytes > 0) (recBytes.toFloat() / limitBytes.toFloat()).coerceIn(0f, 1f) else 0f
 
                 val cleaner = try { com.overdrive.app.storage.ExternalStorageCleaner.getInstance() } catch (_: Throwable) { null }
                 val cdrClean = cleaner?.isEnabled ?: false
@@ -139,10 +162,12 @@ class RecordingComposeFragment : Fragment() {
                 val cdrHours = cleaner?.protectedHours ?: 24
                 val cdrMin = cleaner?.minFilesKeep ?: 10
 
-                // Query live recording status
+                // Query live recording status & OEM camera status
                 var curState = if (mode != "NONE") "Etkin ($mode)" else "Boşta (Idle)"
                 var isRec = false
                 var recToday = 0
+                var oemUnset = true
+                var dvrDisabled = false
 
                 try {
                     val conn = DaemonHttpClient.open("/api/recordings/stats", "GET", 1500, 2000)
@@ -157,6 +182,17 @@ class RecordingComposeFragment : Fragment() {
                         }
                     }
                     conn.disconnect()
+                } catch (_: Throwable) {}
+
+                try {
+                    val oemConn = DaemonHttpClient.open("/api/oem-dashcam/status", "GET", 1500, 2000)
+                    if (oemConn.responseCode == 200) {
+                        val oemBody = oemConn.inputStream.bufferedReader().readText()
+                        val oemJson = JSONObject(oemBody)
+                        oemUnset = oemJson.optBoolean("cameraProbeUnset", true)
+                        dvrDisabled = oemJson.optBoolean("nativeDvrDisabled", false)
+                    }
+                    oemConn.disconnect()
                 } catch (_: Throwable) {}
 
                 mainHandler.post {
@@ -187,8 +223,20 @@ class RecordingComposeFragment : Fragment() {
                         telemetryOverlayEnabled = telemetry,
                         oemRecordingMode = oemMode,
                         oemTelemetryOverlay = oemTelem,
+                        cameraProbeUnset = oemUnset,
+                        nativeDvrDisabled = dvrDisabled,
                         storageType = storType,
                         storageLimitMb = storLimit,
+                        storageUsedText = usedText,
+                        storageLimitText = limitText,
+                        storageVolumeTotalText = volumeTotalText,
+                        storageUsedPercent = usedPercent,
+                        sdCardAvailable = sdAvail,
+                        sdCardStatusText = sdStatus,
+                        sdCardSpaceInfo = sdSpace,
+                        usbAvailable = usbAvail,
+                        usbStatusText = usbStatus,
+                        usbSpaceInfo = usbSpace,
                         autoCleanup = autoClean,
                         isLoading = false
                     )
@@ -267,6 +315,72 @@ class RecordingComposeFragment : Fragment() {
                     Toast.makeText(requireContext(), "OEM ayarı kaydedilemedi: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             }
+        }
+    }
+
+    private fun toggleOemTelemetryField(field: String, add: Boolean) {
+        val currFields = uiState.oemTelemetryFields.toMutableSet()
+        if (add) currFields.add(field) else currFields.remove(field)
+        uiState = uiState.copy(oemTelemetryFields = currFields)
+        executor.execute {
+            val jsonArray = org.json.JSONArray(currFields.toList())
+            try {
+                UnifiedConfigManager.updateValues("oem", mapOf("telemetryFields" to jsonArray))
+            } catch (_: Throwable) {}
+        }
+    }
+
+    private fun updateStorageType(typeStr: String) {
+        uiState = uiState.copy(storageType = typeStr)
+        executor.execute {
+            try {
+                val smType = when (typeStr.uppercase()) {
+                    "SD_CARD" -> com.overdrive.app.storage.StorageManager.StorageType.SD_CARD
+                    "USB" -> com.overdrive.app.storage.StorageManager.StorageType.USB
+                    else -> com.overdrive.app.storage.StorageManager.StorageType.INTERNAL
+                }
+                com.overdrive.app.storage.StorageManager.getInstance()?.setRecordingsStorageType(smType)
+                val json = JSONObject().apply {
+                    put("recordingsStorageType", typeStr)
+                }.toString()
+                val conn = DaemonHttpClient.open("/api/settings/storage", "POST", 2000, 3000)
+                conn.doOutput = true
+                conn.outputStream.use { it.write(json.toByteArray(Charsets.UTF_8)) }
+                conn.responseCode
+                conn.disconnect()
+            } catch (_: Throwable) {}
+            try {
+                UnifiedConfigManager.updateValues("recording", mapOf("storageType" to typeStr))
+                UnifiedConfigManager.updateValues("storage", mapOf("recordingsStorageType" to typeStr))
+            } catch (_: Throwable) {}
+        }
+    }
+
+    private fun updateStorageLimit(limitMb: Int) {
+        val recBytes = try { com.overdrive.app.storage.StorageManager.getInstance()?.recordingsSize ?: 0L } catch (_: Throwable) { 0L }
+        val limitBytes = limitMb.toLong() * 1024L * 1024L
+        val usedPercent = if (limitBytes > 0) (recBytes.toFloat() / limitBytes.toFloat()).coerceIn(0f, 1f) else 0f
+        uiState = uiState.copy(
+            storageLimitMb = limitMb,
+            storageLimitText = "$limitMb MB sınırı",
+            storageUsedPercent = usedPercent
+        )
+        executor.execute {
+            try {
+                com.overdrive.app.storage.StorageManager.getInstance()?.setRecordingsLimitMb(limitMb.toLong())
+                val json = JSONObject().apply {
+                    put("recordingsLimitMb", limitMb)
+                }.toString()
+                val conn = DaemonHttpClient.open("/api/settings/storage", "POST", 2000, 3000)
+                conn.doOutput = true
+                conn.outputStream.use { it.write(json.toByteArray(Charsets.UTF_8)) }
+                conn.responseCode
+                conn.disconnect()
+            } catch (_: Throwable) {}
+            try {
+                UnifiedConfigManager.updateValues("recording", mapOf("storageLimitMb" to limitMb))
+                UnifiedConfigManager.updateValues("storage", mapOf("recordingsLimitMb" to limitMb))
+            } catch (_: Throwable) {}
         }
     }
 

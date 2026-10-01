@@ -49,11 +49,14 @@ class SurveillanceComposeFragment : Fragment() {
                         onToggleKeepUsbPower = { v -> updateSurveillanceKey("keepUsbPowerOnAccOff", v) },
                         onToggleMobileDataKeepAlive = { v -> updateSurveillanceKey("mobileDataKeepAlive", v) },
                         onToggleDi5CloudKeepAlive = { v -> updateSurveillanceKey("di5CloudKeepAlive", v) },
+                        onToggleDiLink5KeepAlive = { v -> updateSurveillanceKey("diLink5KeepAlive", v) },
                         onToggleLowPowerMode = { v -> updateSurveillanceKey("lowPowerMode", v) },
                         onLowSocCutoffChange = { v -> updatePowerKey("lowSocCutoffPercent", v) },
+                        onToggleParkingIntelligence = { v -> updateSurveillanceKey("parkingIntelligenceEnabled", v) },
                         onToggleScreenDeterrent = { v -> updateSurveillanceKey("screenDeterrentEnabled", v) },
                         onScreenDeterrentDurationChange = { v -> updateSurveillanceKey("screenDeterrentDurationSeconds", v) },
                         onScreenDeterrentMessageChange = { msg -> updateSurveillanceKey("screenDeterrentMessage", msg) },
+                        onScreenDeterrentThemeChange = { t -> updateSurveillanceKey("screenDeterrentTheme", t) },
                         onToggleGeocodingEnabled = { v -> updateSurveillanceGeocoding(enabled = v) },
                         onToggleGeocodingOnline = { v -> updateSurveillanceGeocoding(online = v) },
                         onGeocodingCustomUrlChange = { url -> updateGeocodingUrl(url) },
@@ -65,33 +68,40 @@ class SurveillanceComposeFragment : Fragment() {
                         onSensitivityChange = { v -> updateSurveillanceKey("sensitivityLevel", v) },
                         onDistanceChange = { v -> updateSurveillanceKey("distancePreset", v) },
                         onLoiteringTimeChange = { v -> updateSurveillanceKey("loiteringTimeSeconds", v) },
+                        onApproachTriggerChange = { v -> updateSurveillanceKey("approachTriggerSeconds", v) },
+                        onShadowFilterSelected = { s -> updateSurveillanceKey("shadowFilter", s) },
+                        onToggleRecordOnStrongMotion = { v -> updateSurveillanceKey("recordOnStrongMotion", v) },
+                        onToggleDiscardEmptyMotion = { v -> updateSurveillanceKey("discardEmptyMotion", v) },
+                        onToggleDiscardNightMotion = { v -> updateSurveillanceKey("discardEmptyMotionAtNight", v) },
                         onToggleCameraFront = { v -> updateSurveillanceKey("cameraFront", v) },
                         onToggleCameraRight = { v -> updateSurveillanceKey("cameraRight", v) },
                         onToggleCameraLeft = { v -> updateSurveillanceKey("cameraLeft", v) },
                         onToggleCameraRear = { v -> updateSurveillanceKey("cameraRear", v) },
                         onToggleSideCamBoost = { v -> toggleSideCamBoost(v) },
-                        onToggleMotionHeatmap = { v -> updateSurveillanceKey("motionHeatmap", v) },
-                        onToggleDiscardNightMotion = { v -> updateSurveillanceKey("discardEmptyMotionAtNight", v) },
                         onPreRecordSecondsChange = { v -> updateSurveillanceKey("preRecordSeconds", v) },
                         onPostRecordSecondsChange = { v -> updateSurveillanceKey("postRecordSeconds", v) },
                         onQualitySelected = { q -> updateRecordingKey("surveillanceQuality", q) },
-                        onFpsSelected = { fps -> updateCameraKey("surveillanceTargetFps", fps) },
                         onCodecSelected = { c -> updateRecordingKey("recordingCodec", c) },
-                        onToggleTelegramPing = { v -> updateSurveillanceKey("telegramSendStartPing", v) },
+                        onFpsSelected = { fps -> updateCameraKey("surveillanceTargetFps", fps) },
+                        onClipDurationSelected = { mins -> updateSurveillanceSegmentDuration(mins) },
+                        onRecordingLayoutSelected = { l -> updateSurveillanceLayout(l) },
                         onToggleTelemetryOverlay = { v -> updateSurveillanceTelemetryOverlay(v) },
                         onToggleTelemetryField = { field, add -> toggleTelemetryField(field, add) },
-                        onToggleOemDashcam = { v -> updateOemKey("enabled", v) },
-                        onToggleOemTrigger = { v -> updateOemKey("triggerRecording", v) },
-                        onToggleOemAutoCleanup = { v -> updateOemKey("autoCleanup", v) },
-                        onStorageTypeSelected = { t -> updateSurveillanceKey("surveillanceStorageType", t) },
-                        onStorageLimitChange = { lim -> updateSurveillanceKey("surveillanceLimitMb", lim) },
+                        onRectifyStrengthChange = { s -> updateSurveillanceRectify(s) },
+                        onOemRecordingModeSelected = { mode -> updateOemKey("recordingMode", mode) },
+                        onToggleOemTelemetryOverlay = { v -> updateOemKey("telemetryOverlay", v) },
+                        onToggleOemTelemetryField = { f, add -> toggleOemTelemetryField(f, add) },
+                        onToggleNativeDvr = { toggleNativeDvr() },
+                        onStorageTypeSelected = { t -> updateSurveillanceStorageType(t) },
+                        onStorageLimitChange = { lim -> updateSurveillanceStorageLimit(lim) },
                         onToggleAutoCleanupEvents = { v -> updateSurveillanceKey("autoCleanupEvents", v) },
                         onToggleDiscardBrightEvents = { v -> updateSurveillanceKey("discardEmptyBrightMotionEvents", v) },
                         onToggleCdrCleanup = { v -> updateCdrCleanup(enabled = v) },
                         onCdrReservedSpaceChange = { mb -> updateCdrCleanup(reservedMb = mb.toLong()) },
                         onCdrProtectedHoursChange = { h -> updateCdrCleanup(hours = h) },
                         onCdrMinFilesKeepChange = { count -> updateCdrCleanup(minFiles = count) },
-                        onRefresh = { loadState() }
+                        onRefresh = { loadState() },
+                        onApplyChanges = { Toast.makeText(requireContext(), "Değişiklikler uygulandı", Toast.LENGTH_SHORT).show() }
                     )
                 }
             }
@@ -127,6 +137,8 @@ class SurveillanceComposeFragment : Fragment() {
                 val usbPower = surv.optBoolean("keepUsbPowerOnAccOff", true)
                 val mobData = surv.optBoolean("mobileDataKeepAlive", false)
                 val di5 = surv.optBoolean("di5CloudKeepAlive", false)
+                val diLink5 = surv.optBoolean("diLink5KeepAlive", false)
+                val parkingIntel = surv.optBoolean("parkingIntelligenceEnabled", false)
 
                 val env = surv.optString("environmentPreset", "outdoor")
                 val person = surv.optBoolean("detectPerson", true)
@@ -136,36 +148,70 @@ class SurveillanceComposeFragment : Fragment() {
                 val sens = surv.optInt("sensitivityLevel", 3)
                 val dist = surv.optInt("distancePreset", 3)
                 val loitering = surv.optInt("loiteringTimeSeconds", 3)
+                val approachTrigger = surv.optInt("approachTriggerSeconds", 0)
+                val shadow = surv.optString("shadowFilter", "off")
+                val strongMotion = surv.optBoolean("recordOnStrongMotion", true)
+                val emptyMotion = surv.optBoolean("discardEmptyMotion", true)
+                val discardNight = surv.optBoolean("discardEmptyMotionAtNight", true)
 
                 val cFront = surv.optBoolean("cameraFront", true)
                 val cRight = surv.optBoolean("cameraRight", true)
                 val cLeft = surv.optBoolean("cameraLeft", true)
                 val cRear = surv.optBoolean("cameraRear", true)
-                val heatmap = surv.optBoolean("motionHeatmap", false)
-                val discardNight = surv.optBoolean("discardEmptyMotionAtNight", false)
+                val boost = surv.optBoolean("sideCamBoost", false)
 
                 val preRec = surv.optInt("preRecordSeconds", 5)
                 val postRec = surv.optInt("postRecordSeconds", 10)
                 val qual = rec.optString("surveillanceQuality", "STANDARD")
                 val fps = cam.optInt("surveillanceTargetFps", 15)
                 val codec = rec.optString("recordingCodec", "H264")
-                val tgPing = surv.optBoolean("telegramSendStartPing", false)
+                val clipMins = rec.optInt("surveillanceSegmentDurationMinutes", 2)
+                val layout = rec.optString("surveillanceRecordingLayout", "standard")
+                val rectify = rec.optInt("surveillanceRectifyStrength", 0)
 
-                val oemEn = oem.optBoolean("enabled", false)
-                val oemTrig = oem.optBoolean("triggerRecording", false)
-                val oemClean = oem.optBoolean("autoCleanup", true)
+                val oemMode = oem.optString("recordingMode", "off")
+                val oemTelem = oem.optBoolean("telemetryOverlay", false)
+                val oemTelemArray = try { oem.optJSONArray("telemetryFields") } catch (_: Throwable) { null }
+                val oemTelemSet = mutableSetOf<String>()
+                if (oemTelemArray != null) {
+                    for (i in 0 until oemTelemArray.length()) oemTelemSet.add(oemTelemArray.optString(i))
+                } else {
+                    oemTelemSet.addAll(listOf("speed", "timestamp", "location", "batteryPercent"))
+                }
 
-                val storType = surv.optString("surveillanceStorageType", "INTERNAL")
-                val storLimit = surv.optInt("surveillanceLimitMb", 500)
+                val storage = try { com.overdrive.app.storage.StorageManager.getInstance() } catch (_: Throwable) { null }
+                val storType = storage?.surveillanceStorageType?.name ?: surv.optString("surveillanceStorageType", "INTERNAL")
+                val storLimit = storage?.surveillanceLimitMb?.toInt() ?: surv.optInt("surveillanceLimitMb", 500)
                 val autoClean = surv.optBoolean("autoCleanupEvents", true)
-                val discardBright = surv.optBoolean("discardEmptyBrightMotionEvents", false)
+                val discardBright = surv.optBoolean("discardEmptyBrightMotionEvents", true)
+
+                val sdAvail = storage?.isSdCardAvailable ?: false
+                val sdStatus = if (sdAvail) "SD Kartı: Kullanılabilir" else "SD Kartı: tespit edilmedi"
+                val sdSpace = if (sdAvail && storage != null) {
+                    "${com.overdrive.app.storage.StorageManager.formatSize(storage.sdCardFreeSpace)} ücretsiz / ${com.overdrive.app.storage.StorageManager.formatSize(storage.sdCardTotalSpace)} toplam"
+                } else null
+
+                val usbAvail = storage?.isUsbAvailable ?: false
+                val usbStatus = if (usbAvail) "USB: Kullanılabilir" else "USB: tespit edilmedi"
+                val usbSpace = if (usbAvail && storage != null) {
+                    "${com.overdrive.app.storage.StorageManager.formatSize(storage.usbFreeSpace)} ücretsiz / ${com.overdrive.app.storage.StorageManager.formatSize(storage.usbTotalSpace)} toplam"
+                } else null
+
+                val survBytes = storage?.surveillanceSize ?: 0L
+                val usedText = "${com.overdrive.app.storage.StorageManager.formatSize(survBytes)} kullanılır"
+                val limitText = "$storLimit MB sınırı"
+                val intTotal = storage?.internalTotalSpace ?: (256L * 1024 * 1024 * 1024)
+                val volumeTotalText = com.overdrive.app.storage.StorageManager.formatSize(intTotal)
+                val limitBytes = storLimit.toLong() * 1024L * 1024L
+                val usedPercent = if (limitBytes > 0) (survBytes.toFloat() / limitBytes.toFloat()).coerceIn(0f, 1f) else 0f
 
                 val powerConfig = fullConfig.optJSONObject("power") ?: JSONObject()
-                val lowPower = surv.optBoolean("lowPowerMode", false)
-                val lowSoc = powerConfig.optInt("lowSocCutoffPercent", 10)
+                val lowPower = surv.optBoolean("lowPowerMode", true)
+                val lowSoc = powerConfig.optInt("lowSocCutoffPercent", 20)
                 val screenDetEn = surv.optBoolean("screenDeterrentEnabled", false)
-                val screenDetDur = surv.optInt("screenDeterrentDurationSeconds", 8)
+                val screenDetDur = surv.optInt("screenDeterrentDurationSeconds", 10)
                 val screenDetMsg = surv.optString("screenDeterrentMessage", "")
+                val screenDetTheme = surv.optString("screenDeterrentTheme", "sentry1")
 
                 val geocoding = try { UnifiedConfigManager.getGeocoding() } catch (_: Throwable) { JSONObject() }
                 val survGeo = geocoding.optJSONObject("surveillance") ?: JSONObject()
@@ -193,6 +239,8 @@ class SurveillanceComposeFragment : Fragment() {
 
                 // Status check from daemon
                 var isArmed = false
+                var oemUnset = true
+                var dvrDisabled = false
                 try {
                     val conn = DaemonHttpClient.open("/api/surveillance/status", "GET", 1500, 2000)
                     if (conn.responseCode == 200) {
@@ -201,6 +249,17 @@ class SurveillanceComposeFragment : Fragment() {
                         isArmed = statusObj.optBoolean("armed", isMaster)
                     }
                     conn.disconnect()
+                } catch (_: Throwable) {}
+
+                try {
+                    val oemConn = DaemonHttpClient.open("/api/oem-dashcam/status", "GET", 1500, 2000)
+                    if (oemConn.responseCode == 200) {
+                        val oemBody = oemConn.inputStream.bufferedReader().readText()
+                        val oemJson = JSONObject(oemBody)
+                        oemUnset = oemJson.optBoolean("cameraProbeUnset", true)
+                        dvrDisabled = oemJson.optBoolean("nativeDvrDisabled", false)
+                    }
+                    oemConn.disconnect()
                 } catch (_: Throwable) {}
 
                 mainHandler.post {
@@ -213,11 +272,14 @@ class SurveillanceComposeFragment : Fragment() {
                         keepUsbPowerOnAccOff = usbPower,
                         mobileDataKeepAlive = mobData,
                         di5CloudKeepAlive = di5,
+                        diLink5KeepAlive = diLink5,
                         lowPowerMode = lowPower,
                         lowSocCutoff = lowSoc,
+                        parkingIntelligenceEnabled = parkingIntel,
                         screenDeterrentEnabled = screenDetEn,
                         screenDeterrentDuration = screenDetDur,
                         screenDeterrentMessage = screenDetMsg,
+                        screenDeterrentTheme = screenDetTheme,
                         geocodingEnabled = survGeoEn,
                         geocodingOnline = survGeoOn,
                         geocodingCustomUrl = survGeoUrl,
@@ -235,23 +297,41 @@ class SurveillanceComposeFragment : Fragment() {
                         sensitivityLevel = sens,
                         distancePreset = dist,
                         loiteringTimeSeconds = loitering,
+                        approachTriggerSeconds = approachTrigger,
+                        shadowFilter = shadow,
+                        recordOnStrongMotion = strongMotion,
+                        discardEmptyMotion = emptyMotion,
+                        discardEmptyNightMotion = discardNight,
                         cameraFront = cFront,
                         cameraRight = cRight,
                         cameraLeft = cLeft,
                         cameraRear = cRear,
-                        motionHeatmap = heatmap,
-                        discardEmptyNightMotion = discardNight,
+                        sideCamBoost = boost,
                         preRecordSeconds = preRec,
                         postRecordSeconds = postRec,
                         surveillanceQuality = qual,
                         surveillanceCameraFps = fps,
                         recordingCodec = codec,
-                        telegramSendStartPing = tgPing,
-                        oemDashcamEnabled = oemEn,
-                        oemTriggerRecording = oemTrig,
-                        oemAutoCleanup = oemClean,
+                        segmentDurationMinutes = clipMins,
+                        recordingLayout = layout,
+                        rectifyStrength = rectify,
+                        oemRecordingMode = oemMode,
+                        oemTelemetryOverlay = oemTelem,
+                        oemTelemetryFields = oemTelemSet,
+                        cameraProbeUnset = oemUnset,
+                        nativeDvrDisabled = dvrDisabled,
                         storageType = storType,
                         storageLimitMb = storLimit,
+                        storageUsedText = usedText,
+                        storageLimitText = limitText,
+                        storageVolumeTotalText = volumeTotalText,
+                        storageUsedPercent = usedPercent,
+                        sdCardAvailable = sdAvail,
+                        sdCardStatusText = sdStatus,
+                        sdCardSpaceInfo = sdSpace,
+                        usbAvailable = usbAvail,
+                        usbStatusText = usbStatus,
+                        usbSpaceInfo = usbSpace,
                         autoCleanupEvents = autoClean,
                         discardEmptyBrightEvents = discardBright,
                         isLoading = false
@@ -304,6 +384,8 @@ class SurveillanceComposeFragment : Fragment() {
             "keepUsbPowerOnAccOff" -> uiState = uiState.copy(keepUsbPowerOnAccOff = value as Boolean)
             "mobileDataKeepAlive" -> uiState = uiState.copy(mobileDataKeepAlive = value as Boolean)
             "di5CloudKeepAlive" -> uiState = uiState.copy(di5CloudKeepAlive = value as Boolean)
+            "diLink5KeepAlive" -> uiState = uiState.copy(diLink5KeepAlive = value as Boolean)
+            "parkingIntelligenceEnabled" -> uiState = uiState.copy(parkingIntelligenceEnabled = value as Boolean)
             "environmentPreset" -> uiState = uiState.copy(environmentPreset = value as String)
             "detectPerson" -> uiState = uiState.copy(detectPerson = value as Boolean)
             "detectCar" -> uiState = uiState.copy(detectCar = value as Boolean)
@@ -312,23 +394,24 @@ class SurveillanceComposeFragment : Fragment() {
             "sensitivityLevel" -> uiState = uiState.copy(sensitivityLevel = value as Int)
             "distancePreset" -> uiState = uiState.copy(distancePreset = value as Int)
             "loiteringTimeSeconds" -> uiState = uiState.copy(loiteringTimeSeconds = value as Int)
+            "approachTriggerSeconds" -> uiState = uiState.copy(approachTriggerSeconds = value as Int)
+            "shadowFilter" -> uiState = uiState.copy(shadowFilter = value as String)
+            "recordOnStrongMotion" -> uiState = uiState.copy(recordOnStrongMotion = value as Boolean)
+            "discardEmptyMotion" -> uiState = uiState.copy(discardEmptyMotion = value as Boolean)
             "cameraFront" -> uiState = uiState.copy(cameraFront = value as Boolean)
             "cameraRight" -> uiState = uiState.copy(cameraRight = value as Boolean)
             "cameraLeft" -> uiState = uiState.copy(cameraLeft = value as Boolean)
             "cameraRear" -> uiState = uiState.copy(cameraRear = value as Boolean)
-            "motionHeatmap" -> uiState = uiState.copy(motionHeatmap = value as Boolean)
             "discardEmptyMotionAtNight" -> uiState = uiState.copy(discardEmptyNightMotion = value as Boolean)
             "preRecordSeconds" -> uiState = uiState.copy(preRecordSeconds = value as Int)
             "postRecordSeconds" -> uiState = uiState.copy(postRecordSeconds = value as Int)
-            "telegramSendStartPing" -> uiState = uiState.copy(telegramSendStartPing = value as Boolean)
-            "surveillanceStorageType" -> uiState = uiState.copy(storageType = value as String)
-            "surveillanceLimitMb" -> uiState = uiState.copy(storageLimitMb = value as Int)
             "autoCleanupEvents" -> uiState = uiState.copy(autoCleanupEvents = value as Boolean)
             "discardEmptyBrightMotionEvents" -> uiState = uiState.copy(discardEmptyBrightEvents = value as Boolean)
             "lowPowerMode" -> uiState = uiState.copy(lowPowerMode = value as Boolean)
             "screenDeterrentEnabled" -> uiState = uiState.copy(screenDeterrentEnabled = value as Boolean)
             "screenDeterrentDurationSeconds" -> uiState = uiState.copy(screenDeterrentDuration = value as Int)
             "screenDeterrentMessage" -> uiState = uiState.copy(screenDeterrentMessage = value as String)
+            "screenDeterrentTheme" -> uiState = uiState.copy(screenDeterrentTheme = value as String)
         }
 
         executor.execute {
@@ -339,6 +422,33 @@ class SurveillanceComposeFragment : Fragment() {
                     Toast.makeText(requireContext(), "Ayar kaydedilemedi: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             }
+        }
+    }
+
+    private fun updateSurveillanceSegmentDuration(mins: Int) {
+        uiState = uiState.copy(segmentDurationMinutes = mins)
+        executor.execute {
+            try {
+                UnifiedConfigManager.updateValues("recording", mapOf("surveillanceSegmentDurationMinutes" to mins))
+            } catch (_: Throwable) {}
+        }
+    }
+
+    private fun updateSurveillanceLayout(layout: String) {
+        uiState = uiState.copy(recordingLayout = layout)
+        executor.execute {
+            try {
+                UnifiedConfigManager.updateValues("recording", mapOf("surveillanceRecordingLayout" to layout))
+            } catch (_: Throwable) {}
+        }
+    }
+
+    private fun updateSurveillanceRectify(strength: Int) {
+        uiState = uiState.copy(rectifyStrength = strength)
+        executor.execute {
+            try {
+                UnifiedConfigManager.updateValues("recording", mapOf("surveillanceRectifyStrength" to strength))
+            } catch (_: Throwable) {}
         }
     }
 
@@ -375,9 +485,8 @@ class SurveillanceComposeFragment : Fragment() {
 
     private fun updateOemKey(key: String, value: Any) {
         when (key) {
-            "enabled" -> uiState = uiState.copy(oemDashcamEnabled = value as Boolean)
-            "triggerRecording" -> uiState = uiState.copy(oemTriggerRecording = value as Boolean)
-            "autoCleanup" -> uiState = uiState.copy(oemAutoCleanup = value as Boolean)
+            "recordingMode" -> uiState = uiState.copy(oemRecordingMode = value as String)
+            "telemetryOverlay" -> uiState = uiState.copy(oemTelemetryOverlay = value as Boolean)
         }
         executor.execute {
             try {
@@ -387,6 +496,95 @@ class SurveillanceComposeFragment : Fragment() {
                     Toast.makeText(requireContext(), "OEM ayarı kaydedilemedi: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             }
+        }
+    }
+
+    private fun toggleOemTelemetryField(field: String, add: Boolean) {
+        val currFields = uiState.oemTelemetryFields.toMutableSet()
+        if (add) currFields.add(field) else currFields.remove(field)
+        uiState = uiState.copy(oemTelemetryFields = currFields)
+        executor.execute {
+            val jsonArray = org.json.JSONArray(currFields.toList())
+            try {
+                UnifiedConfigManager.updateValues("oem", mapOf("telemetryFields" to jsonArray))
+            } catch (_: Throwable) {}
+        }
+    }
+
+    private fun toggleNativeDvr() {
+        val nextState = !uiState.nativeDvrDisabled
+        uiState = uiState.copy(nativeDvrDisabled = nextState)
+        executor.execute {
+            try {
+                val conn = DaemonHttpClient.open("/api/oem-dashcam/native-dvr/toggle", "POST", 2000, 3000)
+                conn.responseCode
+                conn.disconnect()
+                mainHandler.post {
+                    Toast.makeText(
+                        requireContext(),
+                        if (nextState) "Orijinal DVR devre dışı bırakıldı" else "Orijinal DVR etkinleştirildi",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (t: Throwable) {
+                mainHandler.post {
+                    Toast.makeText(requireContext(), "İşlem başarısız: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun updateSurveillanceStorageType(typeStr: String) {
+        uiState = uiState.copy(storageType = typeStr)
+        executor.execute {
+            try {
+                val smType = when (typeStr.uppercase()) {
+                    "SD_CARD" -> com.overdrive.app.storage.StorageManager.StorageType.SD_CARD
+                    "USB" -> com.overdrive.app.storage.StorageManager.StorageType.USB
+                    else -> com.overdrive.app.storage.StorageManager.StorageType.INTERNAL
+                }
+                com.overdrive.app.storage.StorageManager.getInstance()?.setSurveillanceStorageType(smType)
+                val json = JSONObject().apply {
+                    put("surveillanceStorageType", typeStr)
+                }.toString()
+                val conn = DaemonHttpClient.open("/api/settings/storage", "POST", 2000, 3000)
+                conn.doOutput = true
+                conn.outputStream.use { it.write(json.toByteArray(Charsets.UTF_8)) }
+                conn.responseCode
+                conn.disconnect()
+            } catch (_: Throwable) {}
+            try {
+                UnifiedConfigManager.updateValues("surveillance", mapOf("surveillanceStorageType" to typeStr))
+                UnifiedConfigManager.updateValues("storage", mapOf("surveillanceStorageType" to typeStr))
+            } catch (_: Throwable) {}
+        }
+    }
+
+    private fun updateSurveillanceStorageLimit(limitMb: Int) {
+        val survBytes = try { com.overdrive.app.storage.StorageManager.getInstance()?.surveillanceSize ?: 0L } catch (_: Throwable) { 0L }
+        val limitBytes = limitMb.toLong() * 1024L * 1024L
+        val usedPercent = if (limitBytes > 0) (survBytes.toFloat() / limitBytes.toFloat()).coerceIn(0f, 1f) else 0f
+        uiState = uiState.copy(
+            storageLimitMb = limitMb,
+            storageLimitText = "$limitMb MB sınırı",
+            storageUsedPercent = usedPercent
+        )
+        executor.execute {
+            try {
+                com.overdrive.app.storage.StorageManager.getInstance()?.setSurveillanceLimitMb(limitMb.toLong())
+                val json = JSONObject().apply {
+                    put("surveillanceLimitMb", limitMb)
+                }.toString()
+                val conn = DaemonHttpClient.open("/api/settings/storage", "POST", 2000, 3000)
+                conn.doOutput = true
+                conn.outputStream.use { it.write(json.toByteArray(Charsets.UTF_8)) }
+                conn.responseCode
+                conn.disconnect()
+            } catch (_: Throwable) {}
+            try {
+                UnifiedConfigManager.updateValues("surveillance", mapOf("surveillanceLimitMb" to limitMb))
+                UnifiedConfigManager.updateValues("storage", mapOf("surveillanceLimitMb" to limitMb))
+            } catch (_: Throwable) {}
         }
     }
 
