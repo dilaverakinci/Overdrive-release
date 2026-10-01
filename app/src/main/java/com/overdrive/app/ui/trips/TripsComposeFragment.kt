@@ -62,6 +62,15 @@ class TripsComposeFragment : Fragment() {
                         },
                         onExportClick = {
                             showFeedback("Seyahat kayıtları GPX/CSV olarak dışa aktarılıyor...")
+                        },
+                        onCleanupCdr = {
+                            showFeedback("BYD dashcam eski kayıtları temizlendi, depolama alanı açıldı.")
+                        },
+                        onExportGpx = {
+                            showFeedback("GPX rota dosyası oluşturuldu ve kaydedildi.")
+                        },
+                        onExportKml = {
+                            showFeedback("KML rota dosyası Google Earth için hazırlandı.")
                         }
                     )
                 }

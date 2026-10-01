@@ -31,15 +31,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -49,6 +55,7 @@ import com.overdrive.app.R
 import com.overdrive.app.ui.component.OverdriveButton
 import com.overdrive.app.ui.component.OverdriveButtonVariant
 import com.overdrive.app.ui.component.OverdriveCard
+import com.overdrive.app.ui.component.OverdriveDialog
 import com.overdrive.app.ui.component.OverdrivePillStatus
 import com.overdrive.app.ui.component.OverdriveStatusPill
 import com.overdrive.app.ui.theme.OverdriveDimensions
@@ -73,6 +80,9 @@ fun TripsScreen(
     onScrubberChange: (Int) -> Unit = {},
     onTogglePlay: () -> Unit = {},
     onPlaybackSpeedChange: (Float) -> Unit = {},
+    onCleanupCdr: () -> Unit = {},
+    onExportKml: () -> Unit = {},
+    onExportGpx: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -89,6 +99,9 @@ fun TripsScreen(
                 onScrubberChange = onScrubberChange,
                 onTogglePlay = onTogglePlay,
                 onPlaybackSpeedChange = onPlaybackSpeedChange,
+                onCleanupCdr = onCleanupCdr,
+                onExportKml = onExportKml,
+                onExportGpx = onExportGpx,
             )
         } else {
             TripsMasterView(
@@ -96,6 +109,9 @@ fun TripsScreen(
                 onFilterSelected = onFilterSelected,
                 onTripClick = onTripClick,
                 onExportClick = onExportClick,
+                onCleanupCdr = onCleanupCdr,
+                onExportKml = onExportKml,
+                onExportGpx = onExportGpx,
             )
         }
     }
@@ -110,6 +126,9 @@ private fun TripsMasterView(
     onFilterSelected: (TripsFilterPeriod) -> Unit,
     onTripClick: (TripUiItem) -> Unit,
     onExportClick: () -> Unit,
+    onCleanupCdr: () -> Unit,
+    onExportKml: () -> Unit,
+    onExportGpx: () -> Unit,
 ) {
     val scrollState = rememberScrollState()
 
@@ -150,6 +169,13 @@ private fun TripsMasterView(
                 onClick = { onTripClick(trip) }
             )
         }
+
+        // Storage & Dashcam Management Card
+        TripsStorageCard(
+            onCleanupCdr = onCleanupCdr,
+            onExportKml = onExportKml,
+            onExportGpx = onExportGpx,
+        )
     }
 }
 
@@ -305,50 +331,114 @@ private fun TripsHeroCard(
                 )
             }
 
-            // Right side stats
-            Row(horizontalArrangement = Arrangement.spacedBy(28.dp)) {
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = stringResource(R.string.trips_avg_efficiency_label),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = String.format(Locale.US, "%.1f", state.overallEfficiencyKwhPer100Km),
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontFamily = FontFamily.Monospace,
-                    )
-                    Text(
-                        text = stringResource(R.string.trips_kwh_per_100km),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+            // Center Driver Score Radial Gauge
+            DriverScoreGauge(score = state.overallDnaScore)
 
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = stringResource(R.string.trips_driving_dna_label),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "${state.overallDnaScore}",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = OverdriveTheme.colors.statusSuccess,
-                        fontFamily = FontFamily.Monospace,
-                    )
-                    Text(
-                        text = stringResource(R.string.trips_dna_out_of_100),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+            // Right side stats: Efficiency
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = stringResource(R.string.trips_avg_efficiency_label),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = String.format(Locale.US, "%.1f", state.overallEfficiencyKwhPer100Km),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontFamily = FontFamily.Monospace,
+                )
+                Text(
+                    text = stringResource(R.string.trips_kwh_per_100km),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
+        }
+    }
+}
+
+/**
+ * Circular Driver Score Gauge with automotive telemetry aesthetics.
+ */
+@Composable
+fun DriverScoreGauge(
+    score: Int,
+    modifier: Modifier = Modifier,
+) {
+    val ratingText = when {
+        score >= 90 -> stringResource(R.string.trips_score_rating_excellent)
+        score >= 75 -> stringResource(R.string.trips_score_rating_good)
+        score >= 60 -> stringResource(R.string.trips_score_rating_fair)
+        else -> stringResource(R.string.trips_score_rating_poor)
+    }
+    val scoreColor = when {
+        score >= 90 -> OverdriveTheme.colors.statusSuccess
+        score >= 75 -> OverdriveTheme.colors.statusWarning
+        else -> OverdriveTheme.colors.statusDanger
+    }
+    val trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+
+    Box(
+        modifier = modifier.size(105.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val strokeWidth = 8.dp.toPx()
+            val diameter = size.minDimension - strokeWidth
+            val topLeft = Offset((size.width - diameter) / 2f, (size.height - diameter) / 2f)
+            val arcSize = Size(diameter, diameter)
+
+            // Background circle track
+            drawArc(
+                color = trackColor,
+                startAngle = 135f,
+                sweepAngle = 270f,
+                useCenter = false,
+                topLeft = topLeft,
+                size = arcSize,
+                style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+            )
+
+            // Dynamic progress arc
+            val sweep = 270f * (score.coerceIn(0, 100) / 100f)
+            drawArc(
+                color = scoreColor,
+                startAngle = 135f,
+                sweepAngle = sweep,
+                useCenter = false,
+                topLeft = topLeft,
+                size = arcSize,
+                style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+            )
+        }
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "★",
+                    color = scoreColor,
+                    style = MaterialTheme.typography.labelSmall,
+                )
+                Spacer(modifier = Modifier.width(3.dp))
+                Text(
+                    text = "$score",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontFamily = FontFamily.Monospace,
+                )
+            }
+            Text(
+                text = ratingText,
+                style = MaterialTheme.typography.labelSmall,
+                color = scoreColor,
+                fontWeight = FontWeight.SemiBold,
+            )
         }
     }
 }
@@ -472,6 +562,9 @@ private fun TripDetailView(
     onScrubberChange: (Int) -> Unit,
     onTogglePlay: () -> Unit,
     onPlaybackSpeedChange: (Float) -> Unit,
+    onCleanupCdr: () -> Unit,
+    onExportKml: () -> Unit,
+    onExportGpx: () -> Unit,
 ) {
     val scrollState = rememberScrollState()
     val points = trip.telemetryPoints
@@ -586,6 +679,13 @@ private fun TripDetailView(
 
         // Driving DNA Sub-scores Card
         DrivingDnaBreakdownCard(trip = trip)
+
+        // Storage & Dashcam Management Card
+        TripsStorageCard(
+            onCleanupCdr = onCleanupCdr,
+            onExportKml = onExportKml,
+            onExportGpx = onExportGpx,
+        )
     }
 }
 
@@ -968,20 +1068,145 @@ private fun DrivingDnaBreakdownCard(trip: TripUiItem) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Text(
-                text = stringResource(R.string.trips_dna_breakdown_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    text = stringResource(R.string.trips_radar_chart_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                OverdriveStatusPill(
+                    status = if (trip.drivingDnaScore >= 90) OverdrivePillStatus.SUCCESS else OverdrivePillStatus.WARNING,
+                    label = "${trip.drivingDnaScore} / 100",
+                )
+            }
+
+            // Radar Chart Canvas
+            DrivingDnaRadarChart(trip = trip)
+
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
             )
 
+            // Linear Progress Bars
             DnaScoreBar(title = stringResource(R.string.trips_dna_anticipation), score = trip.anticipationScore)
             DnaScoreBar(title = stringResource(R.string.trips_dna_smoothness), score = trip.smoothnessScore)
             DnaScoreBar(title = stringResource(R.string.trips_dna_speed_discipline), score = trip.speedDisciplineScore)
             DnaScoreBar(title = stringResource(R.string.trips_dna_regen_efficiency), score = trip.efficiencyScore)
             DnaScoreBar(title = stringResource(R.string.trips_dna_consistency), score = trip.consistencyScore)
+        }
+    }
+}
+
+/**
+ * 5-axis Radar / Spider Chart visualising Driving DNA metrics.
+ */
+@Composable
+fun DrivingDnaRadarChart(
+    trip: TripUiItem,
+    modifier: Modifier = Modifier,
+) {
+    val labels = listOf(
+        stringResource(R.string.trips_radar_anticipation),
+        stringResource(R.string.trips_radar_smoothness),
+        stringResource(R.string.trips_radar_discipline),
+        stringResource(R.string.trips_radar_efficiency),
+        stringResource(R.string.trips_radar_consistency),
+    )
+    val scores = listOf(
+        trip.anticipationScore.coerceIn(0, 100) / 100f,
+        trip.smoothnessScore.coerceIn(0, 100) / 100f,
+        trip.speedDisciplineScore.coerceIn(0, 100) / 100f,
+        trip.efficiencyScore.coerceIn(0, 100) / 100f,
+        trip.consistencyScore.coerceIn(0, 100) / 100f,
+    )
+
+    val gridColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+    val accentColor = MaterialTheme.colorScheme.primary
+    val fillColor = accentColor.copy(alpha = 0.22f)
+    val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+
+    val nativePaint = remember(labelColor) {
+        android.graphics.Paint().apply {
+            color = labelColor.toArgb()
+            textSize = 26f
+            isAntiAlias = true
+            textAlign = android.graphics.Paint.Align.CENTER
+        }
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(230.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val center = Offset(size.width / 2f, size.height / 2f)
+            val radius = (size.minDimension / 2f) - 34.dp.toPx()
+            val sides = 5
+            val angleStep = (2.0 * Math.PI / sides).toFloat()
+            val startAngle = (-Math.PI / 2.0).toFloat()
+
+            // Concentric grids
+            listOf(0.25f, 0.50f, 0.75f, 1.0f).forEach { fraction ->
+                val gridPath = Path()
+                for (i in 0 until sides) {
+                    val angle = startAngle + i * angleStep
+                    val x = center.x + radius * fraction * Math.cos(angle.toDouble()).toFloat()
+                    val y = center.y + radius * fraction * Math.sin(angle.toDouble()).toFloat()
+                    if (i == 0) gridPath.moveTo(x, y) else gridPath.lineTo(x, y)
+                }
+                gridPath.close()
+                drawPath(gridPath, gridColor, style = Stroke(width = 1.dp.toPx()))
+            }
+
+            // Spoke lines
+            for (i in 0 until sides) {
+                val angle = startAngle + i * angleStep
+                val x = center.x + radius * Math.cos(angle.toDouble()).toFloat()
+                val y = center.y + radius * Math.sin(angle.toDouble()).toFloat()
+                drawLine(gridColor, center, Offset(x, y), strokeWidth = 1.dp.toPx())
+            }
+
+            // Data polygon
+            val dataPath = Path()
+            val dataPoints = ArrayList<Offset>(sides)
+            for (i in 0 until sides) {
+                val angle = startAngle + i * angleStep
+                val r = radius * scores[i]
+                val x = center.x + r * Math.cos(angle.toDouble()).toFloat()
+                val y = center.y + r * Math.sin(angle.toDouble()).toFloat()
+                val pt = Offset(x, y)
+                dataPoints.add(pt)
+                if (i == 0) dataPath.moveTo(x, y) else dataPath.lineTo(x, y)
+            }
+            dataPath.close()
+
+            // Fill & stroke
+            drawPath(dataPath, fillColor)
+            drawPath(dataPath, accentColor, style = Stroke(width = 2.dp.toPx()))
+
+            // Vertex dots
+            dataPoints.forEach { pt ->
+                drawCircle(color = accentColor, radius = 4.dp.toPx(), center = pt)
+            }
+
+            // Labels around polygon
+            for (i in 0 until sides) {
+                val angle = startAngle + i * angleStep
+                val labelRadius = radius + 20.dp.toPx()
+                val lx = center.x + labelRadius * Math.cos(angle.toDouble()).toFloat()
+                val ly = center.y + labelRadius * Math.sin(angle.toDouble()).toFloat() + 8f
+                drawContext.canvas.nativeCanvas.drawText(labels[i], lx, ly, nativePaint)
+            }
         }
     }
 }
@@ -1016,5 +1241,126 @@ private fun DnaScoreBar(title: String, score: Int) {
             color = if (score >= 90) OverdriveTheme.colors.statusSuccess else OverdriveTheme.colors.statusWarning,
             trackColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         )
+    }
+}
+
+// =============================================================================
+// STORAGE & DASHCAM MANAGEMENT CARD
+// =============================================================================
+@Composable
+private fun TripsStorageCard(
+    onCleanupCdr: () -> Unit,
+    onExportKml: () -> Unit,
+    onExportGpx: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var showConfirmDialog by remember { mutableStateOf(false) }
+
+    OverdriveCard(modifier = modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column {
+                    Text(
+                        text = stringResource(R.string.trips_storage_mgmt_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        text = stringResource(R.string.trips_storage_mgmt_subtitle),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                OverdriveStatusPill(
+                    status = OverdrivePillStatus.SUCCESS,
+                    label = "SD: Aktif",
+                )
+            }
+
+            // Storage bar
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(R.string.trips_storage_used_fmt, "1.4 GB", "58.6 GB"),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        text = "%2.3",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontFamily = FontFamily.Monospace,
+                    )
+                }
+                LinearProgressIndicator(
+                    progress = { 0.023f },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(6.dp)
+                        .clip(RoundedCornerShape(3.dp)),
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                )
+            }
+
+            // Action buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OverdriveButton(
+                    text = stringResource(R.string.trips_cdr_cleanup_btn),
+                    variant = OverdriveButtonVariant.OUTLINED,
+                    onClick = { showConfirmDialog = true },
+                    modifier = Modifier.weight(1.5f),
+                )
+                OverdriveButton(
+                    text = stringResource(R.string.trips_export_gpx),
+                    variant = OverdriveButtonVariant.TONAL,
+                    onClick = onExportGpx,
+                    modifier = Modifier.weight(1f),
+                )
+                OverdriveButton(
+                    text = stringResource(R.string.trips_export_kml),
+                    variant = OverdriveButtonVariant.TONAL,
+                    onClick = onExportKml,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+    }
+
+    if (showConfirmDialog) {
+        OverdriveDialog(
+            onDismissRequest = { showConfirmDialog = false },
+            title = stringResource(R.string.trips_cdr_cleanup_btn),
+            positiveButtonText = "Temizle",
+            onPositiveClick = {
+                showConfirmDialog = false
+                onCleanupCdr()
+            },
+            negativeButtonText = stringResource(R.string.action_cancel),
+            onNegativeClick = { showConfirmDialog = false }
+        ) {
+            Text(
+                text = "Eski BYD dashcam videoları ve seyahat telemetri arşivleri temizlenerek SD kartta yer açılacak. Korunan kilitli dosyalar silinmez.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
