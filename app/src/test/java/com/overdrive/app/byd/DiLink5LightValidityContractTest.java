@@ -59,6 +59,6 @@ public class DiLink5LightValidityContractTest {
             path = Paths.get(System.getProperty("user.dir")).getParent()
                     .resolve(relative);
         }
-        return new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+        return new String(Files.readAllBytes(path), StandardCharsets.UTF_8).replace("\r\n", "\n");
     }
 }

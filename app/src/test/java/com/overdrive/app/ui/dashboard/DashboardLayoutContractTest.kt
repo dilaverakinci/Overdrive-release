@@ -230,7 +230,7 @@ class DashboardLayoutContractTest {
         )
         val path: Path = candidates.firstOrNull(Files::exists)
             ?: error("Could not locate dashboard resource: $relative")
-        return String(Files.readAllBytes(path), StandardCharsets.UTF_8)
+        return String(Files.readAllBytes(path), StandardCharsets.UTF_8).replace("\r\n", "\n")
     }
 
     private fun readSource(relative: String): String {
@@ -241,6 +241,6 @@ class DashboardLayoutContractTest {
         )
         val path: Path = candidates.firstOrNull(Files::exists)
             ?: error("Could not locate dashboard source: $relative")
-        return String(Files.readAllBytes(path), StandardCharsets.UTF_8)
+        return String(Files.readAllBytes(path), StandardCharsets.UTF_8).replace("\r\n", "\n")
     }
 }

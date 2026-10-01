@@ -82,7 +82,7 @@ public class CloudAutomationControlCoverageTest {
         for (int depth = 0; depth < 6 && current != null; depth++, current = current.getParent()) {
             Path candidate = current.resolve(relativePath);
             if (Files.isRegularFile(candidate)) {
-                return new String(Files.readAllBytes(candidate), StandardCharsets.UTF_8);
+                return new String(Files.readAllBytes(candidate), StandardCharsets.UTF_8).replace("\r\n", "\n");
             }
         }
         throw new AssertionError("Could not locate " + relativePath);

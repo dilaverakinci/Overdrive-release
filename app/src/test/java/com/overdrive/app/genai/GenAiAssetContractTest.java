@@ -257,6 +257,6 @@ public class GenAiAssetContractTest {
         if (!Files.exists(file)) {
             throw new AssertionError("Could not locate project file: " + relativePath);
         }
-        return new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
+        return new String(Files.readAllBytes(file), StandardCharsets.UTF_8).replace("\r\n", "\n");
     }
 }

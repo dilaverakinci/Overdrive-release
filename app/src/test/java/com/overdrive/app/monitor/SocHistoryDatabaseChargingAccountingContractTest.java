@@ -2863,11 +2863,11 @@ public class SocHistoryDatabaseChargingAccountingContractTest {
         while (current != null) {
             Path candidate = current.resolve(relativePath);
             if (Files.isRegularFile(candidate)) {
-                return new String(Files.readAllBytes(candidate), StandardCharsets.UTF_8);
+                return new String(Files.readAllBytes(candidate), StandardCharsets.UTF_8).replace("\r\n", "\n");
             }
             Path fromModule = current.resolve(relativePath.replaceFirst("^app/", ""));
             if (Files.isRegularFile(fromModule)) {
-                return new String(Files.readAllBytes(fromModule), StandardCharsets.UTF_8);
+                return new String(Files.readAllBytes(fromModule), StandardCharsets.UTF_8).replace("\r\n", "\n");
             }
             current = current.getParent();
         }

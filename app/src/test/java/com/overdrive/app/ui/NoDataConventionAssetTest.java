@@ -119,6 +119,6 @@ public class NoDataConventionAssetTest {
         if (!Files.isRegularFile(candidate)) {
             throw new AssertionError("Could not locate repository file: " + relativePath);
         }
-        return new String(Files.readAllBytes(candidate), StandardCharsets.UTF_8);
+        return new String(Files.readAllBytes(candidate), StandardCharsets.UTF_8).replace("\r\n", "\n");
     }
 }

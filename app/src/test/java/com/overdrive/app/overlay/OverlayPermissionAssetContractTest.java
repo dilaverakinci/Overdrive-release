@@ -60,6 +60,6 @@ public class OverlayPermissionAssetContractTest {
         Path path = Files.exists(direct)
                 ? direct
                 : Paths.get("app").resolve(relativePath);
-        return new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+        return new String(Files.readAllBytes(path), StandardCharsets.UTF_8).replace("\r\n", "\n");
     }
 }

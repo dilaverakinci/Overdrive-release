@@ -85,7 +85,7 @@ public class SafeLocationsUiAssetTest {
 
     private static String readRepositoryFile(String relativePath) throws IOException {
         Path file = locate(relativePath);
-        return new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
+        return new String(Files.readAllBytes(file), StandardCharsets.UTF_8).replace("\r\n", "\n");
     }
 
     private static Path locate(String relativePath) {

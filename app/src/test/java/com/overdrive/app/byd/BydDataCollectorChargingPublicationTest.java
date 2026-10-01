@@ -2677,7 +2677,7 @@ public class BydDataCollectorChargingPublicationTest {
                 ? fromModule
                 : Paths.get(
                         "app/src/main/java/com/overdrive/app/byd/BydDataCollector.java");
-        return new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+        return new String(Files.readAllBytes(path), StandardCharsets.UTF_8).replace("\r\n", "\n");
     }
 
     private static int matchingBrace(String source, int openBrace) {

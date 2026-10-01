@@ -173,6 +173,6 @@ public class AutomationLatencyContractTest {
 
     private static String source(String relative) throws Exception {
         Path path = Path.of("src/main/java/com/overdrive/app", relative);
-        return new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+        return new String(Files.readAllBytes(path), StandardCharsets.UTF_8).replace("\r\n", "\n");
     }
 }

@@ -40,6 +40,6 @@ class RoadSenseImuSidecarResourceContractTest {
         )
         val path: Path = candidates.firstOrNull(Files::exists)
             ?: error("Could not locate RoadSenseImuSidecarService.kt")
-        return String(Files.readAllBytes(path), StandardCharsets.UTF_8)
+        return String(Files.readAllBytes(path), StandardCharsets.UTF_8).replace("\r\n", "\n")
     }
 }

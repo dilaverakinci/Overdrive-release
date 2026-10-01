@@ -521,7 +521,7 @@ public class CloudFallbackContractTest {
     private static String readRouterSource() throws Exception {
         Path fromModule = Paths.get("src/main/java/com/overdrive/app/byd/routing/VehicleCommandRouter.java");
         if (Files.exists(fromModule)) {
-            return new String(Files.readAllBytes(fromModule), StandardCharsets.UTF_8);
+            return new String(Files.readAllBytes(fromModule), StandardCharsets.UTF_8).replace("\r\n", "\n");
         }
         return new String(Files.readAllBytes(Paths.get(
                 "app/src/main/java/com/overdrive/app/byd/routing/VehicleCommandRouter.java")),

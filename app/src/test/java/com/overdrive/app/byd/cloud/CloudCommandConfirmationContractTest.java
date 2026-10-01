@@ -92,9 +92,9 @@ public class CloudCommandConfirmationContractTest {
     private static String readSource(String relative) throws Exception {
         Path fromModule = Paths.get("src/main/java/com/overdrive/app").resolve(relative);
         if (Files.exists(fromModule)) {
-            return new String(Files.readAllBytes(fromModule), StandardCharsets.UTF_8);
+            return new String(Files.readAllBytes(fromModule), StandardCharsets.UTF_8).replace("\r\n", "\n");
         }
         Path fromRepository = Paths.get("app/src/main/java/com/overdrive/app").resolve(relative);
-        return new String(Files.readAllBytes(fromRepository), StandardCharsets.UTF_8);
+        return new String(Files.readAllBytes(fromRepository), StandardCharsets.UTF_8).replace("\r\n", "\n");
     }
 }

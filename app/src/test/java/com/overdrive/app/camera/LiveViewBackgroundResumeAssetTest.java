@@ -53,7 +53,7 @@ public class LiveViewBackgroundResumeAssetTest {
         for (int i = 0; i < 6 && current != null; i++) {
             Path candidate = current.resolve(relativePath);
             if (Files.isRegularFile(candidate)) {
-                return new String(Files.readAllBytes(candidate), StandardCharsets.UTF_8);
+                return new String(Files.readAllBytes(candidate), StandardCharsets.UTF_8).replace("\r\n", "\n");
             }
             current = current.getParent();
         }

@@ -83,11 +83,11 @@ public class LiveViewDashboardAssetTest {
         Path current = Paths.get("").toAbsolutePath();
         Path fromModule = current.resolve("src/main/assets/web").resolve(relativePath);
         if (Files.exists(fromModule)) {
-            return new String(Files.readAllBytes(fromModule), StandardCharsets.UTF_8);
+            return new String(Files.readAllBytes(fromModule), StandardCharsets.UTF_8).replace("\r\n", "\n");
         }
         Path fromRepository = current.resolve("app/src/main/assets/web").resolve(relativePath);
         if (Files.exists(fromRepository)) {
-            return new String(Files.readAllBytes(fromRepository), StandardCharsets.UTF_8);
+            return new String(Files.readAllBytes(fromRepository), StandardCharsets.UTF_8).replace("\r\n", "\n");
         }
         throw new AssertionError("Could not locate web asset: " + relativePath);
     }

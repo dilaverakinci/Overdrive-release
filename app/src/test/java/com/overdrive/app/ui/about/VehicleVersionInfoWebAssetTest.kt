@@ -51,11 +51,11 @@ class VehicleVersionInfoWebAssetTest {
         while (current != null) {
             val direct = current.resolve(relative)
             if (Files.exists(direct)) {
-                return String(Files.readAllBytes(direct), StandardCharsets.UTF_8)
+                return String(Files.readAllBytes(direct), StandardCharsets.UTF_8).replace("\r\n", "\n")
             }
             val fromModule = current.resolve(relative.removePrefix("app/"))
             if (Files.exists(fromModule)) {
-                return String(Files.readAllBytes(fromModule), StandardCharsets.UTF_8)
+                return String(Files.readAllBytes(fromModule), StandardCharsets.UTF_8).replace("\r\n", "\n")
             }
             current = current.parent
         }

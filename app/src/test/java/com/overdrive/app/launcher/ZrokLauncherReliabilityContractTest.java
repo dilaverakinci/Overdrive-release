@@ -145,7 +145,7 @@ public class ZrokLauncherReliabilityContractTest {
         while (current != null) {
             Path candidate = current.resolve(relativePath);
             if (Files.isRegularFile(candidate)) {
-                return new String(Files.readAllBytes(candidate), StandardCharsets.UTF_8);
+                return new String(Files.readAllBytes(candidate), StandardCharsets.UTF_8).replace("\r\n", "\n");
             }
             current = current.getParent();
         }

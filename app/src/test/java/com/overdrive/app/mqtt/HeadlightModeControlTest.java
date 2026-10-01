@@ -146,7 +146,7 @@ public class HeadlightModeControlTest {
                 depth++, current = current.getParent()) {
             Path candidate = current.resolve(relativePath);
             if (Files.isRegularFile(candidate)) {
-                return new String(Files.readAllBytes(candidate), StandardCharsets.UTF_8);
+                return new String(Files.readAllBytes(candidate), StandardCharsets.UTF_8).replace("\r\n", "\n");
             }
         }
         throw new AssertionError("Could not locate " + relativePath);

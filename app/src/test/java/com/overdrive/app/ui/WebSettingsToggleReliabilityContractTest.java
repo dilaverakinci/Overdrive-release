@@ -197,11 +197,11 @@ public class WebSettingsToggleReliabilityContractTest {
         while (current != null) {
             Path direct = current.resolve(relativePath);
             if (Files.isRegularFile(direct)) {
-                return new String(Files.readAllBytes(direct), StandardCharsets.UTF_8);
+                return new String(Files.readAllBytes(direct), StandardCharsets.UTF_8).replace("\r\n", "\n");
             }
             Path fromModule = current.resolve(relativePath.replaceFirst("^app/", ""));
             if (Files.isRegularFile(fromModule)) {
-                return new String(Files.readAllBytes(fromModule), StandardCharsets.UTF_8);
+                return new String(Files.readAllBytes(fromModule), StandardCharsets.UTF_8).replace("\r\n", "\n");
             }
             current = current.getParent();
         }
