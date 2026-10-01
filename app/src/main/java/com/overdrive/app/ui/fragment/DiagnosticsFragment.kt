@@ -12,12 +12,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.overdrive.app.R
@@ -25,6 +25,7 @@ import com.overdrive.app.ui.MainActivity
 import com.overdrive.app.ui.component.OverdriveComposeContainer
 import com.overdrive.app.ui.diagnostics.DiagnosticsScreen
 import com.overdrive.app.ui.diagnostics.DiagnosticsUiState
+import com.overdrive.app.ui.diagnostics.DiagnosticsViewModel
 import com.overdrive.app.ui.model.DaemonStatus
 import com.overdrive.app.ui.model.DaemonType
 import com.overdrive.app.ui.theme.OverdriveTheme
@@ -43,8 +44,11 @@ import java.util.concurrent.Executors
 class DiagnosticsFragment : Fragment() {
 
     private val daemonsViewModel: DaemonsViewModel by activityViewModels()
+    private val diagnosticsViewModel: DiagnosticsViewModel by viewModels()
 
-    private var uiState by mutableStateOf(DiagnosticsUiState())
+    private var uiState: DiagnosticsUiState
+        get() = diagnosticsViewModel.uiState.value
+        set(value) { diagnosticsViewModel.updateUiState { value } }
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private var ssidRefreshRunnable: Runnable? = null
@@ -62,8 +66,16 @@ class DiagnosticsFragment : Fragment() {
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         setContent {
             OverdriveTheme {
+                val state by diagnosticsViewModel.uiState.collectAsState()
                 DiagnosticsScreen(
-                    state = uiState,
+                    state = state,
+                    onTabSelected = { diagnosticsViewModel.selectTab(it) },
+                    onScanDtcClick = { diagnosticsViewModel.scanDtc() },
+                    onRequestClearDtcClick = { diagnosticsViewModel.requestClearDtc() },
+                    onConfirmClearDtc = { diagnosticsViewModel.confirmClearDtc() },
+                    onDismissClearDtcDialog = { diagnosticsViewModel.dismissClearDtcDialog() },
+                    onDismissFeedback = { diagnosticsViewModel.dismissFeedback() },
+                    onToggleEcuDetail = { diagnosticsViewModel.toggleEcuDetail(it) },
                     onAdbClick = {
                         findNavController().navigateDrillDown(R.id.adbConsoleFragment)
                     },
