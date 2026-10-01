@@ -121,6 +121,19 @@ public class BydDataCollector {
      */
     private final Object drivetrainProbeLock = new Object();
 
+    // Modular Subsystem Probes (Clean Architecture Decomposition)
+    private final com.overdrive.app.byd.probes.BydBatteryProbe batteryProbe = new com.overdrive.app.byd.probes.BydBatteryProbe();
+    private final com.overdrive.app.byd.probes.BydDrivetrainProbe drivetrainProbe = new com.overdrive.app.byd.probes.BydDrivetrainProbe();
+    private final com.overdrive.app.byd.probes.BydClimateProbe climateProbe = new com.overdrive.app.byd.probes.BydClimateProbe();
+    private final com.overdrive.app.byd.probes.BydBodyworkProbe bodyworkProbe = new com.overdrive.app.byd.probes.BydBodyworkProbe();
+    private final com.overdrive.app.byd.probes.BydChassisProbe chassisProbe = new com.overdrive.app.byd.probes.BydChassisProbe();
+
+    public com.overdrive.app.byd.probes.BydBatteryProbe getBatteryProbe() { return batteryProbe; }
+    public com.overdrive.app.byd.probes.BydDrivetrainProbe getDrivetrainProbe() { return drivetrainProbe; }
+    public com.overdrive.app.byd.probes.BydClimateProbe getClimateProbe() { return climateProbe; }
+    public com.overdrive.app.byd.probes.BydBodyworkProbe getBodyworkProbe() { return bodyworkProbe; }
+    public com.overdrive.app.byd.probes.BydChassisProbe getChassisProbe() { return chassisProbe; }
+
     // Device references (all nullable)
     private Object bodyworkDevice;
     private Object rearViewMirrorDevice;
@@ -1594,6 +1607,13 @@ public class BydDataCollector {
         if (!unavailableDevices.isEmpty()) {
             logger.info("Unavailable: " + String.join(", ", unavailableDevices));
         }
+
+        // Synchronize device references with modular subsystem probes
+        batteryProbe.setDevices(energyDevice, chargingDevice);
+        drivetrainProbe.setDevices(speedDevice, engineDevice, gearboxDevice, statisticDevice);
+        climateProbe.setDevices(acDevice, pm25Device);
+        bodyworkProbe.setDevices(bodyworkDevice, doorLockDevice, lightDevice, wiperDevice, settingDevice);
+        chassisProbe.setDevices(tyreDevice, sensorDevice, radarDevice);
 
         if (bridgeConsumer) {
             snapshot.set(new BydVehicleData.Builder()
@@ -18834,30 +18854,8 @@ public class BydDataCollector {
      * API: 1=horizontal, 2=vertical.
      */
     public boolean setPadRotation(int rotation) {
-        if (rotation != PAD_ROTATION_HORIZONTAL && rotation != PAD_ROTATION_VERTICAL) {
-            logger.warn("setPadRotation: invalid rotation " + rotation);
-            return false;
-        }
-        if (settingDevice == null) {
-            logger.warn("setPadRotation: settingDevice unavailable");
-            return false;
-        }
-        try {
-            Method method = settingDevice.getClass().getMethod("setPadRotation", int.class);
-            if (VehicleActuatorBridge.isDiLink5RequestExpired()) return false;
-            Object result = method.invoke(settingDevice, rotation);
-            boolean accepted = isSdkWriteSuccess(settingDevice, result, "setPadRotation");
-            logger.info("setPadRotation(" + rotation + ") result=" + result
-                    + " accepted=" + accepted);
-            return accepted;
-        } catch (NoSuchMethodException e) {
-            // Older SDK wrappers may expose only the feature-id route.
-            return BydDeviceHelper.sendSetCommand(
-                    settingDevice, BydFeatureIds.SETTING_PAD_ROTATION_SET, rotation);
-        } catch (Exception e) {
-            logger.warn("setPadRotation(" + rotation + ") failed: " + e.getMessage());
-            return false;
-        }
+        if (VehicleActuatorBridge.isDiLink5RequestExpired()) return false;
+        return bodyworkProbe.setPadRotation(settingDevice, rotation);
     }
 
     /** Legacy caller compatibility; horizontal was the old hard-coded behavior. */
