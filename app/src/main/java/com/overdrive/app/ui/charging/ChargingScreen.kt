@@ -41,7 +41,6 @@ import com.overdrive.app.ui.component.OverdriveButtonVariant
 import com.overdrive.app.ui.component.OverdriveCard
 import com.overdrive.app.ui.component.OverdrivePillStatus
 import com.overdrive.app.ui.component.OverdriveStatusPill
-import com.overdrive.app.ui.theme.OverdriveDimensions
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -71,12 +70,12 @@ fun ChargingScreen(
                 .fillMaxWidth()
                 .verticalScroll(scrollState)
                 .padding(
-                    start = OverdriveDimensions.pagePaddingHorizontal,
-                    end = OverdriveDimensions.pagePaddingHorizontal,
-                    top = OverdriveDimensions.pagePaddingTop,
-                    bottom = OverdriveDimensions.pagePaddingBottom,
+                    start = 12.dp,
+                    end = 12.dp,
+                    top = 8.dp,
+                    bottom = 12.dp,
                 ),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             // Header Bar
             ChargingHeader(
@@ -145,11 +144,6 @@ private fun ChargingHeader(
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = stringResource(R.string.charging_screen_title),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
 
@@ -235,7 +229,7 @@ private fun LiveChargingHeroCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(OverdriveDimensions.cardPaddingStandard)
+                .padding(12.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -400,7 +394,7 @@ private fun ChargingLimitsCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(OverdriveDimensions.cardPaddingStandard)
+                .padding(12.dp)
         ) {
             Text(
                 text = stringResource(R.string.charging_limits_section),
@@ -508,7 +502,7 @@ private fun HardwareActionsCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(OverdriveDimensions.cardPaddingStandard),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -556,7 +550,7 @@ private fun SessionsSummaryCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(OverdriveDimensions.cardPaddingStandard),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -605,7 +599,7 @@ private fun SessionItemCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(OverdriveDimensions.cardPaddingStandard),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {

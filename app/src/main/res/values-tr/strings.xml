@@ -1424,7 +1424,6 @@
     <string name="charging_no_current">Şarj Akımı Yok</string>
     <string name="charging_recommended_80">%%%1$d (Önerilen: %%80)</string>
     <string name="charging_remaining_range_label">Kalan Tahmini Menzil</string>
-    <string name="charging_screen_title">Yüksek Voltaj Batarya ve Şarj Yönetimi</string>
     <string name="charging_session_energy_fmt">+%1$.1f kWh</string>
     <string name="charging_session_peak_fmt">Maks %1$.1f kW</string>
     <string name="charging_session_soc_duration_fmt">%%%1$d ➔ %%%2$d · %3$d dakika</string>
