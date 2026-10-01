@@ -316,10 +316,10 @@ android {
         applicationId = "com.overdrive.app"
         // minSdk=28 required for Image.getHardwareBuffer() — the ImageReader
         // zero-copy camera path uses it to bypass SurfaceFlinger throttling.
-        // targetSdk pinned at 25 to keep app_process daemon behavior stable
-        // (newer targetSdks tighten background restrictions).
+        // targetSdk aligned at 28 (Android 9.0 Pie) with minSdk to satisfy AOSP
+        // requirements while preserving daemon and foreground service stability.
         minSdk = 28
-        targetSdk = 25
+        targetSdk = 28
         // Release identity is the build's TRUE self-identity (BuildConfig), used
         // by AppUpdater.getInstalledVersion() => "<channel>-v<versionName>" and
         // every surface that falls back to it (About row, post-update toast,
