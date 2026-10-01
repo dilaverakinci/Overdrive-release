@@ -1,5 +1,11 @@
 package com.overdrive.app.parking;
 
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
+import com.overdrive.app.database.SqliteDatabaseManager;
+import com.overdrive.app.database.SqliteStorageEngine;
 import com.overdrive.app.logging.DaemonLogger;
 
 import java.sql.Connection;
@@ -11,25 +17,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Durable H2 store for parking sessions and their neighbours.
+ * Durable store for parking sessions and their neighbours.
  *
- * <p>Own store file (not the rebuildable recordings index) so a session
- * survives index rebuilds, and opened LAZILY by {@link ParkingController#start}
- * — a disabled feature never opens a database (the same posture the other
- * daemon stores take: one store per feature, {@code AUTO_COMPACT_FILL_RATE=50}
- * for idle CPU, {@code DB_CLOSE_ON_EXIT=FALSE} so the JVM shutdown hook can't
- * race the daemon's explicit close, {@code FILE_LOCK=SOCKET} for cross-process
- * safety).
- *
- * <p>Single-writer (the parking worker thread); the HTTP handler reads through
- * the same synchronized methods. The JDBC URL is injectable so JVM tests can
- * run against {@code jdbc:h2:mem:}.
+ * <p>Modernized to support {@link SqliteStorageEngine} with Write-Ahead Logging (WAL)
+ * mode in production environments, while maintaining transparent JDBC in-memory fallback
+ * for JVM tests.
  */
 public final class ParkingStore {
 
     private static final DaemonLogger logger = DaemonLogger.getInstance("ParkingStore");
 
-    public static final String DEFAULT_DB_PATH = "/data/local/tmp/overdrive_parking_h2";
+    public static final String DEFAULT_DB_PATH = "/data/local/tmp/overdrive_parking.db";
 
     public static String defaultJdbcUrl() {
         return "jdbc:h2:file:" + DEFAULT_DB_PATH
@@ -39,6 +37,7 @@ public final class ParkingStore {
 
     private final String jdbcUrl;
     private volatile Connection connection;
+    private volatile SqliteStorageEngine sqliteEngine;
 
     public ParkingStore() { this(defaultJdbcUrl()); }
 
@@ -48,6 +47,21 @@ public final class ParkingStore {
 
     public synchronized boolean open() {
         if (isOpen()) return true;
+
+        // Use high-performance SQLite WAL engine when running in Android environment
+        if (SqliteStorageEngine.isAndroidRuntime() && (jdbcUrl == null || jdbcUrl.equals(defaultJdbcUrl()))) {
+            try {
+                sqliteEngine = SqliteDatabaseManager.getDatabase(SqliteDatabaseManager.DB_PARKING);
+                createSqliteTables();
+                logger.info("ParkingStore opened via native SQLite WAL engine: " + sqliteEngine.getPath());
+                return true;
+            } catch (Exception e) {
+                logger.error("ParkingStore SQLite open failed: " + e.getMessage(), e);
+                return false;
+            }
+        }
+
+        // Host JVM / unit test JDBC fallback (e.g. jdbc:h2:mem:)
         try {
             Class.forName("org.h2.Driver");
         } catch (ClassNotFoundException e) {
@@ -59,7 +73,7 @@ public final class ParkingStore {
             try (Statement st = connection.createStatement()) {
                 st.execute("SET CACHE_SIZE 2048");
             }
-            createTables();
+            createJdbcTables();
             return true;
         } catch (Exception e) {
             logger.error("Parking store open failed: " + e.getMessage());
@@ -69,10 +83,15 @@ public final class ParkingStore {
     }
 
     public synchronized void close() {
+        if (sqliteEngine != null) {
+            SqliteDatabaseManager.closeDatabase(SqliteDatabaseManager.DB_PARKING);
+            sqliteEngine = null;
+        }
         closeQuietly();
     }
 
     public synchronized boolean isOpen() {
+        if (sqliteEngine != null && sqliteEngine.isOpen()) return true;
         try {
             return connection != null && !connection.isClosed();
         } catch (Exception e) {
@@ -96,7 +115,71 @@ public final class ParkingStore {
         return c;
     }
 
-    private void createTables() throws Exception {
+    private void createSqliteTables() {
+        sqliteEngine.execSQL("CREATE TABLE IF NOT EXISTS parking_sessions ("
+                + "session_id TEXT PRIMARY KEY,"
+                + "started_ms INTEGER NOT NULL,"
+                + "ended_ms INTEGER DEFAULT 0,"
+                + "transition_gen INTEGER DEFAULT 0,"
+                + "end_trigger TEXT,"
+                + "lat REAL,"
+                + "lng REAL,"
+                + "accuracy_m REAL DEFAULT 0,"
+                + "fix_age_ms INTEGER DEFAULT -1,"
+                + "fix_from_cache INTEGER DEFAULT 0,"
+                + "gps_quality TEXT,"
+                + "place_short TEXT,"
+                + "place_display TEXT,"
+                + "place_source TEXT,"
+                + "safe_zone TEXT,"
+                + "sentry_state TEXT,"
+                + "arrived_snapshot_ms INTEGER DEFAULT 0,"
+                + "arrived_snapshot_ok INTEGER DEFAULT 0,"
+                + "returned_snapshot_ms INTEGER DEFAULT 0,"
+                + "returned_snapshot_ok INTEGER DEFAULT 0,"
+                + "rectify_strength INTEGER DEFAULT 0,"
+                + "signage_json TEXT,"
+                + "signage_state TEXT,"
+                + "notified_started INTEGER DEFAULT 0,"
+                + "notified_ended INTEGER DEFAULT 0,"
+                + "event_count INTEGER DEFAULT 0,"
+                + "neighbour_count INTEGER DEFAULT 0,"
+                + "created_ms INTEGER DEFAULT 0,"
+                + "start_soc_pct REAL,"
+                + "end_soc_pct REAL,"
+                + "charged_while_parked INTEGER DEFAULT 0,"
+                + "energy_est_kwh REAL,"
+                + "start_remain_kwh REAL,"
+                + "end_remain_kwh REAL"
+                + ")");
+        sqliteEngine.execSQL("CREATE INDEX IF NOT EXISTS idx_parking_sessions_started ON parking_sessions(started_ms DESC)");
+        sqliteEngine.execSQL("CREATE INDEX IF NOT EXISTS idx_parking_sessions_ended ON parking_sessions(ended_ms)");
+        sqliteEngine.execSQL("CREATE TABLE IF NOT EXISTS parking_neighbours ("
+                + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "session_id TEXT NOT NULL,"
+                + "neighbour_key TEXT,"
+                + "side INTEGER NOT NULL,"
+                + "kind TEXT NOT NULL,"
+                + "class_group TEXT,"
+                + "status TEXT,"
+                + "confirmed INTEGER DEFAULT 0,"
+                + "first_seen_ms INTEGER DEFAULT 0,"
+                + "arrived_ms INTEGER DEFAULT 0,"
+                + "departed_ms INTEGER DEFAULT 0,"
+                + "last_seen_ms INTEGER DEFAULT 0,"
+                + "cx REAL DEFAULT 0, cy REAL DEFAULT 0, w REAL DEFAULT 0, h REAL DEFAULT 0,"
+                + "proximity TEXT,"
+                + "arrival_event TEXT,"
+                + "departure_event TEXT,"
+                + "actor_ids TEXT,"
+                + "frames_json TEXT,"
+                + "updated_ms INTEGER DEFAULT 0"
+                + ")");
+        sqliteEngine.execSQL("CREATE INDEX IF NOT EXISTS idx_parking_neighbours_session ON parking_neighbours(session_id)");
+        sqliteEngine.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS idx_parking_neighbours_key ON parking_neighbours(session_id, neighbour_key)");
+    }
+
+    private void createJdbcTables() throws Exception {
         try (Statement st = conn().createStatement()) {
             st.execute("CREATE TABLE IF NOT EXISTS parking_sessions ("
                     + "session_id VARCHAR(48) PRIMARY KEY,"
@@ -134,19 +217,14 @@ public final class ParkingStore {
                     + "start_remain_kwh DOUBLE,"
                     + "end_remain_kwh DOUBLE"
                     + ")");
-            // The energy bookends were added after the first store files existed.
-            // IF NOT EXISTS makes these no-ops on a fresh table (and keeps the
-            // migration path exercised by every test run against :mem:).
             st.execute("ALTER TABLE parking_sessions ADD COLUMN IF NOT EXISTS start_soc_pct DOUBLE");
             st.execute("ALTER TABLE parking_sessions ADD COLUMN IF NOT EXISTS end_soc_pct DOUBLE");
             st.execute("ALTER TABLE parking_sessions ADD COLUMN IF NOT EXISTS charged_while_parked BOOLEAN DEFAULT FALSE");
             st.execute("ALTER TABLE parking_sessions ADD COLUMN IF NOT EXISTS energy_est_kwh DOUBLE");
             st.execute("ALTER TABLE parking_sessions ADD COLUMN IF NOT EXISTS start_remain_kwh DOUBLE");
             st.execute("ALTER TABLE parking_sessions ADD COLUMN IF NOT EXISTS end_remain_kwh DOUBLE");
-            st.execute("CREATE INDEX IF NOT EXISTS idx_parking_sessions_started"
-                    + " ON parking_sessions(started_ms DESC)");
-            st.execute("CREATE INDEX IF NOT EXISTS idx_parking_sessions_ended"
-                    + " ON parking_sessions(ended_ms)");
+            st.execute("CREATE INDEX IF NOT EXISTS idx_parking_sessions_started ON parking_sessions(started_ms DESC)");
+            st.execute("CREATE INDEX IF NOT EXISTS idx_parking_sessions_ended ON parking_sessions(ended_ms)");
 
             st.execute("CREATE TABLE IF NOT EXISTS parking_neighbours ("
                     + "id IDENTITY PRIMARY KEY,"
@@ -169,16 +247,20 @@ public final class ParkingStore {
                     + "frames_json CLOB,"
                     + "updated_ms BIGINT DEFAULT 0"
                     + ")");
-            st.execute("CREATE INDEX IF NOT EXISTS idx_parking_neighbours_session"
-                    + " ON parking_neighbours(session_id)");
-            st.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_parking_neighbours_key"
-                    + " ON parking_neighbours(session_id, neighbour_key)");
+            st.execute("CREATE INDEX IF NOT EXISTS idx_parking_neighbours_session ON parking_neighbours(session_id)");
+            st.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_parking_neighbours_key ON parking_neighbours(session_id, neighbour_key)");
         }
     }
 
     // ==================== SESSIONS ====================
 
     public synchronized boolean insertSession(ParkingSession s) {
+        if (sqliteEngine != null) {
+            ContentValues cv = sessionToContentValues(s);
+            long id = sqliteEngine.insertWithOnConflict("parking_sessions", cv, SQLiteDatabase.CONFLICT_FAIL);
+            return id >= 0;
+        }
+
         String sql = "INSERT INTO parking_sessions (session_id, started_ms, ended_ms,"
                 + " transition_gen, end_trigger, lat, lng, accuracy_m, fix_age_ms,"
                 + " fix_from_cache, gps_quality, place_short, place_display, place_source,"
@@ -200,6 +282,11 @@ public final class ParkingStore {
     }
 
     public synchronized boolean updateSession(ParkingSession s) {
+        if (sqliteEngine != null) {
+            ContentValues cv = sessionToContentValues(s);
+            return sqliteEngine.update("parking_sessions", cv, "session_id=?", new String[]{s.sessionId}) > 0;
+        }
+
         String sql = "UPDATE parking_sessions SET started_ms=?, ended_ms=?, transition_gen=?,"
                 + " end_trigger=?, lat=?, lng=?, accuracy_m=?, fix_age_ms=?, fix_from_cache=?,"
                 + " gps_quality=?, place_short=?, place_display=?, place_source=?, safe_zone=?,"
@@ -217,6 +304,50 @@ public final class ParkingStore {
             logger.warn("updateSession failed: " + e.getMessage());
             return false;
         }
+    }
+
+    private static ContentValues sessionToContentValues(ParkingSession s) {
+        ContentValues cv = new ContentValues();
+        cv.put("session_id", s.sessionId);
+        cv.put("started_ms", s.startedMs);
+        cv.put("ended_ms", s.endedMs);
+        cv.put("transition_gen", s.transitionGeneration);
+        cv.put("end_trigger", s.endTrigger);
+        if (s.hasFix()) {
+            cv.put("lat", s.lat);
+            cv.put("lng", s.lng);
+        } else {
+            cv.putNull("lat");
+            cv.putNull("lng");
+        }
+        cv.put("accuracy_m", s.accuracyM);
+        cv.put("fix_age_ms", s.fixAgeMs);
+        cv.put("fix_from_cache", s.fixFromCache ? 1 : 0);
+        cv.put("gps_quality", s.gpsQuality);
+        cv.put("place_short", clamp(s.placeShort, 128));
+        cv.put("place_display", clamp(s.placeDisplay, 256));
+        cv.put("place_source", clamp(s.placeSource, 32));
+        cv.put("safe_zone", clamp(s.safeZone, 64));
+        cv.put("sentry_state", s.sentryState);
+        cv.put("arrived_snapshot_ms", s.arrivedSnapshotMs);
+        cv.put("arrived_snapshot_ok", s.arrivedSnapshotOk ? 1 : 0);
+        cv.put("returned_snapshot_ms", s.returnedSnapshotMs);
+        cv.put("returned_snapshot_ok", s.returnedSnapshotOk ? 1 : 0);
+        cv.put("rectify_strength", s.rectifyStrength);
+        cv.put("signage_json", s.signageJson);
+        cv.put("signage_state", s.signageState);
+        cv.put("notified_started", s.notifiedStarted ? 1 : 0);
+        cv.put("notified_ended", s.notifiedEnded ? 1 : 0);
+        cv.put("event_count", s.eventCount);
+        cv.put("neighbour_count", s.neighbourCount);
+        cv.put("created_ms", s.createdMs);
+        if (!Double.isNaN(s.startSocPercent)) cv.put("start_soc_pct", s.startSocPercent); else cv.putNull("start_soc_pct");
+        if (!Double.isNaN(s.endSocPercent)) cv.put("end_soc_pct", s.endSocPercent); else cv.putNull("end_soc_pct");
+        cv.put("charged_while_parked", s.chargedWhileParked ? 1 : 0);
+        if (!Double.isNaN(s.energyEstKwh)) cv.put("energy_est_kwh", s.energyEstKwh); else cv.putNull("energy_est_kwh");
+        if (!Double.isNaN(s.startRemainKwh)) cv.put("start_remain_kwh", s.startRemainKwh); else cv.putNull("start_remain_kwh");
+        if (!Double.isNaN(s.endRemainKwh)) cv.put("end_remain_kwh", s.endRemainKwh); else cv.putNull("end_remain_kwh");
+        return cv;
     }
 
     private static int bindSession(PreparedStatement ps, ParkingSession s, int i) throws Exception {
@@ -263,6 +394,11 @@ public final class ParkingStore {
 
     public synchronized ParkingSession getSession(String sessionId) {
         if (sessionId == null) return null;
+        if (sqliteEngine != null) {
+            return sqliteEngine.queryOne("SELECT * FROM parking_sessions WHERE session_id=?",
+                    new String[]{sessionId}, ParkingStore::readSessionFromCursor);
+        }
+
         try (PreparedStatement ps = conn().prepareStatement(
                 "SELECT * FROM parking_sessions WHERE session_id=?")) {
             ps.setString(1, sessionId);
@@ -277,6 +413,11 @@ public final class ParkingStore {
 
     /** The most recent session that has not been closed, or null. */
     public synchronized ParkingSession getOpenSession() {
+        if (sqliteEngine != null) {
+            return sqliteEngine.queryOne("SELECT * FROM parking_sessions WHERE ended_ms <= 0 ORDER BY started_ms DESC LIMIT 1",
+                    null, ParkingStore::readSessionFromCursor);
+        }
+
         try (PreparedStatement ps = conn().prepareStatement(
                 "SELECT * FROM parking_sessions WHERE ended_ms <= 0"
                         + " ORDER BY started_ms DESC LIMIT 1");
@@ -290,6 +431,11 @@ public final class ParkingStore {
 
     /** Newest session regardless of state (for /where and the dashboard tile). */
     public synchronized ParkingSession getLatestSession() {
+        if (sqliteEngine != null) {
+            return sqliteEngine.queryOne("SELECT * FROM parking_sessions ORDER BY started_ms DESC LIMIT 1",
+                    null, ParkingStore::readSessionFromCursor);
+        }
+
         try (PreparedStatement ps = conn().prepareStatement(
                 "SELECT * FROM parking_sessions ORDER BY started_ms DESC LIMIT 1");
              ResultSet rs = ps.executeQuery()) {
@@ -300,16 +446,27 @@ public final class ParkingStore {
         }
     }
 
-    /**
-     * Sessions overlapping [fromMs, toMs] (either bound may be 0 = unbounded),
-     * newest first.
-     */
     public synchronized List<ParkingSession> listSessions(long fromMs, long toMs, int limit, int offset) {
+        if (sqliteEngine != null) {
+            StringBuilder sql = new StringBuilder("SELECT * FROM parking_sessions WHERE 1=1");
+            List<String> args = new ArrayList<>();
+            if (fromMs > 0) {
+                sql.append(" AND (ended_ms <= 0 OR ended_ms >= ?)");
+                args.add(String.valueOf(fromMs));
+            }
+            if (toMs > 0) {
+                sql.append(" AND started_ms <= ?");
+                args.add(String.valueOf(toMs));
+            }
+            sql.append(" ORDER BY started_ms DESC LIMIT ").append(Math.max(1, Math.min(limit, 500)))
+               .append(" OFFSET ").append(Math.max(0, offset));
+            return sqliteEngine.query(sql.toString(), args.toArray(new String[0]), ParkingStore::readSessionFromCursor);
+        }
+
         List<ParkingSession> out = new ArrayList<>();
         StringBuilder sql = new StringBuilder("SELECT * FROM parking_sessions WHERE 1=1");
         List<Object> args = new ArrayList<>();
         if (fromMs > 0) {
-            // overlap: session ended after from (or still open)
             sql.append(" AND (ended_ms <= 0 OR ended_ms >= ?)");
             args.add(fromMs);
         }
@@ -333,6 +490,10 @@ public final class ParkingStore {
     }
 
     public synchronized int countSessions() {
+        if (sqliteEngine != null) {
+            return (int) sqliteEngine.queryLong("SELECT COUNT(*) FROM parking_sessions", null, 0L);
+        }
+
         try (Statement st = conn().createStatement();
              ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM parking_sessions")) {
             return rs.next() ? rs.getInt(1) : 0;
@@ -343,6 +504,11 @@ public final class ParkingStore {
 
     public synchronized boolean deleteSession(String sessionId) {
         if (sessionId == null) return false;
+        if (sqliteEngine != null) {
+            sqliteEngine.delete("parking_neighbours", "session_id=?", new String[]{sessionId});
+            return sqliteEngine.delete("parking_sessions", "session_id=?", new String[]{sessionId}) > 0;
+        }
+
         try {
             try (PreparedStatement ps = conn().prepareStatement(
                     "DELETE FROM parking_neighbours WHERE session_id=?")) {
@@ -360,17 +526,20 @@ public final class ParkingStore {
         }
     }
 
-    /** Ids of closed sessions that started before {@code beforeMs} (retention). */
-    /** Closed sessions started before {@code beforeMs}, oldest first (retention). */
     public synchronized List<String> listSessionIdsStartedBefore(long beforeMs, int limit) {
         return listSessionIdsStartedBetween(Long.MIN_VALUE, beforeMs, limit);
     }
 
-    /**
-     * Closed sessions with {@code floorMs <= started_ms < beforeMs}, oldest
-     * first. The floor lets retention skip rows stamped by an unset clock.
-     */
     public synchronized List<String> listSessionIdsStartedBetween(long floorMs, long beforeMs, int limit) {
+        if (sqliteEngine != null) {
+            return sqliteEngine.query(
+                "SELECT session_id FROM parking_sessions WHERE started_ms >= ? AND started_ms < ?"
+                        + " AND ended_ms > 0 ORDER BY started_ms ASC LIMIT " + Math.max(1, limit),
+                new String[]{String.valueOf(floorMs), String.valueOf(beforeMs)},
+                c -> c.getString(0)
+            );
+        }
+
         List<String> out = new ArrayList<>();
         try (PreparedStatement ps = conn().prepareStatement(
                 "SELECT session_id FROM parking_sessions WHERE started_ms >= ? AND started_ms < ?"
@@ -387,8 +556,12 @@ public final class ParkingStore {
         return out;
     }
 
-    /** Every open row, newest first (normally zero or one; more after a crash). */
     public synchronized List<ParkingSession> listOpenSessions() {
+        if (sqliteEngine != null) {
+            return sqliteEngine.query("SELECT * FROM parking_sessions WHERE ended_ms <= 0 ORDER BY started_ms DESC",
+                    null, ParkingStore::readSessionFromCursor);
+        }
+
         List<ParkingSession> out = new ArrayList<>();
         try (PreparedStatement ps = conn().prepareStatement(
                 "SELECT * FROM parking_sessions WHERE ended_ms <= 0 ORDER BY started_ms DESC");
@@ -400,8 +573,13 @@ public final class ParkingStore {
         return out;
     }
 
-    /** Closed sessions whose signage read is still pending (v2 deferred OCR). */
     public synchronized List<ParkingSession> listSessionsWithSignageState(String state, int limit) {
+        if (sqliteEngine != null) {
+            return sqliteEngine.query("SELECT * FROM parking_sessions WHERE signage_state=? AND ended_ms > 0"
+                    + " ORDER BY started_ms DESC LIMIT " + Math.max(1, limit),
+                    new String[]{state}, ParkingStore::readSessionFromCursor);
+        }
+
         List<ParkingSession> out = new ArrayList<>();
         try (PreparedStatement ps = conn().prepareStatement(
                 "SELECT * FROM parking_sessions WHERE signage_state=? AND ended_ms > 0"
@@ -415,6 +593,77 @@ public final class ParkingStore {
             logger.warn("listSessionsWithSignageState failed: " + e.getMessage());
         }
         return out;
+    }
+
+    private static ParkingSession readSessionFromCursor(Cursor c) {
+        ParkingSession s = new ParkingSession();
+        s.sessionId = c.getString(c.getColumnIndexOrThrow("session_id"));
+        s.startedMs = c.getLong(c.getColumnIndexOrThrow("started_ms"));
+        s.endedMs = c.getLong(c.getColumnIndexOrThrow("ended_ms"));
+        s.transitionGeneration = c.getLong(c.getColumnIndexOrThrow("transition_gen"));
+        int endTrigIdx = c.getColumnIndex("end_trigger");
+        if (endTrigIdx >= 0 && !c.isNull(endTrigIdx)) s.endTrigger = c.getString(endTrigIdx);
+        int latIdx = c.getColumnIndex("lat");
+        int lngIdx = c.getColumnIndex("lng");
+        if (latIdx >= 0 && lngIdx >= 0 && !c.isNull(latIdx) && !c.isNull(lngIdx)) {
+            s.lat = c.getDouble(latIdx);
+            s.lng = c.getDouble(lngIdx);
+        }
+        int accIdx = c.getColumnIndex("accuracy_m");
+        if (accIdx >= 0 && !c.isNull(accIdx)) s.accuracyM = c.getFloat(accIdx);
+        int ageIdx = c.getColumnIndex("fix_age_ms");
+        if (ageIdx >= 0 && !c.isNull(ageIdx)) s.fixAgeMs = c.getLong(ageIdx);
+        int cacheIdx = c.getColumnIndex("fix_from_cache");
+        if (cacheIdx >= 0 && !c.isNull(cacheIdx)) s.fixFromCache = c.getInt(cacheIdx) == 1;
+        int gpsIdx = c.getColumnIndex("gps_quality");
+        s.gpsQuality = (gpsIdx >= 0 && !c.isNull(gpsIdx)) ? c.getString(gpsIdx) : ParkingSession.GPS_UNKNOWN;
+        int pShortIdx = c.getColumnIndex("place_short");
+        if (pShortIdx >= 0 && !c.isNull(pShortIdx)) s.placeShort = c.getString(pShortIdx);
+        int pDispIdx = c.getColumnIndex("place_display");
+        if (pDispIdx >= 0 && !c.isNull(pDispIdx)) s.placeDisplay = c.getString(pDispIdx);
+        int pSrcIdx = c.getColumnIndex("place_source");
+        if (pSrcIdx >= 0 && !c.isNull(pSrcIdx)) s.placeSource = c.getString(pSrcIdx);
+        int zoneIdx = c.getColumnIndex("safe_zone");
+        if (zoneIdx >= 0 && !c.isNull(zoneIdx)) s.safeZone = c.getString(zoneIdx);
+        int sentryIdx = c.getColumnIndex("sentry_state");
+        s.sentryState = (sentryIdx >= 0 && !c.isNull(sentryIdx)) ? c.getString(sentryIdx) : ParkingSession.SENTRY_UNKNOWN;
+        int arrMsIdx = c.getColumnIndex("arrived_snapshot_ms");
+        if (arrMsIdx >= 0 && !c.isNull(arrMsIdx)) s.arrivedSnapshotMs = c.getLong(arrMsIdx);
+        int arrOkIdx = c.getColumnIndex("arrived_snapshot_ok");
+        if (arrOkIdx >= 0 && !c.isNull(arrOkIdx)) s.arrivedSnapshotOk = c.getInt(arrOkIdx) == 1;
+        int retMsIdx = c.getColumnIndex("returned_snapshot_ms");
+        if (retMsIdx >= 0 && !c.isNull(retMsIdx)) s.returnedSnapshotMs = c.getLong(retMsIdx);
+        int retOkIdx = c.getColumnIndex("returned_snapshot_ok");
+        if (retOkIdx >= 0 && !c.isNull(retOkIdx)) s.returnedSnapshotOk = c.getInt(retOkIdx) == 1;
+        int rectIdx = c.getColumnIndex("rectify_strength");
+        if (rectIdx >= 0 && !c.isNull(rectIdx)) s.rectifyStrength = c.getInt(rectIdx);
+        int signJIdx = c.getColumnIndex("signage_json");
+        if (signJIdx >= 0 && !c.isNull(signJIdx)) s.signageJson = c.getString(signJIdx);
+        int signSIdx = c.getColumnIndex("signage_state");
+        s.signageState = (signSIdx >= 0 && !c.isNull(signSIdx)) ? c.getString(signSIdx) : ParkingSession.SIGNAGE_PENDING;
+        int nStartIdx = c.getColumnIndex("notified_started");
+        if (nStartIdx >= 0 && !c.isNull(nStartIdx)) s.notifiedStarted = c.getInt(nStartIdx) == 1;
+        int nEndIdx = c.getColumnIndex("notified_ended");
+        if (nEndIdx >= 0 && !c.isNull(nEndIdx)) s.notifiedEnded = c.getInt(nEndIdx) == 1;
+        int evCntIdx = c.getColumnIndex("event_count");
+        if (evCntIdx >= 0 && !c.isNull(evCntIdx)) s.eventCount = c.getInt(evCntIdx);
+        int nbCntIdx = c.getColumnIndex("neighbour_count");
+        if (nbCntIdx >= 0 && !c.isNull(nbCntIdx)) s.neighbourCount = c.getInt(nbCntIdx);
+        int crMsIdx = c.getColumnIndex("created_ms");
+        if (crMsIdx >= 0 && !c.isNull(crMsIdx)) s.createdMs = c.getLong(crMsIdx);
+        int sSocIdx = c.getColumnIndex("start_soc_pct");
+        if (sSocIdx >= 0 && !c.isNull(sSocIdx)) s.startSocPercent = c.getDouble(sSocIdx);
+        int eSocIdx = c.getColumnIndex("end_soc_pct");
+        if (eSocIdx >= 0 && !c.isNull(eSocIdx)) s.endSocPercent = c.getDouble(eSocIdx);
+        int chgIdx = c.getColumnIndex("charged_while_parked");
+        if (chgIdx >= 0 && !c.isNull(chgIdx)) s.chargedWhileParked = c.getInt(chgIdx) == 1;
+        int nrgIdx = c.getColumnIndex("energy_est_kwh");
+        if (nrgIdx >= 0 && !c.isNull(nrgIdx)) s.energyEstKwh = c.getDouble(nrgIdx);
+        int sRemIdx = c.getColumnIndex("start_remain_kwh");
+        if (sRemIdx >= 0 && !c.isNull(sRemIdx)) s.startRemainKwh = c.getDouble(sRemIdx);
+        int eRemIdx = c.getColumnIndex("end_remain_kwh");
+        if (eRemIdx >= 0 && !c.isNull(eRemIdx)) s.endRemainKwh = c.getDouble(eRemIdx);
+        return s;
     }
 
     private static ParkingSession readSession(ResultSet rs) throws Exception {
@@ -469,9 +718,22 @@ public final class ParkingStore {
 
     // ==================== NEIGHBOURS ====================
 
-    /** Insert or update by (session, key). Returns the row id (0 on failure). */
     public synchronized long upsertNeighbour(ParkingNeighbour n) {
         if (n == null || n.sessionId == null || n.neighbourKey == null) return 0L;
+        if (sqliteEngine != null) {
+            ParkingNeighbour existing = findNeighbourByKey(n.sessionId, n.neighbourKey);
+            ContentValues cv = neighbourToContentValues(n);
+            if (existing == null) {
+                long rowId = sqliteEngine.insert("parking_neighbours", cv);
+                if (rowId > 0) n.id = rowId;
+                return rowId;
+            } else {
+                n.id = existing.id;
+                sqliteEngine.update("parking_neighbours", cv, "id=?", new String[]{String.valueOf(n.id)});
+                return n.id;
+            }
+        }
+
         try {
             ParkingNeighbour existing = findNeighbourByKey(n.sessionId, n.neighbourKey);
             if (existing == null) {
@@ -507,6 +769,32 @@ public final class ParkingStore {
         }
     }
 
+    private static ContentValues neighbourToContentValues(ParkingNeighbour n) {
+        ContentValues cv = new ContentValues();
+        cv.put("session_id", n.sessionId);
+        cv.put("neighbour_key", n.neighbourKey);
+        cv.put("side", n.side);
+        cv.put("kind", n.kind == null ? ParkingNeighbour.KIND_NEIGHBOUR : n.kind);
+        cv.put("class_group", n.classGroup);
+        cv.put("status", n.status);
+        cv.put("confirmed", n.confirmed ? 1 : 0);
+        cv.put("first_seen_ms", n.firstSeenMs);
+        cv.put("arrived_ms", n.arrivedMs);
+        cv.put("departed_ms", n.departedMs);
+        cv.put("last_seen_ms", n.lastSeenMs);
+        cv.put("cx", n.cx);
+        cv.put("cy", n.cy);
+        cv.put("w", n.w);
+        cv.put("h", n.h);
+        cv.put("proximity", n.proximity);
+        cv.put("arrival_event", clamp(n.arrivalEvent, 256));
+        cv.put("departure_event", clamp(n.departureEvent, 256));
+        cv.put("actor_ids", clamp(n.actorIds, 256));
+        cv.put("frames_json", n.framesJson);
+        cv.put("updated_ms", n.updatedMs);
+        return cv;
+    }
+
     private static int bindNeighbour(PreparedStatement ps, ParkingNeighbour n, int i,
                                      boolean includeIdentity) throws Exception {
         if (includeIdentity) {
@@ -533,6 +821,11 @@ public final class ParkingStore {
     }
 
     public synchronized ParkingNeighbour findNeighbourByKey(String sessionId, String key) {
+        if (sqliteEngine != null) {
+            return sqliteEngine.queryOne("SELECT * FROM parking_neighbours WHERE session_id=? AND neighbour_key=?",
+                    new String[]{sessionId, key}, ParkingStore::readNeighbourFromCursor);
+        }
+
         try (PreparedStatement ps = conn().prepareStatement(
                 "SELECT * FROM parking_neighbours WHERE session_id=? AND neighbour_key=?")) {
             ps.setString(1, sessionId);
@@ -547,6 +840,11 @@ public final class ParkingStore {
     }
 
     public synchronized List<ParkingNeighbour> listNeighbours(String sessionId) {
+        if (sqliteEngine != null) {
+            return sqliteEngine.query("SELECT * FROM parking_neighbours WHERE session_id=? ORDER BY side ASC, first_seen_ms ASC",
+                    new String[]{sessionId}, ParkingStore::readNeighbourFromCursor);
+        }
+
         List<ParkingNeighbour> out = new ArrayList<>();
         try (PreparedStatement ps = conn().prepareStatement(
                 "SELECT * FROM parking_neighbours WHERE session_id=?"
@@ -561,9 +859,14 @@ public final class ParkingStore {
         return out;
     }
 
-    /** Drop the frame lists of a session whose asset folder was reclaimed by the storage cap. */
     public synchronized int clearNeighbourFrames(String sessionId) {
         if (sessionId == null) return 0;
+        if (sqliteEngine != null) {
+            ContentValues cv = new ContentValues();
+            cv.putNull("frames_json");
+            return sqliteEngine.update("parking_neighbours", cv, "session_id=? AND frames_json IS NOT NULL", new String[]{sessionId});
+        }
+
         try (PreparedStatement ps = conn().prepareStatement(
                 "UPDATE parking_neighbours SET frames_json=NULL WHERE session_id=? AND frames_json IS NOT NULL")) {
             ps.setString(1, sessionId);
@@ -575,6 +878,12 @@ public final class ParkingStore {
     }
 
     public synchronized int countNeighbours(String sessionId, boolean confirmedOnly) {
+        if (sqliteEngine != null) {
+            String sql = "SELECT COUNT(*) FROM parking_neighbours WHERE session_id=? AND kind='neighbour'"
+                    + (confirmedOnly ? " AND confirmed=1" : "");
+            return (int) sqliteEngine.queryLong(sql, new String[]{sessionId}, 0L);
+        }
+
         try (PreparedStatement ps = conn().prepareStatement(
                 "SELECT COUNT(*) FROM parking_neighbours WHERE session_id=? AND kind=?"
                         + (confirmedOnly ? " AND confirmed=TRUE" : ""))) {
@@ -586,6 +895,48 @@ public final class ParkingStore {
         } catch (Exception e) {
             return 0;
         }
+    }
+
+    private static ParkingNeighbour readNeighbourFromCursor(Cursor c) {
+        ParkingNeighbour n = new ParkingNeighbour();
+        n.id = c.getLong(c.getColumnIndexOrThrow("id"));
+        n.sessionId = c.getString(c.getColumnIndexOrThrow("session_id"));
+        int keyIdx = c.getColumnIndex("neighbour_key");
+        if (keyIdx >= 0 && !c.isNull(keyIdx)) n.neighbourKey = c.getString(keyIdx);
+        n.side = c.getInt(c.getColumnIndexOrThrow("side"));
+        int kindIdx = c.getColumnIndex("kind");
+        n.kind = (kindIdx >= 0 && !c.isNull(kindIdx)) ? c.getString(kindIdx) : ParkingNeighbour.KIND_NEIGHBOUR;
+        int grpIdx = c.getColumnIndex("class_group");
+        if (grpIdx >= 0 && !c.isNull(grpIdx)) n.classGroup = c.getString(grpIdx);
+        int statIdx = c.getColumnIndex("status");
+        if (statIdx >= 0 && !c.isNull(statIdx)) n.status = c.getString(statIdx);
+        int confIdx = c.getColumnIndex("confirmed");
+        if (confIdx >= 0 && !c.isNull(confIdx)) n.confirmed = c.getInt(confIdx) == 1;
+        int fsIdx = c.getColumnIndex("first_seen_ms");
+        if (fsIdx >= 0 && !c.isNull(fsIdx)) n.firstSeenMs = c.getLong(fsIdx);
+        int arrIdx = c.getColumnIndex("arrived_ms");
+        if (arrIdx >= 0 && !c.isNull(arrIdx)) n.arrivedMs = c.getLong(arrIdx);
+        int depIdx = c.getColumnIndex("departed_ms");
+        if (depIdx >= 0 && !c.isNull(depIdx)) n.departedMs = c.getLong(depIdx);
+        int lsIdx = c.getColumnIndex("last_seen_ms");
+        if (lsIdx >= 0 && !c.isNull(lsIdx)) n.lastSeenMs = c.getLong(lsIdx);
+        int cxIdx = c.getColumnIndex("cx"); if (cxIdx >= 0 && !c.isNull(cxIdx)) n.cx = c.getFloat(cxIdx);
+        int cyIdx = c.getColumnIndex("cy"); if (cyIdx >= 0 && !c.isNull(cyIdx)) n.cy = c.getFloat(cyIdx);
+        int wIdx = c.getColumnIndex("w"); if (wIdx >= 0 && !c.isNull(wIdx)) n.w = c.getFloat(wIdx);
+        int hIdx = c.getColumnIndex("h"); if (hIdx >= 0 && !c.isNull(hIdx)) n.h = c.getFloat(hIdx);
+        int proxIdx = c.getColumnIndex("proximity");
+        if (proxIdx >= 0 && !c.isNull(proxIdx)) n.proximity = c.getString(proxIdx);
+        int aeIdx = c.getColumnIndex("arrival_event");
+        if (aeIdx >= 0 && !c.isNull(aeIdx)) n.arrivalEvent = c.getString(aeIdx);
+        int deIdx = c.getColumnIndex("departure_event");
+        if (deIdx >= 0 && !c.isNull(deIdx)) n.departureEvent = c.getString(deIdx);
+        int actIdx = c.getColumnIndex("actor_ids");
+        if (actIdx >= 0 && !c.isNull(actIdx)) n.actorIds = c.getString(actIdx);
+        int frIdx = c.getColumnIndex("frames_json");
+        if (frIdx >= 0 && !c.isNull(frIdx)) n.framesJson = c.getString(frIdx);
+        int upIdx = c.getColumnIndex("updated_ms");
+        if (upIdx >= 0 && !c.isNull(upIdx)) n.updatedMs = c.getLong(upIdx);
+        return n;
     }
 
     private static ParkingNeighbour readNeighbour(ResultSet rs) throws Exception {
@@ -620,7 +971,6 @@ public final class ParkingStore {
         else ps.setString(idx, v);
     }
 
-    /** NaN is the in-memory "unknown"; NULL is its column representation. */
     private static void setNullableDouble(PreparedStatement ps, int idx, double v) throws Exception {
         if (Double.isNaN(v)) ps.setNull(idx, java.sql.Types.DOUBLE);
         else ps.setDouble(idx, v);

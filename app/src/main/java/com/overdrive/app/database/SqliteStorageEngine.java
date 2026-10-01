@@ -45,6 +45,20 @@ public class SqliteStorageEngine implements AutoCloseable {
     private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
     private volatile SQLiteDatabase database;
 
+    /**
+     * Checks whether we are executing in a real Android runtime (app or daemon) vs host JVM unit test.
+     */
+    public static boolean isAndroidRuntime() {
+        try {
+            Class.forName("android.database.sqlite.SQLiteDatabase");
+            return System.getProperty("java.vendor", "").contains("Android")
+                    || System.getProperty("java.vm.vendor", "").contains("The Android Project")
+                    || new File("/system/build.prop").exists();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
     public SqliteStorageEngine(String dbPath) {
         this.dbFile = new File(dbPath);
         initDatabase();
