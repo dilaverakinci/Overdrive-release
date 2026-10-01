@@ -10349,6 +10349,9 @@ public class CameraDaemon {
 
             log("Performance Monitor initialized successfully (polling on-demand)");
 
+            // Automatically migrate any legacy H2 files to SQLite WAL in background
+            com.overdrive.app.database.LegacyH2Migrator.migrateAllAsync();
+
             // Initialize SOC History Database for persistent battery tracking
             com.overdrive.app.monitor.SocHistoryDatabase socDb =
                 com.overdrive.app.monitor.SocHistoryDatabase.getInstance();
