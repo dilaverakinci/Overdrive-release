@@ -53,6 +53,26 @@ public class StorageManager {
         SD_CARD,
         USB
     }
+
+    // Modular Subsystems (Clean Architecture Decomposition)
+    private static final com.overdrive.app.storage.modules.VolumeMountDetector volumeMountDetector =
+            new com.overdrive.app.storage.modules.VolumeMountDetector();
+    private static final com.overdrive.app.storage.modules.CircularStorageCleaner circularStorageCleaner =
+            new com.overdrive.app.storage.modules.CircularStorageCleaner();
+    private static final com.overdrive.app.storage.modules.StorageTelemetryReconciler storageTelemetryReconciler =
+            new com.overdrive.app.storage.modules.StorageTelemetryReconciler();
+
+    public static com.overdrive.app.storage.modules.VolumeMountDetector getVolumeMountDetector() {
+        return volumeMountDetector;
+    }
+
+    public static com.overdrive.app.storage.modules.CircularStorageCleaner getCircularStorageCleaner() {
+        return circularStorageCleaner;
+    }
+
+    public static com.overdrive.app.storage.modules.StorageTelemetryReconciler getStorageTelemetryReconciler() {
+        return storageTelemetryReconciler;
+    }
     
     // Hybrid logger - uses DaemonLogger when running as daemon, android.util.Log otherwise
     private static boolean useDaemonLogger = false;
