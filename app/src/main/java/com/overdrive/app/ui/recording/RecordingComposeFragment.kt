@@ -45,20 +45,27 @@ class RecordingComposeFragment : Fragment() {
                         onProximityTriggerLevelSelected = { lvl -> updateRecordingKey("proximityTriggerLevel", lvl) },
                         onProximityPreSecondsChange = { v -> updateRecordingKey("proximityPreSeconds", v) },
                         onProximityPostSecondsChange = { v -> updateRecordingKey("proximityPostSeconds", v) },
-                        onToggleGeocodingEnabled = { v -> updateRecordingKey("geocodingEnabled", v) },
-                        onToggleGeocodingOnline = { v -> updateRecordingKey("geocodingOnline", v) },
+                        onToggleGeocodingEnabled = { v -> updateRecordingGeocoding(enabled = v) },
+                        onToggleGeocodingOnline = { v -> updateRecordingGeocoding(online = v) },
+                        onGeocodingCustomUrlChange = { url -> updateGeocodingUrl(url) },
                         onQualitySelected = { q -> updateRecordingKey("recordingQuality", q) },
                         onCodecSelected = { c -> updateRecordingKey("recordingCodec", c) },
                         onFpsSelected = { fps -> updateCameraKey("targetFps", fps) },
                         onClipDurationSelected = { mins -> updateRecordingKey("segmentDurationMinutes", mins) },
                         onRectifyStrengthChange = { str -> updateRecordingKey("rectifyStrength", str) },
-                        onToggleTelemetryOverlay = { v -> updateRecordingKey("telemetryOverlayEnabled", v) },
+                        onToggleTelemetryOverlay = { v -> updateRecordingTelemetryOverlay(v) },
+                        onToggleTelemetryField = { field, add -> toggleTelemetryField(field, add) },
+                        onToggleAudioRecording = { v -> updateAudioRecording(v) },
                         onOemRecordingModeSelected = { mode -> updateOemKey("recordingMode", mode) },
                         onToggleOemTelemetryOverlay = { v -> updateOemKey("telemetryOverlay", v) },
                         onToggleNativeDvr = { toggleNativeDvr() },
                         onStorageTypeSelected = { t -> updateRecordingKey("storageType", t) },
                         onStorageLimitChange = { lim -> updateRecordingKey("storageLimitMb", lim) },
                         onToggleAutoCleanup = { v -> updateRecordingKey("autoCleanup", v) },
+                        onToggleCdrCleanup = { v -> updateCdrCleanup(enabled = v) },
+                        onCdrReservedSpaceChange = { mb -> updateCdrCleanup(reservedMb = mb.toLong()) },
+                        onCdrProtectedHoursChange = { h -> updateCdrCleanup(hours = h) },
+                        onCdrMinFilesKeepChange = { count -> updateCdrCleanup(minFiles = count) },
                         onRefresh = { loadState() }
                     )
                 }
@@ -93,8 +100,24 @@ class RecordingComposeFragment : Fragment() {
                 val proxLvl = rec.optString("proximityTriggerLevel", "RED")
                 val proxPre = rec.optInt("proximityPreSeconds", 5)
                 val proxPost = rec.optInt("proximityPostSeconds", 10)
-                val geoEn = rec.optBoolean("geocodingEnabled", false)
-                val geoOn = rec.optBoolean("geocodingOnline", false)
+                val geocoding = try { UnifiedConfigManager.getGeocoding() } catch (_: Throwable) { JSONObject() }
+                val recGeo = geocoding.optJSONObject("recording") ?: JSONObject()
+                val advGeo = geocoding.optJSONObject("advanced") ?: JSONObject()
+                val geoEn = recGeo.optBoolean("enabled", false)
+                val geoOn = recGeo.optBoolean("allowOnline", false)
+                val geoUrl = advGeo.optString("customNominatimBase", "")
+
+                val audioEn = rec.optBoolean("audioEnabled", false)
+
+                val telemetryArray = try { UnifiedConfigManager.getTelemetryOverlayFields("pano") } catch (_: Throwable) { null }
+                val telemetrySet = mutableSetOf<String>()
+                if (telemetryArray != null) {
+                    for (i in 0 until telemetryArray.length()) {
+                        telemetrySet.add(telemetryArray.optString(i))
+                    }
+                } else {
+                    telemetrySet.addAll(listOf("speed", "time", "lat_lon", "gear", "battery_12v", "soc"))
+                }
 
                 val qual = rec.optString("recordingQuality", "HIGH")
                 val codec = rec.optString("recordingCodec", "H264")
@@ -109,6 +132,12 @@ class RecordingComposeFragment : Fragment() {
                 val storType = rec.optString("storageType", "INTERNAL")
                 val storLimit = rec.optInt("storageLimitMb", 20000)
                 val autoClean = rec.optBoolean("autoCleanup", true)
+
+                val cleaner = try { com.overdrive.app.storage.ExternalStorageCleaner.getInstance() } catch (_: Throwable) { null }
+                val cdrClean = cleaner?.isEnabled ?: false
+                val cdrReserved = (cleaner?.reservedSpaceMb ?: 2000L).toInt()
+                val cdrHours = cleaner?.protectedHours ?: 24
+                val cdrMin = cleaner?.minFilesKeep ?: 10
 
                 // Query live recording status
                 var curState = if (mode != "NONE") "Etkin ($mode)" else "Boşta (Idle)"
@@ -140,6 +169,13 @@ class RecordingComposeFragment : Fragment() {
                         proximityPostSeconds = proxPost,
                         geocodingEnabled = geoEn,
                         geocodingOnline = geoOn,
+                        geocodingCustomUrl = geoUrl,
+                        audioRecordingEnabled = audioEn,
+                        telemetryFields = telemetrySet,
+                        cdrCleanupEnabled = cdrClean,
+                        cdrReservedSpaceMb = cdrReserved,
+                        cdrProtectedHours = cdrHours,
+                        cdrMinFilesKeep = cdrMin,
                         currentState = curState,
                         isRecording = isRec,
                         recordingsToday = recToday,
@@ -254,6 +290,159 @@ class RecordingComposeFragment : Fragment() {
                     Toast.makeText(requireContext(), "İşlem başarısız: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             }
+        }
+    }
+
+    private fun updateRecordingGeocoding(enabled: Boolean? = null, online: Boolean? = null) {
+        val newEnabled = enabled ?: uiState.geocodingEnabled
+        val newOnline = if (!newEnabled) false else (online ?: uiState.geocodingOnline)
+        uiState = uiState.copy(geocodingEnabled = newEnabled, geocodingOnline = newOnline)
+        executor.execute {
+            try {
+                val delta = JSONObject().apply {
+                    put("recording", JSONObject().apply {
+                        put("enabled", newEnabled)
+                        put("allowOnline", newOnline)
+                    })
+                }
+                val payload = delta.toString()
+                val conn = DaemonHttpClient.open("/api/settings/geocoding", "POST", 2000, 3000)
+                conn.doOutput = true
+                conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
+                conn.responseCode
+                conn.disconnect()
+            } catch (_: Throwable) {
+                val current = UnifiedConfigManager.getGeocoding()
+                val rec = current.optJSONObject("recording") ?: JSONObject()
+                rec.put("enabled", newEnabled)
+                rec.put("allowOnline", newOnline)
+                current.put("recording", rec)
+                UnifiedConfigManager.setGeocoding(current)
+            }
+        }
+    }
+
+    private fun updateGeocodingUrl(url: String) {
+        uiState = uiState.copy(geocodingCustomUrl = url)
+        executor.execute {
+            try {
+                val delta = JSONObject().apply {
+                    put("advanced", JSONObject().apply {
+                        put("customNominatimBase", url.trim())
+                    })
+                }
+                val payload = delta.toString()
+                val conn = DaemonHttpClient.open("/api/settings/geocoding", "POST", 2000, 3000)
+                conn.doOutput = true
+                conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
+                conn.responseCode
+                conn.disconnect()
+            } catch (_: Throwable) {
+                val current = UnifiedConfigManager.getGeocoding()
+                val adv = current.optJSONObject("advanced") ?: JSONObject()
+                adv.put("customNominatimBase", url.trim())
+                current.put("advanced", adv)
+                UnifiedConfigManager.setGeocoding(current)
+            }
+        }
+    }
+
+    private fun updateAudioRecording(enabled: Boolean) {
+        uiState = uiState.copy(audioRecordingEnabled = enabled)
+        executor.execute {
+            try {
+                val payload = JSONObject().apply { put("enabled", enabled) }.toString()
+                val conn = DaemonHttpClient.open("/api/settings/audio-recording", "POST", 2000, 3000)
+                conn.doOutput = true
+                conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
+                conn.responseCode
+                conn.disconnect()
+            } catch (_: Throwable) {
+                UnifiedConfigManager.updateValues("recording", mapOf("audioEnabled" to enabled))
+            }
+        }
+    }
+
+    private fun updateRecordingTelemetryOverlay(enabled: Boolean) {
+        uiState = uiState.copy(telemetryOverlayEnabled = enabled)
+        executor.execute {
+            try {
+                val payload = JSONObject().apply {
+                    put("enabled", enabled)
+                    put("panoEnabled", enabled)
+                }.toString()
+                val conn = DaemonHttpClient.open("/api/settings/telemetry-overlay", "POST", 2000, 3000)
+                conn.doOutput = true
+                conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
+                conn.responseCode
+                conn.disconnect()
+            } catch (_: Throwable) {
+                UnifiedConfigManager.setTelemetryOverlay(JSONObject().apply {
+                    put("enabled", enabled)
+                    put("panoEnabled", enabled)
+                })
+                UnifiedConfigManager.updateValues("recording", mapOf("telemetryOverlayEnabled" to enabled))
+            }
+        }
+    }
+
+    private fun toggleTelemetryField(field: String, add: Boolean) {
+        val currFields = uiState.telemetryFields.toMutableSet()
+        if (add) currFields.add(field) else currFields.remove(field)
+        uiState = uiState.copy(telemetryFields = currFields)
+        executor.execute {
+            val jsonArray = org.json.JSONArray(currFields.toList())
+            try {
+                val body = JSONObject().apply {
+                    put("fields", JSONObject().apply {
+                        put("accOn", jsonArray)
+                    })
+                }.toString()
+                val conn = DaemonHttpClient.open("/api/settings/telemetry-overlay", "POST", 2000, 3000)
+                conn.doOutput = true
+                conn.outputStream.use { it.write(body.toByteArray(Charsets.UTF_8)) }
+                conn.responseCode
+                conn.disconnect()
+            } catch (_: Throwable) {
+                UnifiedConfigManager.setTelemetryOverlayFields("pano", jsonArray)
+            }
+        }
+    }
+
+    private fun updateCdrCleanup(
+        enabled: Boolean? = null,
+        reservedMb: Long? = null,
+        hours: Int? = null,
+        minFiles: Int? = null
+    ) {
+        val nextEnabled = enabled ?: uiState.cdrCleanupEnabled
+        val nextReserved = (reservedMb?.toInt()) ?: uiState.cdrReservedSpaceMb
+        val nextHours = hours ?: uiState.cdrProtectedHours
+        val nextMinFiles = minFiles ?: uiState.cdrMinFilesKeep
+
+        uiState = uiState.copy(
+            cdrCleanupEnabled = nextEnabled,
+            cdrReservedSpaceMb = nextReserved,
+            cdrProtectedHours = nextHours,
+            cdrMinFilesKeep = nextMinFiles
+        )
+
+        executor.execute {
+            try {
+                val cleaner = com.overdrive.app.storage.ExternalStorageCleaner.getInstance() ?: return@execute
+                if (enabled != null) {
+                    cleaner.setEnabled(enabled)
+                }
+                if (reservedMb != null) {
+                    cleaner.setReservedSpaceMb(reservedMb)
+                }
+                if (hours != null) {
+                    cleaner.setProtectedHours(hours)
+                }
+                if (minFiles != null) {
+                    cleaner.setMinFilesKeep(minFiles)
+                }
+            } catch (_: Throwable) {}
         }
     }
 }

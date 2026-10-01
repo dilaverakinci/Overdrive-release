@@ -49,6 +49,14 @@ class SurveillanceComposeFragment : Fragment() {
                         onToggleKeepUsbPower = { v -> updateSurveillanceKey("keepUsbPowerOnAccOff", v) },
                         onToggleMobileDataKeepAlive = { v -> updateSurveillanceKey("mobileDataKeepAlive", v) },
                         onToggleDi5CloudKeepAlive = { v -> updateSurveillanceKey("di5CloudKeepAlive", v) },
+                        onToggleLowPowerMode = { v -> updateSurveillanceKey("lowPowerMode", v) },
+                        onLowSocCutoffChange = { v -> updatePowerKey("lowSocCutoffPercent", v) },
+                        onToggleScreenDeterrent = { v -> updateSurveillanceKey("screenDeterrentEnabled", v) },
+                        onScreenDeterrentDurationChange = { v -> updateSurveillanceKey("screenDeterrentDurationSeconds", v) },
+                        onScreenDeterrentMessageChange = { msg -> updateSurveillanceKey("screenDeterrentMessage", msg) },
+                        onToggleGeocodingEnabled = { v -> updateSurveillanceGeocoding(enabled = v) },
+                        onToggleGeocodingOnline = { v -> updateSurveillanceGeocoding(online = v) },
+                        onGeocodingCustomUrlChange = { url -> updateGeocodingUrl(url) },
                         onEnvironmentPresetSelected = { preset -> applyEnvironmentPreset(preset) },
                         onToggleDetectPerson = { v -> updateSurveillanceKey("detectPerson", v) },
                         onToggleDetectCar = { v -> updateSurveillanceKey("detectCar", v) },
@@ -70,6 +78,8 @@ class SurveillanceComposeFragment : Fragment() {
                         onFpsSelected = { fps -> updateCameraKey("surveillanceTargetFps", fps) },
                         onCodecSelected = { c -> updateRecordingKey("recordingCodec", c) },
                         onToggleTelegramPing = { v -> updateSurveillanceKey("telegramSendStartPing", v) },
+                        onToggleTelemetryOverlay = { v -> updateSurveillanceTelemetryOverlay(v) },
+                        onToggleTelemetryField = { field, add -> toggleTelemetryField(field, add) },
                         onToggleOemDashcam = { v -> updateOemKey("enabled", v) },
                         onToggleOemTrigger = { v -> updateOemKey("triggerRecording", v) },
                         onToggleOemAutoCleanup = { v -> updateOemKey("autoCleanup", v) },
@@ -77,6 +87,10 @@ class SurveillanceComposeFragment : Fragment() {
                         onStorageLimitChange = { lim -> updateSurveillanceKey("surveillanceLimitMb", lim) },
                         onToggleAutoCleanupEvents = { v -> updateSurveillanceKey("autoCleanupEvents", v) },
                         onToggleDiscardBrightEvents = { v -> updateSurveillanceKey("discardEmptyBrightMotionEvents", v) },
+                        onToggleCdrCleanup = { v -> updateCdrCleanup(enabled = v) },
+                        onCdrReservedSpaceChange = { mb -> updateCdrCleanup(reservedMb = mb.toLong()) },
+                        onCdrProtectedHoursChange = { h -> updateCdrCleanup(hours = h) },
+                        onCdrMinFilesKeepChange = { count -> updateCdrCleanup(minFiles = count) },
                         onRefresh = { loadState() }
                     )
                 }
@@ -146,6 +160,37 @@ class SurveillanceComposeFragment : Fragment() {
                 val autoClean = surv.optBoolean("autoCleanupEvents", true)
                 val discardBright = surv.optBoolean("discardEmptyBrightMotionEvents", false)
 
+                val powerConfig = fullConfig.optJSONObject("power") ?: JSONObject()
+                val lowPower = surv.optBoolean("lowPowerMode", false)
+                val lowSoc = powerConfig.optInt("lowSocCutoffPercent", 10)
+                val screenDetEn = surv.optBoolean("screenDeterrentEnabled", false)
+                val screenDetDur = surv.optInt("screenDeterrentDurationSeconds", 8)
+                val screenDetMsg = surv.optString("screenDeterrentMessage", "")
+
+                val geocoding = try { UnifiedConfigManager.getGeocoding() } catch (_: Throwable) { JSONObject() }
+                val survGeo = geocoding.optJSONObject("surveillance") ?: JSONObject()
+                val advGeo = geocoding.optJSONObject("advanced") ?: JSONObject()
+                val survGeoEn = survGeo.optBoolean("enabled", false)
+                val survGeoOn = survGeo.optBoolean("allowOnline", false)
+                val survGeoUrl = advGeo.optString("customNominatimBase", "")
+
+                val survTelemEn = try { UnifiedConfigManager.isTelemetryOverlayEnabledFor("surveillance") } catch (_: Throwable) { false }
+                val survTelemArray = try { UnifiedConfigManager.getTelemetryOverlayFields("surveillance") } catch (_: Throwable) { null }
+                val survTelemSet = mutableSetOf<String>()
+                if (survTelemArray != null) {
+                    for (i in 0 until survTelemArray.length()) {
+                        survTelemSet.add(survTelemArray.optString(i))
+                    }
+                } else {
+                    survTelemSet.addAll(listOf("time", "lat_lon", "battery_12v", "soc"))
+                }
+
+                val cleaner = try { com.overdrive.app.storage.ExternalStorageCleaner.getInstance() } catch (_: Throwable) { null }
+                val cdrClean = cleaner?.isEnabled ?: false
+                val cdrReserved = (cleaner?.reservedSpaceMb ?: 2000L).toInt()
+                val cdrHours = cleaner?.protectedHours ?: 24
+                val cdrMin = cleaner?.minFilesKeep ?: 10
+
                 // Status check from daemon
                 var isArmed = false
                 try {
@@ -168,6 +213,20 @@ class SurveillanceComposeFragment : Fragment() {
                         keepUsbPowerOnAccOff = usbPower,
                         mobileDataKeepAlive = mobData,
                         di5CloudKeepAlive = di5,
+                        lowPowerMode = lowPower,
+                        lowSocCutoff = lowSoc,
+                        screenDeterrentEnabled = screenDetEn,
+                        screenDeterrentDuration = screenDetDur,
+                        screenDeterrentMessage = screenDetMsg,
+                        geocodingEnabled = survGeoEn,
+                        geocodingOnline = survGeoOn,
+                        geocodingCustomUrl = survGeoUrl,
+                        telemetryOverlayEnabled = survTelemEn,
+                        telemetryFields = survTelemSet,
+                        cdrCleanupEnabled = cdrClean,
+                        cdrReservedSpaceMb = cdrReserved,
+                        cdrProtectedHours = cdrHours,
+                        cdrMinFilesKeep = cdrMin,
                         environmentPreset = env,
                         detectPerson = person,
                         detectCar = car,
@@ -266,6 +325,10 @@ class SurveillanceComposeFragment : Fragment() {
             "surveillanceLimitMb" -> uiState = uiState.copy(storageLimitMb = value as Int)
             "autoCleanupEvents" -> uiState = uiState.copy(autoCleanupEvents = value as Boolean)
             "discardEmptyBrightMotionEvents" -> uiState = uiState.copy(discardEmptyBrightEvents = value as Boolean)
+            "lowPowerMode" -> uiState = uiState.copy(lowPowerMode = value as Boolean)
+            "screenDeterrentEnabled" -> uiState = uiState.copy(screenDeterrentEnabled = value as Boolean)
+            "screenDeterrentDurationSeconds" -> uiState = uiState.copy(screenDeterrentDuration = value as Int)
+            "screenDeterrentMessage" -> uiState = uiState.copy(screenDeterrentMessage = value as String)
         }
 
         executor.execute {
@@ -355,6 +418,145 @@ class SurveillanceComposeFragment : Fragment() {
         uiState = uiState.copy(sideCamBoost = enabled)
         executor.execute {
             UnifiedConfigManager.updateValues("surveillance", mapOf("sideCamBoost" to enabled))
+        }
+    }
+
+    private fun updatePowerKey(key: String, value: Any) {
+        if (key == "lowSocCutoffPercent") {
+            uiState = uiState.copy(lowSocCutoff = value as Int)
+        }
+        executor.execute {
+            try { UnifiedConfigManager.updateValues("power", mapOf(key to value)) } catch (_: Throwable) {}
+        }
+    }
+
+    private fun updateSurveillanceGeocoding(enabled: Boolean? = null, online: Boolean? = null) {
+        val newEnabled = enabled ?: uiState.geocodingEnabled
+        val newOnline = if (!newEnabled) false else (online ?: uiState.geocodingOnline)
+        uiState = uiState.copy(geocodingEnabled = newEnabled, geocodingOnline = newOnline)
+        executor.execute {
+            try {
+                val delta = JSONObject().apply {
+                    put("surveillance", JSONObject().apply {
+                        put("enabled", newEnabled)
+                        put("allowOnline", newOnline)
+                    })
+                }
+                val payload = delta.toString()
+                val conn = DaemonHttpClient.open("/api/settings/geocoding", "POST", 2000, 3000)
+                conn.doOutput = true
+                conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
+                conn.responseCode
+                conn.disconnect()
+            } catch (_: Throwable) {
+                val current = UnifiedConfigManager.getGeocoding()
+                val sur = current.optJSONObject("surveillance") ?: JSONObject()
+                sur.put("enabled", newEnabled)
+                sur.put("allowOnline", newOnline)
+                current.put("surveillance", sur)
+                UnifiedConfigManager.setGeocoding(current)
+            }
+        }
+    }
+
+    private fun updateGeocodingUrl(url: String) {
+        uiState = uiState.copy(geocodingCustomUrl = url)
+        executor.execute {
+            try {
+                val delta = JSONObject().apply {
+                    put("advanced", JSONObject().apply {
+                        put("customNominatimBase", url.trim())
+                    })
+                }
+                val payload = delta.toString()
+                val conn = DaemonHttpClient.open("/api/settings/geocoding", "POST", 2000, 3000)
+                conn.doOutput = true
+                conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
+                conn.responseCode
+                conn.disconnect()
+            } catch (_: Throwable) {
+                val current = UnifiedConfigManager.getGeocoding()
+                val adv = current.optJSONObject("advanced") ?: JSONObject()
+                adv.put("customNominatimBase", url.trim())
+                current.put("advanced", adv)
+                UnifiedConfigManager.setGeocoding(current)
+            }
+        }
+    }
+
+    private fun updateSurveillanceTelemetryOverlay(enabled: Boolean) {
+        uiState = uiState.copy(telemetryOverlayEnabled = enabled)
+        executor.execute {
+            try {
+                val payload = JSONObject().apply { put("surveillanceEnabled", enabled) }.toString()
+                val conn = DaemonHttpClient.open("/api/settings/telemetry-overlay", "POST", 2000, 3000)
+                conn.doOutput = true
+                conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
+                conn.responseCode
+                conn.disconnect()
+            } catch (_: Throwable) {
+                UnifiedConfigManager.setTelemetryOverlay(JSONObject().apply { put("surveillanceEnabled", enabled) })
+            }
+        }
+    }
+
+    private fun toggleTelemetryField(field: String, add: Boolean) {
+        val currFields = uiState.telemetryFields.toMutableSet()
+        if (add) currFields.add(field) else currFields.remove(field)
+        uiState = uiState.copy(telemetryFields = currFields)
+        executor.execute {
+            val jsonArray = org.json.JSONArray(currFields.toList())
+            try {
+                val body = JSONObject().apply {
+                    put("fields", JSONObject().apply {
+                        put("surveillance", jsonArray)
+                    })
+                }.toString()
+                val conn = DaemonHttpClient.open("/api/settings/telemetry-overlay", "POST", 2000, 3000)
+                conn.doOutput = true
+                conn.outputStream.use { it.write(body.toByteArray(Charsets.UTF_8)) }
+                conn.responseCode
+                conn.disconnect()
+            } catch (_: Throwable) {
+                UnifiedConfigManager.setTelemetryOverlayFields("surveillance", jsonArray)
+            }
+        }
+    }
+
+    private fun updateCdrCleanup(
+        enabled: Boolean? = null,
+        reservedMb: Long? = null,
+        hours: Int? = null,
+        minFiles: Int? = null
+    ) {
+        val nextEnabled = enabled ?: uiState.cdrCleanupEnabled
+        val nextReserved = (reservedMb?.toInt()) ?: uiState.cdrReservedSpaceMb
+        val nextHours = hours ?: uiState.cdrProtectedHours
+        val nextMinFiles = minFiles ?: uiState.cdrMinFilesKeep
+
+        uiState = uiState.copy(
+            cdrCleanupEnabled = nextEnabled,
+            cdrReservedSpaceMb = nextReserved,
+            cdrProtectedHours = nextHours,
+            cdrMinFilesKeep = nextMinFiles
+        )
+
+        executor.execute {
+            try {
+                val cleaner = com.overdrive.app.storage.ExternalStorageCleaner.getInstance() ?: return@execute
+                if (enabled != null) {
+                    cleaner.setEnabled(enabled)
+                }
+                if (reservedMb != null) {
+                    cleaner.setReservedSpaceMb(reservedMb)
+                }
+                if (hours != null) {
+                    cleaner.setProtectedHours(hours)
+                }
+                if (minFiles != null) {
+                    cleaner.setMinFilesKeep(minFiles)
+                }
+            } catch (_: Throwable) {}
         }
     }
 }

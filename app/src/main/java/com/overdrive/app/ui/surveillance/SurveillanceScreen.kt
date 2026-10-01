@@ -7,6 +7,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,10 +23,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Warning
@@ -34,6 +39,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
@@ -43,6 +50,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -72,6 +80,14 @@ data class SurveillanceUiState(
     val keepUsbPowerOnAccOff: Boolean = true,
     val mobileDataKeepAlive: Boolean = false,
     val di5CloudKeepAlive: Boolean = false,
+    val lowPowerMode: Boolean = true,
+    val lowSocCutoff: Int = 20, // 10% - 50%
+    val screenDeterrentEnabled: Boolean = false,
+    val screenDeterrentDuration: Int = 10,
+    val screenDeterrentMessage: String = "",
+    val geocodingEnabled: Boolean = false,
+    val geocodingOnline: Boolean = false,
+    val geocodingCustomUrl: String = "",
 
     // Detection
     val environmentPreset: String = "outdoor", // "outdoor", "indoor", "street", "custom"
@@ -97,6 +113,8 @@ data class SurveillanceUiState(
     val surveillanceCameraFps: Int = 15,
     val recordingCodec: String = "H264",
     val telegramSendStartPing: Boolean = true,
+    val telemetryOverlayEnabled: Boolean = false,
+    val telemetryFields: Set<String> = setOf("speed", "timestamp", "location", "batteryPercent"),
 
     // OEM Dashcam
     val oemDashcamEnabled: Boolean = false,
@@ -108,6 +126,10 @@ data class SurveillanceUiState(
     val storageLimitMb: Int = 5000,
     val autoCleanupEvents: Boolean = true,
     val discardEmptyBrightEvents: Boolean = true,
+    val cdrCleanupEnabled: Boolean = false,
+    val cdrReservedSpaceMb: Int = 10000,
+    val cdrProtectedHours: Int = 24,
+    val cdrMinFilesKeep: Int = 10,
 
     val isLoading: Boolean = false,
     val statusMessage: String? = null
@@ -152,6 +174,20 @@ fun SurveillanceScreen(
     onStorageLimitChange: (Int) -> Unit,
     onToggleAutoCleanupEvents: (Boolean) -> Unit,
     onToggleDiscardBrightEvents: (Boolean) -> Unit,
+    onToggleLowPowerMode: (Boolean) -> Unit = {},
+    onLowSocCutoffChange: (Int) -> Unit = {},
+    onToggleScreenDeterrent: (Boolean) -> Unit = {},
+    onScreenDeterrentDurationChange: (Int) -> Unit = {},
+    onScreenDeterrentMessageChange: (String) -> Unit = {},
+    onToggleGeocodingEnabled: (Boolean) -> Unit = {},
+    onToggleGeocodingOnline: (Boolean) -> Unit = {},
+    onGeocodingCustomUrlChange: (String) -> Unit = {},
+    onToggleTelemetryOverlay: (Boolean) -> Unit = {},
+    onToggleTelemetryField: (String, Boolean) -> Unit = { _, _ -> },
+    onToggleCdrCleanup: (Boolean) -> Unit = {},
+    onCdrReservedSpaceChange: (Int) -> Unit = {},
+    onCdrProtectedHoursChange: (Int) -> Unit = {},
+    onCdrMinFilesKeepChange: (Int) -> Unit = {},
     onRefresh: () -> Unit,
     showHeader: Boolean = true,
     modifier: Modifier = Modifier
@@ -253,7 +289,15 @@ fun SurveillanceScreen(
                         onAccOffModeSelected = onAccOffModeSelected,
                         onToggleKeepUsbPower = onToggleKeepUsbPower,
                         onToggleMobileDataKeepAlive = onToggleMobileDataKeepAlive,
-                        onToggleDi5CloudKeepAlive = onToggleDi5CloudKeepAlive
+                        onToggleDi5CloudKeepAlive = onToggleDi5CloudKeepAlive,
+                        onToggleLowPowerMode = onToggleLowPowerMode,
+                        onLowSocCutoffChange = onLowSocCutoffChange,
+                        onToggleScreenDeterrent = onToggleScreenDeterrent,
+                        onScreenDeterrentDurationChange = onScreenDeterrentDurationChange,
+                        onScreenDeterrentMessageChange = onScreenDeterrentMessageChange,
+                        onToggleGeocodingEnabled = onToggleGeocodingEnabled,
+                        onToggleGeocodingOnline = onToggleGeocodingOnline,
+                        onGeocodingCustomUrlChange = onGeocodingCustomUrlChange
                     )
                     SurveillanceTab.DETECTION -> DetectionTabContent(
                         state = state,
@@ -280,7 +324,9 @@ fun SurveillanceScreen(
                         onQualitySelected = onQualitySelected,
                         onFpsSelected = onFpsSelected,
                         onCodecSelected = onCodecSelected,
-                        onToggleTelegramPing = onToggleTelegramPing
+                        onToggleTelegramPing = onToggleTelegramPing,
+                        onToggleTelemetryOverlay = onToggleTelemetryOverlay,
+                        onToggleTelemetryField = onToggleTelemetryField
                     )
                     SurveillanceTab.OEM -> OemTabContent(
                         state = state,
@@ -293,7 +339,11 @@ fun SurveillanceScreen(
                         onStorageTypeSelected = onStorageTypeSelected,
                         onStorageLimitChange = onStorageLimitChange,
                         onToggleAutoCleanupEvents = onToggleAutoCleanupEvents,
-                        onToggleDiscardBrightEvents = onToggleDiscardBrightEvents
+                        onToggleDiscardBrightEvents = onToggleDiscardBrightEvents,
+                        onToggleCdrCleanup = onToggleCdrCleanup,
+                        onCdrReservedSpaceChange = onCdrReservedSpaceChange,
+                        onCdrProtectedHoursChange = onCdrProtectedHoursChange,
+                        onCdrMinFilesKeepChange = onCdrMinFilesKeepChange
                     )
                 }
             }
@@ -368,7 +418,15 @@ private fun GeneralTabContent(
     onAccOffModeSelected: (String) -> Unit,
     onToggleKeepUsbPower: (Boolean) -> Unit,
     onToggleMobileDataKeepAlive: (Boolean) -> Unit,
-    onToggleDi5CloudKeepAlive: (Boolean) -> Unit
+    onToggleDi5CloudKeepAlive: (Boolean) -> Unit,
+    onToggleLowPowerMode: (Boolean) -> Unit = {},
+    onLowSocCutoffChange: (Int) -> Unit = {},
+    onToggleScreenDeterrent: (Boolean) -> Unit = {},
+    onScreenDeterrentDurationChange: (Int) -> Unit = {},
+    onScreenDeterrentMessageChange: (String) -> Unit = {},
+    onToggleGeocodingEnabled: (Boolean) -> Unit = {},
+    onToggleGeocodingOnline: (Boolean) -> Unit = {},
+    onGeocodingCustomUrlChange: (String) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -602,6 +660,198 @@ private fun GeneralTabContent(
                     subtitle = "BYD yerleşik bulut bağlantı köprüsünün aktif kalmasını sağlar.",
                     checked = state.di5CloudKeepAlive,
                     onCheckedChange = onToggleDi5CloudKeepAlive
+                )
+            }
+        }
+
+        // Battery Guard & Low-Power Card
+        OverdriveCard(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = 12.dp
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Pil Koruması & Düşük Güç (Battery Guard)",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+
+                SettingToggleRow(
+                    title = "Park halindeyken düşük güç modu",
+                    subtitle = "Park süresince ekranı kapatır, AI iş parçacıklarını optimize ederek akü tüketimini en aza indirir.",
+                    checked = state.lowPowerMode,
+                    onCheckedChange = onToggleLowPowerMode
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Düşük batarya kapatma eşiği (Cutoff)",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "% ${state.lowSocCutoff}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Text(
+                    text = "Araç ana bataryası bu seviyenin altına indiğinde akünün tükenmemesi için gözetim kapatılır.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 2.dp, bottom = 4.dp)
+                )
+                Slider(
+                    value = state.lowSocCutoff.toFloat(),
+                    onValueChange = { onLowSocCutoffChange(it.toInt()) },
+                    valueRange = 10f..50f,
+                    steps = 7,
+                    colors = SliderDefaults.colors(
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                    )
+                )
+            }
+        }
+
+        // Screen Deterrent Card
+        OverdriveCard(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = 12.dp
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Tv,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = "Ekran Caydırıcısı",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                Text(
+                    text = "Gözetim devredeyken araç etrafında bir hareket veya yaklaşan kişi algılandığında merkezi ekranda uyarı görüntüler.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 2.dp, bottom = 8.dp)
+                )
+
+                SettingToggleRow(
+                    title = "Hareket algılandığında ekranda uyarı göster",
+                    subtitle = "Orta ekranı açarak gözetim devrede uyarısı ve kamera görüntüsü verir.",
+                    checked = state.screenDeterrentEnabled,
+                    onCheckedChange = onToggleScreenDeterrent
+                )
+
+                if (state.screenDeterrentEnabled) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Uyarı gösterim süresi",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "${state.screenDeterrentDuration} sn",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Slider(
+                        value = state.screenDeterrentDuration.toFloat(),
+                        onValueChange = { onScreenDeterrentDurationChange(it.toInt()) },
+                        valueRange = 2f..30f,
+                        steps = 13,
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary,
+                            activeTrackColor = MaterialTheme.colorScheme.primary,
+                            inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                        )
+                    )
+                    SettingTextFieldRow(
+                        title = "Özel uyarı mesajı",
+                        subtitle = "Ekranda gösterilecek metin (boş bırakılırsa varsayılan uyarı kullanılır).",
+                        value = state.screenDeterrentMessage,
+                        onValueChange = onScreenDeterrentMessageChange,
+                        placeholder = "Örn: Güvenlik kamerası devrede, kayıt yapılıyor."
+                    )
+                }
+            }
+        }
+
+        // Place Tagging Card
+        OverdriveCard(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = 12.dp
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Place,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = "Yer etiketleme",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+
+                SettingToggleRow(
+                    title = "Gözetmenlik etkinliklerini yer isimleriyle etiketleyin",
+                    subtitle = "GPS etkinlik başlatmayı çevre-geokode ederek bir bölge/şehir etiketine kaydeder ve her klipin yan arabasının yanında kaydeder.",
+                    checked = state.geocodingEnabled,
+                    onCheckedChange = onToggleGeocodingEnabled
+                )
+
+                SettingToggleRow(
+                    title = "Çevrimiçi çözücü kullan",
+                    subtitle = "OpenStreetMap Nominatim'e geri döner. Cihazın geokodlaması bir konumu belirleyemez. Sadece etkinlik başlangıcı koordinatlarını ve cihaz dilini gönderir.",
+                    checked = state.geocodingOnline,
+                    onCheckedChange = onToggleGeocodingOnline,
+                    enabled = state.geocodingEnabled
+                )
+
+                SettingTextFieldRow(
+                    title = "Özel Nominatim URL",
+                    subtitle = "Önemli. Kendine konutlanmış bir örneğe işaret ederek halka açık OSM son noktasını tamamen atlatın.",
+                    value = state.geocodingCustomUrl,
+                    onValueChange = onGeocodingCustomUrlChange,
+                    placeholder = "https://nominatim.example.com",
+                    enabled = state.geocodingEnabled
                 )
             }
         }
@@ -943,6 +1193,7 @@ private fun DetectionTabContent(
 // ─────────────────────────────────────────────────────────────────────────────
 // TAB 3: RECORDING & QUALITY
 // ─────────────────────────────────────────────────────────────────────────────
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun RecordingTabContent(
     state: SurveillanceUiState,
@@ -951,7 +1202,9 @@ private fun RecordingTabContent(
     onQualitySelected: (String) -> Unit,
     onFpsSelected: (Int) -> Unit,
     onCodecSelected: (String) -> Unit,
-    onToggleTelegramPing: (Boolean) -> Unit
+    onToggleTelegramPing: (Boolean) -> Unit,
+    onToggleTelemetryOverlay: (Boolean) -> Unit = {},
+    onToggleTelemetryField: (String, Boolean) -> Unit = { _, _ -> }
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -1145,6 +1398,85 @@ private fun RecordingTabContent(
             }
         }
 
+        // Telemetry Overlay Card
+        OverdriveCard(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = 12.dp
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = "Telemetri Bindirme",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+
+                SettingToggleRow(
+                    title = "Gözetim Kayıtlarında Göster",
+                    subtitle = "Gözetim olay kliplerine araç verilerini ve zaman damgasını yazdırır.",
+                    checked = state.telemetryOverlayEnabled,
+                    onCheckedChange = onToggleTelemetryOverlay
+                )
+
+                if (state.telemetryOverlayEnabled) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = "Videoya Basılacak Veri Alanları",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Gözetim video kayıtlarının üzerine eklenecek telemetri bilgilerini seçin.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp, bottom = 8.dp)
+                    )
+
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        val availableFields = listOf(
+                            "speed" to "Hız (Speed)",
+                            "gear" to "Vites (Gear)",
+                            "accel" to "Gaz Pedalı",
+                            "brake" to "Fren Pedalı",
+                            "seatbelt" to "Emniyet Kemeri",
+                            "turn_signal" to "Sinyaller",
+                            "time" to "Saat & Tarih",
+                            "soc" to "Batarya % (SoC)",
+                            "battery_12v" to "12V Akü",
+                            "headlights" to "Farlar",
+                            "lat_lon" to "GPS Koordinatları",
+                            "vin" to "Şasi No (VIN)"
+                        )
+                        availableFields.forEach { (fieldKey, label) ->
+                            val isSelected = state.telemetryFields.contains(fieldKey)
+                            TelemetryChip(
+                                label = label,
+                                isSelected = isSelected,
+                                onClick = { onToggleTelemetryField(fieldKey, !isSelected) }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         // Notification Card
         OverdriveCard(
             modifier = Modifier.fillMaxWidth(),
@@ -1238,7 +1570,11 @@ private fun StorageTabContent(
     onStorageTypeSelected: (String) -> Unit,
     onStorageLimitChange: (Int) -> Unit,
     onToggleAutoCleanupEvents: (Boolean) -> Unit,
-    onToggleDiscardBrightEvents: (Boolean) -> Unit
+    onToggleDiscardBrightEvents: (Boolean) -> Unit,
+    onToggleCdrCleanup: (Boolean) -> Unit = {},
+    onCdrReservedSpaceChange: (Int) -> Unit = {},
+    onCdrProtectedHoursChange: (Int) -> Unit = {},
+    onCdrMinFilesKeepChange: (Int) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -1343,6 +1679,117 @@ private fun StorageTabContent(
                     checked = state.discardEmptyBrightEvents,
                     onCheckedChange = onToggleDiscardBrightEvents
                 )
+            }
+        }
+
+        // BYD Dashcam Auto-Cleanup Card
+        OverdriveCard(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = 12.dp
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CleaningServices,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = "BYD Dashcam Otomatik Temizleme",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+
+                SettingToggleRow(
+                    title = "Eski Dashcam Dosyalarını Otomatik Sil",
+                    subtitle = "SD kartta yer açmak için en eski kilitlenmemiş BYD dashcam kayıtlarını temizler.",
+                    checked = state.cdrCleanupEnabled,
+                    onCheckedChange = onToggleCdrCleanup
+                )
+
+                if (state.cdrCleanupEnabled) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = "Overdrive İçin Ayrılan Alan: ${if (state.cdrReservedSpaceMb >= 1000) "${state.cdrReservedSpaceMb / 1000} GB" else "${state.cdrReservedSpaceMb} MB"}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "SD kartta Overdrive gözetim ve dashcam kayıtları için her zaman boş tutulacak alan.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 6.dp)
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        listOf(1000 to "1 GB", 2000 to "2 GB", 5000 to "5 GB", 10000 to "10 GB").forEach { (mb, label) ->
+                            PresetBadgeButton(
+                                label = label,
+                                isSelected = state.cdrReservedSpaceMb == mb,
+                                modifier = Modifier.weight(1f),
+                                onClick = { onCdrReservedSpaceChange(mb) }
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "Son Dosyaları Koru: ${state.cdrProtectedHours} saat",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Bu süreden daha yeni olan dashcam kayıtları silinmeye karşı korunur.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 6.dp)
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        listOf(12 to "12 sa", 24 to "24 sa", 48 to "48 sa", 72 to "72 sa").forEach { (hours, label) ->
+                            PresetBadgeButton(
+                                label = label,
+                                isSelected = state.cdrProtectedHours == hours,
+                                modifier = Modifier.weight(1f),
+                                onClick = { onCdrProtectedHoursChange(hours) }
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "En Az Tutulacak Dosya Sayısı: ${state.cdrMinFilesKeep} adet",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        listOf(5 to "5 adet", 10 to "10 adet", 20 to "20 adet", 50 to "50 adet").forEach { (count, label) ->
+                            PresetBadgeButton(
+                                label = label,
+                                isSelected = state.cdrMinFilesKeep == count,
+                                modifier = Modifier.weight(1f),
+                                onClick = { onCdrMinFilesKeepChange(count) }
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -1489,12 +1936,14 @@ private fun SettingToggleRow(
     title: String,
     subtitle: String,
     checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean = true
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onCheckedChange(!checked) }
+            .clickable(enabled = enabled) { onCheckedChange(!checked) }
+            .alpha(if (enabled) 1f else 0.45f)
             .padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -1516,7 +1965,8 @@ private fun SettingToggleRow(
         Spacer(modifier = Modifier.width(8.dp))
         Switch(
             checked = checked,
-            onCheckedChange = onCheckedChange,
+            onCheckedChange = if (enabled) onCheckedChange else null,
+            enabled = enabled,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
                 checkedTrackColor = MaterialTheme.colorScheme.primary,
@@ -1524,5 +1974,101 @@ private fun SettingToggleRow(
                 uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
             )
         )
+    }
+}
+
+@Composable
+private fun SettingTextFieldRow(
+    title: String,
+    subtitle: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String = "",
+    enabled: Boolean = true
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+            .alpha(if (enabled) 1f else 0.45f)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = subtitle,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 2.dp, bottom = 6.dp)
+        )
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            enabled = enabled,
+            placeholder = {
+                Text(
+                    text = placeholder,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                )
+            },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(8.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer
+            )
+        )
+    }
+}
+
+@Composable
+private fun TelemetryChip(
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(
+                if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                else MaterialTheme.colorScheme.surfaceContainerHigh
+            )
+            .border(
+                1.dp,
+                if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                RoundedCornerShape(6.dp)
+            )
+            .clickable { onClick() }
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            if (isSelected) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }

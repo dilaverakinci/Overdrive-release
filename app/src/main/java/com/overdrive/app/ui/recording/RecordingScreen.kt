@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,8 +22,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Videocam
@@ -29,6 +34,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
@@ -38,6 +45,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -71,6 +79,7 @@ data class RecordingUiState(
     val proximityPostSeconds: Int = 10,
     val geocodingEnabled: Boolean = false,
     val geocodingOnline: Boolean = false,
+    val geocodingCustomUrl: String = "",
 
     // Status tab
     val currentState: String = "Boşta (Idle)",
@@ -86,6 +95,8 @@ data class RecordingUiState(
     val segmentDurationMinutes: Int = 2, // 2, 5, 10
     val rectifyStrength: Int = 0, // 0 - 100
     val telemetryOverlayEnabled: Boolean = true,
+    val telemetryFields: Set<String> = setOf("speed", "timestamp", "location", "batteryPercent", "voltage12v", "gear", "turnSignals"),
+    val audioRecordingEnabled: Boolean = false,
 
     // OEM tab
     val oemRecordingMode: String = "off", // "off", "continuous", "smart"
@@ -96,6 +107,10 @@ data class RecordingUiState(
     val storageType: String = "INTERNAL", // "INTERNAL", "SDCARD"
     val storageLimitMb: Int = 20000,
     val autoCleanup: Boolean = true,
+    val cdrCleanupEnabled: Boolean = false,
+    val cdrReservedSpaceMb: Int = 10000,
+    val cdrProtectedHours: Int = 24,
+    val cdrMinFilesKeep: Int = 10,
 
     val isLoading: Boolean = false,
     val statusMessage: String? = null
@@ -113,18 +128,25 @@ fun RecordingScreen(
     onProximityPostSecondsChange: (Int) -> Unit,
     onToggleGeocodingEnabled: (Boolean) -> Unit,
     onToggleGeocodingOnline: (Boolean) -> Unit,
+    onGeocodingCustomUrlChange: (String) -> Unit = {},
     onQualitySelected: (String) -> Unit,
     onCodecSelected: (String) -> Unit,
     onFpsSelected: (Int) -> Unit,
     onClipDurationSelected: (Int) -> Unit,
     onRectifyStrengthChange: (Int) -> Unit,
     onToggleTelemetryOverlay: (Boolean) -> Unit,
+    onToggleTelemetryField: (String, Boolean) -> Unit = { _, _ -> },
+    onToggleAudioRecording: (Boolean) -> Unit = {},
     onOemRecordingModeSelected: (String) -> Unit,
     onToggleOemTelemetryOverlay: (Boolean) -> Unit,
     onToggleNativeDvr: () -> Unit,
     onStorageTypeSelected: (String) -> Unit,
     onStorageLimitChange: (Int) -> Unit,
     onToggleAutoCleanup: (Boolean) -> Unit,
+    onToggleCdrCleanup: (Boolean) -> Unit = {},
+    onCdrReservedSpaceChange: (Int) -> Unit = {},
+    onCdrProtectedHoursChange: (Int) -> Unit = {},
+    onCdrMinFilesKeepChange: (Int) -> Unit = {},
     onRefresh: () -> Unit,
     showHeader: Boolean = true,
     modifier: Modifier = Modifier
@@ -219,7 +241,8 @@ fun RecordingScreen(
                         onProximityPreSecondsChange = onProximityPreSecondsChange,
                         onProximityPostSecondsChange = onProximityPostSecondsChange,
                         onToggleGeocodingEnabled = onToggleGeocodingEnabled,
-                        onToggleGeocodingOnline = onToggleGeocodingOnline
+                        onToggleGeocodingOnline = onToggleGeocodingOnline,
+                        onGeocodingCustomUrlChange = onGeocodingCustomUrlChange
                     )
                     RecordingTab.STATUS -> StatusTabContent(
                         state = state,
@@ -232,7 +255,9 @@ fun RecordingScreen(
                         onFpsSelected = onFpsSelected,
                         onClipDurationSelected = onClipDurationSelected,
                         onRectifyStrengthChange = onRectifyStrengthChange,
-                        onToggleTelemetryOverlay = onToggleTelemetryOverlay
+                        onToggleTelemetryOverlay = onToggleTelemetryOverlay,
+                        onToggleTelemetryField = onToggleTelemetryField,
+                        onToggleAudioRecording = onToggleAudioRecording
                     )
                     RecordingTab.OEM -> OemDashcamTabContent(
                         state = state,
@@ -244,7 +269,11 @@ fun RecordingScreen(
                         state = state,
                         onStorageTypeSelected = onStorageTypeSelected,
                         onStorageLimitChange = onStorageLimitChange,
-                        onToggleAutoCleanup = onToggleAutoCleanup
+                        onToggleAutoCleanup = onToggleAutoCleanup,
+                        onToggleCdrCleanup = onToggleCdrCleanup,
+                        onCdrReservedSpaceChange = onCdrReservedSpaceChange,
+                        onCdrProtectedHoursChange = onCdrProtectedHoursChange,
+                        onCdrMinFilesKeepChange = onCdrMinFilesKeepChange
                     )
                 }
             }
@@ -320,7 +349,8 @@ private fun CaptureTabContent(
     onProximityPreSecondsChange: (Int) -> Unit,
     onProximityPostSecondsChange: (Int) -> Unit,
     onToggleGeocodingEnabled: (Boolean) -> Unit,
-    onToggleGeocodingOnline: (Boolean) -> Unit
+    onToggleGeocodingOnline: (Boolean) -> Unit,
+    onGeocodingCustomUrlChange: (String) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -534,40 +564,54 @@ private fun CaptureTabContent(
             }
         }
 
-        // Place Tagging Card
+        // Place Tagging (Reverse Geocoding) Card
         OverdriveCard(
             modifier = Modifier.fillMaxWidth(),
             contentPadding = 12.dp
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "Konum Etiketleme (Place Tagging)",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = "Kayıt başlangıç GPS koordinatlarını ilçe ve şehir adına dönüştürüp klibe ekler.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp, bottom = 10.dp)
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Place,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = "Yer etiketleme",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
 
                 SettingToggleRow(
-                    title = "Kayıtları Konum İsimleriyle Etiketle",
-                    subtitle = "Ters jeokodlama ile video yan dosyasına yer ismi kaydeder.",
+                    title = "Yer isimleriyle dashcam kayıtlarını etiketleyin",
+                    subtitle = "GPS'i geriye çevirin, kayıt başlatın, bölge/şehir etiketine koyun ve her klipin yan arabasının yanında kaydetin.",
                     checked = state.geocodingEnabled,
                     onCheckedChange = onToggleGeocodingEnabled
                 )
-                if (state.geocodingEnabled) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    SettingToggleRow(
-                        title = "Çevrimiçi Çözücü Kullan (OSM Nominatim)",
-                        subtitle = "Cihaz içi çevrimdışı konum çözülemezse OpenStreetMap üzerinden sorgular.",
-                        checked = state.geocodingOnline,
-                        onCheckedChange = onToggleGeocodingOnline
-                    )
-                }
+
+                SettingToggleRow(
+                    title = "Çevrimiçi çözücü kullan",
+                    subtitle = "OpenStreetMap Nominatim'e geri döner. Cihazın geokodlaması bir yerin adını veremiyor. Sadece kaydı başlatma koordinatlarını ve cihaz dilini gönderir.",
+                    checked = state.geocodingOnline,
+                    onCheckedChange = onToggleGeocodingOnline,
+                    enabled = state.geocodingEnabled
+                )
+
+                SettingTextFieldRow(
+                    title = "Özel Nominatim URL",
+                    subtitle = "Önemli, kendi kendine konutlanmış bir örnekte bulunup, kamuoyu OSM son noktasını tamamen atlatmak için. Gözetim ile paylaşılır.",
+                    value = state.geocodingCustomUrl,
+                    onValueChange = onGeocodingCustomUrlChange,
+                    placeholder = "https://nominatim.example.com",
+                    enabled = state.geocodingEnabled
+                )
             }
         }
     }
@@ -626,7 +670,9 @@ private fun QualityTabContent(
     onFpsSelected: (Int) -> Unit,
     onClipDurationSelected: (Int) -> Unit,
     onRectifyStrengthChange: (Int) -> Unit,
-    onToggleTelemetryOverlay: (Boolean) -> Unit
+    onToggleTelemetryOverlay: (Boolean) -> Unit,
+    onToggleTelemetryField: (String, Boolean) -> Unit = { _, _ -> },
+    onToggleAudioRecording: (Boolean) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -835,6 +881,80 @@ private fun QualityTabContent(
                     checked = state.telemetryOverlayEnabled,
                     onCheckedChange = onToggleTelemetryOverlay
                 )
+                if (state.telemetryOverlayEnabled) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "Videoya gömülecek bilgileri seç:",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    @OptIn(ExperimentalLayoutApi::class)
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        val availableTelemetryFields = listOf(
+                            "speed" to "Hız",
+                            "gear" to "Vites",
+                            "accelPedal" to "Gaz",
+                            "brakePedal" to "Fren",
+                            "seatbeltDriver" to "Sürücü Kemeri",
+                            "seatbeltPassenger" to "Yolcu Kemeri",
+                            "turnSignals" to "Sinyaller",
+                            "timestamp" to "Tarih & Saat",
+                            "batteryPercent" to "Batarya %",
+                            "voltage12v" to "12V Akü",
+                            "lowBeam" to "Kısa Far",
+                            "highBeam" to "Uzun Far",
+                            "location" to "GPS Konum",
+                            "vin" to "Şasi No (VIN)"
+                        )
+                        availableTelemetryFields.forEach { (key, label) ->
+                            val isSelected = state.telemetryFields.contains(key)
+                            TelemetryChip(
+                                label = label,
+                                isSelected = isSelected,
+                                onClick = { onToggleTelemetryField(key, !isSelected) }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // Cabin Audio Card
+        OverdriveCard(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = 12.dp
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Mic,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = "Kabin Sesleri",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+                SettingToggleRow(
+                    title = "Kabin Sesini Kaydet",
+                    subtitle = "Kabin mikrofonunu video ile birlikte yakalar. Sadece ACC-on kayıt sırasında aktif (Sıradan, Sürücülük, Yakınlık Koruması); asla Gözlem sırasında.",
+                    checked = state.audioRecordingEnabled,
+                    onCheckedChange = onToggleAudioRecording
+                )
             }
         }
     }
@@ -950,7 +1070,11 @@ private fun StorageTabContent(
     state: RecordingUiState,
     onStorageTypeSelected: (String) -> Unit,
     onStorageLimitChange: (Int) -> Unit,
-    onToggleAutoCleanup: (Boolean) -> Unit
+    onToggleAutoCleanup: (Boolean) -> Unit,
+    onToggleCdrCleanup: (Boolean) -> Unit = {},
+    onCdrReservedSpaceChange: (Int) -> Unit = {},
+    onCdrProtectedHoursChange: (Int) -> Unit = {},
+    onCdrMinFilesKeepChange: (Int) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -1048,6 +1172,114 @@ private fun StorageTabContent(
                     checked = state.autoCleanup,
                     onCheckedChange = onToggleAutoCleanup
                 )
+            }
+        }
+
+        // BYD Dashcam Auto-Cleanup Card
+        OverdriveCard(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = 12.dp
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CleaningServices,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = "BYD Dashcam Otomatik Temizleme",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                Text(
+                    text = "SD kart dolduğunda Overdrive için yer açmak üzere en eski BYD fabrika dashcam video dosyalarını otomatik temizler.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 2.dp, bottom = 10.dp)
+                )
+
+                SettingToggleRow(
+                    title = "Eski Dashcam Dosyalarını Otomatik Sil",
+                    subtitle = "BYD dashcam (com.byd.cdr) klasörünü izler ve Overdrive için ayrılan alan sınırına yaklaşıldığında eski kayıtları siler.",
+                    checked = state.cdrCleanupEnabled,
+                    onCheckedChange = onToggleCdrCleanup
+                )
+
+                if (state.cdrCleanupEnabled) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = "Overdrive için Ayrılan Alan:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp, bottom = 10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        listOf(5000, 10000, 15000, 20000).forEach { mb ->
+                            PresetBadgeButton(
+                                label = "${mb / 1000} GB",
+                                isSelected = state.cdrReservedSpaceMb == mb,
+                                modifier = Modifier.weight(1f),
+                                onClick = { onCdrReservedSpaceChange(mb) }
+                            )
+                        }
+                    }
+
+                    Text(
+                        text = "Son Dosyaları Koru:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp, bottom = 10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        listOf(12, 24, 48, 72).forEach { hrs ->
+                            PresetBadgeButton(
+                                label = "$hrs Saat",
+                                isSelected = state.cdrProtectedHours == hrs,
+                                modifier = Modifier.weight(1f),
+                                onClick = { onCdrProtectedHoursChange(hrs) }
+                            )
+                        }
+                    }
+
+                    Text(
+                        text = "Minimum Dosya Sayısını Koru:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        listOf(5, 10, 20, 30).forEach { cnt ->
+                            PresetBadgeButton(
+                                label = "$cnt Dosya",
+                                isSelected = state.cdrMinFilesKeep == cnt,
+                                modifier = Modifier.weight(1f),
+                                onClick = { onCdrMinFilesKeepChange(cnt) }
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -1170,7 +1402,8 @@ private fun SettingToggleRow(
     title: String,
     subtitle: String,
     checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean = true
 ) {
     Row(
         modifier = Modifier
@@ -1179,7 +1412,11 @@ private fun SettingToggleRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(modifier = Modifier.weight(1f)) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .alpha(if (enabled) 1f else 0.45f)
+        ) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium,
@@ -1196,13 +1433,112 @@ private fun SettingToggleRow(
         Spacer(modifier = Modifier.width(8.dp))
         Switch(
             checked = checked,
-            onCheckedChange = onCheckedChange,
+            onCheckedChange = if (enabled) onCheckedChange else { _ -> },
+            enabled = enabled,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
                 checkedTrackColor = MaterialTheme.colorScheme.primary,
                 uncheckedThumbColor = MaterialTheme.colorScheme.outline,
-                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                disabledCheckedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                disabledUncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.3f)
             )
         )
+    }
+}
+
+@Composable
+private fun SettingTextFieldRow(
+    title: String,
+    subtitle: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    enabled: Boolean = true
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+            .alpha(if (enabled) 1f else 0.45f)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = subtitle,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 2.dp, bottom = 6.dp)
+        )
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            enabled = enabled,
+            placeholder = {
+                Text(
+                    text = placeholder,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                )
+            },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(8.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer
+            )
+        )
+    }
+}
+
+@Composable
+private fun TelemetryChip(
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(
+                if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                else MaterialTheme.colorScheme.surfaceContainerHigh
+            )
+            .border(
+                1.dp,
+                if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                RoundedCornerShape(6.dp)
+            )
+            .clickable { onClick() }
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            if (isSelected) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
