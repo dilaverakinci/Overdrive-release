@@ -13,7 +13,7 @@ enum class PadOrientation {
  * Immutable domain model representing doors, windows, lighting, wipers, and bodywork sensors.
  */
 data class BodyworkState(
-    val isLocked: Boolean = true,
+    val isLocked: Boolean? = null,
     val doorOpenFl: Boolean = false, // Front Left
     val doorOpenFr: Boolean = false, // Front Right
     val doorOpenRl: Boolean = false, // Rear Left

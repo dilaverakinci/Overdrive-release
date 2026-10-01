@@ -106,6 +106,7 @@ fun VehicleControlScreen(
             VehicleControlHeader(
                 modelName = state.vehicleModelName,
                 isLocked = state.security.isLocked,
+                isCloudConfigured = state.security.isCloudConfigured,
                 isCloudConnected = state.security.isCloudConnected,
                 cloudStatusText = state.security.cloudStatusText,
             )
@@ -171,7 +172,8 @@ fun VehicleControlScreen(
 @Composable
 private fun VehicleControlHeader(
     modelName: String,
-    isLocked: Boolean,
+    isLocked: Boolean?,
+    isCloudConfigured: Boolean,
     isCloudConnected: Boolean,
     cloudStatusText: String,
     modifier: Modifier = Modifier,
@@ -183,7 +185,7 @@ private fun VehicleControlHeader(
     ) {
         Column {
             Text(
-                text = modelName,
+                text = modelName.ifEmpty { stringResource(R.string.status_unknown) },
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -196,13 +198,24 @@ private fun VehicleControlHeader(
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            val (lockLabel, lockStatus) = when (isLocked) {
+                true -> stringResource(R.string.status_locked) to OverdrivePillStatus.SUCCESS
+                false -> stringResource(R.string.status_unlocked) to OverdrivePillStatus.WARNING
+                null -> stringResource(R.string.status_unknown) to OverdrivePillStatus.INFO
+            }
             OverdriveStatusPill(
-                label = if (isLocked) stringResource(R.string.status_locked) else stringResource(R.string.status_unlocked),
-                status = if (isLocked) OverdrivePillStatus.SUCCESS else OverdrivePillStatus.WARNING,
+                label = lockLabel,
+                status = lockStatus,
             )
+
+            val (cloudLabel, cloudPillStatus) = when {
+                !isCloudConfigured -> stringResource(R.string.vehicle_control_cloud_not_configured) to OverdrivePillStatus.INFO
+                isCloudConnected -> (if (cloudStatusText.isNotEmpty()) stringResource(R.string.vehicle_control_cloud_fmt, cloudStatusText) else stringResource(R.string.vehicle_control_cloud_online)) to OverdrivePillStatus.SUCCESS
+                else -> stringResource(R.string.vehicle_control_cloud_offline) to OverdrivePillStatus.WARNING
+            }
             OverdriveStatusPill(
-                label = stringResource(R.string.vehicle_control_cloud_fmt, cloudStatusText),
-                status = if (isCloudConnected) OverdrivePillStatus.SUCCESS else OverdrivePillStatus.INFO,
+                label = cloudLabel,
+                status = cloudPillStatus,
             )
         }
     }
@@ -314,7 +327,7 @@ private fun TyreCell(
 // -----------------------------------------------------------------------------
 @Composable
 private fun SecurityAndLocksCard(
-    isLocked: Boolean,
+    isLocked: Boolean?,
     onLockClick: () -> Unit,
     onUnlockClick: () -> Unit,
     onFlashClick: () -> Unit,
@@ -343,14 +356,14 @@ private fun SecurityAndLocksCard(
                 ActionTile(
                     title = stringResource(R.string.vehicle_control_lock),
                     iconRes = R.drawable.ic_parking,
-                    isActive = isLocked,
+                    isActive = isLocked == true,
                     onClick = onLockClick,
                     modifier = Modifier.weight(1f),
                 )
                 ActionTile(
                     title = stringResource(R.string.vehicle_control_unlock),
                     iconRes = R.drawable.ic_vehicle_control,
-                    isActive = !isLocked,
+                    isActive = isLocked == false,
                     onClick = onUnlockClick,
                     modifier = Modifier.weight(1f),
                 )

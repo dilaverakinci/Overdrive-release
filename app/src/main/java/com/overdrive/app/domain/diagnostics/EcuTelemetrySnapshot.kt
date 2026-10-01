@@ -64,7 +64,7 @@ data class EspTelemetry(
  */
 data class BcmTelemetry(
     val doorsOpenCount: Int = 0,
-    val isLocked: Boolean = true,
+    val isLocked: Boolean? = null,
     val isHeadlightOn: Boolean = false,
     val isHighBeamOn: Boolean = false,
     val isHazardLightOn: Boolean = false,

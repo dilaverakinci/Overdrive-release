@@ -5,14 +5,14 @@ package com.overdrive.app.ui.vehicle
  * Fully compatible with VehicleControlApiHandler and BYD vehicle telemetry.
  */
 data class VehicleTyresState(
-    val flPsi: Float? = 36.0f,
-    val frPsi: Float? = 36.0f,
-    val rlPsi: Float? = 36.0f,
-    val rrPsi: Float? = 36.0f,
-    val flTemp: Int? = 28,
-    val frTemp: Int? = 28,
-    val rlTemp: Int? = 29,
-    val rrTemp: Int? = 29,
+    val flPsi: Float? = null,
+    val frPsi: Float? = null,
+    val rlPsi: Float? = null,
+    val rrPsi: Float? = null,
+    val flTemp: Int? = null,
+    val frTemp: Int? = null,
+    val rlTemp: Int? = null,
+    val rrTemp: Int? = null,
 )
 
 data class VehicleDoorsState(
@@ -50,9 +50,10 @@ data class VehicleComfortState(
 )
 
 data class VehicleSecurityState(
-    val isLocked: Boolean = true,
-    val isCloudConnected: Boolean = true,
-    val cloudStatusText: String = "Online",
+    val isLocked: Boolean? = null,
+    val isCloudConfigured: Boolean = false,
+    val isCloudConnected: Boolean = false,
+    val cloudStatusText: String = "",
     val mirrorsFolded: Boolean = true,
 )
 
@@ -63,7 +64,7 @@ data class VehicleControlUiState(
     val windows: VehicleWindowsState = VehicleWindowsState(),
     val climate: VehicleClimateState = VehicleClimateState(),
     val comfort: VehicleComfortState = VehicleComfortState(),
-    val vehicleModelName: String = "BYD SEAL",
+    val vehicleModelName: String = "",
     val isActionInProgress: Boolean = false,
     val lastActionMessage: String? = null,
 )

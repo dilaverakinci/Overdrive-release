@@ -2102,6 +2102,10 @@
     <string name="status_on">ON</string>
     <string name="status_open">OPEN</string>
     <string name="status_unlocked">UNLOCKED</string>
+    <string name="status_unknown">UNKNOWN</string>
+    <string name="vehicle_control_cloud_not_configured">Cloud: Not Configured</string>
+    <string name="vehicle_control_cloud_online">Cloud: Online</string>
+    <string name="vehicle_control_cloud_offline">Cloud: Offline</string>
     <string name="vehicle_control_ac_off">AC OFF</string>
     <string name="vehicle_control_ac_on">AC ON</string>
     <string name="vehicle_control_battery_heat_active">Heating Active</string>

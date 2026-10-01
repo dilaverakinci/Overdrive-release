@@ -15,11 +15,17 @@ class VehicleControlComposeParityTest {
     fun testDefaultVehicleControlState() {
         val state = VehicleControlUiState()
 
-        assertEquals("BYD SEAL", state.vehicleModelName)
-        assertTrue(state.security.isLocked)
-        assertTrue(state.security.isCloudConnected)
-        assertEquals("Online", state.security.cloudStatusText)
+        assertEquals("", state.vehicleModelName)
+        org.junit.Assert.assertNull(state.security.isLocked)
+        assertFalse(state.security.isCloudConfigured)
+        assertFalse(state.security.isCloudConnected)
+        assertEquals("", state.security.cloudStatusText)
         assertTrue(state.security.mirrorsFolded)
+
+        // Tyres null by default until telemetry arrives
+        org.junit.Assert.assertNull(state.tyres.flPsi)
+        org.junit.Assert.assertNull(state.tyres.frPsi)
+        org.junit.Assert.assertNull(state.tyres.flTemp)
 
         // Doors closed by default
         assertFalse(state.doors.frontLeftOpen)

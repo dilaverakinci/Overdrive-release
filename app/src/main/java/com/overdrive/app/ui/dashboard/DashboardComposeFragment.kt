@@ -30,6 +30,7 @@ import com.overdrive.app.ui.model.DaemonStatus
 import com.overdrive.app.ui.theme.OverdriveTheme
 import com.overdrive.app.ui.util.QrCodeGenerator
 import com.overdrive.app.ui.vehicle.VehicleArt
+import com.overdrive.app.ui.vehicle.VehicleTopDownArt
 import com.overdrive.app.ui.viewmodel.DaemonsViewModel
 import com.overdrive.app.ui.viewmodel.MainViewModel
 import com.overdrive.app.ui.viewmodel.RecordingViewModel
@@ -863,28 +864,8 @@ class DashboardComposeFragment : Fragment() {
     }
 
     private fun modelDisplayName(modelId: String?): String {
-        return when (modelId?.lowercase(Locale.US)) {
-            null -> "—"
-            "seal" -> "BYD Seal"
-            "atto3", "atto-3" -> "BYD Atto 3"
-            "atto3evo", "atto3-evo", "atto-3-evo" -> "BYD Atto 3 Evo"
-            "atto2", "atto-2" -> "BYD Atto 2"
-            "atto1", "atto-1" -> "BYD Atto 1"
-            "han" -> "BYD Han"
-            "tang" -> "BYD Tang"
-            "song" -> "BYD Song"
-            "qin" -> "BYD Qin"
-            "dolphin" -> "BYD Dolphin"
-            "seagull" -> getString(R.string.vehicle_model_seagull)
-            "sealion6" -> "BYD Sealion 6"
-            "sealion7" -> "BYD Sealion 7"
-            "sealu", "seal-u" -> "BYD Seal U"
-            "sealudmi", "seal-u-dmi" -> "BYD Seal U DM-i"
-            "destroyer05", "destroyer" -> "BYD Destroyer 05"
-            "m6" -> "BYD M6"
-            "shark" -> "BYD Shark"
-            else -> modelId.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.US) else it.toString() }
-        }
+        if (modelId.isNullOrEmpty()) return "—"
+        return VehicleTopDownArt.displayNameFor(modelId, context)
     }
 
     private fun copyToClipboard(label: String, text: String) {

@@ -132,7 +132,7 @@ class DefaultDiagnosticsRepository : DiagnosticsRepository {
         // 5. BCM Telemetry
         val isLocked = if (data.doorLockStatus != null && data.doorLockStatus.isNotEmpty()) {
             data.doorLockStatus.all { it != 0 && it != -1 }
-        } else true
+        } else null
 
         val bcm = BcmTelemetry(
             doorsOpenCount = 0,
@@ -256,7 +256,11 @@ class DefaultDiagnosticsRepository : DiagnosticsRepository {
                 ecu = EcuType.BCM,
                 status = bcm.status,
                 primaryMetric = if (bcm.doorsOpenCount > 0) "${bcm.doorsOpenCount} Kapak Açık" else "Tüm Kapılar Kapalı",
-                secondaryMetric = if (bcm.isLocked) "Kilitli" else "Kilit Açık",
+                secondaryMetric = when (bcm.isLocked) {
+                    true -> "Kilitli"
+                    false -> "Kilit Açık"
+                    else -> "Bilinmiyor"
+                },
                 details = mapOf(
                     "Farlar" to if (bcm.isHeadlightOn) "Açık" else "Kapalı",
                     "Uzun Farlar" to if (bcm.isHighBeamOn) "Açık" else "Kapalı",

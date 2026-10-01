@@ -1968,6 +1968,10 @@ Cihaz bu çalışırken bile "internet yok" ve kendi mobil veri simgesini göste
     <string name="status_on">AÇIK</string>
     <string name="status_open">AÇIK</string>
     <string name="status_unlocked">KİLİTSİZ</string>
+    <string name="status_unknown">BİLİNMİYOR</string>
+    <string name="vehicle_control_cloud_not_configured">Bulut: Yapılandırılmadı</string>
+    <string name="vehicle_control_cloud_online">Bulut: Çevrimiçi</string>
+    <string name="vehicle_control_cloud_offline">Bulut: Çevrimdışı</string>
     <string name="vehicle_control_ac_off">KLİMA KAPALI</string>
     <string name="vehicle_control_ac_on">KLİMA AÇIK</string>
     <string name="vehicle_control_battery_heat_active">Isıtma Aktif</string>

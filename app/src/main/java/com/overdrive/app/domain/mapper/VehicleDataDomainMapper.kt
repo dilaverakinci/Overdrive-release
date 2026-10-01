@@ -149,7 +149,7 @@ object VehicleDataDomainMapper {
 
         val isLocked = if (data.doorLockStatus != null && data.doorLockStatus.isNotEmpty()) {
             data.doorLockStatus.all { it != 0 && it != -1 }
-        } else true
+        } else null
 
         return BodyworkState(
             isLocked = isLocked,
