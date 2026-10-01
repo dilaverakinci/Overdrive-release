@@ -13,26 +13,19 @@
     'use strict';
 
     if (typeof navigator === 'undefined') return;
-    if (!('serviceWorker' in navigator)) return;
 
-    // Dev escape hatch: ?devPwa=1 in the URL forces SW + subscribe to run on
-    // localhost. Used by dev/preview-server.py — Chrome treats localhost as
-    // a secure context, so the whole flow can be exercised without a real
-    // tunnel, real cert, or a deployed APK.
-    var devPwa = /[?&]devPwa=1\b/.test(window.location.search);
-
-    var host = window.location.hostname;
-    var isLoopback = host === '127.0.0.1' || host === 'localhost' || host === '0.0.0.0';
-    if (isLoopback && !devPwa) {
-        // WebView or LAN — never install a PWA against an unstable origin.
+    // Check if running inside the in-car native Android WebView
+    var embeddedInNativeApp = typeof window.AndroidBridge !== 'undefined';
+    if (embeddedInNativeApp) {
+        // WebView or in-car head unit — suppress PWA and notification bootstrap
         return;
     }
 
-    if (window.location.protocol !== 'https:' && !isLoopback) {
-        // Service workers require a secure context. https:// is the normal
-        // one; localhost is also accepted by Chrome/Firefox/Safari.
-        return;
-    }
+    var isStandalone = window.matchMedia('(display-mode: standalone)').matches
+        || window.navigator.standalone === true
+        || (typeof document !== 'undefined' && document.referrer && document.referrer.includes('android-app://'));
+
+    var deferredInstallPrompt = null;
 
     function log() {
         if (window.console && console.log) {
@@ -227,7 +220,182 @@
         return 'Browser';
     }
 
+    function setupInstallListeners() {
+        window.addEventListener('beforeinstallprompt', function (e) {
+            log('beforeinstallprompt fired — app is installable');
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            window.deferredInstallPrompt = e;
+            updateInstallUi();
+            try {
+                window.dispatchEvent(new CustomEvent('overdrive-pwa-installable'));
+            } catch (err) {}
+        });
+
+        window.addEventListener('appinstalled', function () {
+            log('PWA app installed successfully');
+            deferredInstallPrompt = null;
+            window.deferredInstallPrompt = null;
+            isStandalone = true;
+            try { localStorage.setItem('overdrive_pwa_installed', 'true'); } catch (e) {}
+            updateInstallUi();
+        });
+    }
+
+    function isBannerDismissed() {
+        try {
+            return sessionStorage.getItem('overdrive_pwa_dismissed') === '1'
+                || localStorage.getItem('overdrive_pwa_installed') === 'true';
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function updateInstallUi() {
+        // Update sidebar install button
+        var sidebarBtn = document.getElementById('pwaSidebarInstallBtn');
+        if (sidebarBtn) {
+            sidebarBtn.style.display = isStandalone ? 'none' : 'flex';
+        }
+
+        // Show banner if installable and not dismissed and not in standalone
+        var banner = document.getElementById('pwaInstallBanner');
+        if (deferredInstallPrompt && !isStandalone && !isBannerDismissed()) {
+            if (!banner) {
+                injectInstallBanner();
+            } else {
+                banner.style.display = 'flex';
+            }
+        } else if (banner) {
+            banner.style.display = 'none';
+        }
+    }
+
+    function injectInstallBanner() {
+        if (document.getElementById('pwaInstallBanner')) return;
+        var banner = document.createElement('div');
+        banner.id = 'pwaInstallBanner';
+        banner.className = 'pwa-install-banner';
+        banner.innerHTML = ''
+            + '<div class="pwa-install-content">'
+            +   '<img src="/shared/icon-192.png" class="pwa-install-icon" alt="OverDrive">'
+            +   '<div class="pwa-install-text">'
+            +     '<strong class="pwa-install-title">OverDrive\'ı Yükle</strong>'
+            +     '<span class="pwa-install-desc">Hızlı erişim için telefonunuza uygulama olarak ekleyin</span>'
+            +   '</div>'
+            + '</div>'
+            + '<div class="pwa-install-actions">'
+            +   '<button type="button" class="pwa-install-btn" id="pwaBannerInstallBtn">Yükle</button>'
+            +   '<button type="button" class="pwa-install-close" id="pwaBannerDismissBtn" aria-label="Kapat">&times;</button>'
+            + '</div>';
+
+        document.body.appendChild(banner);
+
+        var installBtn = document.getElementById('pwaBannerInstallBtn');
+        if (installBtn) {
+            installBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                window.installPwa();
+            });
+        }
+
+        var dismissBtn = document.getElementById('pwaBannerDismissBtn');
+        if (dismissBtn) {
+            dismissBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                try { sessionStorage.setItem('overdrive_pwa_dismissed', '1'); } catch (err) {}
+                banner.style.display = 'none';
+            });
+        }
+    }
+
+    function showPwaHelpModal() {
+        var existing = document.getElementById('pwaHelpModal');
+        if (existing) {
+            existing.style.display = 'flex';
+            return;
+        }
+
+        var isSecure = window.isSecureContext;
+        var isIos = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+        var step1, step2, tip;
+        if (isIos) {
+            step1 = '1. Safari\'de alt çubuktaki Paylaş (<strong><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></strong>) butonuna dokunun.';
+            step2 = '2. Menüden <strong>"Ana Ekrana Ekle"</strong> seçeneğini seçin.';
+            tip = 'Uygulama telefonunuzun ana ekranında bağımsız bir simge olarak yer alacaktır.';
+        } else {
+            step1 = '1. Chrome\'un sağ üst köşesindeki <strong>üç nokta (⋮)</strong> menüsüne dokunun.';
+            step2 = '2. Menüden <strong>"Uygulamayı yükle"</strong> veya <strong>"Ana ekrana ekle"</strong> seçeneğini seçin.';
+            tip = !isSecure 
+                ? '⚠️ Not: Doğrudan IP üzerinden (HTTP) Chrome otomatik yükleme penceresi açmayabilir. Dashboard üzerindeki <strong>HTTPS Tünel</strong> adresini kullanarak tek tıkla yükleyebilirsiniz.'
+                : 'Uygulama telefonunuza WebAPK olarak yüklenecek ve bağımsız tam ekran açılacaktır.';
+        }
+
+        var modal = document.createElement('div');
+        modal.id = 'pwaHelpModal';
+        modal.className = 'pwa-help-modal-overlay';
+        modal.innerHTML = ''
+            + '<div class="pwa-help-modal">'
+            +   '<div class="pwa-help-modal-header">'
+            +     '<div style="display:flex;align-items:center;gap:10px;">'
+            +       '<img src="/shared/icon-192.png" width="28" height="28" style="border-radius:6px;" alt="OverDrive">'
+            +       '<h3>OverDrive Uygulamasını Yükle</h3>'
+            +     '</div>'
+            +     '<button type="button" class="pwa-modal-close" id="pwaModalCloseBtn">&times;</button>'
+            +   '</div>'
+            +   '<div class="pwa-help-modal-body">'
+            +     '<p>' + step1 + '</p>'
+            +     '<p>' + step2 + '</p>'
+            +     '<div class="pwa-help-modal-tip">' + tip + '</div>'
+            +   '</div>'
+            +   '<div class="pwa-help-modal-footer">'
+            +     '<button type="button" class="pwa-install-btn" style="width:100%;" id="pwaModalAckBtn">Anladım</button>'
+            +   '</div>'
+            + '</div>';
+
+        document.body.appendChild(modal);
+        modal.style.display = 'flex';
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+        document.getElementById('pwaModalCloseBtn').addEventListener('click', closeModal);
+        document.getElementById('pwaModalAckBtn').addEventListener('click', closeModal);
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeModal();
+        });
+    }
+
+    window.installPwa = async function () {
+        if (deferredInstallPrompt) {
+            try {
+                deferredInstallPrompt.prompt();
+                var choiceResult = await deferredInstallPrompt.userChoice;
+                log('User install choice:', choiceResult.outcome);
+                if (choiceResult.outcome === 'accepted') {
+                    updateInstallUi();
+                }
+            } catch (err) {
+                log('Install error:', err);
+                showPwaHelpModal();
+            }
+            deferredInstallPrompt = null;
+            window.deferredInstallPrompt = null;
+        } else {
+            showPwaHelpModal();
+        }
+    };
+
     async function init() {
+        setupInstallListeners();
+        updateInstallUi();
+
+        if (!('serviceWorker' in navigator)) {
+            log('ServiceWorker not supported in this browser');
+            return;
+        }
+
         try {
             var reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
             log('SW registered, scope:', reg.scope);

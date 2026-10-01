@@ -139,6 +139,16 @@
                 +   '<span' + (item.i18n ? ' data-i18n="' + item.i18n + '"' : '') + '>' + item.label + '</span>'
                 +  '</a>';
         }
+        if (!embeddedInNativeApp) {
+            html += '<a href="javascript:void(0)" id="pwaSidebarInstallBtn" class="nav-link pwa-install-link" style="display:none;" onclick="if(window.installPwa){window.installPwa();return false;}">'
+                +   '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'
+                +     '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>'
+                +     '<polyline points="7 10 12 15 17 10"></polyline>'
+                +     '<line x1="12" y1="15" x2="12" y2="3"></line>'
+                +   '</svg>'
+                +   '<span data-i18n="nav.install_app">Uygulamayı Yükle</span>'
+                +  '</a>';
+        }
         return html;
     }
 
