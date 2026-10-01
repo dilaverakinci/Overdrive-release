@@ -142,6 +142,10 @@ public class SqliteStorageEngine implements AutoCloseable {
         return database;
     }
 
+    public SQLiteDatabase getDatabase() {
+        return getRawDatabase();
+    }
+
     public String getPath() {
         return dbFile.getAbsolutePath();
     }

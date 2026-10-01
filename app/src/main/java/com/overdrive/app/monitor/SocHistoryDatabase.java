@@ -1,5 +1,6 @@
 package com.overdrive.app.monitor;
 
+import com.overdrive.app.database.SqliteDatabaseManager;
 import com.overdrive.app.logging.DaemonLogger;
 
 import org.json.JSONArray;
@@ -482,7 +483,8 @@ public class SocHistoryDatabase {
             for (int attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
                     // Open H2 connection (pure Java - no native code)
-                    connection = DriverManager.getConnection(JDBC_URL, "sa", "");
+                    // DriverManager.getConnection(JDBC_URL, "sa", "");
+                    connection = SqliteDatabaseManager.getJdbcConnection(SqliteDatabaseManager.DB_SOC);
                     logger.info("H2 connection established");
                     
                     // Tune H2 for embedded daemon use
@@ -1035,7 +1037,8 @@ public class SocHistoryDatabase {
                     try { connection.close(); } catch (Exception ignored) { /* already dead */ }
                     connection = null;
                 }
-                connection = DriverManager.getConnection(JDBC_URL, "sa", "");
+                // DriverManager.getConnection(JDBC_URL, "sa", "");
+                connection = SqliteDatabaseManager.getJdbcConnection(SqliteDatabaseManager.DB_SOC);
                 // Re-assert the schema BEFORE flagging ready. If the store
                 // file was wiped or recreated, H2 hands back a fresh EMPTY
                 // database — flagging initialized without this would leave

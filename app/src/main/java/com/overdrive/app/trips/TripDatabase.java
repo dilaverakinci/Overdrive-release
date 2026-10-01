@@ -1,5 +1,6 @@
 package com.overdrive.app.trips;
 
+import com.overdrive.app.database.SqliteDatabaseManager;
 import com.overdrive.app.logging.DaemonLogger;
 
 import java.sql.Connection;
@@ -62,7 +63,7 @@ public class TripDatabase {
 
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                connection = DriverManager.getConnection(JDBC_URL, "sa", "");
+                connection = SqliteDatabaseManager.getJdbcConnection(SqliteDatabaseManager.DB_TRIPS);
                 logger.info("H2 connection established");
 
                 // Tune H2 for embedded daemon use
@@ -143,7 +144,7 @@ public class TripDatabase {
     private synchronized void reconnect() {
         try {
             if (connection == null || connection.isClosed()) {
-                connection = DriverManager.getConnection(JDBC_URL, "sa", "");
+                connection = SqliteDatabaseManager.getJdbcConnection(SqliteDatabaseManager.DB_TRIPS);
                 // Idempotent (IF NOT EXISTS throughout). A reopen against a wiped
                 // or replaced .mv.db would otherwise yield a table-less store that
                 // probe() still calls healthy (SELECT 1 needs no table), turning
@@ -193,7 +194,7 @@ public class TripDatabase {
             connection = null;
         }
         try {
-            connection = DriverManager.getConnection(JDBC_URL, "sa", "");
+            connection = SqliteDatabaseManager.getJdbcConnection(SqliteDatabaseManager.DB_TRIPS);
             createTables();   // idempotent; see reconnect()
             isInitialized = true;
             logger.warn("H2 trip database force-reconnected after failed liveness probe");

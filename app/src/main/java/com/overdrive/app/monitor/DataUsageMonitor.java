@@ -2,6 +2,7 @@ package com.overdrive.app.monitor;
 
 import android.content.Context;
 
+import com.overdrive.app.database.SqliteDatabaseManager;
 import com.overdrive.app.logging.DaemonLogger;
 
 import org.json.JSONArray;
@@ -230,7 +231,7 @@ public class DataUsageMonitor {
         synchronized (lock) {
             if (isInitialized) return;
             try {
-                connection = DriverManager.getConnection(JDBC_URL, "sa", "");
+                connection = SqliteDatabaseManager.getJdbcConnection(SqliteDatabaseManager.DB_DATA_USAGE);
                 try (Statement st = connection.createStatement()) {
                     st.execute("SET CACHE_SIZE 2048");
                 }

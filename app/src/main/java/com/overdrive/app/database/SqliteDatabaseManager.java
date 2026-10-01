@@ -3,6 +3,8 @@ package com.overdrive.app.database;
 import com.overdrive.app.logging.DaemonLogger;
 
 import java.io.File;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -43,6 +45,26 @@ public final class SqliteDatabaseManager {
             logger.info("Opening SQLite WAL database: " + k);
             return new SqliteStorageEngine(k);
         });
+    }
+
+    /**
+     * Obtains a JDBC Connection. On Android devices, returns a zero-overhead
+     * native SQLite WAL connection via SqliteJdbcBridge. On host JVM test runners,
+     * returns an in-memory test connection.
+     */
+    public static Connection getJdbcConnection(String name) {
+        if (SqliteStorageEngine.isAndroidRuntime()) {
+            SqliteStorageEngine engine = getDatabase(name);
+            return SqliteJdbcBridge.wrap(engine);
+        } else {
+            try {
+                Class.forName("org.h2.Driver");
+                return DriverManager.getConnection("jdbc:h2:mem:" + name + ";DB_CLOSE_DELAY=-1", "sa", "");
+            } catch (Exception e) {
+                logger.error("Failed to establish in-memory test JDBC connection for " + name, e);
+                throw new RuntimeException("Test JDBC connection failed for " + name, e);
+            }
+        }
     }
 
     /**

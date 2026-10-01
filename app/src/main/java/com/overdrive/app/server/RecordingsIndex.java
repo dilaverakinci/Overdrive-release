@@ -1,5 +1,6 @@
 package com.overdrive.app.server;
 
+import com.overdrive.app.database.SqliteDatabaseManager;
 import com.overdrive.app.logging.DaemonLogger;
 import com.overdrive.app.storage.StorageManager;
 
@@ -329,7 +330,7 @@ public final class RecordingsIndex {
         int retryDelayMs = 1000;
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                connection = DriverManager.getConnection(JDBC_URL, "sa", "");
+                connection = SqliteDatabaseManager.getJdbcConnection(SqliteDatabaseManager.DB_RECORDINGS);
                 logger.info("H2 recordings connection established");
                 try (Statement stmt = connection.createStatement()) {
                     // 8 MiB cache — same as TripDatabase. Tuned for the
@@ -505,7 +506,7 @@ public final class RecordingsIndex {
                 try { connection.close(); } catch (Exception ignored) { /* already dead */ }
                 connection = null;
             }
-            connection = DriverManager.getConnection(JDBC_URL, "sa", "");
+            connection = SqliteDatabaseManager.getJdbcConnection(SqliteDatabaseManager.DB_RECORDINGS);
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute("SET CACHE_SIZE 8192");
             }
