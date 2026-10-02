@@ -73,12 +73,12 @@ fun ChargingScreen(
                 .fillMaxWidth()
                 .verticalScroll(scrollState)
                 .padding(
-                    start = 12.dp,
-                    end = 12.dp,
-                    top = 8.dp,
-                    bottom = 12.dp,
+                    start = 10.dp,
+                    end = 10.dp,
+                    top = 6.dp,
+                    bottom = 10.dp,
                 ),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             // Header Bar
             ChargingHeader(
@@ -219,11 +219,12 @@ private fun LiveChargingHeroCard(
     state: ChargingUiState,
     modifier: Modifier = Modifier,
 ) {
-    OverdriveCard(modifier = modifier.fillMaxWidth()) {
+    OverdriveCard(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = 10.dp,
+    ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -233,18 +234,18 @@ private fun LiveChargingHeroCard(
                 // Left: Battery SoC & Range
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(72.dp)
+                            .size(60.dp)
                             .clip(RoundedCornerShape(8.dp))
                             .background(MaterialTheme.colorScheme.primaryContainer),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
                             text = "%${state.socPercent}",
-                            style = MaterialTheme.typography.headlineMedium,
+                            style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             fontFamily = FontFamily.Monospace,
                             color = MaterialTheme.colorScheme.primary,
@@ -254,12 +255,12 @@ private fun LiveChargingHeroCard(
                     Column {
                         Text(
                             text = stringResource(R.string.charging_remaining_range_label),
-                            style = MaterialTheme.typography.labelMedium,
+                            style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
                             text = "${state.estimatedRangeKm} km",
-                            style = MaterialTheme.typography.headlineSmall,
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
                         )
@@ -276,14 +277,14 @@ private fun LiveChargingHeroCard(
                     if (state.status == ChargingStatus.CHARGING) {
                         Text(
                             text = "${state.livePowerKw} kW",
-                            style = MaterialTheme.typography.headlineMedium,
+                            style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             fontFamily = FontFamily.Monospace,
                             color = MaterialTheme.colorScheme.primary,
                         )
                         Text(
                             text = stringResource(R.string.charging_target_eta_fmt, state.targetSocLimit, state.remainingMinutesToTarget),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
@@ -294,28 +295,28 @@ private fun LiveChargingHeroCard(
                     } else {
                         Text(
                             text = "0.0 kW",
-                            style = MaterialTheme.typography.headlineMedium,
+                            style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             fontFamily = FontFamily.Monospace,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
                             text = stringResource(R.string.charging_no_current),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Electrical metrics row
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 MetricTile(
                     title = stringResource(R.string.charging_metric_voltage),
@@ -324,7 +325,7 @@ private fun LiveChargingHeroCard(
                 )
                 MetricTile(
                     title = stringResource(R.string.charging_metric_current),
-                    value = String.format("%.1f A", state.liveCurrentA),
+                    value = String.format(Locale.US, "%.1f A", state.liveCurrentA),
                     modifier = Modifier.weight(1f),
                 )
                 MetricTile(
@@ -350,9 +351,9 @@ private fun MetricTile(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(6.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-            .padding(10.dp),
+            .padding(horizontal = 6.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -384,11 +385,12 @@ private fun ChargingLimitsCard(
     onCurrentLimitChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    OverdriveCard(modifier = modifier.fillMaxWidth()) {
+    OverdriveCard(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = 10.dp,
+    ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 10.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -409,7 +411,7 @@ private fun ChargingLimitsCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // Quick Presets
             Row(
@@ -428,7 +430,7 @@ private fun ChargingLimitsCard(
                                 else MaterialTheme.colorScheme.surfaceContainerHigh
                             )
                             .clickable { onTargetSocChange(preset) }
-                            .padding(vertical = 4.dp),
+                            .padding(vertical = 3.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
@@ -442,7 +444,7 @@ private fun ChargingLimitsCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(2.dp))
 
             // Modern EV Charging Slider
             @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
@@ -454,16 +456,16 @@ private fun ChargingLimitsCard(
                 thumb = {
                     Box(
                         modifier = Modifier
-                            .size(22.dp)
-                            .shadow(3.dp, CircleShape)
+                            .size(20.dp)
+                            .shadow(2.dp, CircleShape)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.primary)
-                            .border(2.5.dp, MaterialTheme.colorScheme.surface, CircleShape),
+                            .border(2.dp, MaterialTheme.colorScheme.surface, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(7.dp)
+                                .size(6.dp)
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.onPrimary)
                         )
@@ -472,9 +474,9 @@ private fun ChargingLimitsCard(
                 track = { sliderState ->
                     SliderDefaults.Track(
                         sliderState = sliderState,
-                        modifier = Modifier.height(8.dp),
+                        modifier = Modifier.height(6.dp),
                         thumbTrackGapSize = 0.dp,
-                        trackInsideCornerSize = 4.dp,
+                        trackInsideCornerSize = 3.dp,
                         drawStopIndicator = null,
                         colors = SliderDefaults.colors(
                             activeTrackColor = MaterialTheme.colorScheme.primary,
@@ -485,7 +487,7 @@ private fun ChargingLimitsCard(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // AC Current Limit Chips
             Text(
@@ -493,7 +495,7 @@ private fun ChargingLimitsCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(3.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -517,7 +519,7 @@ private fun ChargingLimitsCard(
                             .clip(RoundedCornerShape(6.dp))
                             .background(bgColor)
                             .clickable { onCurrentLimitChange(amp) }
-                            .padding(vertical = 6.dp),
+                            .padding(vertical = 4.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
@@ -546,11 +548,12 @@ private fun HardwareActionsCard(
     onTogglePreHeat: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    OverdriveCard(modifier = modifier.fillMaxWidth()) {
+    OverdriveCard(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = 10.dp,
+    ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -563,12 +566,12 @@ private fun HardwareActionsCard(
                 )
                 Text(
                     text = stringResource(R.string.charging_battery_temp_status_fmt, batteryTemp.toInt()),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OverdriveButton(
                     text = if (isPreHeating) stringResource(R.string.charging_btn_preheat_on) else stringResource(R.string.charging_btn_preheat),
                     variant = if (isPreHeating) OverdriveButtonVariant.PRIMARY else OverdriveButtonVariant.OUTLINED,
@@ -594,11 +597,12 @@ private fun SessionsSummaryCard(
     totalEnergy: Float,
     modifier: Modifier = Modifier,
 ) {
-    OverdriveCard(modifier = modifier.fillMaxWidth()) {
+    OverdriveCard(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = 10.dp,
+    ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -611,12 +615,12 @@ private fun SessionsSummaryCard(
                 )
                 Text(
                     text = stringResource(R.string.charging_history_subtitle),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
                         text = stringResource(R.string.charging_sessions_count_fmt, totalSessions),
@@ -626,7 +630,7 @@ private fun SessionsSummaryCard(
                     )
                     Text(
                         text = stringResource(R.string.charging_total_energy_fmt, totalEnergy),
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -643,11 +647,12 @@ private fun SessionItemCard(
     val dateFormat = SimpleDateFormat("dd MMM yyyy · HH:mm", Locale.getDefault())
     val dateString = dateFormat.format(Date(session.timestamp))
 
-    OverdriveCard(modifier = modifier.fillMaxWidth()) {
+    OverdriveCard(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = 10.dp,
+    ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -663,7 +668,7 @@ private fun SessionItemCard(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = stringResource(R.string.charging_session_soc_duration_fmt, session.startSoc, session.endSoc, session.durationMinutes),
                     style = MaterialTheme.typography.bodyMedium,
@@ -687,7 +692,7 @@ private fun SessionItemCard(
                 if (session.costEstimate != null) {
                     Text(
                         text = session.costEstimate,
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
@@ -699,19 +704,20 @@ private fun SessionItemCard(
 
 @Composable
 private fun EmptySessionsCard(modifier: Modifier = Modifier) {
-    OverdriveCard(modifier = modifier.fillMaxWidth()) {
+    OverdriveCard(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = 16.dp,
+    ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(28.dp),
+            modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_charging),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                modifier = Modifier.size(36.dp),
+                modifier = Modifier.size(32.dp),
             )
             Text(
                 text = "Henüz kayıtlı şarj seansı bulunmuyor",
