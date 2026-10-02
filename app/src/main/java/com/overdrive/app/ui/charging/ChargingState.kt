@@ -28,6 +28,8 @@ data class ChargingSession(
     val unitPrice: Float? = null,
     val totalCost: Float? = null,
     val isDc: Boolean = false,
+    val chargeType: String = if (isDc) "DC" else "AC",
+    val isManualEdit: Boolean = false,
 )
 
 /**

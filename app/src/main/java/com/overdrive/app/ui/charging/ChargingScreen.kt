@@ -81,6 +81,7 @@ fun ChargingScreen(
 ) {
     val scrollState = rememberScrollState()
     var showAddDialog by remember { mutableStateOf(false) }
+    var sessionToEdit by remember { mutableStateOf<ChargingSession?>(null) }
     var sessionToDelete by remember { mutableStateOf<ChargingSession?>(null) }
     var showStationGuide by remember { mutableStateOf(false) }
     var showMapPicker by remember { mutableStateOf(false) }
@@ -109,8 +110,9 @@ fun ChargingScreen(
     }
 
     if (showAddDialog) {
-        AddChargingSessionDialog(
+        ChargeCostEditDialog(
             batteryCapacityKwh = state.batteryCapacityKwh,
+            sessionToEdit = null,
             initialStation = preselectedStation,
             onDismiss = {
                 showAddDialog = false
@@ -120,6 +122,20 @@ fun ChargingScreen(
                 onAddSession(session)
                 showAddDialog = false
                 preselectedStation = null
+            }
+        )
+    }
+
+    sessionToEdit?.let { session ->
+        ChargeCostEditDialog(
+            batteryCapacityKwh = state.batteryCapacityKwh,
+            sessionToEdit = session,
+            onDismiss = {
+                sessionToEdit = null
+            },
+            onSave = { updatedSession ->
+                onAddSession(updatedSession)
+                sessionToEdit = null
             }
         )
     }
@@ -208,6 +224,7 @@ fun ChargingScreen(
                         state.sessions.forEach { session ->
                             SessionItemCard(
                                 session = session,
+                                onEditClick = { sessionToEdit = session },
                                 onDeleteClick = { sessionToDelete = session }
                             )
                         }
@@ -754,21 +771,37 @@ private fun SessionsSummaryCard(
 @Composable
 private fun SessionItemCard(
     session: ChargingSession,
+    onEditClick: () -> Unit = {},
     onDeleteClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val dateFormat = SimpleDateFormat("dd MMM yyyy · HH:mm", Locale.forLanguageTag("tr-TR"))
     val dateString = dateFormat.format(Date(session.timestamp))
 
+    val isV2L = session.chargeType.equals("V2L", ignoreCase = true)
+    val isAc = session.chargeType.equals("AC", ignoreCase = true) || (!session.isDc && !isV2L)
+
+    val badgeText = when {
+        isV2L -> "V2L DEŞARJ"
+        isAc -> "AC TİP-2"
+        else -> "DC HIZLI"
+    }
+    val badgeColor = when {
+        isV2L -> MaterialTheme.colorScheme.tertiary
+        isAc -> MaterialTheme.colorScheme.secondary
+        else -> MaterialTheme.colorScheme.primary
+    }
+
     OverdriveCard(
         modifier = modifier.fillMaxWidth(),
         contentPadding = 10.dp,
+        onClick = onEditClick,
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            // Header Row: Badge, Location, Date, Delete Action
+            // Header Row: Badge, Location, Date, Edit & Delete Action
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -782,23 +815,15 @@ private fun SessionItemCard(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
-                            .background(
-                                if (session.isDc) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                                else MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
-                            )
-                            .border(
-                                1.dp,
-                                if (session.isDc) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.secondary,
-                                RoundedCornerShape(4.dp)
-                            )
+                            .background(badgeColor.copy(alpha = 0.2f))
+                            .border(1.dp, badgeColor, RoundedCornerShape(4.dp))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = if (session.isDc) "DC HIZLI" else "AC YAVAŞ",
+                            text = badgeText,
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            color = if (session.isDc) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                            color = badgeColor
                         )
                     }
 
@@ -814,13 +839,24 @@ private fun SessionItemCard(
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
                         text = dateString,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                    IconButton(
+                        onClick = onEditClick,
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_edit),
+                            contentDescription = "Düzenle",
+                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                     IconButton(
                         onClick = onDeleteClick,
                         modifier = Modifier.size(28.dp)
@@ -959,484 +995,6 @@ private fun EmptySessionsCard(
                 variant = OverdriveButtonVariant.PRIMARY,
                 onClick = onAddClick,
             )
-        }
-    }
-}
-
-@Composable
-private fun AddChargingSessionDialog(
-    batteryCapacityKwh: Float,
-    initialStation: EvStation? = null,
-    onDismiss: () -> Unit,
-    onSave: (ChargingSession) -> Unit,
-) {
-    val context = LocalContext.current
-    val repository = remember { EvStationRepository.getInstance(context) }
-    val detectedStation = remember {
-        EvStationRepository.getLastKnownLocation(context)?.let {
-            repository.findStationClosestTo(it.first, it.second, 500.0)
-        }
-    }
-    var showStationPicker by remember { mutableStateOf(false) }
-    var showMapPicker by remember { mutableStateOf(false) }
-
-    val effectiveCapacity = if (batteryCapacityKwh > 30f) batteryCapacityKwh else 60.48f
-
-    var stationName by remember {
-        mutableStateOf(initialStation?.displayTitle ?: "Trugo DC Hızlı Şarj")
-    }
-    var isDc by remember {
-        mutableStateOf(initialStation?.isDc ?: true)
-    }
-
-    val defaultDateTime = remember {
-        SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date())
-    }
-    var dateTimeText by remember { mutableStateOf(defaultDateTime) }
-    var odoText by remember { mutableStateOf("") }
-    var startSocText by remember { mutableStateOf("20") }
-    var endSocText by remember { mutableStateOf("80") }
-    var durationText by remember { mutableStateOf("35") }
-    var energyText by remember { mutableStateOf("36.3") }
-    var unitPriceText by remember {
-        mutableStateOf(
-            if (initialStation != null && initialStation.bestPricePerKwh > 0)
-                String.format(Locale.US, "%.2f", initialStation.bestPricePerKwh)
-            else "8.90"
-        )
-    }
-    var totalCostText by remember {
-        mutableStateOf(
-            if (initialStation != null && initialStation.bestPricePerKwh > 0)
-                String.format(Locale.US, "%.2f", 36.3f * initialStation.bestPricePerKwh.toFloat())
-            else "323.00"
-        )
-    }
-
-    fun recalcEnergyAndCost(sSoc: Int, eSoc: Int, rateStr: String) {
-        val delta = (eSoc - sSoc).coerceIn(0, 100)
-        val kwh = (delta * effectiveCapacity) / 100f
-        energyText = String.format(Locale.US, "%.1f", kwh)
-        val r = rateStr.replace(',', '.').toFloatOrNull()
-        if (r != null && r > 0) {
-            totalCostText = String.format(Locale.US, "%.2f", kwh * r)
-        }
-    }
-
-    if (showStationPicker) {
-        EvStationPickerDialog(
-            onDismissRequest = { showStationPicker = false },
-            onStationSelected = { st ->
-                stationName = st.displayTitle
-                isDc = st.isDc
-                if (st.bestPricePerKwh > 0.0) {
-                    unitPriceText = String.format(Locale.US, "%.2f", st.bestPricePerKwh)
-                    recalcEnergyAndCost(
-                        startSocText.toIntOrNull() ?: 20,
-                        endSocText.toIntOrNull() ?: 80,
-                        unitPriceText
-                    )
-                }
-                showStationPicker = false
-            }
-        )
-    }
-
-    if (showMapPicker) {
-        EvStationMapPickerDialog(
-            onDismissRequest = { showMapPicker = false },
-            onStationSelected = { st ->
-                stationName = st.displayTitle
-                isDc = st.isDc
-                if (st.bestPricePerKwh > 0.0) {
-                    unitPriceText = String.format(Locale.US, "%.2f", st.bestPricePerKwh)
-                    recalcEnergyAndCost(
-                        startSocText.toIntOrNull() ?: 20,
-                        endSocText.toIntOrNull() ?: 80,
-                        unitPriceText
-                    )
-                }
-                showMapPicker = false
-            }
-        )
-    }
-
-    val presets = listOf(
-        Triple("Trugo DC", true, "8.90"),
-        Triple("ZES DC", true, "9.40"),
-        Triple("Eşarj DC", true, "8.80"),
-        Triple("Astor DC", true, "8.50"),
-        Triple("Ev AC", false, "2.60"),
-        Triple("Diğer", false, "")
-    )
-
-    val textFieldColors = OutlinedTextFieldDefaults.colors(
-        focusedBorderColor = MaterialTheme.colorScheme.primary,
-        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-        focusedLabelColor = MaterialTheme.colorScheme.primary,
-        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-    )
-
-    OverdriveDialog(
-        onDismissRequest = onDismiss,
-        title = "Manuel Şarj Seansı Ekle",
-        positiveButtonText = "Kaydet",
-        onPositiveClick = {
-            val startSocInt = startSocText.toIntOrNull() ?: 20
-            val endSocInt = endSocText.toIntOrNull() ?: 80
-            val durInt = durationText.toIntOrNull() ?: 0
-            val energyF = energyText.replace(',', '.').toFloatOrNull()
-                ?: (((endSocInt - startSocInt).coerceAtLeast(0) * effectiveCapacity) / 100f)
-            val unitF = unitPriceText.replace(',', '.').toFloatOrNull()
-            val totalCostF = totalCostText.replace(',', '.').toFloatOrNull()
-                ?: if (unitF != null && unitF > 0) (unitF * energyF) else null
-            val odoInt = odoText.toIntOrNull()
-
-            val dateMs = try {
-                SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).parse(dateTimeText)?.time
-                    ?: System.currentTimeMillis()
-            } catch (_: Throwable) {
-                System.currentTimeMillis()
-            }
-
-            val costStr = if (totalCostF != null && totalCostF > 0) {
-                String.format(Locale.getDefault(), "₺%.2f", totalCostF)
-            } else null
-
-            val session = ChargingSession(
-                id = "manual_${System.currentTimeMillis()}",
-                timestamp = dateMs,
-                location = stationName.trim().ifEmpty { if (isDc) "DC Hızlı Şarj İstasyonu" else "Ev / AC İstasyon" },
-                startSoc = startSocInt.coerceIn(0, 100),
-                endSoc = endSocInt.coerceIn(0, 100),
-                energyKwh = energyF,
-                durationMinutes = durInt,
-                peakPowerKw = if (isDc) 85f else 11f,
-                costEstimate = costStr,
-                odometerKm = odoInt,
-                unitPrice = unitF,
-                totalCost = totalCostF,
-                isDc = isDc
-            )
-            onSave(session)
-        },
-        negativeButtonText = "Vazgeç",
-        onNegativeClick = onDismiss,
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = 480.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            // If nearby station detected at current vehicle location
-            detectedStation?.let { detected ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f))
-                        .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.7f), RoundedCornerShape(8.dp))
-                        .clickable {
-                            stationName = detected.displayTitle
-                            isDc = detected.isDc
-                            if (detected.bestPricePerKwh > 0.0) {
-                                unitPriceText = String.format(Locale.US, "%.2f", detected.bestPricePerKwh)
-                                recalcEnergyAndCost(
-                                    startSocText.toIntOrNull() ?: 20,
-                                    endSocText.toIntOrNull() ?: 80,
-                                    unitPriceText
-                                )
-                            }
-                        }
-                        .padding(8.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "📍 Araç Konumunda İstasyon Algılandı",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Text(
-                                text = "${detected.displayTitle} (${(detected.distanceKm * 1000).toInt()}m · ₺${String.format(Locale.US, "%.2f", detected.bestPricePerKwh)}/kWh)",
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                        Text(
-                            text = "Doldur ➔",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-            }
-
-            // Station Selection Buttons: Rehber & Harita
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OverdriveButton(
-                    text = "📍 İstasyon Rehberi",
-                    variant = OverdriveButtonVariant.PRIMARY,
-                    onClick = { showStationPicker = true },
-                    modifier = Modifier.weight(1f)
-                )
-                OverdriveButton(
-                    text = "🗺️ Harita ile Seç",
-                    variant = OverdriveButtonVariant.OUTLINED,
-                    onClick = { showMapPicker = true },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            // Preset Buttons Row
-            Text(
-                text = "Hızlı İstasyon Şablonları",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                presets.forEach { (name, dc, rate) ->
-                    val isSelected = stationName.contains(name.substringBefore(" "))
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(
-                                if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                                else MaterialTheme.colorScheme.surfaceContainerHigh
-                            )
-                            .border(
-                                1.dp,
-                                if (isSelected) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                                RoundedCornerShape(6.dp)
-                            )
-                            .clickable {
-                                stationName = if (name == "Diğer") "" else name
-                                isDc = dc
-                                if (rate.isNotEmpty()) {
-                                    unitPriceText = rate
-                                    recalcEnergyAndCost(
-                                        startSocText.toIntOrNull() ?: 20,
-                                        endSocText.toIntOrNull() ?: 80,
-                                        rate
-                                    )
-                                }
-                            }
-                            .padding(horizontal = 10.dp, vertical = 6.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = name,
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                            else MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-            }
-
-            // Station Name & AC/DC Toggle
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                OutlinedTextField(
-                    value = stationName,
-                    onValueChange = { stationName = it },
-                    label = { Text("İstasyon / Konum") },
-                    singleLine = true,
-                    colors = textFieldColors,
-                    modifier = Modifier.weight(1f)
-                )
-
-                // AC / DC Toggle
-                Row(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                        .padding(3.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(if (!isDc) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
-                            .clickable { isDc = false }
-                            .padding(horizontal = 10.dp, vertical = 8.dp)
-                    ) {
-                        Text(
-                            text = "AC",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = if (!isDc) FontWeight.Bold else FontWeight.Normal,
-                            color = if (!isDc) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(if (isDc) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
-                            .clickable { isDc = true }
-                            .padding(horizontal = 10.dp, vertical = 8.dp)
-                    ) {
-                        Text(
-                            text = "DC",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = if (isDc) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isDc) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-
-            // Date/Time & Odometer Row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedTextField(
-                    value = dateTimeText,
-                    onValueChange = { dateTimeText = it },
-                    label = { Text("Tarih & Saat (YYYY-AA-GG SS:DD)") },
-                    singleLine = true,
-                    colors = textFieldColors,
-                    modifier = Modifier.weight(1f)
-                )
-
-                OutlinedTextField(
-                    value = odoText,
-                    onValueChange = { odoText = it.filter { ch -> ch.isDigit() } },
-                    label = { Text("Kilometre (km)") },
-                    placeholder = { Text("Örn: 14500") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    colors = textFieldColors,
-                    modifier = Modifier.weight(0.8f)
-                )
-            }
-
-            // Start SoC & End SoC & Duration Row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedTextField(
-                    value = startSocText,
-                    onValueChange = {
-                        val filtered = it.filter { ch -> ch.isDigit() }
-                        startSocText = filtered
-                        val s = filtered.toIntOrNull() ?: 0
-                        val e = endSocText.toIntOrNull() ?: 0
-                        recalcEnergyAndCost(s, e, unitPriceText)
-                    },
-                    label = { Text("Giriş (%)") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    colors = textFieldColors,
-                    modifier = Modifier.weight(1f)
-                )
-
-                OutlinedTextField(
-                    value = endSocText,
-                    onValueChange = {
-                        val filtered = it.filter { ch -> ch.isDigit() }
-                        endSocText = filtered
-                        val s = startSocText.toIntOrNull() ?: 0
-                        val e = filtered.toIntOrNull() ?: 0
-                        recalcEnergyAndCost(s, e, unitPriceText)
-                    },
-                    label = { Text("Çıkış (%)") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    colors = textFieldColors,
-                    modifier = Modifier.weight(1f)
-                )
-
-                OutlinedTextField(
-                    value = durationText,
-                    onValueChange = { durationText = it.filter { ch -> ch.isDigit() } },
-                    label = { Text("Süre (dk)") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    colors = textFieldColors,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            // Energy Added (kWh)
-            OutlinedTextField(
-                value = energyText,
-                onValueChange = {
-                    energyText = it
-                    val kwh = it.replace(',', '.').toFloatOrNull()
-                    val rate = unitPriceText.replace(',', '.').toFloatOrNull()
-                    if (kwh != null && rate != null) {
-                        totalCostText = String.format(Locale.US, "%.2f", kwh * rate)
-                    }
-                },
-                label = { Text("Alınan Enerji (kWh)") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                colors = textFieldColors,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            // Unit Price & Total Cost Row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedTextField(
-                    value = unitPriceText,
-                    onValueChange = {
-                        unitPriceText = it
-                        val rate = it.replace(',', '.').toFloatOrNull()
-                        val kwh = energyText.replace(',', '.').toFloatOrNull()
-                        if (rate != null && kwh != null) {
-                            totalCostText = String.format(Locale.US, "%.2f", kwh * rate)
-                        }
-                    },
-                    label = { Text("Birim Fiyat (₺/kWh)") },
-                    placeholder = { Text("Örn: 8.90") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    colors = textFieldColors,
-                    modifier = Modifier.weight(1f)
-                )
-
-                OutlinedTextField(
-                    value = totalCostText,
-                    onValueChange = { totalCostText = it },
-                    label = { Text("Toplam Maliyet (₺)") },
-                    placeholder = { Text("Örn: 320.00") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    colors = textFieldColors,
-                    modifier = Modifier.weight(1f)
-                )
-            }
         }
     }
 }

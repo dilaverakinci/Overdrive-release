@@ -172,6 +172,8 @@ object ChargingSessionStorage {
                 val unitPrice = if (obj.has("unitPrice")) obj.optDouble("unitPrice").toFloat() else null
                 val totalCost = if (obj.has("totalCost")) obj.optDouble("totalCost").toFloat() else null
                 val isDc = obj.optBoolean("isDc", false)
+                val chargeType = obj.optString("chargeType", if (isDc) "DC" else "AC")
+                val isManualEdit = obj.optBoolean("isManualEdit", false)
 
                 list.add(
                     ChargingSession(
@@ -188,6 +190,8 @@ object ChargingSessionStorage {
                         unitPrice = unitPrice,
                         totalCost = totalCost,
                         isDc = isDc,
+                        chargeType = chargeType,
+                        isManualEdit = isManualEdit
                     )
                 )
             }
@@ -213,6 +217,8 @@ object ChargingSessionStorage {
                     if (session.unitPrice != null) put("unitPrice", session.unitPrice.toDouble())
                     if (session.totalCost != null) put("totalCost", session.totalCost.toDouble())
                     put("isDc", session.isDc)
+                    put("chargeType", session.chargeType)
+                    put("isManualEdit", session.isManualEdit)
                 }
                 arr.put(obj)
             }
