@@ -42,6 +42,7 @@ dilink5_camera_dump*
 *.zip
 *.png
 !app/src/main/assets/web/shared/icon*.png
+!app/src/main/res/drawable/img_car_topview.png
 
 # OS
 .DS_Store

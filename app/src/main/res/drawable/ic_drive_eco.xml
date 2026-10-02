@@ -1,0 +1,14 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="16dp"
+    android:height="16dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Leaf (ECO) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M11,20A7,7 0 0,1 9.8,6.1C15.5,5 17,4.48 19,2C19,4 19.5,9.5 17.9,14.2A7,7 0 0,1 11,20ZM2,21C7,20 9,17 9,13" />
+</vector>

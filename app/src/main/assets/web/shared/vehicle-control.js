@@ -609,7 +609,10 @@ var VC = {
         this.camera = new THREE.PerspectiveCamera(
             fov, renderW / renderH, 0.1, 1000
         );
-        if (window.AndroidBridge) {
+        var isSmallViewport = (renderH > 0 && renderH < 450) || (renderW > 0 && renderW < 650);
+        if (isSmallViewport) {
+            this.camera.position.set(2.6, 1.6, 3.4);
+        } else if (window.AndroidBridge) {
             this.camera.position.set(4.6, 2.8, 6.0);
         } else {
             this.camera.position.set(isCompact ? 5.0 : 4, isCompact ? 3.0 : 2.5, isCompact ? 6.5 : 5);
@@ -646,7 +649,7 @@ var VC = {
         this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.08;
-        this.controls.minDistance = 3;
+        this.controls.minDistance = isSmallViewport ? 1.5 : 3;
         this.controls.maxDistance = 12;
         // Lock vertical rotation — keep camera above the car, no going underneath
         this.controls.minPolarAngle = Math.PI * 0.2;  // ~36° from top (don't go fully overhead)

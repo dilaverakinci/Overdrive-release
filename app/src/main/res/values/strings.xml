@@ -2122,6 +2122,148 @@
     <string name="vehicle_control_mirrors_unfolded">Unfolded</string>
     <string name="vehicle_control_trunk_close">Close Trunk</string>
     <string name="vehicle_control_trunk_open">Open Trunk</string>
+
+    <!-- Vehicle Control Dock Tabs -->
+    <string name="vc_dock_security">Security</string>
+    <string name="vc_dock_trunk">Trunk</string>
+    <string name="vc_dock_climate">Climate</string>
+    <string name="vc_dock_seats">Seats</string>
+    <string name="vc_dock_windows">Windows</string>
+    <string name="vc_dock_lights">Lights</string>
+    <string name="vc_dock_adas">ADAS</string>
+    <string name="vc_dock_charging">Charging</string>
+    <string name="vc_dock_sound">Sound</string>
+    <string name="vc_dock_system">System</string>
+
+    <!-- Vehicle Control Panel Titles -->
+    <string name="vc_title_security">Security &amp; Lock Controls</string>
+    <string name="vc_title_trunk">Trunk, Hood &amp; Door Status</string>
+    <string name="vc_title_climate">Cabin Climate &amp; Battery Heat</string>
+    <string name="vc_title_seats">Seat Heating/Ventilation &amp; Steering</string>
+    <string name="vc_title_windows">Windows, Ventilation &amp; Sunroof</string>
+    <string name="vc_title_lights">Exterior Lights &amp; Ambient Lighting</string>
+    <string name="vc_title_adas">Driver Assistance Systems (ADAS &amp; CPD)</string>
+    <string name="vc_title_charging">Charging Controls &amp; Schedule Settings</string>
+    <string name="vc_title_sound">External Speaker (AVAS) &amp; Motor Sound Simulator</string>
+    <string name="vc_title_system">System &amp; Hardware Operations</string>
+
+    <!-- Vehicle Cockpit & Health -->
+    <string name="vc_chassis_telemetry_title">CHASSIS &amp; POWER TELEMETRY</string>
+    <string name="vc_vehicle_health_title">VEHICLE HEALTH DIAGNOSTICS</string>
+    <string name="vc_energy_flow_title">POWER FLOW &amp; REGENERATION</string>
+    <string name="vc_health_live_time">Live Diagnostics: %1$s</string>
+    <string name="vc_health_badge_normal">✓ Normal</string>
+    <string name="vc_health_badge_warning">● Warning</string>
+    <string name="vc_history_arrow">History ➔</string>
+    <string name="vc_battery_card_title">BATTERY, RANGE &amp; CONSUMPTION</string>
+    <string name="vc_battery_card_subtitle">Capacity, Consumption &amp; Trip Analytics</string>
+
+    <!-- Action Button Labels -->
+    <string name="vc_action_lock">Lock</string>
+    <string name="vc_action_unlock">Unlock</string>
+    <string name="vc_action_flash">Flash</string>
+    <string name="vc_action_find_car">Find Car</string>
+    <string name="vc_action_open_trunk">Open Trunk</string>
+    <string name="vc_action_close_trunk">Close Trunk</string>
+    <string name="vc_action_open_hood">Open Hood</string>
+    <string name="vc_action_close_hood">Close Hood</string>
+    <string name="vc_action_close_all_windows">Close All</string>
+    <string name="vc_action_open_all_windows">Open All</string>
+    <string name="vc_action_vent_windows">Vent Mode</string>
+    <string name="vc_action_sunroof">Sunroof / Shade</string>
+    <string name="vc_action_climate_toggle">A/C Cabin</string>
+    <string name="vc_action_battery_heat">Battery Heat</string>
+    <string name="vc_action_driver_heat">Driver Heat</string>
+    <string name="vc_action_driver_vent">Driver Vent</string>
+    <string name="vc_action_passenger_heat">Pass. Heat</string>
+    <string name="vc_action_passenger_vent">Pass. Vent</string>
+    <string name="vc_action_steering_heat">Steering Heat</string>
+    <string name="vc_action_fold_mirrors">Fold Mirrors</string>
+    <string name="vc_action_rotate_screen">Rotate Screen</string>
+    <string name="vc_action_drl">Daytime Lights (DRL)</string>
+    <string name="vc_action_ambient_color">Ambient Color</string>
+    <string name="vc_action_slw">Speed Limit Warning</string>
+    <string name="vc_action_cpd">Child Presence (CPD)</string>
+    <string name="vc_action_start_charging">Start Charging</string>
+    <string name="vc_action_smart_charge">Smart Charging</string>
+    <string name="vc_action_charge_cap">Charge Limit</string>
+    <string name="vc_action_ac_limit">AC Current Limit</string>
+    <string name="vc_action_avas_tone">External Tone (AVAS)</string>
+    <string name="vc_action_stop_avas">Stop Tone</string>
+    <string name="vc_action_engine_sound">Motor Sound</string>
+    <string name="vc_action_reboot_ivi">Reboot Infotainment</string>
+
+    <!-- Health item titles -->
+    <string name="vc_health_tpms">Tyre Pressure System (TPMS)</string>
+    <string name="vc_health_steering">Power Steering System (EPS)</string>
+    <string name="vc_health_srs">SRS Airbag System</string>
+    <string name="vc_health_power_sys">Powertrain System (MCU)</string>
+    <string name="vc_health_battery">Traction Battery (BMS)</string>
+    <string name="vc_health_esc">Electronic Stability (ESC)</string>
+    <string name="vc_health_charging">Charging System (OBC)</string>
+    <string name="vc_health_epb">Electronic Parking Brake (EPB)</string>
+    <string name="vc_health_abs">Anti-Lock Braking (ABS)</string>
+
+    <!-- Flow mode labels -->
+    <string name="vc_flow_driving">Power Output (Driving)</string>
+    <string name="vc_flow_regen">Regeneration</string>
+    <string name="vc_flow_charging">Charging</string>
+    <string name="vc_flow_idle">Standby</string>
+    <string name="vc_flow_schema_driving">Battery ➔ Motor ➔ Wheels</string>
+    <string name="vc_flow_schema_regen">Wheels ➔ Regen ➔ Battery</string>
+    <string name="vc_flow_schema_charging">Station ➔ Battery</string>
+    <string name="vc_flow_schema_idle">System Ready / Standby</string>
+
+    <!-- Quick Status & Common Labels -->
+    <string name="vc_quick_hood">Hood</string>
+    <string name="vc_quick_doors">Doors</string>
+    <string name="vc_quick_windows">Windows</string>
+    <string name="vc_quick_trunk">Trunk</string>
+    <string name="vc_status_open">Open</string>
+    <string name="vc_status_closed">Closed</string>
+    <string name="vc_status_locked">Locked</string>
+    <string name="vc_status_unlocked">Unlocked</string>
+    <string name="vc_status_folded">Folded</string>
+    <string name="vc_status_normal">● Normal</string>
+    <string name="vc_status_active">Active</string>
+    <string name="vc_door_fl">Front Left Door</string>
+    <string name="vc_door_fr">Front Right Door</string>
+    <string name="vc_door_rl">Rear Left Door</string>
+    <string name="vc_door_rr">Rear Right Door</string>
+    <string name="vc_level_0">Off (0)</string>
+    <string name="vc_level_1">Low (1)</string>
+    <string name="vc_level_2">Med (2)</string>
+    <string name="vc_level_3">High (3)</string>
+    <string name="vc_climate_target_temp">Target Temperature</string>
+    <string name="vc_climate_fan_speed">Fan Speed</string>
+    <string name="vc_ambient_select_title">Ambient Lighting Color Selection</string>
+    <string name="vc_charge_slider_title">Maximum Charge Limit</string>
+    <string name="vc_charge_ac_limit_title">AC Charging Current Limit</string>
+    <string name="vc_charge_max">Maximum</string>
+    <string name="vc_charge_now">Charge Now</string>
+    <string name="vc_sound_ding_dong">Ding-Dong</string>
+    <string name="vc_sound_triple_beep">Triple Beep</string>
+    <string name="vc_sound_melody">Melody</string>
+    <string name="vc_sound_alarm">Alarm</string>
+    <string name="vc_sound_tone_fmt">Tone %1$d</string>
+    <string name="vc_sound_stop_sub">Mute</string>
+    <string name="vc_screen_rotate_sub">Landscape / Portrait</string>
+    <string name="vc_reboot_ivi_sub">Park Only</string>
+    <string name="vc_window_vent_sub">Crack open 2 cm</string>
+    <string name="vc_window_open_all_sub">100% Fully Open</string>
+    <string name="vc_window_close_all_sub">0% Closed</string>
+
+    <!-- Vehicle Control Battery SubStats -->
+    <string name="vc_substat_last50km">LAST 50 KM AVG</string>
+    <string name="vc_substat_since_charge">SINCE LAST CHARGE</string>
+    <string name="vc_substat_active_trip">ACTIVE TRIP</string>
+    <string name="vc_substat_regen_savings">REGEN SAVINGS</string>
+    <string name="vc_substat_overall_fmt">Overall: %1$s</string>
+    <string name="vc_substat_avg_fmt">Avg: %1$s</string>
+    <string name="vc_substat_dist_fmt">Dist: %1$s</string>
+    <string name="vc_substat_awaiting_drive">Awaiting drive</string>
+    <string name="vc_substat_recovered_energy">Recovered Energy</string>
+
     <string name="charging_status_charging">CHARGING</string>
     <string name="charging_status_complete">FULLY CHARGED</string>
     <string name="charging_status_disconnected">DISCONNECTED</string>

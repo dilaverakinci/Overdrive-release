@@ -981,7 +981,253 @@ public class VehicleControlApiHandler {
         if (!Double.isNaN(data.socPercent)) battery.put("soc", data.socPercent);
         if (data.elecRangeKm != BydVehicleData.UNAVAILABLE) battery.put("rangeKm", data.elecRangeKm);
         if (data.bodyworkRangeKm != BydVehicleData.UNAVAILABLE) battery.put("bodyworkRangeKm", data.bodyworkRangeKm);
+        if (!Double.isNaN(data.remainKwh) && data.remainKwh > 0) {
+            battery.put("remainKwh", Math.round(data.remainKwh * 10.0) / 10.0);
+        }
+
+        // SOH percentage (from vehicle data or SocHistoryDatabase/SohEstimator)
+        double sohVal = (!Double.isNaN(data.sohPercent) && data.sohPercent > 0) ? data.sohPercent : -1.0;
+        if (sohVal <= 0) {
+            try {
+                com.overdrive.app.monitor.SocHistoryDatabase socDb = com.overdrive.app.monitor.SocHistoryDatabase.getInstance();
+                com.overdrive.app.abrp.SohEstimator sohEst = socDb != null ? socDb.getSohEstimator() : null;
+                if (sohEst != null && sohEst.getDisplaySoh() > 0) {
+                    sohVal = sohEst.getDisplaySoh();
+                }
+            } catch (Throwable ignored) {}
+        }
+        if (sohVal > 0) {
+            battery.put("sohPercent", Math.round(sohVal * 10.0) / 10.0);
+        }
+
+        // Cell Temperature (°C)
+        double cellTemp = !Double.isNaN(data.avgCellTempC) ? data.avgCellTempC : (!Double.isNaN(data.highCellTempC) ? data.highCellTempC : Double.NaN);
+        if (!Double.isNaN(cellTemp)) {
+            battery.put("cellTempC", (int) Math.round(cellTemp));
+        }
+
+        // 12V Battery Voltage
+        if (!Double.isNaN(data.voltage12v) && data.voltage12v > 0) {
+            battery.put("voltage12v", Math.round(data.voltage12v * 10.0) / 10.0);
+        }
+
+        // Charging status and power
+        boolean isCharging = data.chargingGunState == 1 || data.chargingState == 1 || (!Double.isNaN(data.chargingPowerKw) && data.chargingPowerKw > 0.1);
+        battery.put("isCharging", isCharging);
+        if (!Double.isNaN(data.chargingPowerKw) && data.chargingPowerKw > 0) {
+            battery.put("chargingPowerKw", Math.round(data.chargingPowerKw * 10.0) / 10.0);
+        }
+
+        // Real Vehicle Telemetry Enrichment: Battery, Range & Consumption Metrics
+        double realisticRangeKm = 0.0;
+        double avg50KmKwh = 0.0;
+        double avgLifetimeKwh = 0.0;
+        double sinceLastChargeKm = 0.0;
+        double sinceLastChargeAvgKwh = 0.0;
+        double activeTripKm = 0.0;
+        int activeTripMinutes = 0;
+        double regenKwh = 0.0;
+
+        try {
+            // 1. Son 50 km ortalama tüketim:
+            // Doğrudan BYD DiLink donanımından gelen getLast50KmPowerConsume()
+            if (!Double.isNaN(data.last50KmConsumption) && data.last50KmConsumption > 0.0 && data.last50KmConsumption < 100.0) {
+                avg50KmKwh = Math.round(data.last50KmConsumption * 10.0) / 10.0;
+            }
+
+            // 2. Genel / Ömür boyu ortalama tüketim:
+            // Doğrudan BYD DiLink donanımından gelen getTotalElecConPHMValue()
+            if (!Double.isNaN(data.avgElecConPer100Km) && data.avgElecConPer100Km > 0.0 && data.avgElecConPer100Km < 100.0) {
+                avgLifetimeKwh = Math.round(data.avgElecConPer100Km * 10.0) / 10.0;
+            }
+
+            // 3. Aktif Seyahat (Trip):
+            // Doğrudan BYD gösterge paneli (cluster) seyahat mesafesi ve süresi
+            if (!Double.isNaN(data.currentTripMileageKm) && data.currentTripMileageKm >= 0.0) {
+                activeTripKm = Math.round(data.currentTripMileageKm * 10.0) / 10.0;
+            }
+            if (!Double.isNaN(data.currentTripTimeHours) && data.currentTripTimeHours >= 0.0) {
+                activeTripMinutes = (int) Math.round(data.currentTripTimeHours * 60.0);
+            } else if (!Double.isNaN(data.drivingTimeHours) && data.drivingTimeHours >= 0.0) {
+                activeTripMinutes = (int) Math.round(data.drivingTimeHours * 60.0);
+            }
+
+            com.overdrive.app.trips.TripAnalyticsManager tam =
+                    com.overdrive.app.daemon.CameraDaemon.getTripAnalyticsManager();
+            if (tam != null) {
+                com.overdrive.app.trips.TripRecord activeTrip = tam.getActiveTrip();
+                if (activeTrip != null) {
+                    if (activeTripKm <= 0.0 && activeTrip.distanceKm >= 0.0) {
+                        activeTripKm = Math.round(activeTrip.distanceKm * 10.0) / 10.0;
+                    }
+                    if (activeTripMinutes <= 0 && activeTrip.durationSeconds >= 0) {
+                        activeTripMinutes = Math.max(0, activeTrip.durationSeconds / 60);
+                    }
+                    if (activeTrip.energyPerKm < 0 && activeTrip.distanceKm > 0) {
+                        regenKwh = Math.round(Math.abs(activeTrip.energyPerKm * activeTrip.distanceKm) * 100.0) / 100.0;
+                    } else if (activeTrip.elecConStart >= 0 && activeTrip.elecConEnd >= activeTrip.elecConStart && activeTrip.kwhStart > 0 && activeTrip.kwhEnd > 0) {
+                        double grossKwh = activeTrip.elecConEnd - activeTrip.elecConStart;
+                        double netKwh = activeTrip.kwhStart - activeTrip.kwhEnd;
+                        if (grossKwh > netKwh) {
+                            regenKwh = Math.round((grossKwh - netKwh) * 100.0) / 100.0;
+                        }
+                    }
+                }
+
+                com.overdrive.app.trips.TripDatabase tripDb = tam.getDatabase();
+                if (tripDb != null) {
+                    if (avgLifetimeKwh <= 0.0) {
+                        com.overdrive.app.trips.ConsumptionBucket overall = tripDb.getOverallAverage();
+                        if (overall != null && overall.sampleCount > 0 && overall.getMean() > 0) {
+                            avgLifetimeKwh = Math.round(overall.getMean() * 100.0 * 10.0) / 10.0;
+                        }
+                    }
+                    if (avg50KmKwh <= 0.0) {
+                        java.util.List<com.overdrive.app.trips.TripRecord> recentTrips = tripDb.getTrips(30, 20);
+                        if (recentTrips != null && !recentTrips.isEmpty()) {
+                            double distAcc = 0;
+                            double energyAcc = 0;
+                            for (com.overdrive.app.trips.TripRecord tr : recentTrips) {
+                                if (tr.distanceKm > 0 && tr.energyPerKm > 0) {
+                                    double takeDist = Math.min(tr.distanceKm, 50.0 - distAcc);
+                                    distAcc += takeDist;
+                                    energyAcc += takeDist * tr.energyPerKm;
+                                    if (distAcc >= 50.0) break;
+                                }
+                            }
+                            if (distAcc > 0) {
+                                avg50KmKwh = Math.round((energyAcc / distAcc) * 100.0 * 10.0) / 10.0;
+                            }
+                        }
+                    }
+                }
+
+                com.overdrive.app.trips.RangeEstimator re = tam.getRangeEstimator();
+                if (re != null && !Double.isNaN(data.socPercent)) {
+                    try {
+                        int tempC = !Double.isNaN(data.outsideTempC) ? (int) data.outsideTempC : 22;
+                        com.overdrive.app.trips.RangeEstimate est =
+                                re.estimate(data.socPercent, !Double.isNaN(data.speedKmh) ? data.speedKmh : 0.0, tempC, 80);
+                        if (est != null && est.predictedRangeKm > 0) {
+                            realisticRangeKm = Math.round(est.predictedRangeKm);
+                        }
+                    } catch (Throwable ignored) {}
+                }
+            }
+
+            // Fallback dynamic range calculation if estimator has insufficient history
+            if (realisticRangeKm <= 0 && !Double.isNaN(data.socPercent) && data.socPercent > 0) {
+                double effRate = avgLifetimeKwh > 0 ? (avgLifetimeKwh / 100.0) : (avg50KmKwh > 0 ? (avg50KmKwh / 100.0) : 0.168);
+                double packCap = (!Double.isNaN(data.remainKwh) && data.remainKwh > 0) ? data.remainKwh : 82.5;
+                double usableKwh = (data.socPercent / 100.0) * packCap;
+                realisticRangeKm = Math.round(usableKwh / effRate);
+            }
+
+            // 4. Son Şarjdan İtibaren:
+            com.overdrive.app.monitor.SocHistoryDatabase socDb =
+                    com.overdrive.app.monitor.SocHistoryDatabase.getInstance();
+            if (socDb != null) {
+                JSONObject lastCharge = socDb.getMostRecentCompletedChargingSession(8760);
+                if (lastCharge != null) {
+                    long lastChargeEnd = lastCharge.optLong("endTime", 0);
+                    if (lastChargeEnd > 0 && tam != null && tam.getDatabase() != null) {
+                        java.util.List<com.overdrive.app.trips.TripRecord> tripsSinceCharge =
+                                tam.getDatabase().getTripsBetween(lastChargeEnd, System.currentTimeMillis(), 200, 0);
+                        if (tripsSinceCharge != null) {
+                            double distSum = 0;
+                            double energySum = 0;
+                            for (com.overdrive.app.trips.TripRecord t : tripsSinceCharge) {
+                                if (t.distanceKm > 0) {
+                                    distSum += t.distanceKm;
+                                    if (t.energyPerKm > 0) energySum += t.distanceKm * t.energyPerKm;
+                                }
+                            }
+                            if (activeTripKm > 0) {
+                                distSum += activeTripKm;
+                                if (avg50KmKwh > 0) {
+                                    energySum += activeTripKm * (avg50KmKwh / 100.0);
+                                } else if (avgLifetimeKwh > 0) {
+                                    energySum += activeTripKm * (avgLifetimeKwh / 100.0);
+                                }
+                            }
+                            sinceLastChargeKm = Math.round(distSum * 10.0) / 10.0;
+                            if (distSum > 0 && energySum > 0) {
+                                sinceLastChargeAvgKwh = Math.round((energySum / distSum) * 100.0 * 10.0) / 10.0;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (sinceLastChargeKm <= 0.0 && activeTripKm > 0.0) {
+                sinceLastChargeKm = activeTripKm;
+            }
+            if (sinceLastChargeAvgKwh <= 0.0) {
+                sinceLastChargeAvgKwh = avg50KmKwh > 0.0 ? avg50KmKwh : avgLifetimeKwh;
+            }
+
+            // 5. Regen tasarrufu:
+            if (regenKwh <= 0.0 && activeTripKm > 0.0) {
+                regenKwh = Math.round(activeTripKm * 0.028 * 100.0) / 100.0;
+            } else if (activeTripKm <= 0.0) {
+                regenKwh = 0.0;
+            }
+        } catch (Throwable t) {
+            logger.debug("Failed enriching battery card telemetry: " + t.getMessage());
+        }
+
+        battery.put("realisticRangeKm", (int) Math.max(0, realisticRangeKm));
+        battery.put("avg50KmKwh", avg50KmKwh >= 0 ? avg50KmKwh : 0.0);
+        battery.put("avgLifetimeKwh", avgLifetimeKwh >= 0 ? avgLifetimeKwh : 0.0);
+        battery.put("sinceLastChargeKm", sinceLastChargeKm >= 0 ? sinceLastChargeKm : 0.0);
+        battery.put("sinceLastChargeAvgKwh", sinceLastChargeAvgKwh >= 0 ? sinceLastChargeAvgKwh : 0.0);
+        battery.put("activeTripKm", activeTripKm >= 0 ? activeTripKm : 0.0);
+        battery.put("activeTripMinutes", Math.max(0, activeTripMinutes));
+        battery.put("regenKwh", regenKwh >= 0 ? regenKwh : 0.0);
+
         response.put("battery", battery);
+
+        // Live Powertrain Telemetry (Cockpit instrument cluster)
+        JSONObject powertrain = new JSONObject();
+        double liveSpeed = collector.readCurrentSpeedKmh();
+        if (Double.isNaN(liveSpeed) || liveSpeed < 0) {
+            liveSpeed = !Double.isNaN(data.speedKmh) ? data.speedKmh : Double.NaN;
+        }
+        if (Double.isNaN(liveSpeed) || liveSpeed < 0) {
+            try {
+                com.overdrive.app.monitor.GpsMonitor gpsMon = com.overdrive.app.monitor.GpsMonitor.getInstance();
+                if (gpsMon != null && gpsMon.getSpeed() >= 0) {
+                    liveSpeed = gpsMon.getSpeed() * 3.6;
+                }
+            } catch (Throwable ignored) {}
+        }
+        powertrain.put("speedKmh", !Double.isNaN(liveSpeed) && liveSpeed >= 0 ? Math.round(liveSpeed * 10.0) / 10.0 : 0.0);
+
+        int gearMode = data.gearMode;
+        try {
+            com.overdrive.app.recording.RecordingModeManager rmm = com.overdrive.app.daemon.CameraDaemon.getRecordingModeManager();
+            if (rmm != null && rmm.getCurrentGear() != BydVehicleData.UNAVAILABLE) {
+                gearMode = rmm.getCurrentGear();
+            }
+        } catch (Throwable ignored) {}
+        powertrain.put("gear", com.overdrive.app.recording.RecordingModeManager.gearToString(gearMode));
+        powertrain.put("gearMode", gearMode);
+        powertrain.put("operationMode", data.operationMode != BydVehicleData.UNAVAILABLE ? data.operationMode : 2);
+
+        double livePowerKw = 0.0;
+        if (isCharging && !Double.isNaN(data.chargingPowerKw) && data.chargingPowerKw > 0.1) {
+            livePowerKw = -data.chargingPowerKw;
+        } else if (!Double.isNaN(data.hvBatteryPowerKw) && Math.abs(data.hvBatteryPowerKw) > 0.01) {
+            livePowerKw = data.hvBatteryPowerKw;
+        } else if (!Double.isNaN(data.hvPackVoltage) && !Double.isNaN(data.hvPackCurrentAmps) && data.hvPackVoltage > 50) {
+            livePowerKw = (data.hvPackVoltage * data.hvPackCurrentAmps) / 1000.0;
+        } else if (!Double.isNaN(data.enginePowerKw) && Math.abs(data.enginePowerKw) > 0.01) {
+            livePowerKw = data.enginePowerKw;
+        }
+        powertrain.put("powerKw", Math.round(livePowerKw * 10.0) / 10.0);
+        if (data.accelPercent != BydVehicleData.UNAVAILABLE) powertrain.put("accelPercent", data.accelPercent);
+        if (data.brakePercent != BydVehicleData.UNAVAILABLE) powertrain.put("brakePercent", data.brakePercent);
+        response.put("powertrain", powertrain);
 
         // Lights
         JSONObject lights = new JSONObject();
