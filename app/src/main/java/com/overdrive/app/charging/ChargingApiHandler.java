@@ -154,6 +154,16 @@ public class ChargingApiHandler {
                 return handleInsertManualSession(body);
             }
 
+            // GET /api/charging/stations/nearby
+            if (path.equals("/api/charging/stations/nearby") && "GET".equals(method)) {
+                return handleGetNearbyStations(params);
+            }
+
+            // GET /api/charging/stations/search
+            if (path.equals("/api/charging/stations/search") && "GET".equals(method)) {
+                return handleSearchStations(params);
+            }
+
             // GET /api/charging (list)
             if ((path.equals("/api/charging") || path.equals("/api/charging/")) && "GET".equals(method)) {
                 return handleListSessions(params);
@@ -489,6 +499,102 @@ public class ChargingApiHandler {
         } catch (Exception e) {
             logger.error("Failed to insert manual charging session", e);
             return errorResponse("Failed to insert manual session: " + e.getMessage(), 500);
+        }
+    }
+
+    /** GET /api/charging/stations/nearby?lat=...&lng=...&radius=...&limit=... */
+    private JSONObject handleGetNearbyStations(Map<String, String> params) {
+        try {
+            android.content.Context ctx = com.overdrive.app.daemon.DaemonBootstrap.getContext();
+            if (ctx == null) return errorResponse("Context unavailable", 503);
+            double lat = params != null && params.containsKey("lat") ? Double.parseDouble(params.get("lat")) : 0.0;
+            double lng = params != null && params.containsKey("lng") ? Double.parseDouble(params.get("lng")) : 0.0;
+            double radius = params != null && params.containsKey("radius") ? Double.parseDouble(params.get("radius")) : 30.0;
+            int limit = params != null && params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 50;
+
+            java.util.List<com.overdrive.app.charging.station.EvStation> list =
+                    com.overdrive.app.charging.station.EvStationRepository.Companion.getInstance(ctx)
+                            .findNearestStations(lat, lng, radius, limit);
+
+            JSONArray arr = new JSONArray();
+            for (com.overdrive.app.charging.station.EvStation st : list) {
+                JSONObject obj = new JSONObject();
+                obj.put("id", st.getId());
+                obj.put("operator", st.getOperator());
+                obj.put("name", st.getName());
+                obj.put("displayTitle", st.getDisplayTitle());
+                obj.put("city", st.getCity());
+                obj.put("district", st.getDistrict());
+                obj.put("address", st.getAddress());
+                obj.put("latitude", st.getLatitude());
+                obj.put("longitude", st.getLongitude());
+                obj.put("chargingType", st.getChargingType());
+                obj.put("maxPowerKw", st.getMaxPowerKw());
+                obj.put("socketCount", st.getSocketCount());
+                obj.put("acPrice", st.getAcPrice());
+                obj.put("dcPrice", st.getDcPrice());
+                obj.put("bestPricePerKwh", st.getBestPricePerKwh());
+                obj.put("distanceKm", st.getDistanceKm());
+                obj.put("isDc", st.isDc());
+                obj.put("isCustom", st.isCustom());
+                arr.put(obj);
+            }
+            JSONObject res = new JSONObject();
+            res.put("success", true);
+            res.put("count", arr.length());
+            res.put("stations", arr);
+            return res;
+        } catch (Exception e) {
+            logger.error("Failed to query nearby stations", e);
+            return errorResponse("Failed to query nearby stations: " + e.getMessage(), 500);
+        }
+    }
+
+    /** GET /api/charging/stations/search?q=...&lat=...&lng=...&limit=... */
+    private JSONObject handleSearchStations(Map<String, String> params) {
+        try {
+            android.content.Context ctx = com.overdrive.app.daemon.DaemonBootstrap.getContext();
+            if (ctx == null) return errorResponse("Context unavailable", 503);
+            String query = params != null && params.containsKey("q") ? params.get("q") : "";
+            Double lat = params != null && params.containsKey("lat") ? Double.parseDouble(params.get("lat")) : null;
+            Double lng = params != null && params.containsKey("lng") ? Double.parseDouble(params.get("lng")) : null;
+            int limit = params != null && params.containsKey("limit") ? Integer.parseInt(params.get("limit")) : 50;
+
+            java.util.List<com.overdrive.app.charging.station.EvStation> list =
+                    com.overdrive.app.charging.station.EvStationRepository.Companion.getInstance(ctx)
+                            .searchStations(query, lat, lng, limit);
+
+            JSONArray arr = new JSONArray();
+            for (com.overdrive.app.charging.station.EvStation st : list) {
+                JSONObject obj = new JSONObject();
+                obj.put("id", st.getId());
+                obj.put("operator", st.getOperator());
+                obj.put("name", st.getName());
+                obj.put("displayTitle", st.getDisplayTitle());
+                obj.put("city", st.getCity());
+                obj.put("district", st.getDistrict());
+                obj.put("address", st.getAddress());
+                obj.put("latitude", st.getLatitude());
+                obj.put("longitude", st.getLongitude());
+                obj.put("chargingType", st.getChargingType());
+                obj.put("maxPowerKw", st.getMaxPowerKw());
+                obj.put("socketCount", st.getSocketCount());
+                obj.put("acPrice", st.getAcPrice());
+                obj.put("dcPrice", st.getDcPrice());
+                obj.put("bestPricePerKwh", st.getBestPricePerKwh());
+                obj.put("distanceKm", st.getDistanceKm());
+                obj.put("isDc", st.isDc());
+                obj.put("isCustom", st.isCustom());
+                arr.put(obj);
+            }
+            JSONObject res = new JSONObject();
+            res.put("success", true);
+            res.put("count", arr.length());
+            res.put("stations", arr);
+            return res;
+        } catch (Exception e) {
+            logger.error("Failed to search stations", e);
+            return errorResponse("Failed to search stations: " + e.getMessage(), 500);
         }
     }
 

@@ -44,12 +44,14 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.overdrive.app.R
+import com.overdrive.app.charging.station.EvStationRepository
 import com.overdrive.app.ui.component.OverdriveButton
 import com.overdrive.app.ui.component.OverdriveButtonVariant
 import com.overdrive.app.ui.component.OverdriveCard
@@ -79,6 +81,17 @@ fun ChargingScreen(
     val scrollState = rememberScrollState()
     var showAddDialog by remember { mutableStateOf(false) }
     var sessionToDelete by remember { mutableStateOf<ChargingSession?>(null) }
+    var showStationGuide by remember { mutableStateOf(false) }
+
+    if (showStationGuide) {
+        EvStationPickerDialog(
+            onDismissRequest = { showStationGuide = false },
+            onStationSelected = { station ->
+                showStationGuide = false
+                showAddDialog = true
+            }
+        )
+    }
 
     if (showAddDialog) {
         AddChargingSessionDialog(
@@ -159,11 +172,12 @@ fun ChargingScreen(
                     )
                 }
                 ChargingTab.SESSIONS -> {
-                    // Aggregates Card with "+ Seans Ekle" button
+                    // Aggregates Card with "+ Seans Ekle" and "İstasyon Rehberi" buttons
                     SessionsSummaryCard(
                         totalSessions = state.totalSessionsCount,
                         totalEnergy = state.totalEnergyDeliveredKwh,
-                        onAddClick = { showAddDialog = true }
+                        onAddClick = { showAddDialog = true },
+                        onBrowseStationsClick = { showStationGuide = true }
                     )
 
                     if (state.sessions.isEmpty()) {
@@ -649,6 +663,7 @@ private fun SessionsSummaryCard(
     totalSessions: Int,
     totalEnergy: Float,
     onAddClick: () -> Unit = {},
+    onBrowseStationsClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     OverdriveCard(
@@ -676,7 +691,7 @@ private fun SessionsSummaryCard(
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
@@ -691,6 +706,12 @@ private fun SessionsSummaryCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
+
+                OverdriveButton(
+                    text = "İstasyon Rehberi",
+                    variant = OverdriveButtonVariant.OUTLINED,
+                    onClick = onBrowseStationsClick,
+                )
 
                 OverdriveButton(
                     text = "+ Seans Ekle",
@@ -920,6 +941,15 @@ private fun AddChargingSessionDialog(
     onDismiss: () -> Unit,
     onSave: (ChargingSession) -> Unit,
 ) {
+    val context = LocalContext.current
+    val repository = remember { EvStationRepository.getInstance(context) }
+    val detectedStation = remember {
+        EvStationRepository.getLastKnownLocation(context)?.let {
+            repository.findStationClosestTo(it.first, it.second, 500.0)
+        }
+    }
+    var showStationPicker by remember { mutableStateOf(false) }
+
     val effectiveCapacity = if (batteryCapacityKwh > 30f) batteryCapacityKwh else 60.48f
 
     var stationName by remember { mutableStateOf("Trugo DC Hızlı Şarj") }
@@ -945,6 +975,25 @@ private fun AddChargingSessionDialog(
         if (r != null && r > 0) {
             totalCostText = String.format(Locale.US, "%.2f", kwh * r)
         }
+    }
+
+    if (showStationPicker) {
+        EvStationPickerDialog(
+            onDismissRequest = { showStationPicker = false },
+            onStationSelected = { st ->
+                stationName = st.displayTitle
+                isDc = st.isDc
+                if (st.bestPricePerKwh > 0.0) {
+                    unitPriceText = String.format(Locale.US, "%.2f", st.bestPricePerKwh)
+                    recalcEnergyAndCost(
+                        startSocText.toIntOrNull() ?: 20,
+                        endSocText.toIntOrNull() ?: 80,
+                        unitPriceText
+                    )
+                }
+                showStationPicker = false
+            }
+        )
     }
 
     val presets = listOf(
@@ -1018,6 +1067,67 @@ private fun AddChargingSessionDialog(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            // If nearby station detected at current vehicle location
+            detectedStation?.let { detected ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f))
+                        .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.7f), RoundedCornerShape(8.dp))
+                        .clickable {
+                            stationName = detected.displayTitle
+                            isDc = detected.isDc
+                            if (detected.bestPricePerKwh > 0.0) {
+                                unitPriceText = String.format(Locale.US, "%.2f", detected.bestPricePerKwh)
+                                recalcEnergyAndCost(
+                                    startSocText.toIntOrNull() ?: 20,
+                                    endSocText.toIntOrNull() ?: 80,
+                                    unitPriceText
+                                )
+                            }
+                        }
+                        .padding(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "📍 Araç Konumunda İstasyon Algılandı",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "${detected.displayTitle} (${(detected.distanceKm * 1000).toInt()}m · ₺${String.format(Locale.US, "%.2f", detected.bestPricePerKwh)}/kWh)",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                        Text(
+                            text = "Doldur ➔",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
+
+            // Station Guide Button (22,000+ stations)
+            OverdriveButton(
+                text = "📍 22.000+ İstasyon Rehberinden Seç",
+                variant = OverdriveButtonVariant.PRIMARY,
+                onClick = { showStationPicker = true },
+                modifier = Modifier.fillMaxWidth()
+            )
+
             // Preset Buttons Row
             Text(
                 text = "Hızlı İstasyon Şablonları",
