@@ -17,6 +17,7 @@ class IntegrationsComposeParityTest {
         assertFalse(state.abrpConnected)
         assertFalse(state.mqttConnected)
         assertFalse(state.bydCloudConfigured)
+        assertFalse(state.safeKeepConfigured)
         assertFalse(state.allReady)
     }
 
@@ -37,9 +38,10 @@ class IntegrationsComposeParityTest {
     @Test
     fun connectionStatus_updatesStateCorrectly() {
         val state = IntegrationsUiState()
-        val updated = state.copy(telegramConfigured = true, bydCloudConfigured = true)
+        val updated = state.copy(telegramConfigured = true, bydCloudConfigured = true, safeKeepConfigured = true)
         assertTrue(updated.telegramConfigured)
         assertTrue(updated.bydCloudConfigured)
+        assertTrue(updated.safeKeepConfigured)
         assertFalse(updated.abrpConnected)
     }
 }

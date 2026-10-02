@@ -766,6 +766,11 @@
     <string name="integrations_mqtt_desc">Aracın telemetrisini ev asistanına veya herhangi bir MQTT aracıya gönderin.</string>
     <string name="integrations_byd_cloud_desc">Kapı kilidi, far yanıp sönmesi ve korna gibi uzaktan komutları etkinleştirmek için BYD uygulama hesabınızı bağlayın.</string>
     <string name="integrations_configure_button">Yapılandır</string>
+    <string name="integrations_safekeep_title">SafeKeep</string>
+    <string name="integrations_safekeep_desc">Nöbetçi kliplerinin ve yolculukların güvenli bir kopyasını kendi Google Drive, OneDrive, NAS veya S3 depolama alanınızda saklayın.</string>
+    <string name="integrations_safekeep_info_dialog_title">SafeKeep Bulut &amp; NAS Yedekleme</string>
+    <string name="integrations_safekeep_info_dialog_message">SafeKeep, nöbetçi kayıtlarını ve sürüş günlüklerini tercih ettiğiniz bulut veya ağ depolama alanınıza (Google Drive, OneDrive, S3, WebDAV/NAS) otomatik olarak eşitler. Bulut senkronizasyon yapılandırması bir sonraki güncellemede kullanıma sunulacaktır.</string>
+    <string name="integrations_safekeep_dialog_ok">Tamam</string>
     <!-- Settings → About / Privacy actions (rows) -->
     <string name="settings_action_check_update">Güncellemeleri kontrol edin</string>
     <string name="settings_action_reset_data">Verileri yeniden ayarlayın...</string>

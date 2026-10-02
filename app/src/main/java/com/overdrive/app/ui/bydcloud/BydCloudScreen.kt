@@ -161,7 +161,7 @@ fun BydCloudScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(OverdriveTheme.colors.background)
             .padding(16.dp)
     ) {
         // Top Header
@@ -234,9 +234,9 @@ fun BydCloudScreen(
 
         // Status banner if present
         if (!state.statusMessage.isNullOrBlank()) {
-            val bannerBg = if (state.isStatusError) Color(0x33EF4444) else Color(0x3322C55E)
-            val bannerBorder = if (state.isStatusError) OverdriveTheme.colors.accentRed else OverdriveTheme.colors.accentGreen
-            val bannerText = if (state.isStatusError) Color(0xFFFF8888) else Color(0xFF88FF88)
+            val bannerBg = if (state.isStatusError) OverdriveTheme.colors.statusDangerContainer else OverdriveTheme.colors.statusSuccessContainer
+            val bannerBorder = if (state.isStatusError) OverdriveTheme.colors.statusDanger else OverdriveTheme.colors.statusSuccess
+            val bannerText = if (state.isStatusError) OverdriveTheme.colors.statusDanger else OverdriveTheme.colors.statusSuccess
 
             Card(
                 modifier = Modifier
@@ -315,7 +315,7 @@ fun BydCloudScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = OverdriveTheme.colors.accentRed),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Temizle", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text("Temizle", color = OverdriveTheme.colors.onError, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -323,7 +323,7 @@ fun BydCloudScreen(
                     Text("İptal", color = OverdriveTheme.colors.textSecondary)
                 }
             },
-            containerColor = Color(0xFF16181D)
+            containerColor = OverdriveTheme.colors.surfaceContainer
         )
     }
 }
@@ -336,13 +336,13 @@ private fun BydCloudSubTabRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFF121418), RoundedCornerShape(8.dp))
+            .background(OverdriveTheme.colors.surfaceContainerLow, RoundedCornerShape(8.dp))
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         BydCloudTab.values().forEach { tab ->
             val isSelected = tab == selectedTab
-            val bg = if (isSelected) Color(0xFF1F242D) else Color.Transparent
+            val bg = if (isSelected) OverdriveTheme.colors.surfaceContainerHigh else Color.Transparent
             val textColor = if (isSelected) OverdriveTheme.colors.textPrimary else OverdriveTheme.colors.textSecondary
             val border = if (isSelected) BorderStroke(1.dp, OverdriveTheme.colors.accentGreen.copy(alpha = 0.5f)) else null
 
@@ -410,8 +410,8 @@ private fun AccountTabContent(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF141A1E)),
-            border = BorderStroke(1.dp, Color(0xFF1E3A4B))
+            colors = CardDefaults.cardColors(containerColor = OverdriveTheme.colors.surfaceContainerLow),
+            border = BorderStroke(1.dp, OverdriveTheme.colors.cardBorder)
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
                 Row(
@@ -423,7 +423,7 @@ private fun AccountTabContent(
                     Icon(
                         imageVector = Icons.Default.Lightbulb,
                         contentDescription = null,
-                        tint = Color(0xFF38BDF8),
+                        tint = OverdriveTheme.colors.statusInfo,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
@@ -463,7 +463,7 @@ private fun AccountTabContent(
                             Text(
                                 text = step,
                                 fontSize = 12.sp,
-                                color = Color(0xFFB0C4DE),
+                                color = OverdriveTheme.colors.textSecondary,
                                 modifier = Modifier.padding(vertical = 3.dp)
                             )
                         }
@@ -519,11 +519,11 @@ private fun AccountTabContent(
                     ExposedDropdownMenu(
                         expanded = countryDropdownExpanded,
                         onDismissRequest = { countryDropdownExpanded = false },
-                        modifier = Modifier.background(Color(0xFF1A1D24))
+                        modifier = Modifier.background(OverdriveTheme.colors.surfaceContainer)
                     ) {
                         BYD_COUNTRIES.forEach { country ->
                             DropdownMenuItem(
-                                text = { Text("${country.name} (${country.code})", color = Color.White) },
+                                text = { Text("${country.name} (${country.code})", color = OverdriveTheme.colors.textPrimary) },
                                 onClick = {
                                     selectedCountry = country
                                     countryDropdownExpanded = false
@@ -632,15 +632,18 @@ private fun AccountTabContent(
                         modifier = Modifier
                             .weight(1f)
                             .height(48.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = OverdriveTheme.colors.accentGreen),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = OverdriveTheme.colors.primary,
+                            contentColor = OverdriveTheme.colors.onPrimary
+                        ),
                         shape = RoundedCornerShape(8.dp),
                         enabled = !state.isLoading
                     ) {
-                        Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = Color.Black)
+                        Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = OverdriveTheme.colors.onPrimary)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = if (state.isVerified) "Bilgileri Güncelle" else "Giriş Yap ve Kaydet",
-                            color = Color.Black,
+                            color = OverdriveTheme.colors.onPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )
@@ -651,13 +654,13 @@ private fun AccountTabContent(
                         modifier = Modifier
                             .weight(1f)
                             .height(48.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF262C36)),
+                        colors = ButtonDefaults.buttonColors(containerColor = OverdriveTheme.colors.surfaceContainerHigh),
                         shape = RoundedCornerShape(8.dp),
                         enabled = state.isVerified && !state.isLoading
                     ) {
-                        Icon(imageVector = Icons.Default.FlashOn, contentDescription = null, tint = Color.White)
+                        Icon(imageVector = Icons.Default.FlashOn, contentDescription = null, tint = OverdriveTheme.colors.textPrimary)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Işıkları Yak (Test)", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text("Işıkları Yak (Test)", color = OverdriveTheme.colors.textPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     }
                 }
             }
@@ -841,10 +844,10 @@ private fun StatusTabContent(
                     onCheckedChange = onToggleCloudDataMerge,
                     enabled = state.isVerified,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.Black,
-                        checkedTrackColor = OverdriveTheme.colors.accentGreen,
-                        uncheckedThumbColor = Color.LightGray,
-                        uncheckedTrackColor = Color.DarkGray
+                        checkedThumbColor = OverdriveTheme.colors.onPrimary,
+                        checkedTrackColor = OverdriveTheme.colors.primary,
+                        uncheckedThumbColor = OverdriveTheme.colors.outline,
+                        uncheckedTrackColor = OverdriveTheme.colors.surfaceContainerHighest
                     )
                 )
             }
@@ -866,7 +869,7 @@ private fun AdvancedTabContent(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(8.dp),
             colors = CardDefaults.cardColors(containerColor = OverdriveTheme.colors.cardBackground),
-            border = BorderStroke(1.dp, Color(0xFF3F1D1D))
+            border = BorderStroke(1.dp, OverdriveTheme.colors.accentRed.copy(alpha = 0.5f))
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -901,9 +904,9 @@ private fun AdvancedTabContent(
                     shape = RoundedCornerShape(8.dp),
                     enabled = state.isConfigured || state.isVerified
                 ) {
-                    Icon(imageVector = Icons.Default.Delete, contentDescription = null, tint = Color.White)
+                    Icon(imageVector = Icons.Default.Delete, contentDescription = null, tint = OverdriveTheme.colors.onError)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Kimlik Bilgilerini Temizle", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text("Kimlik Bilgilerini Temizle", color = OverdriveTheme.colors.onError, fontWeight = FontWeight.Bold)
                 }
             }
         }

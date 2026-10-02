@@ -1302,6 +1302,11 @@
     <string name="integrations_mqtt_desc">Publish vehicle telemetry to Home Assistant or any MQTT broker.</string>
     <string name="integrations_byd_cloud_desc">Connect your BYD app account to enable remote commands like door lock, flash lights, and horn.</string>
     <string name="integrations_configure_button">Configure</string>
+    <string name="integrations_safekeep_title">SafeKeep</string>
+    <string name="integrations_safekeep_desc">Keep a safe copy of sentry clips and trips in your own Google Drive, OneDrive, NAS or S3 storage.</string>
+    <string name="integrations_safekeep_info_dialog_title">SafeKeep Cloud &amp; NAS Backup</string>
+    <string name="integrations_safekeep_info_dialog_message">SafeKeep automatically syncs sentry recordings and trip logs to your preferred cloud or network storage (Google Drive, OneDrive, S3, WebDAV/NAS). Cloud sync configuration will be available in the upcoming release.</string>
+    <string name="integrations_safekeep_dialog_ok">OK</string>
 
     <!-- Settings → About / Privacy actions (rows) -->
     <string name="settings_action_check_update">Check for updates</string>

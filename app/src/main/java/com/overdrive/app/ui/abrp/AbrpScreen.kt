@@ -137,7 +137,7 @@ fun AbrpScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(OverdriveTheme.colors.background)
             .padding(16.dp)
     ) {
         // Top Header
@@ -246,7 +246,7 @@ private fun AbrpSubTabRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFF121418), RoundedCornerShape(8.dp))
+            .background(OverdriveTheme.colors.surfaceContainerLow, RoundedCornerShape(8.dp))
             .border(1.dp, OverdriveTheme.colors.cardBorder, RoundedCornerShape(8.dp))
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -398,7 +398,7 @@ private fun StatusTabContent(
                         state.soc <= 30f -> OverdriveTheme.colors.accentAmber
                         else -> OverdriveTheme.colors.accentGreen
                     },
-                    trackColor = Color(0xFF1E2128)
+                    trackColor = OverdriveTheme.colors.surfaceContainerHighest
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -637,7 +637,7 @@ private fun TokenTabContent(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color(0xFF16181D), RoundedCornerShape(8.dp))
+                            .background(OverdriveTheme.colors.surfaceContainerLow, RoundedCornerShape(8.dp))
                             .border(1.dp, OverdriveTheme.colors.accentGreen.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
                             .padding(14.dp)
                     ) {
@@ -720,14 +720,14 @@ private fun TokenTabContent(
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = null,
-                        tint = Color.Black,
+                        tint = OverdriveTheme.colors.onPrimary,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = "Tokeni Kaydet ve Test Et",
                         fontWeight = FontWeight.SemiBold,
-                        color = Color.Black
+                        color = OverdriveTheme.colors.onPrimary
                     )
                 }
 
@@ -841,7 +841,7 @@ private fun SegmentOptionButton(
             .clip(RoundedCornerShape(6.dp))
             .background(
                 if (isSelected) OverdriveTheme.colors.primary.copy(alpha = 0.2f)
-                else Color(0xFF16181D)
+                else OverdriveTheme.colors.surfaceContainerLow
             )
             .border(
                 1.dp,
@@ -875,7 +875,7 @@ private fun SegmentOptionButton(
             Text(
                 text = subtitle,
                 fontSize = 11.sp,
-                color = Color.Gray,
+                color = OverdriveTheme.colors.textSecondary,
                 modifier = Modifier.padding(top = 2.dp)
             )
         }
@@ -915,10 +915,10 @@ private fun SettingToggleRow(
             checked = checked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.White,
-                checkedTrackColor = OverdriveTheme.colors.accentGreen,
-                uncheckedThumbColor = Color.Gray,
-                uncheckedTrackColor = Color(0xFF2C2F36)
+                checkedThumbColor = OverdriveTheme.colors.onPrimary,
+                checkedTrackColor = OverdriveTheme.colors.primary,
+                uncheckedThumbColor = OverdriveTheme.colors.outline,
+                uncheckedTrackColor = OverdriveTheme.colors.surfaceContainerHighest
             )
         )
     }

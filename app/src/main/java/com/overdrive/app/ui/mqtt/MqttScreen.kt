@@ -138,7 +138,7 @@ fun MqttScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(OverdriveTheme.colors.background)
             .padding(16.dp)
     ) {
         // Top Header
@@ -247,7 +247,7 @@ private fun MqttSubTabRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFF121418), RoundedCornerShape(8.dp))
+            .background(OverdriveTheme.colors.surfaceContainerLow, RoundedCornerShape(8.dp))
             .border(1.dp, OverdriveTheme.colors.cardBorder, RoundedCornerShape(8.dp))
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -348,11 +348,11 @@ private fun ConnectionsTabContent(
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = null,
-                        tint = Color.Black,
+                        tint = OverdriveTheme.colors.onPrimary,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(text = "Yeni Broker Ekle", fontWeight = FontWeight.SemiBold, color = Color.Black)
+                    Text(text = "Yeni Broker Ekle", fontWeight = FontWeight.SemiBold, color = OverdriveTheme.colors.onPrimary)
                 }
             }
         }
@@ -408,7 +408,7 @@ private fun ConnectionCard(
                             .clip(RoundedCornerShape(5.dp))
                             .background(
                                 when {
-                                    !conn.enabled -> Color.Gray
+                                    !conn.enabled -> OverdriveTheme.colors.outline
                                     conn.isConnected -> OverdriveTheme.colors.accentGreen
                                     else -> OverdriveTheme.colors.accentRed
                                 }
@@ -436,10 +436,10 @@ private fun ConnectionCard(
                         checked = conn.enabled,
                         onCheckedChange = onToggleEnabled,
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = OverdriveTheme.colors.accentGreen,
-                            uncheckedThumbColor = Color.Gray,
-                            uncheckedTrackColor = Color(0xFF2C2F36)
+                            checkedThumbColor = OverdriveTheme.colors.onPrimary,
+                            checkedTrackColor = OverdriveTheme.colors.primary,
+                            uncheckedThumbColor = OverdriveTheme.colors.outline,
+                            uncheckedTrackColor = OverdriveTheme.colors.surfaceContainerHighest
                         )
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -465,7 +465,7 @@ private fun ConnectionCard(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF16181D), RoundedCornerShape(6.dp))
+                        .background(OverdriveTheme.colors.surfaceContainerLow, RoundedCornerShape(6.dp))
                         .padding(12.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -652,21 +652,21 @@ private fun AddEditTabContent(
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
-                            tint = Color.Black,
+                            tint = OverdriveTheme.colors.onPrimary,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = if (state.isEditing) "Güncelle" else "Brokerı Kaydet",
                             fontWeight = FontWeight.SemiBold,
-                            color = Color.Black
+                            color = OverdriveTheme.colors.onPrimary
                         )
                     }
 
                     Button(
                         onClick = onTest,
                         modifier = Modifier.height(48.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E222B)),
+                        colors = ButtonDefaults.buttonColors(containerColor = OverdriveTheme.colors.surfaceContainerHigh),
                         border = BorderStroke(1.dp, OverdriveTheme.colors.cardBorder),
                         shape = RoundedCornerShape(6.dp)
                     ) {
@@ -826,10 +826,10 @@ private fun SettingToggleRow(
             checked = checked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.White,
-                checkedTrackColor = OverdriveTheme.colors.accentGreen,
-                uncheckedThumbColor = Color.Gray,
-                uncheckedTrackColor = Color(0xFF2C2F36)
+                checkedThumbColor = OverdriveTheme.colors.onPrimary,
+                checkedTrackColor = OverdriveTheme.colors.primary,
+                uncheckedThumbColor = OverdriveTheme.colors.outline,
+                uncheckedTrackColor = OverdriveTheme.colors.surfaceContainerHighest
             )
         )
     }

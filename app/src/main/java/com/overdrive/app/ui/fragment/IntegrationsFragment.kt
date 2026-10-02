@@ -27,6 +27,18 @@ import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.util.concurrent.Executors
 
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+
 /**
  * 100% Jetpack Compose Native Integrations Fragment.
  * Rolls up Telegram / ABRP / MQTT / BYD Cloud statuses with live background polling.
@@ -43,6 +55,7 @@ class IntegrationsFragment : Fragment() {
     }
 
     private var uiState by mutableStateOf(IntegrationsUiState())
+    private var showSafeKeepInfoDialog by mutableStateOf(false)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -65,8 +78,46 @@ class IntegrationsFragment : Fragment() {
                     },
                     onBydCloudClick = {
                         findNavController().navigateDrillDown(R.id.bydCloudFragment)
+                    },
+                    onSafeKeepClick = {
+                        showSafeKeepInfoDialog = true
                     }
                 )
+
+                if (showSafeKeepInfoDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showSafeKeepInfoDialog = false },
+                        icon = {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_safekeep),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(28.dp),
+                            )
+                        },
+                        title = {
+                            Text(
+                                text = stringResource(R.string.integrations_safekeep_info_dialog_title),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        },
+                        text = {
+                            Text(
+                                text = stringResource(R.string.integrations_safekeep_info_dialog_message),
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { showSafeKeepInfoDialog = false }) {
+                                Text(
+                                    text = stringResource(R.string.integrations_safekeep_dialog_ok),
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
+                        },
+                    )
+                }
             }
         }
     }

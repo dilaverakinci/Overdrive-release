@@ -133,7 +133,7 @@ fun TelegramScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(OverdriveTheme.colors.background)
             .padding(16.dp)
     ) {
         // Top Header
@@ -247,7 +247,7 @@ private fun TelegramSubTabRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFF121418), RoundedCornerShape(8.dp))
+            .background(OverdriveTheme.colors.surfaceContainerLow, RoundedCornerShape(8.dp))
             .border(1.dp, OverdriveTheme.colors.cardBorder, RoundedCornerShape(8.dp))
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -377,14 +377,14 @@ private fun BotTabContent(
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
-                            tint = Color.Black,
+                            tint = OverdriveTheme.colors.onPrimary,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "Bağlan ve Test Et",
                             fontWeight = FontWeight.SemiBold,
-                            color = Color.Black
+                            color = OverdriveTheme.colors.onPrimary
                         )
                     }
 
@@ -417,7 +417,7 @@ private fun BotTabContent(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color(0xFF16181D), RoundedCornerShape(8.dp))
+                            .background(OverdriveTheme.colors.surfaceContainerLow, RoundedCornerShape(8.dp))
                             .border(1.dp, OverdriveTheme.colors.accentGreen.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
                             .padding(12.dp)
                     ) {
@@ -624,14 +624,14 @@ private fun PairTabContent(
                         Icon(
                             imageVector = Icons.Default.Key,
                             contentDescription = null,
-                            tint = Color.Black,
+                            tint = OverdriveTheme.colors.onPrimary,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = if (state.pendingPin != null) "Yeni PIN Üret" else "Eşleştirme PIN Kodu Üret",
                             fontWeight = FontWeight.SemiBold,
-                            color = Color.Black
+                            color = OverdriveTheme.colors.onPrimary
                         )
                     }
                 }
@@ -838,10 +838,10 @@ private fun SettingToggleRow(
             checked = checked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.White,
-                checkedTrackColor = OverdriveTheme.colors.accentGreen,
-                uncheckedThumbColor = Color.Gray,
-                uncheckedTrackColor = Color(0xFF2C2F36)
+                checkedThumbColor = OverdriveTheme.colors.onPrimary,
+                checkedTrackColor = OverdriveTheme.colors.primary,
+                uncheckedThumbColor = OverdriveTheme.colors.outline,
+                uncheckedTrackColor = OverdriveTheme.colors.surfaceContainerHighest
             )
         )
     }
