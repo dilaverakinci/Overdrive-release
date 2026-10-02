@@ -10932,6 +10932,51 @@ public class SocHistoryDatabase {
         }
     }
 
+    public synchronized long insertManualChargingSession(
+            long startTime,
+            long endTime,
+            double startSoc,
+            double endSoc,
+            double energyAddedKwh,
+            double cost,
+            double rate,
+            String currency,
+            String placeLabel,
+            int startOdometerKm,
+            boolean isDc) throws Exception {
+        String sql = "INSERT INTO " + TABLE_CHARGING + " ("
+                + "start_time, end_time, start_soc, end_soc, energy_added_kwh, "
+                + "session_cost, electricity_rate, currency, place_label, start_odometer_km, "
+                + "is_dc, gun_state, peak_power_kw, avg_power_kw"
+                + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        final Connection conn = connection;
+        final long[] generatedId = {-1L};
+        runInTransaction(() -> {
+            try (PreparedStatement pstmt = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
+                pstmt.setLong(1, startTime);
+                pstmt.setLong(2, endTime > startTime ? endTime : startTime);
+                pstmt.setDouble(3, startSoc);
+                pstmt.setDouble(4, endSoc);
+                pstmt.setDouble(5, energyAddedKwh);
+                pstmt.setDouble(6, cost);
+                pstmt.setDouble(7, rate);
+                pstmt.setString(8, currency != null && !currency.isEmpty() ? currency : "₺");
+                pstmt.setString(9, placeLabel != null && !placeLabel.isEmpty() ? placeLabel : "Manuel Giriş");
+                pstmt.setInt(10, startOdometerKm);
+                pstmt.setInt(11, isDc ? 1 : 0);
+                pstmt.setInt(12, isDc ? 3 : 2); // 3=DC, 2=AC
+                pstmt.setDouble(13, isDc ? 60.0 : 7.4);
+                pstmt.setDouble(14, isDc ? 45.0 : 6.8);
+                pstmt.executeUpdate();
+                try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                    if (rs.next()) generatedId[0] = rs.getLong(1);
+                }
+            }
+        });
+        logger.info("Manually inserted charging session " + generatedId[0]);
+        return generatedId[0];
+    }
+
     /**
      * Replace a completed session's total cost, derive its effective rate, and
      * rebuild that day's authoritative rollup in the same transaction.

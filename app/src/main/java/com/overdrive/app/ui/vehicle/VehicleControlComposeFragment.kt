@@ -298,6 +298,25 @@ class VehicleControlComposeFragment : Fragment() {
                         },
                         onSelectDriveMode = { mode ->
                             uiState = uiState.copy(powertrain = uiState.powertrain.copy(operationMode = mode))
+                            val modeInt = when (mode) {
+                                OperationMode.NORMAL -> 1
+                                OperationMode.ECO -> 2
+                                OperationMode.SPORT -> 3
+                                OperationMode.SNOW -> 4
+                                else -> 1
+                            }
+                            val modeName = when (mode) {
+                                OperationMode.NORMAL -> "Normal"
+                                OperationMode.ECO -> "Eco"
+                                OperationMode.SPORT -> "Sport"
+                                OperationMode.SNOW -> "Kar"
+                                else -> "Normal"
+                            }
+                            executeCommand(
+                                "/api/vehicle/drive-mode",
+                                "{\"mode\":$modeInt}",
+                                "Sürüş modu: $modeName moduna alınıyor..."
+                            )
                         },
                         onSelectModelClick = {
                             showVehicleModelPickerDialog()
@@ -658,10 +677,11 @@ class VehicleControlComposeFragment : Fragment() {
                         else -> uiState.powertrain.gear
                     }
                     val opModeVal = when (d.operationMode) {
-                        1 -> OperationMode.ECO
-                        2 -> OperationMode.NORMAL
+                        1 -> OperationMode.NORMAL
+                        2 -> OperationMode.ECO
                         3 -> OperationMode.SPORT
                         4 -> OperationMode.SNOW
+                        0 -> OperationMode.NORMAL
                         else -> uiState.powertrain.operationMode
                     }
                     var pKw = 0.0
@@ -854,10 +874,11 @@ class VehicleControlComposeFragment : Fragment() {
         }
         val opModeVal = pt?.optInt("operationMode", 0) ?: 0
         val newOpMode = when (opModeVal) {
-            1 -> OperationMode.ECO
-            2 -> OperationMode.NORMAL
+            1 -> OperationMode.NORMAL
+            2 -> OperationMode.ECO
             3 -> OperationMode.SPORT
             4 -> OperationMode.SNOW
+            0 -> OperationMode.NORMAL
             else -> uiState.powertrain.operationMode
         }
 

@@ -83,10 +83,11 @@ object VehicleDataDomainMapper {
         }
 
         val operation = when (data.operationMode) {
-            1 -> OperationMode.ECO
-            2 -> OperationMode.NORMAL
+            1 -> OperationMode.NORMAL
+            2 -> OperationMode.ECO
             3 -> OperationMode.SPORT
             4 -> OperationMode.SNOW
+            0 -> OperationMode.NORMAL
             else -> OperationMode.NORMAL
         }
 

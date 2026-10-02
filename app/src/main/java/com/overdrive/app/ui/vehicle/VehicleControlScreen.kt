@@ -62,10 +62,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -1641,6 +1646,17 @@ private fun ChassisTelemetryCockpitCard(
     val textSecondary = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
     val dividerColor = if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0)
     val dotInactiveColor = if (isDark) Color(0xFF334155) else Color(0xFFCBD5E1)
+    val pagerState = rememberPagerState(initialPage = carouselPage.coerceIn(0, 2), pageCount = { 3 })
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(pagerState.currentPage) {
+        onPageChange(pagerState.currentPage)
+    }
+    LaunchedEffect(carouselPage) {
+        if (pagerState.currentPage != carouselPage && carouselPage in 0..2) {
+            pagerState.animateScrollToPage(carouselPage)
+        }
+    }
 
     Surface(
         shape = RoundedCornerShape(14.dp),
@@ -1666,7 +1682,7 @@ private fun ChassisTelemetryCockpitCard(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
 
-                when (carouselPage) {
+                when (pagerState.currentPage) {
                     0 -> {
                         Text(
                             text = stringResource(R.string.vc_chassis_telemetry_title),
@@ -1738,16 +1754,26 @@ private fun ChassisTelemetryCockpitCard(
                 }
             }
 
-            // Body: Page 0 (Şasi), Page 1 (Sağlık), or Page 2 (Güç Akışı)
-            when (carouselPage) {
-                0 -> {
-                    // Page 0: Top-Down Chassis View + 4 Tyre Callouts (Precisely aligned with vehicle wheels)
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        contentAlignment = Alignment.Center,
-                    ) {
+            // Body: HorizontalPager for swipe gestures between Page 0 (Şasi), Page 1 (Sağlık), and Page 2 (Güç Akışı)
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+            ) { page ->
+                when (page) {
+                    0 -> {
+                        // Page 0: Top-Down Chassis View + 4 Tyre Callouts (Precisely aligned with vehicle wheels)
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f),
+                                contentAlignment = Alignment.Center,
+                            ) {
                         BoxWithConstraints(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier.fillMaxHeight(),
@@ -1868,15 +1894,15 @@ private fun ChassisTelemetryCockpitCard(
                         )
                     }
                 }
-                1 -> {
-                    // Page 1: 9-System Vehicle Health Diagnostics
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                            .padding(vertical = 4.dp),
-                        verticalArrangement = Arrangement.SpaceEvenly,
-                    ) {
+            }
+            1 -> {
+                // Page 1: 9-System Vehicle Health Diagnostics
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(vertical = 4.dp),
+                    verticalArrangement = Arrangement.SpaceEvenly,
+                ) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1897,9 +1923,7 @@ private fun ChassisTelemetryCockpitCard(
                 else -> {
                     // Page 2: Chassis Energy Flow View & Live Regeneration Stream
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
+                        modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.SpaceBetween,
                     ) {
                         AndroidView(
@@ -1997,6 +2021,7 @@ private fun ChassisTelemetryCockpitCard(
                     }
                 }
             }
+        }
 
             // Bottom Page Indicators (3 Bars matching Navion's touchAreaIndicatorPage1..3)
             Row(
@@ -2007,13 +2032,17 @@ private fun ChassisTelemetryCockpitCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 for (i in 0 until 3) {
-                    val isSelected = carouselPage == i
+                    val isSelected = pagerState.currentPage == i
                     Box(
                         modifier = Modifier
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
-                            ) { onPageChange(i) }
+                            ) {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(i)
+                                }
+                            }
                             .padding(horizontal = 4.dp, vertical = 4.dp)
                     ) {
                         Box(

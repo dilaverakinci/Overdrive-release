@@ -106,7 +106,14 @@ class DefaultDiagnosticsRepository : DiagnosticsRepository {
         val vcu = VcuTelemetry(
             powerState = if (data.voltageLevelRaw != BydVehicleData.UNAVAILABLE) "LEVEL_${data.voltageLevelRaw}" else "OK",
             gear = gearName,
-            driveMode = if (data.operationMode == 1) "ECO" else if (data.operationMode == 3) "SPORT" else "NORMAL",
+            driveMode = when (data.operationMode) {
+                1 -> "NORMAL"
+                2 -> "ECO"
+                3 -> "SPORT"
+                4 -> "SNOW"
+                0 -> "NORMAL"
+                else -> "NORMAL"
+            },
             speedKmh = if (!data.speedKmh.isNaN()) data.speedKmh else 0.0,
             acceleratorPedalPercent = if (data.accelPercent != BydVehicleData.UNAVAILABLE) data.accelPercent.toDouble() else 0.0,
             isBrakePressed = data.brakePercent > 0,

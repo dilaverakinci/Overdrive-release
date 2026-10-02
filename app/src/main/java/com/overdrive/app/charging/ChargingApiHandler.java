@@ -149,6 +149,11 @@ public class ChargingApiHandler {
                 if ("DELETE".equals(method)) return handleDeleteSession(id);
             }
 
+            // POST /api/charging/manual — create manual charging session
+            if (path.equals("/api/charging/manual") && "POST".equals(method)) {
+                return handleInsertManualSession(body);
+            }
+
             // GET /api/charging (list)
             if ((path.equals("/api/charging") || path.equals("/api/charging/")) && "GET".equals(method)) {
                 return handleListSessions(params);
@@ -452,6 +457,38 @@ public class ChargingApiHandler {
         } catch (Exception e) {
             logger.error("Error deleting charging session " + id, e);
             return errorResponse("Failed to delete session", 500);
+        }
+    }
+
+    /** POST /api/charging/manual — create manual charging session. */
+    private JSONObject handleInsertManualSession(String body) {
+        try {
+            JSONObject req = new JSONObject(body != null ? body : "{}");
+            long now = System.currentTimeMillis();
+            int durationMinutes = req.optInt("durationMinutes", 0);
+            long startTime = req.optLong("startTime", now - (durationMinutes * 60_000L));
+            long endTime = req.optLong("endTime", startTime + (durationMinutes * 60_000L));
+            double startSoc = req.optDouble("startSoc", 0.0);
+            double endSoc = req.optDouble("endSoc", 0.0);
+            double energyAddedKwh = req.optDouble("energyAddedKwh", 0.0);
+            double cost = req.optDouble("cost", 0.0);
+            double rate = req.optDouble("rate", 0.0);
+            String currency = req.optString("currency", "₺");
+            String placeLabel = req.optString("placeLabel", "Manuel Giriş");
+            int odometerKm = req.optInt("odometerKm", -1);
+            boolean isDc = req.optBoolean("isDc", false);
+
+            long id = db().insertManualChargingSession(
+                    startTime, endTime, startSoc, endSoc, energyAddedKwh,
+                    cost, rate, currency, placeLabel, odometerKm, isDc);
+
+            JSONObject response = new JSONObject();
+            response.put("success", id > 0);
+            response.put("id", id);
+            return response;
+        } catch (Exception e) {
+            logger.error("Failed to insert manual charging session", e);
+            return errorResponse("Failed to insert manual session: " + e.getMessage(), 500);
         }
     }
 

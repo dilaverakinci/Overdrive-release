@@ -24,8 +24,9 @@ public class BydDriveModeEncodingTest {
         assertEquals(3, BydDataCollector.driveModeFromEnergyAxis(2, 1, 2));
         assertEquals(4, BydDataCollector.driveModeFromEnergyAxis(2, 2, 2));
         assertEquals(1, BydDataCollector.driveModeFromEnergyAxis(3, 1, 3));
+        assertEquals(4, BydDataCollector.driveModeFromEnergyAxis(3, 1, -1));
         assertEquals(4, BydDataCollector.driveModeFromEnergyAxis(4, 1, 4));
-        assertEquals(-1, BydDataCollector.driveModeFromEnergyAxis(0, 1, -1));
+        assertEquals(1, BydDataCollector.driveModeFromEnergyAxis(0, 1, -1));
     }
 
     @Test

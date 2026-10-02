@@ -16,7 +16,9 @@ import com.overdrive.app.domain.repository.RepositoryProvider
 import com.overdrive.app.ui.component.OverdriveComposeContainer
 import com.overdrive.app.ui.theme.OverdriveTheme
 import com.overdrive.app.util.DaemonHttpClient
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
 
 /**
@@ -46,6 +48,9 @@ class ChargingComposeFragment : Fragment() {
                         state = uiState,
                         onTabSelected = { tab ->
                             uiState = uiState.copy(selectedTab = tab)
+                            if (tab == ChargingTab.SESSIONS) {
+                                loadSessions()
+                            }
                         },
                         onTargetSocChange = { targetSoc ->
                             uiState = uiState.copy(targetSocLimit = targetSoc)
@@ -76,6 +81,20 @@ class ChargingComposeFragment : Fragment() {
                             sendDaemonPost("/api/vehicle/battery-preheat", "{\"enabled\":$next}")
                             showFeedback(if (next) "Batarya ön ısıtma başlatıldı" else "Batarya ön ısıtma durduruldu")
                         },
+                        onAddSession = { session ->
+                            workerExecutor.execute {
+                                ChargingSessionStorage.saveSession(requireContext(), session)
+                                loadSessions()
+                            }
+                            showFeedback("Şarj seansı kaydedildi")
+                        },
+                        onDeleteSession = { sessionId ->
+                            workerExecutor.execute {
+                                ChargingSessionStorage.deleteSession(requireContext(), sessionId)
+                                loadSessions()
+                            }
+                            showFeedback("Şarj seansı silindi")
+                        },
                     )
                 }
             }
@@ -84,12 +103,32 @@ class ChargingComposeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        loadSessions()
         observeBatteryTelemetry()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadSessions()
     }
 
     override fun onDestroyView() {
         workerExecutor.shutdownNow()
         super.onDestroyView()
+    }
+
+    private fun loadSessions() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val list = withContext(Dispatchers.IO) {
+                ChargingSessionStorage.loadSessions(requireContext())
+            }
+            val totalKwh = list.fold(0f) { acc, s -> acc + s.energyKwh }
+            uiState = uiState.copy(
+                sessions = list,
+                totalSessionsCount = list.size,
+                totalEnergyDeliveredKwh = totalKwh
+            )
+        }
     }
 
     private fun observeBatteryTelemetry() {

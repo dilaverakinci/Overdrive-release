@@ -22,8 +22,12 @@ data class ChargingSession(
     val endSoc: Int,
     val energyKwh: Float,
     val durationMinutes: Int,
-    val peakPowerKw: Float,
+    val peakPowerKw: Float = 0f,
     val costEstimate: String? = null,
+    val odometerKm: Int? = null,
+    val unitPrice: Float? = null,
+    val totalCost: Float? = null,
+    val isDc: Boolean = false,
 )
 
 /**

@@ -251,6 +251,12 @@ public class VehicleControlApiHandler {
             return true;
         }
 
+        // POST /api/vehicle/drive-mode
+        if (cleanPath.equals("/api/vehicle/drive-mode") && method.equals("POST")) {
+            handleDriveMode(out, body);
+            return true;
+        }
+
         // POST /api/vehicle/media — media volume + screen brightness. These are
         // Android-level controls (AudioManager / BYD setting HAL), not cloud/CAN.
         if (cleanPath.equals("/api/vehicle/media") && method.equals("POST")) {
@@ -1255,7 +1261,7 @@ public class VehicleControlApiHandler {
         } catch (Throwable ignored) {}
         powertrain.put("gear", com.overdrive.app.recording.RecordingModeManager.gearToString(gearMode));
         powertrain.put("gearMode", gearMode);
-        powertrain.put("operationMode", data.operationMode != BydVehicleData.UNAVAILABLE ? data.operationMode : 2);
+        powertrain.put("operationMode", data.operationMode != BydVehicleData.UNAVAILABLE ? data.operationMode : 1);
 
         double livePowerKw = 0.0;
         if (isCharging && !Double.isNaN(data.chargingPowerKw) && data.chargingPowerKw > 0.1) {
@@ -2530,6 +2536,45 @@ public class VehicleControlApiHandler {
             HttpResponse.sendJson(out, resp.toString());
         } catch (Exception e) {
             logger.warn("Setting command failed: " + e.getMessage());
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            HttpResponse.sendJson(out, response.toString());
+        }
+    }
+
+    private static void handleDriveMode(OutputStream out, String body) throws Exception {
+        JSONObject response = new JSONObject();
+        try {
+            JSONObject req = new JSONObject(body);
+            int mode = -1;
+            if (req.has("mode")) {
+                Object mObj = req.get("mode");
+                if (mObj instanceof Number) {
+                    mode = ((Number) mObj).intValue();
+                } else if (mObj instanceof String) {
+                    String str = ((String) mObj).trim().toUpperCase();
+                    switch (str) {
+                        case "NORMAL": mode = 1; break;
+                        case "ECO": mode = 2; break;
+                        case "SPORT": mode = 3; break;
+                        case "SNOW": mode = 4; break;
+                    }
+                }
+            }
+            if (mode < 1 || mode > 4) {
+                response.put("success", false);
+                response.put("error", "Invalid mode. Must be 1 (NORMAL), 2 (ECO), 3 (SPORT), or 4 (SNOW)");
+                HttpResponse.sendJson(out, response.toString());
+                return;
+            }
+            CommandResult r = VehicleCommandRouter.getInstance()
+                    .execute(new VehicleCommandRouter.OperationModeCommand(mode));
+            logger.info("DriveMode: mode=" + mode + " " + r.outcome);
+            JSONObject resp = routedResponse(r, "drive-mode");
+            resp.put("mode", mode);
+            HttpResponse.sendJson(out, resp.toString());
+        } catch (Exception e) {
+            logger.warn("DriveMode command failed: " + e.getMessage());
             response.put("success", false);
             response.put("error", e.getMessage());
             HttpResponse.sendJson(out, response.toString());

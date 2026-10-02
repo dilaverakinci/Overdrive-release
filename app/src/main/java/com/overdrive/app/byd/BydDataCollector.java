@@ -9332,6 +9332,7 @@ public class BydDataCollector {
 
     static int normalizeDiLink5DriveMode(int raw) {
         switch (raw) {
+            case 0: return 1; // Normal
             case 1: return 2; // Eco
             case 2: return 3; // Sport
             case 3: return 1; // Normal
@@ -19801,9 +19802,10 @@ public class BydDataCollector {
             int rawOperationMode, int roadSurfaceMode, int targetDrivingMode) {
         if (roadSurfaceMode == 2 || rawOperationMode == 4) return 4;
         switch (rawOperationMode) {
-            case 1: return targetDrivingMode == 3 ? 1 : 2; // NORMAL or ECO
+            case 0: return 1; // Modern BYD HAL (Seal, Atto 3, Dolphin, Han): 0 = NORMAL
+            case 1: return targetDrivingMode == 3 ? 1 : 2; // NORMAL (legacy target 3) or ECO
             case 2: return 3; // SPORT
-            case 3: return 1; // NORMAL
+            case 3: return targetDrivingMode == 3 ? 1 : 4; // Modern BYD HAL: 3 = SNOW; legacy 3 = NORMAL if target==3
             default: return -1;
         }
     }
