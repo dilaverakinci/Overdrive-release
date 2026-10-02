@@ -108,7 +108,7 @@ class CircularSpeedometerView @JvmOverloads constructor(
             speedTextPaint.color = Color.parseColor("#0F172A") // Slate 900
         } else {
             trackPaint.color = Color.parseColor("#1E293B") // Slate 800
-            speedTextPaint.color = Color.parseColor("#F8FAFC") // Slate 50
+            speedTextPaint.color = Color.WHITE // Pure white for crisp contrast on dark card
         }
 
         val (targetProgress, targetUnit) = getDriveModeColors(currentOperationMode)
@@ -151,7 +151,7 @@ class CircularSpeedometerView @JvmOverloads constructor(
 
         speedAnimator?.cancel()
         speedAnimator = ValueAnimator.ofFloat(displayedSpeedKmh, targetSpeedKmh).apply {
-            duration = 200
+            duration = 120
             interpolator = DecelerateInterpolator()
             addUpdateListener {
                 displayedSpeedKmh = it.animatedValue as Float

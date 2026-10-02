@@ -81,6 +81,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -164,9 +165,12 @@ fun VehicleControlScreen(
     var expandedTab by remember { mutableStateOf<VehicleControlTab?>(null) }
     var chassisCarouselPage by remember { mutableIntStateOf(0) }
 
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val screenBg = if (isDark) Color(0xFF0B101B) else Color(0xFFF1F5F9)
+
     Surface(
         modifier = modifier.fillMaxSize(),
-        color = Color(0xFFF8FAFC),
+        color = screenBg,
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             // LAYER 1: 100% Single-Page Cockpit (Zero scrolling needed, fits entire screen)
@@ -340,6 +344,14 @@ private fun VehicleControlSubHeader(
     onSelectModelClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val pillBg = if (isDark) Color(0xFF131D31) else Color(0xFFF1F5F9)
+    val pillBorder = BorderStroke(1.dp, if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0))
+    val btnBg = if (isDark) Color(0xFF131D31) else Color.White
+    val btnBorder = BorderStroke(1.dp, if (isDark) Color(0xFF1E293B) else Color(0xFFCBD5E1))
+    val textPrimary = if (isDark) Color(0xFFF8FAFC) else Color(0xFF1E293B)
+    val iconTint = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -348,8 +360,8 @@ private fun VehicleControlSubHeader(
         // Left Pill: [ ● NO DATA ]
         Surface(
             shape = RoundedCornerShape(8.dp),
-            color = Color(0xFFF1F5F9),
-            border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+            color = pillBg,
+            border = pillBorder,
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -375,7 +387,7 @@ private fun VehicleControlSubHeader(
                     },
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E293B),
+                    color = textPrimary,
                     letterSpacing = 0.5.sp,
                 )
             }
@@ -389,8 +401,8 @@ private fun VehicleControlSubHeader(
             Surface(
                 onClick = onSelectModelClick,
                 shape = RoundedCornerShape(8.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, Color(0xFFCBD5E1)),
+                color = btnBg,
+                border = btnBorder,
                 modifier = Modifier.height(30.dp),
             ) {
                 Row(
@@ -402,12 +414,12 @@ private fun VehicleControlSubHeader(
                         text = if (modelName.isNotEmpty()) modelName else "Model Seçin",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E293B),
+                        color = textPrimary,
                     )
                     Icon(
                         painter = painterResource(R.drawable.ic_chevron_right),
                         contentDescription = null,
-                        tint = Color(0xFF64748B),
+                        tint = iconTint,
                         modifier = Modifier.size(14.dp),
                     )
                 }
@@ -416,8 +428,8 @@ private fun VehicleControlSubHeader(
             Surface(
                 onClick = onToggle3DMode,
                 shape = RoundedCornerShape(8.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, Color(0xFFCBD5E1)),
+                color = btnBg,
+                border = btnBorder,
                 modifier = Modifier.height(30.dp),
             ) {
                 Row(
@@ -428,14 +440,14 @@ private fun VehicleControlSubHeader(
                     Icon(
                         painter = painterResource(R.drawable.ic_map_3d),
                         contentDescription = null,
-                        tint = Color(0xFF334155),
+                        tint = iconTint,
                         modifier = Modifier.size(16.dp),
                     )
                     Text(
                         text = if (is3DMode) "2D" else "3D",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF334155),
+                        color = textPrimary,
                     )
                 }
             }
@@ -444,8 +456,8 @@ private fun VehicleControlSubHeader(
         // Right Pill: [ ● BYD account not connected ]
         Surface(
             shape = RoundedCornerShape(8.dp),
-            color = Color(0xFFF1F5F9),
-            border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+            color = pillBg,
+            border = pillBorder,
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -462,7 +474,7 @@ private fun VehicleControlSubHeader(
                     text = if (isCloudConnected) "BYD account connected" else "BYD account not connected",
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E293B),
+                    color = textPrimary,
                 )
             }
         }
@@ -478,12 +490,17 @@ private fun LiveEnergyCockpitCard(
     onSelectDriveMode: (OperationMode) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val cardBg = if (isDark) Color(0xFF131D31) else Color.White
+    val cardBorder = BorderStroke(1.dp, if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0))
+    val textSecondary = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+    val capsuleBg = if (isDark) Color(0xFF0F172A) else Color(0xFFF1F5F9)
+    val capsuleBorder = BorderStroke(1.dp, if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0))
 
     Surface(
         shape = RoundedCornerShape(14.dp),
-        color = Color.White,
-        border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+        color = cardBg,
+        border = cardBorder,
         modifier = modifier,
     ) {
         Column(
@@ -516,7 +533,7 @@ private fun LiveEnergyCockpitCard(
                     Text(
                         text = "Rejenerasyon ve Güç Tüketim Monitörü",
                         style = MaterialTheme.typography.labelSmall,
-                        color = Color(0xFF64748B),
+                        color = textSecondary,
                         fontSize = 9.sp,
                     )
                 }
@@ -591,8 +608,8 @@ private fun LiveEnergyCockpitCard(
             ) {
                 Surface(
                     shape = RoundedCornerShape(10.dp),
-                    color = Color(0xFFF1F5F9),
-                    border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                    color = capsuleBg,
+                    border = capsuleBorder,
                     modifier = Modifier.padding(end = 10.dp),
                 ) {
                     Row(
@@ -608,19 +625,21 @@ private fun LiveEnergyCockpitCard(
                 }
 
                 // Electric Park Brake circle (P)
+                val epbBg = if (powertrain.gear == Gear.P) Color(0x20EF4444) else capsuleBg
+                val epbBorderColor = if (powertrain.gear == Gear.P) Color(0xFFEF4444) else (if (isDark) Color(0xFF1E293B) else Color(0xFFCBD5E1))
                 Box(
                     modifier = Modifier
                         .size(26.dp)
                         .clip(CircleShape)
-                        .background(if (powertrain.gear == Gear.P) Color(0x15EF4444) else Color(0xFFF1F5F9))
-                        .border(1.dp, if (powertrain.gear == Gear.P) Color(0xFFEF4444) else Color(0xFFCBD5E1), CircleShape),
+                        .background(epbBg)
+                        .border(1.dp, epbBorderColor, CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = "(P)",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.ExtraBold,
-                        color = if (powertrain.gear == Gear.P) Color(0xFFEF4444) else Color(0xFF64748B),
+                        color = if (powertrain.gear == Gear.P) Color(0xFFEF4444) else textSecondary,
                         fontSize = 10.sp,
                     )
                 }
@@ -650,11 +669,16 @@ private fun DriveModePill(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val inactiveBg = if (isDark) Color(0xFF0F172A) else Color(0xFFF8FAFC)
+    val inactiveBorder = if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0)
+    val inactiveText = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(8.dp),
-        color = if (isActive) Color(0x1F06B6D4) else Color(0xFFF8FAFC),
-        border = BorderStroke(if (isActive) 1.5.dp else 1.dp, if (isActive) Color(0xFF06B6D4) else Color(0xFFE2E8F0)),
+        color = if (isActive) Color(0x2606B6D4) else inactiveBg,
+        border = BorderStroke(if (isActive) 1.5.dp else 1.dp, if (isActive) Color(0xFF06B6D4) else inactiveBorder),
         modifier = modifier.height(26.dp),
     ) {
         Row(
@@ -665,7 +689,7 @@ private fun DriveModePill(
             Icon(
                 painter = painterResource(iconRes),
                 contentDescription = label,
-                tint = if (isActive) Color(0xFF0284C7) else Color(0xFF64748B),
+                tint = if (isActive) Color(0xFF0284C7) else inactiveText,
                 modifier = Modifier.size(12.dp),
             )
             Spacer(modifier = Modifier.width(3.dp))
@@ -673,7 +697,7 @@ private fun DriveModePill(
                 text = label,
                 fontSize = 9.5.sp,
                 fontWeight = if (isActive) FontWeight.Bold else FontWeight.SemiBold,
-                color = if (isActive) Color(0xFF0284C7) else Color(0xFF64748B),
+                color = if (isActive) Color(0xFF0284C7) else inactiveText,
             )
         }
     }
@@ -685,6 +709,9 @@ private fun GearCircle(
     isSelected: Boolean,
     activeColor: Color,
 ) {
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val unselectedColor = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+
     Box(
         modifier = Modifier
             .size(22.dp)
@@ -696,7 +723,7 @@ private fun GearCircle(
             text = label,
             fontSize = 10.5.sp,
             fontWeight = FontWeight.ExtraBold,
-            color = if (isSelected) Color.White else Color(0xFF64748B),
+            color = if (isSelected) Color.White else unselectedColor,
         )
     }
 }
@@ -707,10 +734,11 @@ private fun LivePowerMeterBar(
     operationMode: OperationMode,
     modifier: Modifier = Modifier,
 ) {
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
     val isPower = powerKw > 0.05
     val isRegen = powerKw < -0.05
-    val regenText = if (isRegen) String.format(Locale.US, "%.1f", abs(powerKw)) else "0."
-    val powerText = if (isPower) String.format(Locale.US, "+%.1f kW", powerKw) else "+0,4 kW"
+    val regenText = if (isRegen) String.format(Locale.US, "%.1f kW", abs(powerKw)).replace('.', ',') else "0,0 kW"
+    val powerText = if (isPower) String.format(Locale.US, "+%.1f kW", powerKw).replace('.', ',') else "+0,0 kW"
 
     val modeColor = when (operationMode) {
         OperationMode.ECO -> Color(0xFF10B981)
@@ -719,6 +747,11 @@ private fun LivePowerMeterBar(
         OperationMode.SNOW -> Color(0xFF38BDF8)
         else -> Color(0xFF06B6D4)
     }
+
+    val textSecondary = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+    val trackColor = if (isDark) Color(0xFF0F172A) else Color(0xFFE2E8F0)
+    val tickColor = if (isDark) Color(0xFF64748B) else Color(0xFF475569)
+    val scaleColor = if (isDark) Color(0xFF64748B) else Color(0xFF94A3B8)
 
     Column(modifier = modifier.fillMaxWidth()) {
         // Labels
@@ -731,7 +764,7 @@ private fun LivePowerMeterBar(
                 text = "◀ REGEN $regenText",
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF64748B),
+                color = textSecondary,
             )
             Text(
                 text = "GÜÇ $powerText ▶",
@@ -745,13 +778,13 @@ private fun LivePowerMeterBar(
 
         // Canvas Track & Fill
         val targetFraction = when {
-            powerKw < 0 -> (abs(powerKw) / 50.0).coerceIn(0.0, 1.0).toFloat()
-            powerKw > 0 -> (powerKw / 150.0).coerceIn(0.0, 1.0).toFloat()
-            else -> 0.03f
+            powerKw < -0.05 -> (abs(powerKw) / 50.0).coerceIn(0.0, 1.0).toFloat()
+            powerKw > 0.05 -> (powerKw / 150.0).coerceIn(0.0, 1.0).toFloat()
+            else -> 0f
         }
         val animatedFraction by animateFloatAsState(
             targetValue = targetFraction,
-            animationSpec = tween(durationMillis = 200, easing = FastOutSlowInEasing),
+            animationSpec = tween(durationMillis = 80, easing = FastOutSlowInEasing),
             label = "powerFraction"
         )
 
@@ -767,13 +800,13 @@ private fun LivePowerMeterBar(
 
             // Track background
             drawRoundRect(
-                color = Color(0xFFE2E8F0),
+                color = trackColor,
                 size = size,
                 cornerRadius = CornerRadius(r, r),
             )
 
             // Active fill
-            if (powerKw < 0) {
+            if (powerKw < -0.05) {
                 val fillW = animatedFraction * cx
                 drawRoundRect(
                     color = Color(0xFF10B981),
@@ -781,7 +814,7 @@ private fun LivePowerMeterBar(
                     size = Size(fillW, h),
                     cornerRadius = CornerRadius(r, r),
                 )
-            } else {
+            } else if (powerKw > 0.05) {
                 val fillW = animatedFraction * cx
                 drawRoundRect(
                     color = modeColor,
@@ -793,7 +826,7 @@ private fun LivePowerMeterBar(
 
             // Center tick line
             drawLine(
-                color = Color(0xFF475569),
+                color = tickColor,
                 start = Offset(cx, -1.dp.toPx()),
                 end = Offset(cx, h + 1.dp.toPx()),
                 strokeWidth = 2.dp.toPx(),
@@ -807,12 +840,12 @@ private fun LivePowerMeterBar(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text("-50", fontSize = 7.5.sp, color = Color(0xFF64748B))
-            Text("-25", fontSize = 7.5.sp, color = Color(0xFF64748B))
-            Text("0 kW", fontSize = 7.5.sp, color = Color(0xFF64748B), fontWeight = FontWeight.Bold)
-            Text("+50", fontSize = 7.5.sp, color = Color(0xFF64748B))
-            Text("+100", fontSize = 7.5.sp, color = Color(0xFF64748B))
-            Text("+150", fontSize = 7.5.sp, color = Color(0xFF64748B))
+            Text("-50", fontSize = 7.5.sp, color = scaleColor)
+            Text("-25", fontSize = 7.5.sp, color = scaleColor)
+            Text("0 kW", fontSize = 7.5.sp, color = scaleColor, fontWeight = FontWeight.Bold)
+            Text("+50", fontSize = 7.5.sp, color = scaleColor)
+            Text("+100", fontSize = 7.5.sp, color = scaleColor)
+            Text("+150", fontSize = 7.5.sp, color = scaleColor)
         }
     }
 }
@@ -824,6 +857,7 @@ private fun LivePedalMeterBar(
     operationMode: OperationMode,
     modifier: Modifier = Modifier,
 ) {
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
     val modeColor = when (operationMode) {
         OperationMode.ECO -> Color(0xFF10B981)
         OperationMode.NORMAL -> Color(0xFF06B6D4)
@@ -831,6 +865,11 @@ private fun LivePedalMeterBar(
         OperationMode.SNOW -> Color(0xFF38BDF8)
         else -> Color(0xFF06B6D4)
     }
+
+    val textSecondary = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+    val trackColor = if (isDark) Color(0xFF0F172A) else Color(0xFFE2E8F0)
+    val tickColor = if (isDark) Color(0xFF64748B) else Color(0xFF475569)
+    val scaleColor = if (isDark) Color(0xFF64748B) else Color(0xFF94A3B8)
 
     Column(modifier = modifier.fillMaxWidth()) {
         // Labels
@@ -843,13 +882,13 @@ private fun LivePedalMeterBar(
                 text = "◀ FREN %$brakePercent",
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF64748B),
+                color = textSecondary,
             )
             Text(
                 text = "GAZ %$accelPercent ▶",
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF64748B),
+                color = textSecondary,
             )
         }
 
@@ -857,12 +896,12 @@ private fun LivePedalMeterBar(
 
         val brakeFraction by animateFloatAsState(
             targetValue = (brakePercent / 100f).coerceIn(0f, 1f),
-            animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing),
+            animationSpec = tween(durationMillis = 80, easing = FastOutSlowInEasing),
             label = "brakeFraction"
         )
         val accelFraction by animateFloatAsState(
             targetValue = (accelPercent / 100f).coerceIn(0f, 1f),
-            animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing),
+            animationSpec = tween(durationMillis = 80, easing = FastOutSlowInEasing),
             label = "accelFraction"
         )
 
@@ -878,7 +917,7 @@ private fun LivePedalMeterBar(
 
             // Track background
             drawRoundRect(
-                color = Color(0xFFE2E8F0),
+                color = trackColor,
                 size = size,
                 cornerRadius = CornerRadius(r, r),
             )
@@ -907,7 +946,7 @@ private fun LivePedalMeterBar(
 
             // Center tick line
             drawLine(
-                color = Color(0xFF475569),
+                color = tickColor,
                 start = Offset(cx, -1.dp.toPx()),
                 end = Offset(cx, h + 1.dp.toPx()),
                 strokeWidth = 2.dp.toPx(),
@@ -921,11 +960,11 @@ private fun LivePedalMeterBar(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text("Fren %100", fontSize = 7.5.sp, color = Color(0xFF64748B))
-            Text("%50", fontSize = 7.5.sp, color = Color(0xFF64748B))
-            Text("0", fontSize = 7.5.sp, color = Color(0xFF64748B), fontWeight = FontWeight.Bold)
-            Text("%50", fontSize = 7.5.sp, color = Color(0xFF64748B))
-            Text("Gaz %100", fontSize = 7.5.sp, color = Color(0xFF64748B))
+            Text("Fren %100", fontSize = 7.5.sp, color = scaleColor)
+            Text("%50", fontSize = 7.5.sp, color = scaleColor)
+            Text("0", fontSize = 7.5.sp, color = scaleColor, fontWeight = FontWeight.Bold)
+            Text("%50", fontSize = 7.5.sp, color = scaleColor)
+            Text("Gaz %100", fontSize = 7.5.sp, color = scaleColor)
         }
     }
 }
@@ -1218,14 +1257,25 @@ private fun BatteryRangeCardContent(
     onNavigateToCharging: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+
+    val cardBg = if (isDark) Color(0xFF131D31) else Color.White
+    val cardBorder = BorderStroke(1.dp, if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0))
+    val innerContainerBg = if (isDark) Color(0xFF0F172A) else Color(0xFFF8FAFC)
+    val innerBorder = BorderStroke(1.dp, if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0))
+    val textPrimary = if (isDark) Color(0xFFF8FAFC) else Color(0xFF0F172A)
+    val textSecondary = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+    val textMuted = if (isDark) Color(0xFF64748B) else Color(0xFF94A3B8)
+    val dividerColor = if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0)
+
     val soc = battery.socPercent.coerceIn(0, 100)
     val batteryCap = if (battery.batteryCapacityKwh > 0) battery.batteryCapacityKwh else 82.5
     val currentKwh = soc * batteryCap / 100.0
 
     Surface(
         shape = RoundedCornerShape(14.dp),
-        color = Color.White,
-        border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+        color = cardBg,
+        border = cardBorder,
         modifier = modifier.fillMaxWidth(),
     ) {
         Column(
@@ -1245,21 +1295,21 @@ private fun BatteryRangeCardContent(
                         painter = painterResource(R.drawable.ic_card_battery),
                         contentDescription = null,
                         tint = Color(0xFF06B6D4),
-                        modifier = Modifier.size(16.dp),
+                        modifier = Modifier.size(18.dp),
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Column {
                         Text(
                             text = stringResource(R.string.vc_battery_card_title),
-                            fontSize = 11.5.sp,
+                            fontSize = 12.5.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF06B6D4),
                             letterSpacing = 0.5.sp,
                         )
                         Text(
                             text = stringResource(R.string.vc_battery_card_subtitle),
-                            fontSize = 8.5.sp,
-                            color = Color(0xFF64748B),
+                            fontSize = 9.5.sp,
+                            color = textSecondary,
                         )
                     }
                 }
@@ -1278,7 +1328,7 @@ private fun BatteryRangeCardContent(
                     ) {
                         Text(
                             text = "SOH %${battery.sohPercent.toInt()}",
-                            fontSize = 8.5.sp,
+                            fontSize = 9.5.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF10B981),
                         )
@@ -1286,7 +1336,7 @@ private fun BatteryRangeCardContent(
 
                     Text(
                         text = stringResource(R.string.vc_history_arrow),
-                        fontSize = 9.sp,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF0284C7),
                         modifier = Modifier.clickable { onNavigateToCharging() },
@@ -1297,8 +1347,8 @@ private fun BatteryRangeCardContent(
             // 3 KPI Columns Section in rounded container
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = Color(0xFFF8FAFC),
-                border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                color = innerContainerBg,
+                border = innerBorder,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)) {
@@ -1310,30 +1360,30 @@ private fun BatteryRangeCardContent(
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = "KALAN TAHMİNİ MENZİL",
-                                fontSize = 8.sp,
+                                fontSize = 9.5.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF64748B),
+                                color = textSecondary,
                             )
                             Row(verticalAlignment = Alignment.Bottom) {
                                 Text(
                                     text = "${battery.elecRangeKm}",
-                                    fontSize = 19.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = Color(0xFF0F172A),
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = textPrimary,
                                 )
                                 Spacer(modifier = Modifier.width(2.dp))
                                 Text(
                                     text = "km",
-                                    fontSize = 10.5.sp,
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF0F172A),
+                                    color = textPrimary,
                                     modifier = Modifier.padding(bottom = 2.dp),
                                 )
                             }
                             Text(
                                 text = "Dinamik Sürüş Tahmini",
-                                fontSize = 7.5.sp,
-                                color = Color(0xFF94A3B8),
+                                fontSize = 9.sp,
+                                color = textMuted,
                             )
                         }
 
@@ -1341,8 +1391,8 @@ private fun BatteryRangeCardContent(
                         Box(
                             modifier = Modifier
                                 .width(1.dp)
-                                .height(38.dp)
-                                .background(Color(0xFFE2E8F0))
+                                .height(42.dp)
+                                .background(dividerColor)
                         )
 
                         // Col 2: Gerçekçi Menzil
@@ -1353,31 +1403,31 @@ private fun BatteryRangeCardContent(
                         ) {
                             Text(
                                 text = "GERÇEKÇİ MENZİL",
-                                fontSize = 8.sp,
+                                fontSize = 9.5.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF64748B),
+                                color = textSecondary,
                             )
                             Row(verticalAlignment = Alignment.Bottom) {
                                 val realistic = if (battery.realisticRangeKm > 0) battery.realisticRangeKm else battery.elecRangeKm
                                 Text(
                                     text = "$realistic",
-                                    fontSize = 19.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = Color(0xFF0284C7),
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color(0xFF06B6D4),
                                 )
                                 Spacer(modifier = Modifier.width(2.dp))
                                 Text(
                                     text = "km",
-                                    fontSize = 10.5.sp,
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF0284C7),
+                                    color = Color(0xFF06B6D4),
                                     modifier = Modifier.padding(bottom = 2.dp),
                                 )
                             }
                             Text(
                                 text = "Dinamik Sürüş Tahmini",
-                                fontSize = 7.5.sp,
-                                color = Color(0xFF94A3B8),
+                                fontSize = 9.sp,
+                                color = textMuted,
                             )
                         }
 
@@ -1385,33 +1435,33 @@ private fun BatteryRangeCardContent(
                         Box(
                             modifier = Modifier
                                 .width(1.dp)
-                                .height(38.dp)
-                                .background(Color(0xFFE2E8F0))
+                                .height(42.dp)
+                                .background(dividerColor)
                         )
 
                         // Col 3: Şarj Seviyesi (SOC)
                         Column(
                             modifier = Modifier
-                                .weight(1.1f)
+                                .weight(1.15f)
                                 .padding(start = 6.dp)
                         ) {
                             Text(
                                 text = "ŞARJ SEVİYESİ (SOC)",
-                                fontSize = 8.sp,
+                                fontSize = 9.5.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF64748B),
+                                color = textSecondary,
                             )
                             Text(
                                 text = "%$soc",
-                                fontSize = 19.sp,
-                                fontWeight = FontWeight.Black,
-                                color = Color(0xFF0284C7),
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color(0xFF06B6D4),
                             )
                             Text(
                                 text = String.format(Locale.US, "%.1f / %.1f kWh", currentKwh, batteryCap).replace('.', ','),
-                                fontSize = 7.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF64748B),
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = textSecondary,
                             )
                         }
                     }
@@ -1424,7 +1474,7 @@ private fun BatteryRangeCardContent(
                             .fillMaxWidth()
                             .height(4.dp)
                             .clip(RoundedCornerShape(2.dp))
-                            .background(Color(0xFFE2E8F0)),
+                            .background(dividerColor),
                     ) {
                         val animatedSoc by animateFloatAsState(
                             targetValue = (soc / 100f),
@@ -1521,13 +1571,20 @@ private fun SubStatCard(
     title: String,
     value: String,
     subtitle: String,
-    valueColor: Color = Color(0xFF0F172A),
+    valueColor: Color? = null,
     modifier: Modifier = Modifier,
 ) {
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val containerBg = if (isDark) Color(0xFF0F172A) else Color(0xFFF8FAFC)
+    val containerBorder = BorderStroke(1.dp, if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0))
+    val textPrimary = if (isDark) Color(0xFFF8FAFC) else Color(0xFF0F172A)
+    val textSecondary = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+    val textMuted = if (isDark) Color(0xFF64748B) else Color(0xFF94A3B8)
+
     Surface(
         shape = RoundedCornerShape(6.dp),
-        color = Color(0xFFF8FAFC),
-        border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+        color = containerBg,
+        border = containerBorder,
         modifier = modifier,
     ) {
         Column(
@@ -1536,22 +1593,22 @@ private fun SubStatCard(
         ) {
             Text(
                 text = title,
-                fontSize = 7.sp,
+                fontSize = 8.5.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF64748B),
+                color = textSecondary,
                 maxLines = 1,
             )
             Text(
                 text = value,
-                fontSize = 9.5.sp,
+                fontSize = 11.5.sp,
                 fontWeight = FontWeight.Bold,
-                color = valueColor,
+                color = valueColor ?: textPrimary,
                 maxLines = 1,
             )
             Text(
                 text = subtitle,
-                fontSize = 6.5.sp,
-                color = Color(0xFF94A3B8),
+                fontSize = 8.sp,
+                color = textMuted,
                 maxLines = 1,
             )
         }
@@ -1576,10 +1633,19 @@ private fun ChassisTelemetryCockpitCard(
     onPageChange: (Int) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val cardBg = if (isDark) Color(0xFF131D31) else Color.White
+    val cardBorder = BorderStroke(1.dp, if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0))
+    val innerContainerBg = if (isDark) Color(0xFF0F172A) else Color(0xFFF8FAFC)
+    val textPrimary = if (isDark) Color(0xFFF8FAFC) else Color(0xFF0F172A)
+    val textSecondary = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+    val dividerColor = if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0)
+    val dotInactiveColor = if (isDark) Color(0xFF334155) else Color(0xFFCBD5E1)
+
     Surface(
         shape = RoundedCornerShape(14.dp),
-        color = Color.White,
-        border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+        color = cardBg,
+        border = cardBorder,
         modifier = modifier,
     ) {
         Column(
@@ -1625,7 +1691,7 @@ private fun ChassisTelemetryCockpitCard(
                             Text(
                                 text = stringResource(R.string.vc_health_live_time, formattedTime),
                                 fontSize = 8.5.sp,
-                                color = Color(0xFF64748B),
+                                color = textSecondary,
                             )
                         }
 
@@ -1815,7 +1881,7 @@ private fun ChassisTelemetryCockpitCard(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(1.dp)
-                                .background(Color(0xFFE2E8F0))
+                                .background(dividerColor)
                         )
                         HealthItemRow(title = stringResource(R.string.vc_health_tpms), item = health.tpms)
                         HealthItemRow(title = stringResource(R.string.vc_health_steering), item = health.steering)
@@ -1869,7 +1935,7 @@ private fun ChassisTelemetryCockpitCard(
                             isDriving -> Color(0xFF0284C7)
                             isRegen -> Color(0xFF10B981)
                             isChg -> Color(0xFFF59E0B)
-                            else -> Color(0xFF64748B)
+                            else -> textSecondary
                         }
                         val schemaText = when {
                             isDriving -> stringResource(R.string.vc_flow_schema_driving)
@@ -1881,7 +1947,8 @@ private fun ChassisTelemetryCockpitCard(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(Color(0xFFF8FAFC), RoundedCornerShape(8.dp))
+                                .background(innerContainerBg, RoundedCornerShape(8.dp))
+                                .border(1.dp, dividerColor, RoundedCornerShape(8.dp))
                                 .padding(horizontal = 8.dp, vertical = 4.dp),
                             verticalArrangement = Arrangement.spacedBy(2.dp),
                         ) {
@@ -1920,7 +1987,7 @@ private fun ChassisTelemetryCockpitCard(
                             Text(
                                 text = schemaText,
                                 fontSize = 8.5.sp,
-                                color = Color(0xFF64748B),
+                                color = textSecondary,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.fillMaxWidth(),
                                 maxLines = 1,
@@ -1954,7 +2021,7 @@ private fun ChassisTelemetryCockpitCard(
                                 .width(if (isSelected) 24.dp else 14.dp)
                                 .height(3.5.dp)
                                 .clip(RoundedCornerShape(2.dp))
-                                .background(if (isSelected) Color(0xFF06B6D4) else Color(0xFFCBD5E1))
+                                .background(if (isSelected) Color(0xFF06B6D4) else dotInactiveColor)
                         )
                     }
                 }
@@ -1969,6 +2036,11 @@ private fun TyreCallout(
     tempC: Int,
     modifier: Modifier = Modifier,
 ) {
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val textPrimary = if (isDark) Color(0xFFF8FAFC) else Color(0xFF0F172A)
+    val textSecondary = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+    val dividerColor = if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0)
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.width(50.dp),
@@ -1977,20 +2049,20 @@ private fun TyreCallout(
             text = "$kpa kPa",
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF0F172A),
+            color = textPrimary,
         )
         Box(
             modifier = Modifier
                 .padding(vertical = 2.dp)
                 .width(42.dp)
                 .height(1.dp)
-                .background(Color(0xFFE2E8F0))
+                .background(dividerColor)
         )
         Text(
             text = "$tempC °C",
             fontSize = 10.sp,
             fontWeight = FontWeight.SemiBold,
-            color = Color(0xFF64748B),
+            color = textSecondary,
         )
     }
 }
@@ -2001,6 +2073,9 @@ private fun HealthItemRow(
     item: HealthCheckItem,
     modifier: Modifier = Modifier,
 ) {
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val textPrimary = if (isDark) Color(0xFFF8FAFC) else Color(0xFF334155)
+
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -2009,7 +2084,7 @@ private fun HealthItemRow(
         Text(
             text = title,
             fontSize = 10.sp,
-            color = Color(0xFF334155),
+            color = textPrimary,
             fontWeight = FontWeight.Medium,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -2031,6 +2106,9 @@ private fun QuickStatusItem(
     isWarning: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val textSecondary = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier,
@@ -2038,7 +2116,7 @@ private fun QuickStatusItem(
         Text(
             text = label,
             fontSize = 9.sp,
-            color = Color(0xFF64748B),
+            color = textSecondary,
         )
         Text(
             text = statusText,
@@ -2863,6 +2941,14 @@ private fun VehicleControlDockBar(
     onTabSelected: (VehicleControlTab) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val cardBg = if (isDark) Color(0xFF131D31) else Color.White
+    val cardBorder = BorderStroke(1.dp, if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0))
+    val textSelected = if (isDark) Color(0xFFF8FAFC) else Color(0xFF0F172A)
+    val textUnselected = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+    val iconSelected = if (isDark) Color(0xFF38BDF8) else Color(0xFF0284C7)
+    val iconUnselected = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+
     val tabs = listOf(
         VehicleControlTab.SECURITY to (R.string.vc_dock_security to R.drawable.ic_dock_security),
         VehicleControlTab.TRUNK to (R.string.vc_dock_trunk to R.drawable.ic_dock_trunk),
@@ -2879,8 +2965,8 @@ private fun VehicleControlDockBar(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        color = Color.White,
-        border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+        color = cardBg,
+        border = cardBorder,
     ) {
         Row(
             modifier = Modifier
@@ -2917,7 +3003,7 @@ private fun VehicleControlDockBar(
                         Icon(
                             painter = painterResource(iconRes),
                             contentDescription = title,
-                            tint = if (isSelected) Color(0xFF1E293B) else Color(0xFF64748B),
+                            tint = if (isSelected) iconSelected else iconUnselected,
                             modifier = Modifier.size(19.dp),
                         )
 
@@ -2925,7 +3011,7 @@ private fun VehicleControlDockBar(
                             text = title,
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) Color(0xFF1E293B) else Color(0xFF64748B),
+                            color = if (isSelected) textSelected else textUnselected,
                             fontSize = 10.sp,
                             maxLines = 1,
                         )

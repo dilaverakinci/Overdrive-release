@@ -630,18 +630,75 @@ class VehicleControlComposeFragment : Fragment() {
         if (!isResumed) return
         mainHandler.removeCallbacks(refreshRunnable)
         // Adaptive telemetry rate:
-        // Driving/Moving/Charging: 200ms (5 Hz) for instantaneous speed/power bar responsiveness
-        // Parked/Stationary: 1000ms (1 Hz) for resource preservation
+        // Driving/Moving/Charging: 100ms (10 Hz) for instantaneous speed/power bar responsiveness
+        // Parked/Stationary: 300ms (~3.3 Hz) for resource preservation
         val isActive = uiState.powertrain.speedKmh > 0.5 ||
                 uiState.powertrain.gear != Gear.P ||
                 uiState.battery.isCharging
-        val nextDelay = if (isActive) 200L else 1000L
+        val nextDelay = if (isActive) 100L else 300L
         mainHandler.postDelayed(refreshRunnable, nextDelay)
+    }
+
+    private fun pollFastInMemoryTelemetry() {
+        try {
+            val collector = com.overdrive.app.byd.BydDataCollector.getInstance()
+            if (collector != null && collector.isInitialized) {
+                val d = collector.data
+                if (d != null) {
+                    val spd = collector.readCurrentSpeedKmh()
+                    val speedVal = if (!spd.isNaN() && spd >= 0) spd else (if (!d.speedKmh.isNaN()) d.speedKmh else 0.0)
+                    val g = com.overdrive.app.recording.RecordingModeManager.gearToString(d.gearMode)
+                    val gearVal = when (g?.uppercase(Locale.ROOT)) {
+                        "P" -> Gear.P
+                        "R" -> Gear.R
+                        "N" -> Gear.N
+                        "D" -> Gear.D
+                        "M" -> Gear.M
+                        "S" -> Gear.S
+                        else -> uiState.powertrain.gear
+                    }
+                    val opModeVal = when (d.operationMode) {
+                        1 -> OperationMode.ECO
+                        2 -> OperationMode.NORMAL
+                        3 -> OperationMode.SPORT
+                        4 -> OperationMode.SNOW
+                        else -> uiState.powertrain.operationMode
+                    }
+                    var pKw = 0.0
+                    val isCharging = (d.chargingGunState == 1 || d.chargingState == 1) || (!d.chargingPowerKw.isNaN() && d.chargingPowerKw > 0.1)
+                    if (isCharging && !d.chargingPowerKw.isNaN() && d.chargingPowerKw > 0.1) {
+                        pKw = -d.chargingPowerKw
+                    } else if (!d.hvBatteryPowerKw.isNaN() && kotlin.math.abs(d.hvBatteryPowerKw) > 0.01) {
+                        pKw = d.hvBatteryPowerKw
+                    } else if (!d.hvPackVoltage.isNaN() && !d.hvPackCurrentAmps.isNaN() && d.hvPackVoltage > 50) {
+                        pKw = (d.hvPackVoltage * d.hvPackCurrentAmps) / 1000.0
+                    } else if (!d.enginePowerKw.isNaN() && kotlin.math.abs(d.enginePowerKw) > 0.01) {
+                        pKw = d.enginePowerKw
+                    }
+                    val accelVal = if (d.accelPercent != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE) d.accelPercent else uiState.powertrain.accelPedalPercent
+                    val brakeVal = if (d.brakePercent != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE) d.brakePercent else uiState.powertrain.brakePedalPercent
+
+                    uiState = uiState.copy(
+                        powertrain = uiState.powertrain.copy(
+                            speedKmh = speedVal,
+                            gear = gearVal,
+                            powerKw = pKw,
+                            operationMode = opModeVal,
+                            accelPedalPercent = accelVal,
+                            brakePedalPercent = brakeVal
+                        )
+                    )
+                }
+            }
+        } catch (_: Throwable) {}
     }
 
     private fun refreshVehicleStateAsync() {
         if (isRefreshing) return
         isRefreshing = true
+
+        // Fast-path in-memory telemetry immediately on main thread (0ms latency for speed/power bar)
+        pollFastInMemoryTelemetry()
 
         workerExecutor.execute {
             var conn: HttpURLConnection? = null
