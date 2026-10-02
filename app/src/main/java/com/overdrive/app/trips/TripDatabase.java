@@ -1,6 +1,7 @@
 package com.overdrive.app.trips;
 
 import com.overdrive.app.database.SqliteDatabaseManager;
+import com.overdrive.app.database.SqliteStorageEngine;
 import com.overdrive.app.logging.DaemonLogger;
 
 import java.sql.Connection;
@@ -50,12 +51,14 @@ public class TripDatabase {
 
         logger.info("Initializing H2 trip database at: " + DB_PATH);
 
-        // Load H2 JDBC driver
-        try {
-            Class.forName("org.h2.Driver");
-        } catch (ClassNotFoundException e) {
-            logger.error("H2 Driver not found! Check gradle dependencies.", e);
-            return;
+        if (!SqliteStorageEngine.isAndroidRuntime()) {
+            // Load H2 JDBC driver
+            try {
+                Class.forName("org.h2.Driver");
+            } catch (ClassNotFoundException e) {
+                logger.error("H2 Driver not found! Check gradle dependencies.", e);
+                return;
+            }
         }
 
         int maxRetries = 3;

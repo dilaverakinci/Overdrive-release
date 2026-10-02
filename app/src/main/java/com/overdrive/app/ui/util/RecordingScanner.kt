@@ -31,45 +31,50 @@ object RecordingScanner {
      */
     fun scanRecordings(context: Context): List<RecordingFile> {
         val apiResult = RecordingsApiClient.fetchAllRecordings(RecordingsApiClient.Filter())
-        if (apiResult != null) {
-            // Empty list during warmup is intentional — caller polls; do
-            // NOT fall back to the slow walk.
+        if (!apiResult.isNullOrEmpty()) {
             return apiResult
         }
-        Log.w(TAG, "API unreachable, falling back to direct filesystem scan")
-        return scanRecordingsDirect(context)
+        val direct = scanRecordingsDirect(context)
+        if (direct.isNotEmpty()) {
+            return direct
+        }
+        return apiResult ?: emptyList()
     }
 
     fun scanNormalRecordings(context: Context): List<RecordingFile> {
         val apiResult = RecordingsApiClient.fetchAllRecordings(
             RecordingsApiClient.Filter(type = "normal"))
-        if (apiResult != null) return apiResult
-        Log.w(TAG, "scanNormalRecordings: API unreachable, falling back")
-        return scanRecordingsDirect(context).filter { it.type == RecordingFile.RecordingType.NORMAL }
+        if (!apiResult.isNullOrEmpty()) return apiResult
+        val direct = scanRecordingsDirect(context).filter { it.type == RecordingFile.RecordingType.NORMAL }
+        if (direct.isNotEmpty()) return direct
+        return apiResult ?: emptyList()
     }
 
     fun scanSentryRecordings(context: Context): List<RecordingFile> {
         val apiResult = RecordingsApiClient.fetchAllRecordings(
             RecordingsApiClient.Filter(type = "sentry"))
-        if (apiResult != null) return apiResult
-        Log.w(TAG, "scanSentryRecordings: API unreachable, falling back")
-        return scanRecordingsDirect(context).filter { it.type == RecordingFile.RecordingType.SENTRY }
+        if (!apiResult.isNullOrEmpty()) return apiResult
+        val direct = scanRecordingsDirect(context).filter { it.type == RecordingFile.RecordingType.SENTRY }
+        if (direct.isNotEmpty()) return direct
+        return apiResult ?: emptyList()
     }
 
     fun scanProximityRecordings(context: Context): List<RecordingFile> {
         val apiResult = RecordingsApiClient.fetchAllRecordings(
             RecordingsApiClient.Filter(type = "proximity"))
-        if (apiResult != null) return apiResult
-        Log.w(TAG, "scanProximityRecordings: API unreachable, falling back")
-        return scanRecordingsDirect(context).filter { it.type == RecordingFile.RecordingType.PROXIMITY }
+        if (!apiResult.isNullOrEmpty()) return apiResult
+        val direct = scanRecordingsDirect(context).filter { it.type == RecordingFile.RecordingType.PROXIMITY }
+        if (direct.isNotEmpty()) return direct
+        return apiResult ?: emptyList()
     }
 
     fun scanOemDashcamRecordings(context: Context): List<RecordingFile> {
         val apiResult = RecordingsApiClient.fetchAllRecordings(
             RecordingsApiClient.Filter(type = "oemDashcam"))
-        if (apiResult != null) return apiResult
-        Log.w(TAG, "scanOemDashcamRecordings: API unreachable, falling back")
-        return scanRecordingsDirect(context).filter { it.type == RecordingFile.RecordingType.OEM_DASHCAM }
+        if (!apiResult.isNullOrEmpty()) return apiResult
+        val direct = scanRecordingsDirect(context).filter { it.type == RecordingFile.RecordingType.OEM_DASHCAM }
+        if (direct.isNotEmpty()) return direct
+        return apiResult ?: emptyList()
     }
 
     /**

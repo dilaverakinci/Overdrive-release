@@ -1,6 +1,7 @@
 package com.overdrive.app.server;
 
 import com.overdrive.app.database.SqliteDatabaseManager;
+import com.overdrive.app.database.SqliteStorageEngine;
 import com.overdrive.app.logging.DaemonLogger;
 import com.overdrive.app.storage.StorageManager;
 
@@ -317,11 +318,13 @@ public final class RecordingsIndex {
         shuttingDown = false;
         logger.info("Initializing RecordingsIndex at " + DB_PATH);
 
-        try {
-            Class.forName("org.h2.Driver");
-        } catch (ClassNotFoundException e) {
-            logger.error("H2 driver not found — check gradle deps", e);
-            return false;
+        if (!SqliteStorageEngine.isAndroidRuntime()) {
+            try {
+                Class.forName("org.h2.Driver");
+            } catch (ClassNotFoundException e) {
+                logger.error("H2 driver not found — check gradle deps", e);
+                return false;
+            }
         }
 
         // Same retry-on-stale-lock pattern as TripDatabase. SIGKILL of the

@@ -88,10 +88,10 @@ public class SqliteStorageEngine implements AutoCloseable {
 
             // Configure optimal automotive WAL parameters
             database.enableWriteAheadLogging();
-            database.execSQL("PRAGMA synchronous = NORMAL;");
-            database.execSQL("PRAGMA temp_store = MEMORY;");
-            database.execSQL("PRAGMA cache_size = -4000;"); // ~4MB RAM cache
-            database.execSQL("PRAGMA busy_timeout = 5000;"); // 5s retry on contention
+            applyPragma("PRAGMA synchronous = NORMAL;");
+            applyPragma("PRAGMA temp_store = MEMORY;");
+            applyPragma("PRAGMA cache_size = -4000;"); // ~4MB RAM cache
+            applyPragma("PRAGMA busy_timeout = 5000;"); // 5s retry on contention
 
             ensureWorldPermissions(dbFile);
             ensureAuxiliaryFilesPermissions();
@@ -100,6 +100,14 @@ public class SqliteStorageEngine implements AutoCloseable {
         } catch (Exception e) {
             logger.error("Failed to initialize SqliteStorageEngine at " + dbFile.getAbsolutePath(), e);
             throw new RuntimeException("SQLite initialization failed for: " + dbFile.getAbsolutePath(), e);
+        }
+    }
+
+    private void applyPragma(String pragma) {
+        try (Cursor c = database.rawQuery(pragma, null)) {
+            if (c != null) c.moveToFirst();
+        } catch (Throwable t) {
+            logger.warn("Failed to apply pragma: " + pragma + " (" + t.getMessage() + ")");
         }
     }
 

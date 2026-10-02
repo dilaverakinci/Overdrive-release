@@ -381,6 +381,12 @@ public final class SqliteJdbcBridge {
         }
 
         private int executeUpdateInternal(String sql) throws SQLException {
+            if (sql != null && sql.trim().toUpperCase(Locale.US).startsWith("PRAGMA")) {
+                try (Cursor c = db.rawQuery(sql, null)) {
+                    if (c != null) c.moveToFirst();
+                } catch (Exception ignored) {}
+                return 0;
+            }
             Object[] bindArgs = buildBindArgs();
             try {
                 if (bindArgs.length > 0) {
