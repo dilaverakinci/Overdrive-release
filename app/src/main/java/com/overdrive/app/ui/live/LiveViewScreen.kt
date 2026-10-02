@@ -681,7 +681,7 @@ private fun LiveCameraViewport(
 
     LaunchedEffect(state.activeCamera) {
         webViewRef?.evaluateJavascript(
-            "if (window.BYD && window.BYD.stream && window.BYD.stream.selectCamera) { window.BYD.stream.selectCamera(${state.activeCamera.id}); }",
+            "if (window.BYD && window.BYD.stream && window.BYD.stream.selectCamera) { window.BYD.stream.selectCamera(${state.activeCamera.id}, false); }",
             null
         )
     }
@@ -729,7 +729,7 @@ private fun LiveCameraViewport(
                                 view.visibility = android.view.View.VISIBLE
                                 isWebViewReady = true
                                 view.evaluateJavascript(
-                                    "if (window.BYD && window.BYD.stream && window.BYD.stream.selectCamera) { window.BYD.stream.selectCamera(${state.activeCamera.id}); }",
+                                    "if (window.BYD && window.BYD.stream && window.BYD.stream.selectCamera) { window.BYD.stream.selectCamera(${state.activeCamera.id}, false); }",
                                     null
                                 )
                             }

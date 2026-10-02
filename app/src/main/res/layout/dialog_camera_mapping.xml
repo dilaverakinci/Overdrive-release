@@ -479,6 +479,7 @@
         <!-- DiLink 4 compatibility options. Both only take effect when the
              DiLink 4 camera path is selected above. -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardCameraDilink4Tweaks"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/card_gap_vertical"

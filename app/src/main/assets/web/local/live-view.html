@@ -188,7 +188,7 @@
                                     <canvas id="liveCarCanvas" class="car-image" aria-hidden="true"></canvas>
                                     
                                     <!-- Camera Hotspots with Pulse Animation -->
-                                    <div class="cam-hotspot" data-cam="1" onclick="BYD.stream.selectCamera(1)">
+                                    <div class="cam-hotspot" data-cam="1" onclick="BYD.stream.selectCamera(1, true)">
                                         <div class="hotspot-pulse"></div>
                                         <div class="hotspot-ring"></div>
                                         <span class="hotspot-label" data-i18n="stream.hotspot_front">FRONT</span>
@@ -200,27 +200,27 @@
                                          from the FRONT quadrant marker so users see the
                                          standalone dashcam sensor as distinct from the
                                          AVM front-quadrant stitch. -->
-                                    <div class="cam-hotspot cam-dvr" data-cam="6" style="display:none;" onclick="BYD.stream.selectCamera(6)">
+                                    <div class="cam-hotspot cam-dvr" data-cam="6" style="display:none;" onclick="BYD.stream.selectCamera(6, true)">
                                         <div class="hotspot-pulse"></div>
                                         <div class="hotspot-ring"></div>
                                         <span class="hotspot-label" data-i18n="stream.hotspot_oem_dashcam">DVR</span>
                                     </div>
-                                    <div class="cam-hotspot" data-cam="3" onclick="BYD.stream.selectCamera(3)">
+                                    <div class="cam-hotspot" data-cam="3" onclick="BYD.stream.selectCamera(3, true)">
                                         <div class="hotspot-pulse"></div>
                                         <div class="hotspot-ring"></div>
                                         <span class="hotspot-label" data-i18n="stream.hotspot_rear">REAR</span>
                                     </div>
-                                    <div class="cam-hotspot" data-cam="4" onclick="BYD.stream.selectCamera(4)">
+                                    <div class="cam-hotspot" data-cam="4" onclick="BYD.stream.selectCamera(4, true)">
                                         <div class="hotspot-pulse"></div>
                                         <div class="hotspot-ring"></div>
                                         <span class="hotspot-label" data-i18n="stream.hotspot_left">LEFT</span>
                                     </div>
-                                    <div class="cam-hotspot" data-cam="2" onclick="BYD.stream.selectCamera(2)">
+                                    <div class="cam-hotspot" data-cam="2" onclick="BYD.stream.selectCamera(2, true)">
                                         <div class="hotspot-pulse"></div>
                                         <div class="hotspot-ring"></div>
                                         <span class="hotspot-label" data-i18n="stream.hotspot_right">RIGHT</span>
                                     </div>
-                                    <div class="cam-hotspot cam-all" data-cam="0" onclick="BYD.stream.selectCamera(0)">
+                                    <div class="cam-hotspot cam-all" data-cam="0" onclick="BYD.stream.selectCamera(0, true)">
                                         <div class="hotspot-pulse"></div>
                                         <div class="hotspot-ring"></div>
                                         <span class="hotspot-label" data-i18n="stream.hotspot_all">ALL</span>
@@ -1753,7 +1753,7 @@
         // Camera-first entry: ALL is selected before the stream starts.
         BYD.stream.currentViewMode = 0;
         
-        BYD.stream.selectCamera = async function(mode) {
+        BYD.stream.selectCamera = async function(mode, allowToggle = false) {
             // Invalidate every older route response, including a DVR
             // first-frame poll. A newer non-DVR click must always win.
             const selectionToken = (this._viewSelectionToken || 0) + 1;
@@ -1772,19 +1772,16 @@
             const priorOverlayEl0 = document.getElementById('cameraLabelOverlay');
             const priorOverlayDisplay = priorOverlayEl0 ? priorOverlayEl0.style.display : '';
 
-            // Toggle behavior: if the same camera is tapped again, stop the
-            // stream. The earlier guard only checked sotaPlayer (WebCodecs),
-            // so on the BYD in-app WebView (Chrome 58, no VideoDecoder) the
-            // active player is jmuxer / Broadway / hw_player and the toggle
-            // never fired — re-tapping the same camera silently re-started
-            // the stream. Treat ANY active player + streamStarted as "live".
+            // Toggle behavior: if the same camera is tapped again by user, stop the
+            // stream. Programmatic selection or auto-play passes allowToggle=false
+            // so opening the page never aborts an in-progress or active stream.
             const sotaLive = this.sotaPlayer && this.sotaPlayer.isRunning && this.sotaPlayer.isRunning();
             const legacyLive = this.streamStarted && (
                 !!this.jmuxer || !!this.broadwayPlayer ||
                 (this.ws && this.ws.readyState === WebSocket.OPEN)
             );
             const hadLiveStream = !!(sotaLive || legacyLive);
-            if (this.currentViewMode === mode
+            if (allowToggle && this.currentViewMode === mode
                     && (sotaLive || legacyLive || this.streamStarted)) {
                 console.log("[Stream] Toggling off camera:", mode);
                 // Reuse the canonical stopStream path so all decoder branches
@@ -1809,6 +1806,14 @@
 
                 this.setStagePhase('idle');
                 this.updateConnectionStatus('idle');
+                return;
+            }
+            if (!allowToggle && this.currentViewMode === mode
+                    && (sotaLive || legacyLive || this.streamStarted)) {
+                console.log("[Stream] Already streaming requested mode:", mode);
+                document.querySelectorAll('.cam-hotspot').forEach(el => {
+                    el.classList.toggle('active', parseInt(el.dataset.cam) === mode);
+                });
                 return;
             }
             
@@ -2300,7 +2305,7 @@
             BYD.qualityMenu.init();
             if (!BYD.stream.autoStartRequested) {
                 BYD.stream.autoStartRequested = true;
-                await BYD.stream.selectCamera(0);
+                await BYD.stream.selectCamera(0, false);
             }
         });
 

@@ -841,55 +841,6 @@ public class SurveillanceApiHandler {
                 }
                 config.put("scheduleRules", schedRules);
             }
-            
-            // Camera ID info
-            try {
-                org.json.JSONObject camCfg = com.overdrive.app.config.UnifiedConfigManager
-                    .loadConfig().optJSONObject("camera");
-                boolean passiveApaMode = false;
-                if (camCfg != null) {
-                    config.put("cameraId", camCfg.optInt("probedCameraId", -1));
-                    config.put("cameraManualOverride", camCfg.optBoolean("manualOverride", false));
-                    // Persisted ingestion mode. Default = "default" (legacy
-                    // ImageReader + 4-strip → 2x2). UI uses this to pre-select
-                    // the radio group; absence falls back to default.
-                    String cameraMode = camCfg.optString("cameraMode", "default");
-                    config.put("cameraMode", cameraMode);
-                    if ("dilink5".equalsIgnoreCase(cameraMode)) {
-                        config.put(
-                            com.overdrive.app.camera.dilink5.DiLink5QCarCamBackend
-                                .CONFIG_CAMERA_MAPPING_KEY,
-                            camCfg.optString(
-                                com.overdrive.app.camera.dilink5.DiLink5QCarCamBackend
-                                    .CONFIG_CAMERA_MAPPING_KEY,
-                                ""));
-                    }
-                    // Red-calibration-overlay GL mask fallback. The dialog
-                    // reads this to pre-check the switch.
-                    config.put("dilink4RedMask",
-                        camCfg.optBoolean("dilink4RedMask", false));
-                    passiveApaMode = camCfg.optBoolean("dilink4PassiveApaMode", false);
-                    config.put("dilink4PassiveApaMode", passiveApaMode);
-                }
-                // DiLink 4 mosaic-viewpoint handshake result. This is the write
-                // that flips the byd_apa HAL out of single-camera dashcam mode;
-                // when it does not land, the HAL streams ONE camera and every 2x2
-                // quadrant assumption downstream is wrong — which looks to a user
-                // like a garbled or wrong-looking tile. Surfacing it here is what
-                // makes that distinguishable in the field instead of guessed at.
-                //
-                // Emitted ONLY on dilink4 so a legacy car's response payload is
-                // byte-identical to before (the values would be meaningless there
-                // anyway — the viewpoint write is never attempted).
-                if (camCfg != null
-                        && "dilink4".equalsIgnoreCase(camCfg.optString("cameraMode", "default"))
-                        && !passiveApaMode) {
-                    config.put("dilink4MosaicViewpointConfirmed",
-                        com.overdrive.app.camera.BydApaViewpointHelper.isMosaicViewpointConfirmed());
-                    config.put("dilink4ViewpointRc",
-                        com.overdrive.app.camera.BydApaViewpointHelper.getLastAcquireRc());
-                }
-            } catch (Exception ignored) {}
         } else {
             config.put("environmentPreset", "outdoor");
             config.put("sensitivityLevel", 3);
@@ -917,6 +868,55 @@ public class SurveillanceApiHandler {
                     com.overdrive.app.telegram.config.UnifiedTelegramConfig.isTierCritical());
             config.put("shadowFilter", 2);
         }
+
+        // Camera ID & ingestion mode info (always present, independent of sentryConfig)
+        try {
+            org.json.JSONObject camCfg = com.overdrive.app.config.UnifiedConfigManager
+                .loadConfig().optJSONObject("camera");
+            boolean passiveApaMode = false;
+            if (camCfg != null) {
+                config.put("cameraId", camCfg.optInt("probedCameraId", -1));
+                config.put("cameraManualOverride", camCfg.optBoolean("manualOverride", false));
+                // Persisted ingestion mode. Default = "default" (legacy
+                // ImageReader + 4-strip → 2x2). UI uses this to pre-select
+                // the radio group; absence falls back to default.
+                String cameraMode = camCfg.optString("cameraMode", "default");
+                config.put("cameraMode", cameraMode);
+                if ("dilink5".equalsIgnoreCase(cameraMode)) {
+                    config.put(
+                        com.overdrive.app.camera.dilink5.DiLink5QCarCamBackend
+                            .CONFIG_CAMERA_MAPPING_KEY,
+                        camCfg.optString(
+                            com.overdrive.app.camera.dilink5.DiLink5QCarCamBackend
+                                .CONFIG_CAMERA_MAPPING_KEY,
+                            ""));
+                }
+                // Red-calibration-overlay GL mask fallback. The dialog
+                // reads this to pre-check the switch.
+                config.put("dilink4RedMask",
+                    camCfg.optBoolean("dilink4RedMask", false));
+                passiveApaMode = camCfg.optBoolean("dilink4PassiveApaMode", false);
+                config.put("dilink4PassiveApaMode", passiveApaMode);
+            }
+            // DiLink 4 mosaic-viewpoint handshake result. This is the write
+            // that flips the byd_apa HAL out of single-camera dashcam mode;
+            // when it does not land, the HAL streams ONE camera and every 2x2
+            // quadrant assumption downstream is wrong — which looks to a user
+            // like a garbled or wrong-looking tile. Surfacing it here is what
+            // makes that distinguishable in the field instead of guessed at.
+            //
+            // Emitted ONLY on dilink4 so a legacy car's response payload is
+            // byte-identical to before (the values would be meaningless there
+            // anyway — the viewpoint write is never attempted).
+            if (camCfg != null
+                    && "dilink4".equalsIgnoreCase(camCfg.optString("cameraMode", "default"))
+                    && !passiveApaMode) {
+                config.put("dilink4MosaicViewpointConfirmed",
+                    com.overdrive.app.camera.BydApaViewpointHelper.isMosaicViewpointConfirmed());
+                config.put("dilink4ViewpointRc",
+                    com.overdrive.app.camera.BydApaViewpointHelper.getLastAcquireRc());
+            }
+        } catch (Exception ignored) {}
 
         // Merge resolved camera profile summary so the diagnostics camera-
         // mapping dialog can populate role list, current mappings, and

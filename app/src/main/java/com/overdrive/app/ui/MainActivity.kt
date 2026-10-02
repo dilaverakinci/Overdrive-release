@@ -2613,18 +2613,37 @@ open class MainActivity : AppCompatActivity() {
             val manualOverride = config.optBoolean("cameraManualOverride", false)
             val manualCameraId = if (manualOverride && rawManualId in 0..5) rawManualId else null
 
-            val cameraMode = config.optString("cameraMode", "default")
-                .lowercase(java.util.Locale.US)
-                .let { if (it == "dilink4" || it == "dilink5") it else "default" }
-
-            // OEM Dashcam state lives in the same camera.* UCM section but is
-            // not (yet) merged into /api/surveillance/config. Read it directly
-            // from UnifiedConfigManager — the daemon writes these from shell
-            // UID, so app-side reads need a forceReload to dodge the stale
-            // per-UID cache (see feedback_unified_config_force_reload.md).
+            // Read camera section from UnifiedConfigManager
             com.overdrive.app.config.UnifiedConfigManager.forceReload()
             val cameraSection = com.overdrive.app.config.UnifiedConfigManager
                 .loadConfig().optJSONObject("camera") ?: org.json.JSONObject()
+
+            val localCameraMode = cameraSection.optString("cameraMode", "")
+            val resolvedCameraMode = when {
+                config.has("cameraMode") && !config.isNull("cameraMode") && config.optString("cameraMode").isNotBlank() ->
+                    config.optString("cameraMode")
+                localCameraMode.isNotBlank() ->
+                    localCameraMode
+                com.overdrive.app.camera.dilink5.DiLink5Platform.isSelected() ->
+                    "dilink5"
+                com.overdrive.app.camera.dilink5.DiLink5Platform.hasDiLink5CameraHardware() ->
+                    "dilink5"
+                else -> {
+                    val modelId = com.overdrive.app.config.UnifiedConfigManager.getSelectedVehicleModelId()?.lowercase(java.util.Locale.US) ?: ""
+                    if (modelId == "sealion7" || modelId == "shark" || modelId == "leopard5") "dilink5" else "default"
+                }
+            }
+            val cameraMode = resolvedCameraMode.lowercase(java.util.Locale.US)
+                .let { if (it == "dilink4" || it == "dilink5") it else "default" }
+
+            val rawDilink5Mapping = if (config.has("dilink5CameraMapping") && !config.isNull("dilink5CameraMapping") && config.optString("dilink5CameraMapping").isNotBlank()) {
+                config.optString("dilink5CameraMapping")
+            } else {
+                cameraSection.optString("dilink5CameraMapping", "")
+            }
+
+            // OEM Dashcam state lives in the same camera.* UCM section but is
+            // not (yet) merged into /api/surveillance/config.
             val oemDashcamCameraId = cameraSection.optInt("oemDashcamCameraId", -1)
             val oemDashcamManualOverride = cameraSection.optBoolean(
                 "oemDashcamManualOverride", false)
@@ -2641,8 +2660,7 @@ open class MainActivity : AppCompatActivity() {
                 manualCameraId = manualCameraId,
                 isManualOverride = manualOverride,
                 cameraMode = cameraMode,
-                dilink5CameraMapping = config.optString(
-                    "dilink5CameraMapping", ""),
+                dilink5CameraMapping = rawDilink5Mapping,
                 dilink4PassiveApaMode = config.optBoolean(
                     "dilink4PassiveApaMode", false),
                 dilink4RedMask = config.optBoolean("dilink4RedMask", false),
@@ -3107,14 +3125,13 @@ open class MainActivity : AppCompatActivity() {
         // DiLink 5 hardware order override. This is deliberately separate
         // from legacy role/slice mapping: the native bridge consumes physical
         // IDs in front,right,rear,left order before it builds the mosaic.
-        val dilink5MappingEditable = state.cameraMode == "dilink5"
+        var currentSelectedMode = state.cameraMode
+        val dilink4TweaksCard = dialogView.findViewById<View>(R.id.cardCameraDilink4Tweaks)
         val savedDilink5Mapping = state.dilink5CameraMapping
             .split(',')
             .joinToString(",") { it.trim() }
             .takeIf { state.dilink5CameraMapping.isNotBlank() }
             .orEmpty()
-        dilink5MappingCard.visibility =
-            if (dilink5MappingEditable) View.VISIBLE else View.GONE
         currentDilink5MappingView.text = if (savedDilink5Mapping.isEmpty()) {
             getString(R.string.camera_dilink5_mapping_current_auto)
         } else {
@@ -3140,18 +3157,59 @@ open class MainActivity : AppCompatActivity() {
             else -> null
         }
         fun refreshDilink5MappingAction() {
+            val isDi5 = currentSelectedMode == "dilink5"
             saveDilink5MappingButton.isEnabled =
-                dilink5MappingEditable && selectedDilink5Mapping() != null
+                isDi5 && selectedDilink5Mapping() != null
         }
+
+        fun updateCameraModeVisibility(mode: String) {
+            currentSelectedMode = mode
+            val isDiLink5 = mode == "dilink5"
+            val isDiLink4 = mode == "dilink4"
+
+            dilink5MappingCard?.visibility = if (isDiLink5) View.VISIBLE else View.GONE
+            dilink4TweaksCard?.visibility = if (isDiLink4) View.VISIBLE else View.GONE
+            refreshDilink5MappingAction()
+
+            val legacyEditable = !isDiLink5
+            setActionsEnabled(legacyEditable)
+            roleSpinner.isEnabled = legacyEditable
+            manualCameraGroup.isEnabled = legacyEditable
+            for (index in 0 until manualCameraGroup.childCount) {
+                manualCameraGroup.getChildAt(index).isEnabled = legacyEditable
+            }
+            saveManualCameraButton.isEnabled = legacyEditable
+            dilink4PassiveApaSwitch?.isEnabled = isDiLink4
+            dilink4RedMaskSwitch?.isEnabled = isDiLink4
+            saveDilink4TweaksButton?.isEnabled = isDiLink4
+            oemDashcamGroup.isEnabled = legacyEditable
+            for (index in 0 until oemDashcamGroup.childCount) {
+                oemDashcamGroup.getChildAt(index).isEnabled = legacyEditable
+            }
+            saveOemDashcamButton.isEnabled = legacyEditable
+            concurrentProbeSwitch?.isEnabled = legacyEditable
+            decoupledLaneSwitch?.isEnabled = mode == "default"
+        }
+
+        cameraModeGroup.setOnCheckedChangeListener { _, checkedId ->
+            val mode = when (checkedId) {
+                R.id.rbCameraModeDilink4 -> "dilink4"
+                R.id.rbCameraModeDilink5 -> "dilink5"
+                else -> "default"
+            }
+            updateCameraModeVisibility(mode)
+        }
+
         dilink5MappingGroup.setOnCheckedChangeListener { _, _ ->
             refreshDilink5MappingAction()
         }
-        refreshDilink5MappingAction()
+
+        updateCameraModeVisibility(state.cameraMode)
 
         saveDilink5MappingButton.setOnClickListener {
             val selectedMapping =
                 selectedDilink5Mapping() ?: return@setOnClickListener
-            if (selectedMapping == savedDilink5Mapping) {
+            if (selectedMapping == savedDilink5Mapping && state.cameraMode == "dilink5") {
                 Toast.makeText(
                     this,
                     getString(R.string.camera_dilink5_mapping_unchanged),
@@ -3160,6 +3218,7 @@ open class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
             val payload = org.json.JSONObject().apply {
+                put("cameraMode", "dilink5")
                 put("dilink5CameraMapping", selectedMapping)
             }.toString()
             saveDilink5MappingButton.isEnabled = false
@@ -3189,9 +3248,9 @@ open class MainActivity : AppCompatActivity() {
                 R.id.rbCameraModeDilink5 -> "dilink5"
                 else -> "default"
             }
-            // No-op when the user re-applies the already-saved mode — saves a
-            // daemon restart and a "settings unchanged" toast.
-            if (selectedMode == state.cameraMode) {
+            val selectedMapping = if (selectedMode == "dilink5") selectedDilink5Mapping() else null
+            // No-op when the user re-applies the already-saved mode and mapping
+            if (selectedMode == state.cameraMode && (selectedMode != "dilink5" || selectedMapping == savedDilink5Mapping)) {
                 Toast.makeText(
                     this,
                     getString(R.string.camera_mode_save),
@@ -3201,6 +3260,9 @@ open class MainActivity : AppCompatActivity() {
             }
             val payload = org.json.JSONObject().apply {
                 put("cameraMode", selectedMode)
+                if (selectedMode == "dilink5" && selectedMapping != null) {
+                    put("dilink5CameraMapping", selectedMapping)
+                }
             }.toString()
             saveCameraModeButton.isEnabled = false
             postSurveillanceConfig(payload) { success, message ->
