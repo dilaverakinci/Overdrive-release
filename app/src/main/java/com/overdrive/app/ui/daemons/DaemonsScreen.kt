@@ -74,12 +74,12 @@ fun DaemonsScreen(
     val runningCount = state.daemons.count { it.status == DaemonStatus.RUNNING }
 
     LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+        modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(
-            horizontal = OverdriveTheme.dimensions.pagePaddingHorizontal,
-            vertical = OverdriveTheme.dimensions.pagePaddingTop
+            start = OverdriveTheme.dimensions.pagePaddingHorizontal,
+            end = OverdriveTheme.dimensions.pagePaddingHorizontal,
+            top = OverdriveTheme.dimensions.pagePaddingTop,
+            bottom = 80.dp
         ),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -139,7 +139,7 @@ fun DaemonsScreen(
         }
 
         item {
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }

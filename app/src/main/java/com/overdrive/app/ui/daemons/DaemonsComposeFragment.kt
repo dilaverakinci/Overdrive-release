@@ -204,17 +204,7 @@ class DaemonsComposeFragment : Fragment() {
     }
 
     private fun onDaemonConfigureClicked(type: DaemonType) {
-        when (type) {
-            DaemonType.ZROK_TUNNEL -> showZrokTokenDialog()
-            DaemonType.TAILSCALE_TUNNEL -> showTailscaleSettingsDialog()
-            DaemonType.CLOUDFLARED_TUNNEL -> {
-                CloudflaredPaidConfig.showSettingsDialog(requireContext(), daemonsViewModel)
-            }
-            else -> {
-                val ctx = context ?: return
-                Toast.makeText(ctx, getString(R.string.toast_no_config_needed, type.localizedName(ctx)), Toast.LENGTH_SHORT).show()
-            }
-        }
+        DaemonDialogManager.showConfigDialog(type, this, daemonsViewModel)
     }
 
     private fun showZrokTokenDialog() {
@@ -590,32 +580,7 @@ class DaemonsComposeFragment : Fragment() {
     }
 
     private fun onDownloadLogClicked(type: DaemonType) {
-        val ctx = context ?: return
-        val localizedName = type.localizedName(ctx)
-
-        if (LogUploader.isUploadConfigured()) {
-            val dialogView = LayoutInflater.from(ctx).inflate(R.layout.dialog_send_log, null)
-            dialogView.findViewById<TextView>(R.id.sendLogSubtitle)?.text =
-                getString(R.string.logs_send_subtitle, localizedName)
-
-            val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(
-                ctx, R.style.Theme_Overdrive_M3_Dialog)
-                .setView(dialogView)
-                .setNegativeButton(android.R.string.cancel, null)
-                .create()
-
-            dialogView.findViewById<View>(R.id.optionUpload)?.setOnClickListener {
-                dialog.dismiss()
-                uploadDaemonLog(type, localizedName)
-            }
-            dialogView.findViewById<View>(R.id.optionShare)?.setOnClickListener {
-                dialog.dismiss()
-                shareDaemonLog(type)
-            }
-            dialog.show()
-            return
-        }
-        shareDaemonLog(type)
+        DaemonDialogManager.downloadLog(type, this, daemonsViewModel)
     }
 
     private fun uploadDaemonLog(type: DaemonType, localizedName: String) {

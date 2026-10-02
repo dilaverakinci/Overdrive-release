@@ -37,6 +37,7 @@ import com.overdrive.app.server.LocaleManager
 import com.overdrive.app.services.RemoteVoiceService
 import com.overdrive.app.ui.MainActivity
 import com.overdrive.app.ui.component.OverdriveComposeContainer
+import com.overdrive.app.ui.daemons.DaemonDialogManager
 import com.overdrive.app.ui.dialog.LanguagePickerDialog
 import com.overdrive.app.ui.fragment.WebViewFragment
 import com.overdrive.app.ui.model.DaemonType
@@ -1888,6 +1889,17 @@ class SettingsComposeFragment : Fragment() {
         }
 
         refreshWifiAutoEnable()
+        checkZrokTokenStatus()
+    }
+
+    private fun checkZrokTokenStatus() {
+        daemonsViewModel.zrokController.hasEnableToken { hasToken ->
+            activity?.runOnUiThread {
+                if (!hasToken) {
+                    daemonsViewModel.updateZrokNeedsConfig(getString(R.string.daemon_config_no_token))
+                }
+            }
+        }
     }
 
     private fun refreshWifiAutoEnable() {
@@ -1949,11 +1961,11 @@ class SettingsComposeFragment : Fragment() {
     }
 
     private fun onDaemonConfigureClicked(type: DaemonType) {
-        Toast.makeText(requireContext(), "${type.name} ayarları", Toast.LENGTH_SHORT).show()
+        DaemonDialogManager.showConfigDialog(type, this, daemonsViewModel)
     }
 
     private fun onDownloadDaemonLog(type: DaemonType) {
-        Toast.makeText(requireContext(), "${type.name} günlüğü indiriliyor", Toast.LENGTH_SHORT).show()
+        DaemonDialogManager.downloadLog(type, this, daemonsViewModel)
     }
 
     // =========================================================================
