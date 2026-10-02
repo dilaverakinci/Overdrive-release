@@ -51,6 +51,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.overdrive.app.R
+import com.overdrive.app.charging.station.EvStation
 import com.overdrive.app.charging.station.EvStationRepository
 import com.overdrive.app.ui.component.OverdriveButton
 import com.overdrive.app.ui.component.OverdriveButtonVariant
@@ -82,12 +83,26 @@ fun ChargingScreen(
     var showAddDialog by remember { mutableStateOf(false) }
     var sessionToDelete by remember { mutableStateOf<ChargingSession?>(null) }
     var showStationGuide by remember { mutableStateOf(false) }
+    var showMapPicker by remember { mutableStateOf(false) }
+    var preselectedStation by remember { mutableStateOf<EvStation?>(null) }
 
     if (showStationGuide) {
         EvStationPickerDialog(
             onDismissRequest = { showStationGuide = false },
             onStationSelected = { station ->
+                preselectedStation = station
                 showStationGuide = false
+                showAddDialog = true
+            }
+        )
+    }
+
+    if (showMapPicker) {
+        EvStationMapPickerDialog(
+            onDismissRequest = { showMapPicker = false },
+            onStationSelected = { station ->
+                preselectedStation = station
+                showMapPicker = false
                 showAddDialog = true
             }
         )
@@ -96,10 +111,15 @@ fun ChargingScreen(
     if (showAddDialog) {
         AddChargingSessionDialog(
             batteryCapacityKwh = state.batteryCapacityKwh,
-            onDismiss = { showAddDialog = false },
+            initialStation = preselectedStation,
+            onDismiss = {
+                showAddDialog = false
+                preselectedStation = null
+            },
             onSave = { session ->
                 onAddSession(session)
                 showAddDialog = false
+                preselectedStation = null
             }
         )
     }
@@ -172,12 +192,13 @@ fun ChargingScreen(
                     )
                 }
                 ChargingTab.SESSIONS -> {
-                    // Aggregates Card with "+ Seans Ekle" and "İstasyon Rehberi" buttons
+                    // Aggregates Card with "+ Seans Ekle", "İstasyon Rehberi" and "Harita" buttons
                     SessionsSummaryCard(
                         totalSessions = state.totalSessionsCount,
                         totalEnergy = state.totalEnergyDeliveredKwh,
                         onAddClick = { showAddDialog = true },
-                        onBrowseStationsClick = { showStationGuide = true }
+                        onBrowseStationsClick = { showStationGuide = true },
+                        onBrowseMapClick = { showMapPicker = true }
                     )
 
                     if (state.sessions.isEmpty()) {
@@ -664,6 +685,7 @@ private fun SessionsSummaryCard(
     totalEnergy: Float,
     onAddClick: () -> Unit = {},
     onBrowseStationsClick: () -> Unit = {},
+    onBrowseMapClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     OverdriveCard(
@@ -711,6 +733,12 @@ private fun SessionsSummaryCard(
                     text = "İstasyon Rehberi",
                     variant = OverdriveButtonVariant.OUTLINED,
                     onClick = onBrowseStationsClick,
+                )
+
+                OverdriveButton(
+                    text = "🗺️ Harita",
+                    variant = OverdriveButtonVariant.OUTLINED,
+                    onClick = onBrowseMapClick,
                 )
 
                 OverdriveButton(
@@ -938,6 +966,7 @@ private fun EmptySessionsCard(
 @Composable
 private fun AddChargingSessionDialog(
     batteryCapacityKwh: Float,
+    initialStation: EvStation? = null,
     onDismiss: () -> Unit,
     onSave: (ChargingSession) -> Unit,
 ) {
@@ -949,11 +978,16 @@ private fun AddChargingSessionDialog(
         }
     }
     var showStationPicker by remember { mutableStateOf(false) }
+    var showMapPicker by remember { mutableStateOf(false) }
 
     val effectiveCapacity = if (batteryCapacityKwh > 30f) batteryCapacityKwh else 60.48f
 
-    var stationName by remember { mutableStateOf("Trugo DC Hızlı Şarj") }
-    var isDc by remember { mutableStateOf(true) }
+    var stationName by remember {
+        mutableStateOf(initialStation?.displayTitle ?: "Trugo DC Hızlı Şarj")
+    }
+    var isDc by remember {
+        mutableStateOf(initialStation?.isDc ?: true)
+    }
 
     val defaultDateTime = remember {
         SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date())
@@ -964,8 +998,20 @@ private fun AddChargingSessionDialog(
     var endSocText by remember { mutableStateOf("80") }
     var durationText by remember { mutableStateOf("35") }
     var energyText by remember { mutableStateOf("36.3") }
-    var unitPriceText by remember { mutableStateOf("8.90") }
-    var totalCostText by remember { mutableStateOf("323.00") }
+    var unitPriceText by remember {
+        mutableStateOf(
+            if (initialStation != null && initialStation.bestPricePerKwh > 0)
+                String.format(Locale.US, "%.2f", initialStation.bestPricePerKwh)
+            else "8.90"
+        )
+    }
+    var totalCostText by remember {
+        mutableStateOf(
+            if (initialStation != null && initialStation.bestPricePerKwh > 0)
+                String.format(Locale.US, "%.2f", 36.3f * initialStation.bestPricePerKwh.toFloat())
+            else "323.00"
+        )
+    }
 
     fun recalcEnergyAndCost(sSoc: Int, eSoc: Int, rateStr: String) {
         val delta = (eSoc - sSoc).coerceIn(0, 100)
@@ -992,6 +1038,25 @@ private fun AddChargingSessionDialog(
                     )
                 }
                 showStationPicker = false
+            }
+        )
+    }
+
+    if (showMapPicker) {
+        EvStationMapPickerDialog(
+            onDismissRequest = { showMapPicker = false },
+            onStationSelected = { st ->
+                stationName = st.displayTitle
+                isDc = st.isDc
+                if (st.bestPricePerKwh > 0.0) {
+                    unitPriceText = String.format(Locale.US, "%.2f", st.bestPricePerKwh)
+                    recalcEnergyAndCost(
+                        startSocText.toIntOrNull() ?: 20,
+                        endSocText.toIntOrNull() ?: 80,
+                        unitPriceText
+                    )
+                }
+                showMapPicker = false
             }
         )
     }
@@ -1120,13 +1185,24 @@ private fun AddChargingSessionDialog(
                 }
             }
 
-            // Station Guide Button (22,000+ stations)
-            OverdriveButton(
-                text = "📍 22.000+ İstasyon Rehberinden Seç",
-                variant = OverdriveButtonVariant.PRIMARY,
-                onClick = { showStationPicker = true },
-                modifier = Modifier.fillMaxWidth()
-            )
+            // Station Selection Buttons: Rehber & Harita
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OverdriveButton(
+                    text = "📍 İstasyon Rehberi",
+                    variant = OverdriveButtonVariant.PRIMARY,
+                    onClick = { showStationPicker = true },
+                    modifier = Modifier.weight(1f)
+                )
+                OverdriveButton(
+                    text = "🗺️ Harita ile Seç",
+                    variant = OverdriveButtonVariant.OUTLINED,
+                    onClick = { showMapPicker = true },
+                    modifier = Modifier.weight(1f)
+                )
+            }
 
             // Preset Buttons Row
             Text(

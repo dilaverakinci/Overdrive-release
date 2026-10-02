@@ -78,6 +78,7 @@ fun EvStationPickerDialog(
     var isLoading by remember { mutableStateOf(false) }
 
     var showAddCustomDialog by remember { mutableStateOf(false) }
+    var viewMode by remember { mutableStateOf("liste") } // "liste", "harita"
 
     // Fetch stations when query or filter changes
     LaunchedEffect(searchQuery, selectedFilter) {
@@ -138,12 +139,12 @@ fun EvStationPickerDialog(
     ) {
         Box(
             modifier = modifier
-                .fillMaxWidth(0.92f)
-                .fillMaxSize(0.90f)
+                .fillMaxWidth(0.94f)
+                .fillMaxSize(0.92f)
                 .clip(RoundedCornerShape(16.dp))
                 .background(MaterialTheme.colorScheme.surface)
                 .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
-                .padding(16.dp)
+                .padding(14.dp)
         ) {
             Column(
                 modifier = Modifier.fillMaxSize(),
@@ -193,8 +194,46 @@ fun EvStationPickerDialog(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        // Liste / Harita Toggle Switcher
+                        Row(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                                .padding(3.dp),
+                            horizontalArrangement = Arrangement.spacedBy(3.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(if (viewMode == "liste") MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+                                    .clickable { viewMode = "liste" }
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    text = "📋 Liste",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = if (viewMode == "liste") FontWeight.Bold else FontWeight.Normal,
+                                    color = if (viewMode == "liste") MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(if (viewMode == "harita") MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+                                    .clickable { viewMode = "harita" }
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    text = "🗺️ Harita",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = if (viewMode == "harita") FontWeight.Bold else FontWeight.Normal,
+                                    color = if (viewMode == "harita") MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
                         OverdriveButton(
-                            text = "+ Özel İstasyon Ekle",
+                            text = "+ Özel Ekle",
                             variant = OverdriveButtonVariant.OUTLINED,
                             onClick = { showAddCustomDialog = true }
                         )
@@ -208,6 +247,17 @@ fun EvStationPickerDialog(
                         }
                     }
                 }
+
+                if (viewMode == "harita") {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        EvStationMapView(
+                            onStationConfirmed = { st ->
+                                onStationSelected(st)
+                            },
+                            initialCoords = userCoords
+                        )
+                    }
+                } else {
 
                 // Search Bar
                 OutlinedTextField(
@@ -398,6 +448,7 @@ fun EvStationPickerDialog(
                             )
                         }
                     }
+                }
                 }
             }
         }
