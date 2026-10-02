@@ -3,6 +3,7 @@ package com.overdrive.app.ui.charging
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,8 +16,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.draw.shadow
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -107,15 +110,19 @@ fun ChargingScreen(
                     )
                 }
                 ChargingTab.SESSIONS -> {
-                    // Aggregates Card
-                    SessionsSummaryCard(
-                        totalSessions = state.totalSessionsCount,
-                        totalEnergy = state.totalEnergyDeliveredKwh,
-                    )
+                    if (state.sessions.isEmpty()) {
+                        EmptySessionsCard()
+                    } else {
+                        // Aggregates Card
+                        SessionsSummaryCard(
+                            totalSessions = state.totalSessionsCount,
+                            totalEnergy = state.totalEnergyDeliveredKwh,
+                        )
 
-                    // List of Historical Sessions
-                    state.sessions.forEach { session ->
-                        SessionItemCard(session = session)
+                        // List of Historical Sessions
+                        state.sessions.forEach { session ->
+                            SessionItemCard(session = session)
+                        }
                     }
                 }
             }
@@ -133,53 +140,40 @@ private fun ChargingHeader(
     onTabSelected: (ChargingTab) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val (pillText, pillStatus) = when (status) {
+        ChargingStatus.CHARGING -> stringResource(R.string.charging_status_charging) to OverdrivePillStatus.SUCCESS
+        ChargingStatus.PLUGGED_IN -> stringResource(R.string.charging_status_plugged) to OverdrivePillStatus.INFO
+        ChargingStatus.COMPLETE -> stringResource(R.string.charging_status_complete) to OverdrivePillStatus.SUCCESS
+        ChargingStatus.DISCONNECTED -> stringResource(R.string.charging_status_disconnected) to OverdrivePillStatus.INFO
+        ChargingStatus.FAULT -> stringResource(R.string.charging_status_fault) to OverdrivePillStatus.DANGER
+    }
+
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Column {
-            Text(
-                text = stringResource(R.string.rail_charging),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-        }
+        // Status pill on the start side (eliminates the duplicate "Şarj" header)
+        OverdriveStatusPill(label = pillText, status = pillStatus)
 
+        // Tab Toggle Pills on the end side
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                .padding(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            val (pillText, pillStatus) = when (status) {
-                ChargingStatus.CHARGING -> stringResource(R.string.charging_status_charging) to OverdrivePillStatus.SUCCESS
-                ChargingStatus.PLUGGED_IN -> stringResource(R.string.charging_status_plugged) to OverdrivePillStatus.INFO
-                ChargingStatus.COMPLETE -> stringResource(R.string.charging_status_complete) to OverdrivePillStatus.SUCCESS
-                ChargingStatus.DISCONNECTED -> stringResource(R.string.charging_status_disconnected) to OverdrivePillStatus.WARNING
-                ChargingStatus.FAULT -> stringResource(R.string.charging_status_fault) to OverdrivePillStatus.DANGER
-            }
-
-            OverdriveStatusPill(label = pillText, status = pillStatus)
-
-            // Tab Toggle Pills
-            Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                    .padding(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                TabButton(
-                    text = stringResource(R.string.charging_tab_live),
-                    isSelected = selectedTab == ChargingTab.LIVE,
-                    onClick = { onTabSelected(ChargingTab.LIVE) }
-                )
-                TabButton(
-                    text = stringResource(R.string.charging_tab_sessions),
-                    isSelected = selectedTab == ChargingTab.SESSIONS,
-                    onClick = { onTabSelected(ChargingTab.SESSIONS) }
-                )
-            }
+            TabButton(
+                text = stringResource(R.string.charging_tab_live),
+                isSelected = selectedTab == ChargingTab.LIVE,
+                onClick = { onTabSelected(ChargingTab.LIVE) }
+            )
+            TabButton(
+                text = stringResource(R.string.charging_tab_sessions),
+                isSelected = selectedTab == ChargingTab.SESSIONS,
+                onClick = { onTabSelected(ChargingTab.SESSIONS) }
+            )
         }
     }
 }
@@ -394,27 +388,18 @@ private fun ChargingLimitsCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp)
+                .padding(horizontal = 14.dp, vertical = 10.dp)
         ) {
-            Text(
-                text = stringResource(R.string.charging_limits_section),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Slider: Target SoC Limit
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    text = stringResource(R.string.charging_target_limit_label),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    text = stringResource(R.string.charging_limits_section),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
                     text = stringResource(R.string.charging_recommended_80, targetSoc),
@@ -424,32 +409,95 @@ private fun ChargingLimitsCard(
                 )
             }
 
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Quick Presets
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                listOf(70, 80, 90, 100).forEach { preset ->
+                    val isSelected = targetSoc == preset
+                    val label = if (preset == 80) "%80 (Önerilen)" else "%$preset"
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(
+                                if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                                else MaterialTheme.colorScheme.surfaceContainerHigh
+                            )
+                            .clickable { onTargetSocChange(preset) }
+                            .padding(vertical = 4.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Modern EV Charging Slider
+            @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
             Slider(
                 value = targetSoc.toFloat(),
                 onValueChange = { onTargetSocChange(it.toInt()) },
                 valueRange = 50f..100f,
-                steps = 9, // 50, 55, 60, ..., 100
-                colors = SliderDefaults.colors(
-                    thumbColor = MaterialTheme.colorScheme.primary,
-                    activeTrackColor = MaterialTheme.colorScheme.primary,
-                    inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                ),
+                steps = 9,
+                thumb = {
+                    Box(
+                        modifier = Modifier
+                            .size(22.dp)
+                            .shadow(3.dp, CircleShape)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary)
+                            .border(2.5.dp, MaterialTheme.colorScheme.surface, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(7.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.onPrimary)
+                        )
+                    }
+                },
+                track = { sliderState ->
+                    SliderDefaults.Track(
+                        sliderState = sliderState,
+                        modifier = Modifier.height(8.dp),
+                        thumbTrackGapSize = 0.dp,
+                        trackInsideCornerSize = 4.dp,
+                        drawStopIndicator = null,
+                        colors = SliderDefaults.colors(
+                            activeTrackColor = MaterialTheme.colorScheme.primary,
+                            inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        )
+                    )
+                },
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // AC Current Limit Chips
             Text(
                 text = stringResource(R.string.charging_max_ac_current),
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 val limits = listOf(6, 8, 10, 13, 16, 32)
                 limits.forEach { amp ->
@@ -466,15 +514,15 @@ private fun ChargingLimitsCard(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(8.dp))
+                            .clip(RoundedCornerShape(6.dp))
                             .background(bgColor)
                             .clickable { onCurrentLimitChange(amp) }
-                            .padding(vertical = 10.dp),
+                            .padding(vertical = 6.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
                             text = "${amp}A",
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.titleSmall,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                             fontFamily = FontFamily.Monospace,
                             color = textColor,
@@ -648,3 +696,36 @@ private fun SessionItemCard(
         }
     }
 }
+
+@Composable
+private fun EmptySessionsCard(modifier: Modifier = Modifier) {
+    OverdriveCard(modifier = modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_charging),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.size(36.dp),
+            )
+            Text(
+                text = "Henüz kayıtlı şarj seansı bulunmuyor",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = "Araç şarj edildiğinde enerji, süre ve konum kayıtları burada listelenecektir.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            )
+        }
+    }
+}
+

@@ -71,6 +71,27 @@ class TripsComposeFragment : Fragment() {
                         },
                         onExportKml = {
                             showFeedback("KML rota dosyası Google Earth için hazırlandı.")
+                        },
+                        onDeleteTripClick = { trip ->
+                            uiState = uiState.copy(tripToDelete = trip)
+                        },
+                        onConfirmDeleteTrip = {
+                            val trip = uiState.tripToDelete
+                            if (trip != null) {
+                                context?.let { ctx ->
+                                    TripTelemetryLoader.deleteTrip(ctx, trip.id)
+                                    val remaining = TripTelemetryLoader.loadTrips(ctx)
+                                    uiState = TripsUiState.fromTrips(remaining, isTableView = uiState.isTableView)
+                                        .copy(tripToDelete = null)
+                                    showFeedback("Seyahat kaydı silindi.")
+                                }
+                            }
+                        },
+                        onDismissDeleteTrip = {
+                            uiState = uiState.copy(tripToDelete = null)
+                        },
+                        onToggleViewMode = { isTable ->
+                            uiState = uiState.copy(isTableView = isTable)
                         }
                     )
                 }
@@ -86,9 +107,7 @@ class TripsComposeFragment : Fragment() {
     private fun loadRealTrips() {
         context?.let { ctx ->
             val loaded = TripTelemetryLoader.loadTrips(ctx)
-            if (loaded.isNotEmpty()) {
-                uiState = TripsUiState.fromTrips(loaded)
-            }
+            uiState = TripsUiState.fromTrips(loaded, isTableView = uiState.isTableView)
         }
     }
 

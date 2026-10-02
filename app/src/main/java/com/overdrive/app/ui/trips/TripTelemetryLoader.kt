@@ -23,20 +23,8 @@ object TripTelemetryLoader {
     private val cachedTrips = mutableListOf<TripUiItem>()
     private var isLoaded = false
 
-    /**
-     * Load all trips, preferring device files and falling back to assets.
-     */
-    @Synchronized
-    fun loadTrips(context: Context): List<TripUiItem> {
-        if (isLoaded && cachedTrips.isNotEmpty()) {
-            return cachedTrips
-        }
-
-        val trips = mutableListOf<TripUiItem>()
-
-        val seenTripIds = mutableSetOf<Long>()
+    fun getTripSearchDirs(): List<File> {
         val searchDirs = mutableListOf<File>()
-
         try {
             StorageManager.getInstance()?.let { sm ->
                 sm.allTripsDirs?.filterNotNull()?.forEach { dir ->
@@ -57,6 +45,54 @@ object TripTelemetryLoader {
                 searchDirs.add(dir)
             }
         }
+        return searchDirs
+    }
+
+    /**
+     * Delete a trip from cache, disk storage, and record its ID in persistent blacklist.
+     */
+    @Synchronized
+    fun deleteTrip(context: Context, tripId: Long): Boolean {
+        cachedTrips.removeAll { it.id == tripId }
+
+        val prefs = context.getSharedPreferences("overdrive_trips", Context.MODE_PRIVATE)
+        val deletedSet = prefs.getStringSet("deleted_trip_ids", emptySet())?.toMutableSet() ?: mutableSetOf()
+        deletedSet.add(tripId.toString())
+        prefs.edit().putStringSet("deleted_trip_ids", deletedSet).apply()
+
+        for (storageDir in getTripSearchDirs()) {
+            try {
+                val file = File(storageDir, "$tripId.jsonl.gz")
+                if (file.exists()) {
+                    file.delete()
+                }
+            } catch (_: Throwable) {}
+        }
+        return true
+    }
+
+    fun refreshTrips(context: Context): List<TripUiItem> {
+        isLoaded = false
+        cachedTrips.clear()
+        return loadTrips(context)
+    }
+
+    /**
+     * Load all trips, preferring device files and falling back to assets.
+     */
+    @Synchronized
+    fun loadTrips(context: Context): List<TripUiItem> {
+        if (isLoaded && cachedTrips.isNotEmpty()) {
+            return cachedTrips
+        }
+
+        val trips = mutableListOf<TripUiItem>()
+        val seenTripIds = mutableSetOf<Long>()
+
+        val prefs = context.getSharedPreferences("overdrive_trips", Context.MODE_PRIVATE)
+        val deletedSet = prefs.getStringSet("deleted_trip_ids", emptySet()) ?: emptySet()
+
+        val searchDirs = getTripSearchDirs()
 
         for (storageDir in searchDirs) {
             if (storageDir.exists() && storageDir.isDirectory) {
@@ -64,7 +100,7 @@ object TripTelemetryLoader {
                 if (files != null && files.isNotEmpty()) {
                     files.sortedByDescending { it.lastModified() }.forEach { file ->
                         val tripId = file.name.substringBefore('.').toLongOrNull() ?: 100L
-                        if (!seenTripIds.contains(tripId)) {
+                        if (!deletedSet.contains(tripId.toString()) && !seenTripIds.contains(tripId)) {
                             try {
                                 parseTripFile(file.inputStream(), tripId)?.let {
                                     seenTripIds.add(tripId)
@@ -77,11 +113,11 @@ object TripTelemetryLoader {
             }
         }
 
-        // 3. Fallback or complete with bundled APK assets (100.jsonl.gz, 99.jsonl.gz, 98.jsonl.gz, 66.jsonl.gz)
+        // Fallback or complete with bundled APK assets if not deleted
         val assetNames = listOf("100.jsonl.gz", "99.jsonl.gz", "98.jsonl.gz", "66.jsonl.gz")
         assetNames.forEach { name ->
             val tripId = name.substringBefore('.').toLongOrNull() ?: 100L
-            if (!seenTripIds.contains(tripId)) {
+            if (!deletedSet.contains(tripId.toString()) && !seenTripIds.contains(tripId)) {
                 try {
                     val stream = context.assets.open("trips/$name")
                     parseTripFile(stream, tripId)?.let {
@@ -95,11 +131,9 @@ object TripTelemetryLoader {
         // Sort latest first
         trips.sortByDescending { it.startTimeMs }
 
-        if (trips.isNotEmpty()) {
-            cachedTrips.clear()
-            cachedTrips.addAll(trips)
-            isLoaded = true
-        }
+        cachedTrips.clear()
+        cachedTrips.addAll(trips)
+        isLoaded = true
 
         return cachedTrips
     }

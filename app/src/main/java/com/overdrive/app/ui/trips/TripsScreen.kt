@@ -22,12 +22,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -83,12 +87,34 @@ fun TripsScreen(
     onCleanupCdr: () -> Unit = {},
     onExportKml: () -> Unit = {},
     onExportGpx: () -> Unit = {},
+    onDeleteTripClick: (TripUiItem) -> Unit = {},
+    onConfirmDeleteTrip: () -> Unit = {},
+    onDismissDeleteTrip: () -> Unit = {},
+    onToggleViewMode: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Surface(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
     ) {
+        if (state.tripToDelete != null) {
+            val trip = state.tripToDelete
+            OverdriveDialog(
+                onDismissRequest = onDismissDeleteTrip,
+                title = "Seyahat Kaydını Sil",
+                positiveButtonText = "Sil",
+                onPositiveClick = onConfirmDeleteTrip,
+                negativeButtonText = "Vazgeç",
+                onNegativeClick = onDismissDeleteTrip,
+            ) {
+                Text(
+                    text = "Bu seyahat kaydını (${String.format(Locale.US, "%.1f km", trip.distanceKm)}) kalıcı olarak silmek istediğinizden emin misiniz?",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+
         if (state.selectedTripForDetail != null) {
             TripDetailView(
                 trip = state.selectedTripForDetail,
@@ -112,6 +138,8 @@ fun TripsScreen(
                 onCleanupCdr = onCleanupCdr,
                 onExportKml = onExportKml,
                 onExportGpx = onExportGpx,
+                onDeleteTripClick = onDeleteTripClick,
+                onToggleViewMode = onToggleViewMode,
             )
         }
     }
@@ -129,6 +157,8 @@ private fun TripsMasterView(
     onCleanupCdr: () -> Unit,
     onExportKml: () -> Unit,
     onExportGpx: () -> Unit,
+    onDeleteTripClick: (TripUiItem) -> Unit,
+    onToggleViewMode: (Boolean) -> Unit,
 ) {
     val scrollState = rememberScrollState()
 
@@ -144,7 +174,7 @@ private fun TripsMasterView(
             ),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        // Header Bar
+        // Header Bar (No duplicate "Seyahatler" title)
         TripsHeader(
             filter = state.filter,
             onFilterSelected = onFilterSelected,
@@ -154,20 +184,56 @@ private fun TripsMasterView(
         // Hero Aggregates Card
         TripsHeroCard(state = state)
 
-        // Section Title
-        Text(
-            text = stringResource(R.string.trips_recent_trips_fmt, state.trips.size),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-
-        // Trip Cards List
-        state.trips.forEach { trip ->
-            TripItemCard(
-                trip = trip,
-                onClick = { onTripClick(trip) }
+        // Section Title & View Switcher (Tablo / Kart)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                text = stringResource(R.string.trips_recent_trips_fmt, state.trips.size),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
             )
+
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    .padding(3.dp),
+                horizontalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                FilterTabButton(
+                    text = "Tablo",
+                    isSelected = state.isTableView,
+                    onClick = { onToggleViewMode(true) }
+                )
+                FilterTabButton(
+                    text = "Kart",
+                    isSelected = !state.isTableView,
+                    onClick = { onToggleViewMode(false) }
+                )
+            }
+        }
+
+        // Trip Items (Empty State vs Table vs Cards)
+        if (state.trips.isEmpty()) {
+            EmptyTripsCard()
+        } else if (state.isTableView) {
+            NavionTripsTableView(
+                trips = state.trips,
+                onTripClick = onTripClick,
+                onDeleteTripClick = onDeleteTripClick,
+            )
+        } else {
+            state.trips.forEach { trip ->
+                TripItemCard(
+                    trip = trip,
+                    onClick = { onTripClick(trip) },
+                    onDeleteClick = { onDeleteTripClick(trip) }
+                )
+            }
         }
 
         // Storage & Dashcam Management Card
@@ -191,19 +257,10 @@ private fun TripsHeader(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Column {
-            Text(
-                text = stringResource(R.string.rail_trips),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = stringResource(R.string.trips_header_subtitle),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+        OverdriveStatusPill(
+            status = OverdrivePillStatus.INFO,
+            label = stringResource(R.string.trips_header_subtitle)
+        )
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -447,6 +504,7 @@ fun DriverScoreGauge(
 private fun TripItemCard(
     trip: TripUiItem,
     onClick: () -> Unit,
+    onDeleteClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val dateFormat = SimpleDateFormat("dd MMM · HH:mm", Locale("tr"))
@@ -494,6 +552,17 @@ private fun TripItemCard(
                         status = if (trip.drivingDnaScore >= 90) OverdrivePillStatus.SUCCESS else OverdrivePillStatus.WARNING,
                         label = stringResource(R.string.trips_dna_score_fmt, trip.drivingDnaScore),
                     )
+                    IconButton(
+                        onClick = onDeleteClick,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_delete),
+                            contentDescription = "Sil",
+                            tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                     Text(
                         text = "→",
                         style = MaterialTheme.typography.titleMedium,
@@ -546,6 +615,307 @@ private fun TripStatColumn(
             color = MaterialTheme.colorScheme.onSurface,
             fontFamily = FontFamily.Monospace,
         )
+    }
+}
+
+// =============================================================================
+// NAVION-STYLE TABLE VIEW & EMPTY STATE
+// =============================================================================
+@Composable
+private fun NavionTripsTableView(
+    trips: List<TripUiItem>,
+    onTripClick: (TripUiItem) -> Unit,
+    onDeleteTripClick: (TripUiItem) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    OverdriveCard(
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 10.dp)
+        ) {
+            // Table Header Row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Tarih",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1.2f)
+                )
+                Text(
+                    text = "Rota",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(2.2f)
+                )
+                Text(
+                    text = "Mod",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(0.8f)
+                )
+                Text(
+                    text = "Mesafe",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1.0f)
+                )
+                Text(
+                    text = "Süre",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(0.9f)
+                )
+                Text(
+                    text = "Tüketim",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1.1f)
+                )
+                Text(
+                    text = "Eko Skor",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1.0f)
+                )
+                Text(
+                    text = "İşlem",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(0.6f)
+                )
+            }
+
+            HorizontalDivider(
+                modifier = Modifier.fillMaxWidth(),
+                thickness = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            )
+
+            // Table Body
+            trips.forEachIndexed { index, trip ->
+                NavionTripTableRow(
+                    trip = trip,
+                    onClick = { onTripClick(trip) },
+                    onDeleteClick = { onDeleteTripClick(trip) }
+                )
+                if (index < trips.size - 1) {
+                    HorizontalDivider(
+                        modifier = Modifier.fillMaxWidth(),
+                        thickness = 0.5.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun NavionTripTableRow(
+    trip: TripUiItem,
+    onClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val dateFormat = SimpleDateFormat("dd MMM · HH:mm", Locale("tr"))
+    val dateLabel = dateFormat.format(Date(trip.startTimeMs))
+    val ecoColor = Color(0xFF10B981)
+    val consumptionColor = Color(0xFF06B6D4)
+
+    val (modeText, modeColor) = when {
+        trip.efficiencyKwhPer100Km < 16.0f -> "ECO" to Color(0xFF10B981)
+        trip.avgSpeedKmh > 75f -> "SPORT" to Color(0xFFF59E0B)
+        else -> "NORMAL" to Color(0xFF06B6D4)
+    }
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // 1. Tarih
+        Text(
+            text = dateLabel,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1.2f)
+        )
+
+        // 2. Rota / Kinematik
+        Text(
+            text = trip.kinematicState,
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(2.2f)
+        )
+
+        // 3. Mod
+        Box(
+            modifier = Modifier.weight(0.8f),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(modeColor.copy(alpha = 0.15f))
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = modeText,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = modeColor
+                )
+            }
+        }
+
+        // 4. Mesafe
+        Text(
+            text = "${String.format(Locale.US, "%.1f", trip.distanceKm)} km",
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Center,
+            fontFamily = FontFamily.Monospace,
+            modifier = Modifier.weight(1.0f)
+        )
+
+        // 5. Süre
+        Text(
+            text = "${trip.durationMinutes} dk",
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Center,
+            fontFamily = FontFamily.Monospace,
+            modifier = Modifier.weight(0.9f)
+        )
+
+        // 6. Tüketim
+        Text(
+            text = "${String.format(Locale.US, "%.1f", trip.efficiencyKwhPer100Km)} kWh/100",
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.Bold,
+            color = consumptionColor,
+            textAlign = TextAlign.Center,
+            fontFamily = FontFamily.Monospace,
+            modifier = Modifier.weight(1.1f)
+        )
+
+        // 7. Eko Skor
+        Row(
+            modifier = Modifier.weight(1.0f),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(ecoColor.copy(alpha = 0.15f))
+                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_regen_leaf),
+                    contentDescription = null,
+                    tint = ecoColor,
+                    modifier = Modifier.size(11.dp)
+                )
+                Text(
+                    text = "%${trip.drivingDnaScore}",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = ecoColor,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
+        }
+
+        // 8. İşlem / Sil
+        Box(
+            modifier = Modifier.weight(0.6f),
+            contentAlignment = Alignment.Center
+        ) {
+            IconButton(
+                onClick = onDeleteClick,
+                modifier = Modifier.size(28.dp)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_delete),
+                    contentDescription = "Seyahati Sil",
+                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmptyTripsCard(
+    modifier: Modifier = Modifier,
+) {
+    OverdriveCard(
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_trips),
+                contentDescription = null,
+                modifier = Modifier.size(48.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = "Henüz Kayıtlı Seyahat Bulunmuyor",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Aracınızla sürüşe başladığınızda seyahat kayıtları ve telemetri otomatik olarak burada listelenecektir.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
