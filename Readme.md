@@ -24,9 +24,11 @@ Free, open-source dashcam and sentry mode app built specifically for BYD vehicle
 ---
 
 <p align="center">
-  <a href="https://ik.imagekit.io/686l2mamq/video_2_pvigfb.mp4">
-    <img src="https://github.com/user-attachments/assets/d5faeb2a-96dd-4737-86f4-2e87af52ec4c" alt="Click to Watch OverDrive Demo" width="100%">
+  <a href="https://www.youtube.com/watch?v=MSgcZPENKfs">
+    <img src=".github/assets/overdrive-demo.gif" alt="Click to Watch OverDrive Demo" width="100%">
   </a>
+  <br>
+  <sub>▶ Click to watch the full video on YouTube</sub>
 </p>
 
 ---
@@ -93,6 +95,15 @@ Access at `http://<car-ip>:8080` when on the same WiFi. Zero setup, fastest stre
 
 ### Cloudflare Tunnel
 Access from anywhere via `https://<random>.trycloudflare.com`. No port forwarding, HTTPS by default. Video streaming can be slow due to Cloudflare limitations.
+
+**Paid version (named tunnel on your own domain):**
+Instead of a random `trycloudflare.com` URL, you can run a named tunnel on a domain managed in your Cloudflare account, e.g. `https://car.example.com`.
+
+1. In the [Cloudflare Zero Trust dashboard](https://one.dash.cloudflare.com/), go to **Networks → Tunnels & Mesh → Create a tunnel** and choose **Cloudflared**
+2. Copy the tunnel token.
+3. Under **Public Hostname**, add your hostname (e.g. `car.example.com`) with service `http://127.0.0.1:8080`
+4. In OverDrive: Daemons → Cloudflared settings → enable **Cloudflare Paid Version** → paste the token → save
+5. Start the Cloudflared daemon. The URL shown is your configured hostname
 
 ### Zrok Tunnel (Recommended)
 Free, open-source tunneling with no bandwidth limits at `https://<your-share>.share.zrok.io`. Best for video streaming.
