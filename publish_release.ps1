@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     BetterOverdrive GitHub Release Publisher
     Compiles (or uses existing) debug APK, computes version from commit count,
@@ -16,44 +16,56 @@ if (-not $Token) {
     if ($env:GITHUB_TOKEN) {
         $Token = $env:GITHUB_TOKEN
     } else {
-        Add-Type -TypeDefinition @"
-        using System;
-        using System.Runtime.InteropServices;
-        public class CredReader {
-            [DllImport("advapi32.dll", EntryPoint = "CredReadW", CharSet = CharSet.Unicode, SetLastError = true)]
-            public static extern bool CredRead(string target, int type, int reservedFlag, out IntPtr credentialPtr);
-            [DllImport("advapi32.dll", EntryPoint = "CredFree", SetLastError = true)]
-            public static extern void CredFree(IntPtr cred);
-
-            [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-            public struct CREDENTIAL {
-                public int Flags;
-                public int Type;
-                public string TargetName;
-                public string Comment;
-                public long LastWritten;
-                public int CredentialBlobSize;
-                public IntPtr CredentialBlob;
-                public int Persist;
-                public int AttributeCount;
-                public IntPtr Attributes;
-                public string TargetAlias;
-                public string UserName;
-            }
-
-            public static string Read(string target) {
-                IntPtr credPtr;
-                if (CredRead(target, 1, 0, out credPtr)) {
-                    CREDENTIAL cred = (CREDENTIAL)Marshal.PtrToStructure(credPtr, typeof(CREDENTIAL));
-                    string pass = Marshal.PtrToStringUni(cred.CredentialBlob, cred.CredentialBlobSize / 2);
-                    CredFree(credPtr);
-                    return pass;
+        try {
+            $gitCred = ("protocol=https`nhost=github.com`n" | git credential fill 2>$null)
+            foreach ($line in $gitCred) {
+                if ($line -like "password=*") {
+                    $Token = $line.Substring(9).Trim()
+                    break
                 }
-                return null;
             }
-        }
+        } catch {}
+
+        if (-not $Token) {
+            Add-Type -TypeDefinition @"
+            using System;
+            using System.Runtime.InteropServices;
+            public class CredReader {
+                [DllImport("advapi32.dll", EntryPoint = "CredReadW", CharSet = CharSet.Unicode, SetLastError = true)]
+                public static extern bool CredRead(string target, int type, int reservedFlag, out IntPtr credentialPtr);
+                [DllImport("advapi32.dll", EntryPoint = "CredFree", SetLastError = true)]
+                public static extern void CredFree(IntPtr cred);
+
+                [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+                public struct CREDENTIAL {
+                    public int Flags;
+                    public int Type;
+                    public string TargetName;
+                    public string Comment;
+                    public long LastWritten;
+                    public int CredentialBlobSize;
+                    public IntPtr CredentialBlob;
+                    public int Persist;
+                    public int AttributeCount;
+                    public IntPtr Attributes;
+                    public string TargetAlias;
+                    public string UserName;
+                }
+
+                public static string Read(string target) {
+                    IntPtr credPtr;
+                    if (CredRead(target, 1, 0, out credPtr)) {
+                        CREDENTIAL cred = (CREDENTIAL)Marshal.PtrToStructure(credPtr, typeof(CREDENTIAL));
+                        string pass = Marshal.PtrToStringUni(cred.CredentialBlob, cred.CredentialBlobSize / 2);
+                        CredFree(credPtr);
+                        return pass;
+                    }
+                    return null;
+                }
+            }
 "@ -ErrorAction SilentlyContinue
-        $Token = [CredReader]::Read("git:https://github.com")
+            $Token = [CredReader]::Read("git:https://github.com")
+        }
     }
 }
 
@@ -102,27 +114,47 @@ $apkFileSize = (Get-Item $apkPath).Length
 $apkSizeMB = [math]::Round($apkFileSize / 1MB, 2)
 Write-Host ">>> Derlenmis APK: $apkPath ($apkSizeMB MB - Debug / Blind Spot Ready)" -ForegroundColor Green
 
-# 4. Release Notları
+# 4. Çift Dilli (Türkçe & İngilizce) Release Notları
 $releaseBody = @"
 ## 🚗 BetterOverdrive $versionTag
 
-Moredrive projesi kapsamındaki en güncel geliştirmeleri ve optimizasyonları içeren **Debug** derlemesidir.
+[TR] Moredrive projesi kapsamındaki en güncel geliştirmeleri ve optimizasyonları içeren **Debug** derlemesidir.  
+[EN] **Debug** build containing the latest enhancements and optimizations from the Moredrive project.
+
+---
+
+### 🇹🇷 Türkçe Sürüm Notları
 
 > ⚠️ **Kritik Mimari Not:** Kör nokta (Blind Spot) kamera akışı ve arka plan daemon servislerinin (UID 2000 / SurfaceControl) ADB \`run-as\` üzerinden sorunsuz çalışabilmesi için uygulama daima **Debug** modunda derlenir.
 
-### 🌟 Son Yenilikler ve İyileştirmeler:
+#### 🌟 Son Yenilikler ve İyileştirmeler:
 - ⚡ **BYD Doğrudan Kablosuz ADB Motoru:** Araç multimedya ekranı üzerinden (ts-framework IPC) tek tıkla kablosuz ADB etkinleştirme ve port 5555 yönetimi.
 - 🩺 **Gelişmiş CAN-Bus Teşhisleri:** 9-ECU canlı telemetri monitörü, BMS hücre voltaj dengesizliği (Δ) takibi ve OBD-II DTC arıza kodları tarayıcısı/silicisi.
 - 📐 **HUD & Ekran Optimizasyonu:** Teşhisler sayfasında Ağ, Depolama, Kamera ve Batarya kartlarının kenar boşlukları otomotiv ekranlarına özel olarak sıkılaştırıldı.
-- 🌐 **Gösterge Paneli Uzaktan Erişim (PWA) Düzeltmesi:** Uzaktan erişim kartı genişletildiğinde sayfanın en alta kaydırılabilmesi için alt boşluk payı ve otomatik kaydırma (auto-scroll) eklendi.
+- 🌐 **Gösterge Paneli Uzaktan Erişim (PWA) Düzeltmesi:** Uzaktan erişim kartı genişletildiğinde sayfanın en alta kaydırılabilmesi için alt boşluk payı ve otomatik kaydırma eklendi.
 - 🗺️ **Türkiye EV Şarj Rehberi & Haritası:** 22.000+ şarj istasyonu desteği ve Navion akıllı oturum düzenleyicisi.
+- 🔄 **Akıllı Otomatik Güncelleyici (AppUpdater):** Doğrudan \`dilaverakinci/Overdrive-release\` reposuna bağlandı; eski \`51.8\` sürümünden geçiş için tolerans kuralları eklendi.
 
 ---
-**APK Dosyası:** \`betteroverdrive.apk\` ($apkSizeMB MB)  
-**Derleme Tipi:** Debug (arm64-v8a - BYD DiLink Android 10/12)
+
+### 🇬🇧 English Release Notes
+
+> ⚠️ **Critical Architectural Note:** To ensure background daemon services (\`fast_cam_capture\` / UID 2000 / SurfaceControl) and Blind Spot camera streaming function correctly via ADB \`run-as\`, the application is always compiled in **Debug** mode.
+
+#### 🌟 Recent Features & Improvements:
+- ⚡ **BYD Direct Wireless ADB Engine:** One-click wireless ADB activation and port 5555 management directly from the vehicle infotainment display (ts-framework IPC).
+- 🩺 **Advanced CAN-Bus Diagnostics:** 9-ECU live telemetry monitor, BMS cell voltage imbalance (Δ) tracking, and OBD-II DTC fault code scanner/clearing.
+- 📐 **HUD & Display Optimization:** Margins and paddings for Network, Storage, Camera, and Battery cards on the Diagnostics page tightened specifically for automotive displays.
+- 🌐 **Dashboard Remote Access (PWA) Fix:** Added bottom padding and auto-scroll handling so the page scrolls completely to the bottom when the remote access card is expanded.
+- 🗺️ **Turkey EV Charging Guide & Map:** Support for 22,000+ EV charging stations and Navion intelligent session organizer.
+- 🔄 **Smart In-App Updater (AppUpdater):** Directed updates to \`dilaverakinci/Overdrive-release\` with backwards compatibility tolerance for upgrading from upstream \`51.8\`.
+
+---
+**APK Dosyası / File:** \`betteroverdrive.apk\` ($apkSizeMB MB)  
+**Derleme Tipi / Build Type:** Debug (arm64-v8a - BYD DiLink Android 10/12)
 "@
 
-# 5. GitHub Release Oluşturma
+# 5. GitHub Release Oluşturma / Güncelleme
 $owner = "dilaverakinci"
 $repo = "Overdrive-release"
 $currentBranch = (git -C $repoRoot rev-parse --abbrev-ref HEAD).Trim()
@@ -143,8 +175,13 @@ try {
 
 $release = $null
 if ($existingRelease) {
-    Write-Host ">>> $versionTag surumu zaten mevcut, guncelleniyor..." -ForegroundColor Yellow
-    $release = $existingRelease
+    Write-Host ">>> $versionTag surumu zaten mevcut, baslik ve notlar guncelleniyor..." -ForegroundColor Yellow
+    $updatePayload = @{
+        name = $releaseTitle
+        body = $releaseBody
+    } | ConvertTo-Json
+    $bodyBytes = [System.Text.Encoding]::UTF8.GetBytes($updatePayload)
+    $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases/$($existingRelease.id)" -Headers $headers -Method Patch -Body $bodyBytes -ContentType "application/json; charset=utf-8"
 } else {
     $createPayloadJson = @{
         tag_name = $versionTag
