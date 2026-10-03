@@ -687,7 +687,7 @@
     <string name="settings_about_license_title">Lisans</string>
     <string name="settings_about_license_value">MIT  açık kaynak. Tam metni görüntülemek için dokunun.</string>
     <string name="settings_about_source_title">Kaynak kodu</string>
-    <string name="settings_about_source_value">github.com/yash-srivastava/Overdrive-release</string>
+    <string name="settings_about_source_value">github.com/dilaverakinci/Overdrive-release</string>
     <string name="settings_about_star_title">GitHub\'da bir bırak</string>
     <string name="settings_about_star_value">Bir saniye sürer, çok şey ifade eder.</string>
     <string name="settings_about_thanks_title">Teşekkürler</string>
@@ -1458,7 +1458,7 @@
     <string name="charging_target_eta_fmt">%%%1$d hedefe %2$d dk kaldı</string>
     <string name="charging_target_limit_label">Hedef Şarj Sınırı</string>
     <string name="community_discord_url">https://discord.gg/PZutk9fg4h</string>
-    <string name="community_github_issues_url">https://github.com/yash-srivastava/Overdrive-release/issues</string>
+    <string name="community_github_issues_url">https://github.com/dilaverakinci/Overdrive-release/issues</string>
     <string name="community_whatsapp_url">https://chat.whatsapp.com/HChmriCWgr9KwAtE6OEkiM</string>
     <string name="daemon_config_no_token">Belirteç yapılandırılmadı. Ayarlamak için dokunun.</string>
     <string name="daemon_config_not_logged_in">Oturum açılmadı. Ayarlamak için dokunun.</string>
@@ -1731,9 +1731,9 @@ Cihaz bu çalışırken bile "internet yok" ve kendi mobil veri simgesini göste
     <string name="seats_slot_label">Yuva %1$d</string>
     <string name="seats_tag_ambient">Ambiyans</string>
     <string name="seats_tag_seat_mirrors">Koltuk ve Aynalar</string>
-    <string name="settings_about_license_url">https://github.com/yash-srivastava/Overdrive-release/blob/main/LICENSE</string>
-    <string name="settings_about_source_url">https://github.com/yash-srivastava/Overdrive-release</string>
-    <string name="settings_about_star_url">https://github.com/yash-srivastava/Overdrive-release</string>
+    <string name="settings_about_license_url">https://github.com/dilaverakinci/Overdrive-release/blob/main/LICENSE</string>
+    <string name="settings_about_source_url">https://github.com/dilaverakinci/Overdrive-release</string>
+    <string name="settings_about_star_url">https://github.com/dilaverakinci/Overdrive-release</string>
     <string name="settings_about_support_count">%1$d kez desteklendi</string>
     <string name="settings_about_support_kofi_url">https://ko-fi.com/E1E71XALHX</string>
     <string name="settings_about_tier_bronze">Bronz</string>

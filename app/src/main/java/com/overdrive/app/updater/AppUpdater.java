@@ -39,7 +39,7 @@ import okhttp3.Response;
 public class AppUpdater {
 
     private static final String TAG = "AppUpdater";
-    private static final String GITHUB_REPO = "yash-srivastava/Overdrive-release";
+    private static final String GITHUB_REPO = "dilaverakinci/Overdrive-release";
     private static final String PREFS_NAME = "app_updater";
     // LEGACY (pre-channel) baseline key/file. Still read once by
     // migrateBaseline() to seed the per-channel "alpha" slot, then unused.
@@ -837,13 +837,25 @@ public class AppUpdater {
                         .header("Accept", "application/vnd.github.v3+json")
                         .build();
 
-                try (Response response = client.newCall(request).execute()) {
-                    if (!response.isSuccessful()) {
-                        postError(callback, "GitHub API error: HTTP " + response.code());
+                Response response = client.newCall(request).execute();
+                if (!response.isSuccessful() && response.code() == 404 && CHANNEL_BRAVEHEART.equals(channel)) {
+                    response.close();
+                    // Fallback to latest release if braveheart rolling tag doesn't exist
+                    apiUrl = "https://api.github.com/repos/" + GITHUB_REPO + "/releases/latest";
+                    request = new Request.Builder()
+                            .url(apiUrl)
+                            .header("Accept", "application/vnd.github.v3+json")
+                            .build();
+                    response = client.newCall(request).execute();
+                }
+
+                try (Response res = response) {
+                    if (!res.isSuccessful()) {
+                        postError(callback, "GitHub API error: HTTP " + res.code());
                         return;
                     }
 
-                    String body = response.body().string();
+                    String body = res.body().string();
                     JSONObject release = new JSONObject(body);
 
                     releaseNotes = release.optString("body", "Bug fixes and improvements.");
@@ -2775,6 +2787,19 @@ public class AppUpdater {
 
     static boolean isNewerVersion(String local, String remote) {
         try {
+            // Tolerance transition: Legacy upstream Overdrive 51.x -> BetterOverdrive (1.0.x or 10.x+)
+            boolean legacyLocal = local.startsWith("51.") || local.equals("51");
+            boolean legacyRemote = remote.startsWith("51.") || remote.equals("51");
+
+            if (legacyLocal && !legacyRemote) {
+                // Upgrading from legacy upstream 51.x to BetterOverdrive is always an upgrade
+                return true;
+            }
+            if (!legacyLocal && legacyRemote) {
+                // Reject downgrade from BetterOverdrive back to legacy upstream 51.x
+                return false;
+            }
+
             String[] lp = local.split("\\.");
             String[] rp = remote.split("\\.");
             int len = Math.max(lp.length, rp.length);
@@ -3354,8 +3379,8 @@ public class AppUpdater {
                         JSONObject rel = releases.optJSONObject(i);
                         if (rel == null) continue;
                         String tag = rel.optString("tag_name", "");
-                        boolean isAlphaArchive = tag.startsWith("alpha-v");
-                        boolean isLegacyAlpha = tag.equals("alpha");
+                        boolean isAlphaArchive = tag.startsWith("alpha-v") || tag.startsWith("v");
+                        boolean isLegacyAlpha = tag.equals("alpha") || tag.equals("braveheart");
                         if (!isAlphaArchive && !isLegacyAlpha) continue;
 
                         String[] apk = firstApkAsset(rel.optJSONArray("assets"));

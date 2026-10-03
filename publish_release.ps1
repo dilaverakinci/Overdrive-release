@@ -75,15 +75,18 @@ if (-not $commitCount -or $commitCount -eq 0) {
     $commitCount = (git -C $repoRoot rev-list --count HEAD).Trim()
 }
 
-$versionTag = "v1.0.$commitCount"
-$releaseTitle = "BetterOverdrive v1.0.$commitCount (Build $commitCount)"
-Write-Host ">>> Belirlenen Versiyon: $versionTag ($commitCount Moredrive commiti)" -ForegroundColor Cyan
+$major = [math]::Floor([int]$commitCount / 10)
+$minor = [int]$commitCount % 10
+$versionName = "$major.$minor"
+$versionTag = "v$versionName"
+$releaseTitle = "BetterOverdrive v$versionName (Build $commitCount)"
+Write-Host ">>> Belirlenen Versiyon: $versionTag ($versionName / Build $commitCount)" -ForegroundColor Cyan
 
 # 3. APK Kontrolü veya Derleme (KRİTİK: Kör nokta / BSD ve ADB daemon servisleri için DAİMA assembleDebug kullanılmalıdır!)
 $apkPath = Join-Path $repoRoot "app\build\outputs\apk\debug\app-arm64-v8a-debug.apk"
 if (-not (Test-Path $apkPath) -and -not $SkipBuild) {
     Write-Host ">>> APK bulunamadi, derleme baslatiliyor (assembleDebug)..." -ForegroundColor Yellow
-    & "$repoRoot\gradlew.bat" assembleDebug
+    & "$repoRoot\gradlew.bat" assembleDebug -PoverdriveVersionName="$versionName" -PoverdriveVersionCode=$commitCount
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Derleme basarisiz oldu!"
         exit 1

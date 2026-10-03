@@ -317,6 +317,23 @@ tasks.register("extractWebAssets") {
     }
 }
 
+fun resolveCommitCount(): Int {
+    return try {
+        val process = ProcessBuilder("git", "rev-list", "--count", "upstream/main..HEAD")
+            .directory(rootDir)
+            .redirectErrorStream(true)
+            .start()
+        val count = process.inputStream.bufferedReader().readText().trim().toIntOrNull()
+        process.waitFor()
+        count ?: 108
+    } catch (e: Exception) {
+        108
+    }
+}
+
+val defaultCommitCount = resolveCommitCount()
+val defaultVersionName = "${defaultCommitCount / 10}.${defaultCommitCount % 10}"
+
 android {
     signingConfigs {
         create("release") {
@@ -355,8 +372,8 @@ android {
         // value (e.g. `-PoverdriveVersionName=27.4 -PoverdriveVersionCode=12`)
         // without a source edit per release; the defaults track the current
         // rolling head so a plain local build is still accurate.
-        versionCode = (project.findProperty("overdriveVersionCode") as? String)?.toIntOrNull() ?: 172
-        versionName = (project.findProperty("overdriveVersionName") as? String) ?: "51.8"
+        versionCode = (project.findProperty("overdriveVersionCode") as? String)?.toIntOrNull() ?: defaultCommitCount
+        versionName = (project.findProperty("overdriveVersionName") as? String) ?: defaultVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
         // Note: abiFilters removed - using splits.abi instead for size optimization
