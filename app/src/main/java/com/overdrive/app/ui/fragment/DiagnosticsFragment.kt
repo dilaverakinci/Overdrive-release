@@ -79,6 +79,17 @@ class DiagnosticsFragment : Fragment() {
                     onAdbClick = {
                         findNavController().navigateDrillDown(R.id.adbConsoleFragment)
                     },
+                    onEnableBydAdbClick = {
+                        com.overdrive.app.byd.adb.BydAdbManager.enableWirelessAdbAsync(requireContext()) { success, msg ->
+                            activity?.runOnUiThread {
+                                Toast.makeText(
+                                    requireContext(),
+                                    (if (success) "✓ " else "⚠ ") + msg,
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                    },
                     onTrafficClick = {
                         (activity as? MainActivity)?.invokeTrafficMonitorAction()
                     },

@@ -46,6 +46,14 @@ class AdbConsoleFragment : Fragment() {
                         },
                         onPresetClick = { preset ->
                             uiState = uiState.copy(currentCommand = preset.command)
+                        },
+                        onEnableBydAdbClick = {
+                            appendOutput("$ ⚡ BYD ADB Aç komutu yürütülüyor...")
+                            com.overdrive.app.byd.adb.BydAdbManager.enableWirelessAdbAsync(requireContext()) { success, msg ->
+                                activity?.runOnUiThread {
+                                    appendOutput(if (success) "✓ $msg" else "⚠ $msg")
+                                }
+                            }
                         }
                     )
                 }

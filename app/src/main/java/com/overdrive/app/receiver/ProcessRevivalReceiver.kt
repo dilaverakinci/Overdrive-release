@@ -78,6 +78,7 @@ class ProcessRevivalReceiver : BroadcastReceiver() {
         // DaemonStartupManager.startOnBoot(), which on a freshly-revived
         // process actually runs (bootStarted was reset by process death).
         try {
+            com.overdrive.app.byd.adb.BydAdbManager.ensureAdbEnabledAsync(appContext)
             DaemonKeepaliveService.start(appContext)
         } catch (e: Exception) {
             Log.w(TAG, "DaemonKeepaliveService.start failed: ${e.message}")

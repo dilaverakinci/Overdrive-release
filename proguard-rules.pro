@@ -10,6 +10,8 @@
 # These are compile-time stubs - real classes come from system at runtime
 -keep class android.hardware.bydauto.** { *; }
 -keep class android.hardware.BmmCamera** { *; }
+-keep class com.ts.lib.settings.** { *; }
+-dontwarn com.ts.lib.settings.**
 
 # ==================== Daemon Entry Points (app_process) ====================
 # ONLY keep class names and main() - everything else gets obfuscated

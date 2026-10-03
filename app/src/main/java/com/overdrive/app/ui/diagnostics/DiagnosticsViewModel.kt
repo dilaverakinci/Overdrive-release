@@ -49,6 +49,28 @@ class DiagnosticsViewModel(
             }
         }
 
+        // Collect reactive BYD ADB status
+        vmScope.launch {
+            com.overdrive.app.byd.adb.BydAdbManager.status.collect { status ->
+                when (status) {
+                    is com.overdrive.app.byd.adb.BydAdbManager.AdbStatus.Connected -> {
+                        _uiState.update { it.copy(isBydAdbActive = true, isBydAdbActivating = false, bydAdbPort = status.port) }
+                    }
+                    is com.overdrive.app.byd.adb.BydAdbManager.AdbStatus.Activating -> {
+                        _uiState.update { it.copy(isBydAdbActivating = true) }
+                    }
+                    is com.overdrive.app.byd.adb.BydAdbManager.AdbStatus.Error -> {
+                        _uiState.update { it.copy(isBydAdbActivating = false) }
+                    }
+                    is com.overdrive.app.byd.adb.BydAdbManager.AdbStatus.Idle,
+                    is com.overdrive.app.byd.adb.BydAdbManager.AdbStatus.Checking -> {
+                        val active = com.overdrive.app.byd.adb.BydAdbManager.isAdbListening()
+                        _uiState.update { it.copy(isBydAdbActive = active, isBydAdbActivating = false) }
+                    }
+                }
+            }
+        }
+
         // Initial background DTC scan
         scanDtc()
     }

@@ -79,6 +79,9 @@ data class DiagnosticsUiState(
     val batterySoh: String = "%100 Sağlık",
     val isBatteryGood: Boolean = true,
     val isBatteryReviewNeeded: Boolean = false,
+    val isBydAdbActive: Boolean = false,
+    val isBydAdbActivating: Boolean = false,
+    val bydAdbPort: Int = 5555,
 
     // Vehicle ECU & DTC tab
     val overallHealth: EcuHealthStatus = EcuHealthStatus.OFFLINE,
@@ -106,6 +109,7 @@ fun DiagnosticsScreen(
     onDismissFeedback: () -> Unit = {},
     onToggleEcuDetail: (EcuType) -> Unit = {},
     onAdbClick: () -> Unit = {},
+    onEnableBydAdbClick: () -> Unit = {},
     onTrafficClick: () -> Unit = {},
     onCameraProbeClick: () -> Unit = {},
     onBatteryHealthClick: () -> Unit = {},
@@ -124,12 +128,12 @@ fun DiagnosticsScreen(
                 .fillMaxWidth()
                 .verticalScroll(scrollState)
                 .padding(
-                    start = OverdriveDimensions.pagePaddingHorizontal,
-                    end = OverdriveDimensions.pagePaddingHorizontal,
-                    top = OverdriveDimensions.pagePaddingTop,
-                    bottom = OverdriveDimensions.pagePaddingBottom,
+                    start = 8.dp,
+                    end = 8.dp,
+                    top = 4.dp,
+                    bottom = 8.dp,
                 ),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             // Header Row
             Row(
@@ -146,7 +150,7 @@ fun DiagnosticsScreen(
                     )
                     Text(
                         text = stringResource(R.string.diagnostics_hero_subtitle),
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -162,9 +166,9 @@ fun DiagnosticsScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(8.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                    .padding(4.dp),
+                    .padding(3.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 DiagnosticsTab.values().forEach { tab ->
@@ -172,13 +176,13 @@ fun DiagnosticsScreen(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(8.dp))
+                            .clip(RoundedCornerShape(6.dp))
                             .background(
                                 if (isSelected) MaterialTheme.colorScheme.primary
                                 else Color.Transparent
                             )
                             .clickable { onTabSelected(tab) }
-                            .padding(vertical = 10.dp),
+                            .padding(vertical = 6.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -199,7 +203,7 @@ fun DiagnosticsScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(12.dp),
+                                .padding(horizontal = 10.dp, vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
@@ -235,7 +239,7 @@ fun DiagnosticsScreen(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         HealthTile(
                             title = stringResource(R.string.diagnostics_health_network),
@@ -255,7 +259,7 @@ fun DiagnosticsScreen(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         HealthTile(
                             title = stringResource(R.string.diagnostics_health_camera),
@@ -276,7 +280,7 @@ fun DiagnosticsScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
 
                     // Developer Tools Section
                     Text(
@@ -288,8 +292,15 @@ fun DiagnosticsScreen(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        ToolCard(
+                            title = if (state.isBydAdbActive) "BYD ADB (Port ${state.bydAdbPort})" else "⚡ BYD ADB Aç",
+                            description = if (state.isBydAdbActivating) "Açılıyor (ts-framework)..." else if (state.isBydAdbActive) "127.0.0.1:${state.bydAdbPort} Aktif ✓" else "Kablosuz ADB'yi araç içinden başlat",
+                            iconRes = R.drawable.ic_services,
+                            onClick = onEnableBydAdbClick,
+                            modifier = Modifier.weight(1f),
+                        )
                         ToolCard(
                             title = stringResource(R.string.diagnostics_section_adb_console),
                             description = stringResource(R.string.diagnostics_adb_subtitle),
@@ -297,6 +308,12 @@ fun DiagnosticsScreen(
                             onClick = onAdbClick,
                             modifier = Modifier.weight(1f),
                         )
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         ToolCard(
                             title = stringResource(R.string.diagnostics_section_traffic),
                             description = stringResource(R.string.diagnostics_traffic_subtitle),
@@ -304,12 +321,6 @@ fun DiagnosticsScreen(
                             onClick = onTrafficClick,
                             modifier = Modifier.weight(1f),
                         )
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
                         ToolCard(
                             title = stringResource(R.string.diagnostics_section_camera_probe),
                             description = stringResource(R.string.diagnostics_camera_probe_subtitle),
@@ -317,6 +328,12 @@ fun DiagnosticsScreen(
                             onClick = onCameraProbeClick,
                             modifier = Modifier.weight(1f),
                         )
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         ToolCard(
                             title = stringResource(R.string.diagnostics_section_battery),
                             description = stringResource(R.string.diagnostics_battery_subtitle),
@@ -325,6 +342,7 @@ fun DiagnosticsScreen(
                             onLongClick = onBatteryLongClick,
                             modifier = Modifier.weight(1f),
                         )
+                        Spacer(modifier = Modifier.weight(1f))
                     }
                 }
 
@@ -332,7 +350,7 @@ fun DiagnosticsScreen(
                     // Vehicle Health & BMS Battery Monitor
                     BmsBalanceSummaryCard(bms = state.bmsTelemetry, overall = state.overallHealth)
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
 
                     // 9-ECU Telemetry Status Grid
                     Text(
@@ -348,7 +366,7 @@ fun DiagnosticsScreen(
                         onEcuClick = onToggleEcuDetail
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
 
                     // OBD-II DTC Scanner Section
                     DtcScannerSection(
@@ -399,8 +417,8 @@ private fun BmsBalanceSummaryCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -499,12 +517,12 @@ private fun EcuStatusGrid(
     val ecus = EcuType.values().toList()
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         ecus.chunked(3).forEach { rowEcus ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 rowEcus.forEach { ecu ->
                     val snapshot = snapshots[ecu]
@@ -537,8 +555,8 @@ private fun EcuCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+                .padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(3.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -582,8 +600,8 @@ private fun EcuCard(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                        .padding(top = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     HorizontalDivider(color = DividerDefaults.color.copy(alpha = 0.2f))
                     snapshot?.details?.forEach { (k, v) ->
@@ -612,7 +630,7 @@ private fun DtcScannerSection(
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -633,7 +651,7 @@ private fun DtcScannerSection(
                 )
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 OverdriveButton(
                     text = if (isScanning) "Taranıyor..." else "Hataları Tara",
                     variant = OverdriveButtonVariant.OUTLINED,
@@ -654,15 +672,15 @@ private fun DtcScannerSection(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(10.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
                         contentDescription = null,
                         tint = OverdriveTheme.colors.statusSuccess,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                     Column {
                         Text(
@@ -680,7 +698,7 @@ private fun DtcScannerSection(
                 }
             }
         } else {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 dtcCodes.forEach { code ->
                     DtcCodeCard(code = code)
                 }
@@ -695,8 +713,8 @@ private fun DtcCodeCard(code: DtcCode, modifier: Modifier = Modifier) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+                .padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -705,7 +723,7 @@ private fun DtcCodeCard(code: DtcCode, modifier: Modifier = Modifier) {
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text(
                         text = code.code,
@@ -771,8 +789,8 @@ private fun HealthTile(
                         )
                     } else Modifier
                 )
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -827,8 +845,8 @@ private fun ToolCard(
                     onClick = onClick,
                     onLongClick = { onLongClick?.invoke() }
                 )
-                .padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+                .padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -845,7 +863,7 @@ private fun ToolCard(
                     painter = painterResource(iconRes),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp),
+                    modifier = Modifier.size(20.dp),
                 )
             }
 

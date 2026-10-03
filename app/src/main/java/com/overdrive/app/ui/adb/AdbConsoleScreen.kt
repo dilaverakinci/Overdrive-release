@@ -61,6 +61,7 @@ fun AdbConsoleScreen(
     onExecuteClick: (String) -> Unit = {},
     onClearOutputClick: () -> Unit = {},
     onPresetClick: (PresetCommand) -> Unit = {},
+    onEnableBydAdbClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val outputScrollState = rememberScrollState()
@@ -105,11 +106,21 @@ fun AdbConsoleScreen(
                     )
                 }
 
-                OverdriveButton(
-                    text = stringResource(R.string.action_clear_output),
-                    variant = OverdriveButtonVariant.TONAL,
-                    onClick = onClearOutputClick,
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OverdriveButton(
+                        text = "⚡ BYD ADB Aç",
+                        variant = OverdriveButtonVariant.PRIMARY,
+                        onClick = onEnableBydAdbClick,
+                    )
+                    OverdriveButton(
+                        text = stringResource(R.string.action_clear_output),
+                        variant = OverdriveButtonVariant.TONAL,
+                        onClick = onClearOutputClick,
+                    )
+                }
             }
 
             // Command Input + Execute Row

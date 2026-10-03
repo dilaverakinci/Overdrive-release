@@ -83,6 +83,23 @@ class DaemonsComposeFragment : Fragment() {
                             if (!applyingWifiAutoEnable && !uiState.isWifiAutoEnableLoading) {
                                 persistWifiAutoEnable(enabled)
                             }
+                        },
+                        onEnableBydAdbClick = {
+                            uiState = uiState.copy(isBydAdbActivating = true)
+                            com.overdrive.app.byd.adb.BydAdbManager.enableWirelessAdbAsync(requireContext()) { success, msg ->
+                                handler.post {
+                                    uiState = uiState.copy(
+                                        isBydAdbActive = success,
+                                        isBydAdbActivating = false,
+                                        bydAdbPort = com.overdrive.app.byd.adb.BydAdbManager.lastActivePort
+                                    )
+                                    Toast.makeText(
+                                        requireContext(),
+                                        (if (success) "✓ " else "⚠ ") + msg,
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            }
                         }
                     )
                 }
@@ -94,11 +111,25 @@ class DaemonsComposeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         observeViewModel()
         checkZrokTokenStatus()
+        refreshBydAdbStatus()
     }
 
     override fun onResume() {
         super.onResume()
         refreshWifiAutoEnable()
+        refreshBydAdbStatus()
+    }
+
+    private fun refreshBydAdbStatus() {
+        wifiSettingsWorker.execute {
+            val listening = com.overdrive.app.byd.adb.BydAdbManager.isAdbListening()
+            handler.post {
+                uiState = uiState.copy(
+                    isBydAdbActive = listening,
+                    bydAdbPort = com.overdrive.app.byd.adb.BydAdbManager.lastActivePort
+                )
+            }
+        }
     }
 
     override fun onDestroy() {

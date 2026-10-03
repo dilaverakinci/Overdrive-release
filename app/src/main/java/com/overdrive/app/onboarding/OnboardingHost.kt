@@ -216,6 +216,9 @@ class OnboardingHost(
         ov.showCentered()
         if (state.daemonAuthorized) { advanceFromAuthorize(); return }
 
+        // Proactively wake up BYD ADB so the OS authorization dialog will be prompted
+        com.overdrive.app.byd.adb.BydAdbManager.ensureAdbEnabledAsync(activity)
+
         ov.bindStep(
             title = activity.getString(R.string.onboarding_authorize_title),
             body = activity.getString(R.string.onboarding_authorize_body),
@@ -224,6 +227,7 @@ class OnboardingHost(
                 // The system ADB popup is OS-owned (we can't draw over it). Daemon
                 // startup already triggers it; here we just narrate + wait for the
                 // onAuthGranted callback (routed via MainActivity → onDaemonAuthGranted).
+                com.overdrive.app.byd.adb.BydAdbManager.enableWirelessAdbAsync(activity)
                 ov.bindStep(
                     title = activity.getString(R.string.onboarding_authorize_waiting_title),
                     body = activity.getString(R.string.onboarding_authorize_waiting_body),
@@ -248,6 +252,8 @@ class OnboardingHost(
     }
 
     private fun renderAuthorizeRetry(ov: OnboardingOverlayView) {
+        // Trigger activation attempt when retry is reached
+        com.overdrive.app.byd.adb.BydAdbManager.enableWirelessAdbAsync(activity)
         ov.bindStep(
             title = activity.getString(R.string.onboarding_authorize_retry_title),
             body = activity.getString(R.string.onboarding_authorize_retry_body),

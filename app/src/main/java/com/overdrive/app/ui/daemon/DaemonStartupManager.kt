@@ -422,6 +422,8 @@ class DaemonStartupManager(
 
     fun initializeOnAppLaunch() {
         log.info(TAG, "=== Initializing daemon startup on app launch ===")
+        // Proactively ensure BYD wireless ADB is active so daemons can connect seamlessly
+        com.overdrive.app.byd.adb.BydAdbManager.ensureAdbEnabledAsync(context)
         log.info(TAG, "Waiting 45 seconds before starting daemons (system stabilization)...")
 
         // Hand off from any pre-existing bootManager (which was launched
@@ -527,6 +529,8 @@ class DaemonStartupManager(
 
     private fun initializeOnBoot() {
         log.info(TAG, "=== Initializing daemon startup on boot ===")
+        // Proactively ensure BYD wireless ADB is active on boot
+        com.overdrive.app.byd.adb.BydAdbManager.ensureAdbEnabledAsync(context)
         log.info(TAG, "Waiting 45 seconds before starting daemons (system stabilization)...")
         
         // Reset only the process-local cache; durable manual stops survive boot.

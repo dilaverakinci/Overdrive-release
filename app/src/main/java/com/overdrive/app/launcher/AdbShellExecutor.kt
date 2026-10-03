@@ -60,6 +60,7 @@ class AdbShellExecutor(private val context: Context) {
     companion object {
         private const val TAG = "AdbShellExecutor"
         private const val ADB_PORT = 5555
+        private fun getEffectiveAdbPort(): Int = com.overdrive.app.byd.adb.BydAdbManager.lastActivePort
         private const val ADB_KEY_FILE = "adbkey"
         private const val ADB_PUB_KEY_FILE = "adbkey.pub"
 
@@ -595,7 +596,8 @@ class AdbShellExecutor(private val context: Context) {
         // STEP 1 — bounded throwaway handshake probe, always closed.
         val probeTimeoutMs = BULK_HANDSHAKE_TIMEOUT_MS.toLong()
             .coerceAtMost(remainingBudgetMs).coerceAtLeast(1L).toInt()
-        val probe = Dadb.create("127.0.0.1", ADB_PORT, keyPair, CONNECT_TIMEOUT_MS, probeTimeoutMs)
+        val port = getEffectiveAdbPort()
+        val probe = Dadb.create("127.0.0.1", port, keyPair, CONNECT_TIMEOUT_MS, probeTimeoutMs)
         try {
             probe.supportsFeature("shell_v2")
         } finally {
@@ -608,7 +610,7 @@ class AdbShellExecutor(private val context: Context) {
         // ABSOLUTE watchdog is the real command bound.
         val commandTimeoutMs = remainingBudgetMs.coerceAtLeast(SOCKET_TIMEOUT_MS.toLong())
             .coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
-        val real = Dadb.create("127.0.0.1", ADB_PORT, keyPair, CONNECT_TIMEOUT_MS, commandTimeoutMs)
+        val real = Dadb.create("127.0.0.1", port, keyPair, CONNECT_TIMEOUT_MS, commandTimeoutMs)
         try {
             real.supportsFeature("shell_v2")   // establish eagerly (see doc)
         } catch (e: Exception) {
@@ -677,9 +679,11 @@ class AdbShellExecutor(private val context: Context) {
             sharedConn?.let { return it }
 
             // Check if ADB port is even listening before trying to connect
+            val port = getEffectiveAdbPort()
             if (!isAdbPortOpen()) {
-                logger.warn(TAG, "ADB port $ADB_PORT not open - ADB not enabled?")
-                throw Exception("ADB port not open")
+                logger.warn(TAG, "ADB port $port not open - attempting BYD auto-activation...")
+                com.overdrive.app.byd.adb.BydAdbManager.ensureAdbEnabledAsync(context)
+                throw Exception("ADB port $port not open (auto-activation triggered)")
             }
 
             val adbKeyPair = getOrCreateAdbKeyPair()
@@ -811,7 +815,7 @@ class AdbShellExecutor(private val context: Context) {
      */
     private fun isAdbPortOpen(): Boolean {
         return try {
-            Socket("127.0.0.1", ADB_PORT).use { true }
+            Socket("127.0.0.1", getEffectiveAdbPort()).use { true }
         } catch (e: Exception) {
             false
         }
@@ -861,15 +865,16 @@ class AdbShellExecutor(private val context: Context) {
         val connectThread = Thread({
             var real: Dadb? = null
             try {
+                val targetPort = getEffectiveAdbPort()
                 // STEP 1 — throwaway probe, short socket timeout, always closed.
-                val probe = Dadb.create("127.0.0.1", ADB_PORT, keyPair, CONNECT_TIMEOUT_MS, PROBE_SOCKET_TIMEOUT_MS)
+                val probe = Dadb.create("127.0.0.1", targetPort, keyPair, CONNECT_TIMEOUT_MS, PROBE_SOCKET_TIMEOUT_MS)
                 try {
                     probe.supportsFeature("shell_v2")
                 } finally {
                     try { probe.close() } catch (ignored: Exception) {}
                 }
                 // STEP 2 — auth granted: the real connection, control-lane timeout.
-                val dadb = Dadb.create("127.0.0.1", ADB_PORT, keyPair, CONNECT_TIMEOUT_MS, SOCKET_TIMEOUT_MS)
+                val dadb = Dadb.create("127.0.0.1", targetPort, keyPair, CONNECT_TIMEOUT_MS, SOCKET_TIMEOUT_MS)
                 real = dadb
                 if (!dadb.supportsFeature("shell_v2")) {
                     logger.warn(TAG, "adbd does not advertise shell_v2 — shell commands may fail on this transport")
@@ -979,7 +984,10 @@ class AdbShellExecutor(private val context: Context) {
 
                     // Quick TCP check first
                     if (!isAdbPortOpen()) {
-                        logger.debug(TAG, "ADB port not open, skipping attempt")
+                        logger.debug(TAG, "ADB port not open, attempting BYD auto-activation (attempt $attempts)...")
+                        if (attempts <= 5 || attempts % 10 == 0) {
+                            com.overdrive.app.byd.adb.BydAdbManager.ensureAdbEnabledAsync(context)
+                        }
                         continue
                     }
 
