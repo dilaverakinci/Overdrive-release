@@ -58,9 +58,6 @@ data class DaemonsUiState(
     val daemons: List<DaemonState> = emptyList(),
     val isWifiAutoEnable: Boolean = false,
     val isWifiAutoEnableLoading: Boolean = false,
-    val isBydAdbActive: Boolean = false,
-    val isBydAdbActivating: Boolean = false,
-    val bydAdbPort: Int = 5555,
 )
 
 @Composable
@@ -70,7 +67,6 @@ fun DaemonsScreen(
     onConfigureDaemon: (DaemonType) -> Unit,
     onDownloadLog: ((DaemonType) -> Unit)? = null,
     onToggleWifiAutoEnable: (Boolean) -> Unit,
-    onEnableBydAdbClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val expandedStates = remember { mutableStateMapOf<DaemonType, Boolean>() }
@@ -107,16 +103,6 @@ fun DaemonsScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-        }
-
-        // BYD Wireless ADB Status Card
-        item {
-            BydAdbStatusCard(
-                isActive = state.isBydAdbActive,
-                isActivating = state.isBydAdbActivating,
-                port = state.bydAdbPort,
-                onEnableClick = onEnableBydAdbClick,
-            )
         }
 
         // Wi-Fi Keep-Alive Preference Card
@@ -480,77 +466,4 @@ private fun isEndpointStatus(status: String?): Boolean {
             status.contains(".trycloudflare.com", ignoreCase = true)
 }
 
-@Composable
-private fun BydAdbStatusCard(
-    isActive: Boolean,
-    isActivating: Boolean,
-    port: Int,
-    onEnableClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    OverdriveCard(
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.weight(1f),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(38.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (isActive) MaterialTheme.colorScheme.primaryContainer
-                            else MaterialTheme.colorScheme.surfaceVariant
-                        ),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_services),
-                        contentDescription = null,
-                        tint = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp),
-                    )
-                }
-
-                Column {
-                    Text(
-                        text = "BYD Kablosuz ADB (Port $port)",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Text(
-                        text = when {
-                            isActivating -> "Açılıyor (ts-framework)..."
-                            isActive -> "127.0.0.1:$port Dinlemede (UID 2000 Hazır) ✓"
-                            else -> "Port kapalı — araç içi tek tıkla açabilirsiniz"
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-
-            com.overdrive.app.ui.component.OverdriveButton(
-                text = when {
-                    isActivating -> "Açılıyor..."
-                    isActive -> "Yenile"
-                    else -> "⚡ ADB Aç"
-                },
-                variant = if (isActive) com.overdrive.app.ui.component.OverdriveButtonVariant.TONAL
-                          else com.overdrive.app.ui.component.OverdriveButtonVariant.PRIMARY,
-                onClick = onEnableClick,
-            )
-        }
-    }
-}
 
