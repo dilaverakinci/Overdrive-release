@@ -68,8 +68,8 @@ class CircularSpeedometerView @JvmOverloads constructor(
     private var speedAnimator: ValueAnimator? = null
     private var colorAnimator: ValueAnimator? = null
 
-    private var currentProgressColor: Int = Color.parseColor("#06B6D4")
-    private var currentUnitColor: Int = Color.parseColor("#0284C7")
+    private var currentProgressColor: Int = Color.parseColor("#5DDBB6")
+    private var currentUnitColor: Int = Color.parseColor("#007A62")
 
     init {
         updateThemeColors(animate = false)
@@ -93,22 +93,22 @@ class CircularSpeedometerView @JvmOverloads constructor(
 
     private fun getDriveModeColors(mode: OperationMode): Pair<Int, Int> {
         return when (mode) {
-            OperationMode.ECO -> Pair(Color.parseColor("#10B981"), Color.parseColor("#34D399"))
-            OperationMode.NORMAL -> Pair(Color.parseColor("#06B6D4"), Color.parseColor("#0284C7"))
-            OperationMode.SPORT -> Pair(Color.parseColor("#EF4444"), Color.parseColor("#F97316"))
-            OperationMode.SNOW -> Pair(Color.parseColor("#38BDF8"), if (!isDarkTheme) Color.parseColor("#0284C7") else Color.parseColor("#E0F2FE"))
-            else -> Pair(Color.parseColor("#06B6D4"), Color.parseColor("#0284C7"))
+            OperationMode.ECO -> Pair(Color.parseColor("#5BD382"), Color.parseColor("#34D399"))
+            OperationMode.NORMAL -> Pair(Color.parseColor("#5DDBB6"), Color.parseColor("#007A62"))
+            OperationMode.SPORT -> Pair(Color.parseColor("#FF5252"), Color.parseColor("#FFAB00"))
+            OperationMode.SNOW -> Pair(Color.parseColor("#85CFFF"), if (!isDarkTheme) Color.parseColor("#00658F") else Color.parseColor("#C5E7FF"))
+            else -> Pair(Color.parseColor("#5DDBB6"), Color.parseColor("#007A62"))
         }
     }
 
     private fun updateThemeColors(animate: Boolean = true) {
         val density = resources.displayMetrics.density
         if (!isDarkTheme) {
-            trackPaint.color = Color.parseColor("#E2E8F0") // Slate 200
-            speedTextPaint.color = Color.parseColor("#0F172A") // Slate 900
+            trackPaint.color = Color.parseColor("#E0E4E1") // surfaceContainerHighest
+            speedTextPaint.color = Color.parseColor("#181C1A") // onSurface
         } else {
-            trackPaint.color = Color.parseColor("#1E293B") // Slate 800
-            speedTextPaint.color = Color.WHITE // Pure white for crisp contrast on dark card
+            trackPaint.color = Color.parseColor("#143029") // surfaceContainerHighest
+            speedTextPaint.color = Color.parseColor("#E6EDE9") // onSurface
         }
 
         val (targetProgress, targetUnit) = getDriveModeColors(currentOperationMode)

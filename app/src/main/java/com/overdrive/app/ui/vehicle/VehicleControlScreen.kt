@@ -108,6 +108,7 @@ import com.overdrive.app.ui.component.OverdriveCard
 import com.overdrive.app.ui.component.OverdrivePillStatus
 import com.overdrive.app.ui.component.OverdriveStatusPill
 import com.overdrive.app.ui.theme.OverdriveDimensions
+import com.overdrive.app.ui.theme.OverdriveTheme
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -171,7 +172,7 @@ fun VehicleControlScreen(
     var chassisCarouselPage by remember { mutableIntStateOf(0) }
 
     val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-    val screenBg = if (isDark) Color(0xFF0B101B) else Color(0xFFF1F5F9)
+    val screenBg = MaterialTheme.colorScheme.background
 
     Surface(
         modifier = modifier.fillMaxSize(),
@@ -349,13 +350,12 @@ private fun VehicleControlSubHeader(
     onSelectModelClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-    val pillBg = if (isDark) Color(0xFF131D31) else Color(0xFFF1F5F9)
-    val pillBorder = BorderStroke(1.dp, if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0))
-    val btnBg = if (isDark) Color(0xFF131D31) else Color.White
-    val btnBorder = BorderStroke(1.dp, if (isDark) Color(0xFF1E293B) else Color(0xFFCBD5E1))
-    val textPrimary = if (isDark) Color(0xFFF8FAFC) else Color(0xFF1E293B)
-    val iconTint = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+    val pillBg = MaterialTheme.colorScheme.surfaceContainer
+    val pillBorder = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    val btnBg = MaterialTheme.colorScheme.surfaceContainer
+    val btnBorder = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    val textPrimary = MaterialTheme.colorScheme.onSurface
+    val iconTint = MaterialTheme.colorScheme.onSurfaceVariant
 
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -374,9 +374,9 @@ private fun VehicleControlSubHeader(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 val bulletColor = when (isLocked) {
-                    true -> Color(0xFF10B981)
-                    false -> Color(0xFFF59E0B)
-                    null -> Color(0xFF64748B)
+                    true -> OverdriveTheme.colors.statusSuccess
+                    false -> OverdriveTheme.colors.statusWarning
+                    null -> MaterialTheme.colorScheme.outline
                 }
                 Box(
                     modifier = Modifier
@@ -473,7 +473,7 @@ private fun VehicleControlSubHeader(
                     modifier = Modifier
                         .size(7.dp)
                         .clip(CircleShape)
-                        .background(if (isCloudConnected) Color(0xFF10B981) else Color(0xFF64748B))
+                        .background(if (isCloudConnected) OverdriveTheme.colors.statusSuccess else MaterialTheme.colorScheme.outline)
                 )
                 Text(
                     text = if (isCloudConnected) "BYD account connected" else "BYD account not connected",
@@ -496,11 +496,11 @@ private fun LiveEnergyCockpitCard(
     modifier: Modifier = Modifier,
 ) {
     val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-    val cardBg = if (isDark) Color(0xFF131D31) else Color.White
-    val cardBorder = BorderStroke(1.dp, if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0))
-    val textSecondary = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
-    val capsuleBg = if (isDark) Color(0xFF0F172A) else Color(0xFFF1F5F9)
-    val capsuleBorder = BorderStroke(1.dp, if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0))
+    val cardBg = MaterialTheme.colorScheme.surfaceContainer
+    val cardBorder = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    val textSecondary = MaterialTheme.colorScheme.onSurfaceVariant
+    val capsuleBg = MaterialTheme.colorScheme.surfaceContainerLow
+    val capsuleBorder = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
 
     Surface(
         shape = RoundedCornerShape(14.dp),
@@ -522,7 +522,7 @@ private fun LiveEnergyCockpitCard(
                 Icon(
                     painter = painterResource(R.drawable.ic_energy_bolt),
                     contentDescription = null,
-                    tint = Color(0xFF06B6D4),
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(16.dp),
                 )
                 Spacer(modifier = Modifier.width(6.dp))
@@ -531,7 +531,7 @@ private fun LiveEnergyCockpitCard(
                         text = "CANLI ENERJİ & SÜRÜŞ AKIŞI",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF06B6D4),
+                        color = MaterialTheme.colorScheme.primary,
                         fontSize = 11.5.sp,
                         letterSpacing = 0.5.sp,
                     )
@@ -622,16 +622,16 @@ private fun LiveEnergyCockpitCard(
                         horizontalArrangement = Arrangement.spacedBy(3.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        GearCircle(label = "P", isSelected = powertrain.gear == Gear.P, activeColor = Color(0xFFEF4444))
-                        GearCircle(label = "R", isSelected = powertrain.gear == Gear.R, activeColor = Color(0xFFF97316))
-                        GearCircle(label = "N", isSelected = powertrain.gear == Gear.N, activeColor = Color(0xFF3B82F6))
-                        GearCircle(label = "D", isSelected = powertrain.gear == Gear.D || powertrain.gear == Gear.S || powertrain.gear == Gear.M, activeColor = Color(0xFF10B981))
+                        GearCircle(label = "P", isSelected = powertrain.gear == Gear.P, activeColor = OverdriveTheme.colors.gearPark)
+                        GearCircle(label = "R", isSelected = powertrain.gear == Gear.R, activeColor = OverdriveTheme.colors.gearReverse)
+                        GearCircle(label = "N", isSelected = powertrain.gear == Gear.N, activeColor = OverdriveTheme.colors.gearNeutral)
+                        GearCircle(label = "D", isSelected = powertrain.gear == Gear.D || powertrain.gear == Gear.S || powertrain.gear == Gear.M, activeColor = OverdriveTheme.colors.gearDrive)
                     }
                 }
 
                 // Electric Park Brake circle (P)
-                val epbBg = if (powertrain.gear == Gear.P) Color(0x20EF4444) else capsuleBg
-                val epbBorderColor = if (powertrain.gear == Gear.P) Color(0xFFEF4444) else (if (isDark) Color(0xFF1E293B) else Color(0xFFCBD5E1))
+                val epbBg = if (powertrain.gear == Gear.P) OverdriveTheme.colors.statusDangerContainer else capsuleBg
+                val epbBorderColor = if (powertrain.gear == Gear.P) OverdriveTheme.colors.statusDanger else MaterialTheme.colorScheme.outlineVariant
                 Box(
                     modifier = Modifier
                         .size(26.dp)
@@ -644,7 +644,7 @@ private fun LiveEnergyCockpitCard(
                         text = "(P)",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.ExtraBold,
-                        color = if (powertrain.gear == Gear.P) Color(0xFFEF4444) else textSecondary,
+                        color = if (powertrain.gear == Gear.P) OverdriveTheme.colors.statusDanger else textSecondary,
                         fontSize = 10.sp,
                     )
                 }
@@ -674,16 +674,15 @@ private fun DriveModePill(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-    val inactiveBg = if (isDark) Color(0xFF0F172A) else Color(0xFFF8FAFC)
-    val inactiveBorder = if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0)
-    val inactiveText = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+    val inactiveBg = MaterialTheme.colorScheme.surfaceContainerLow
+    val inactiveBorder = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    val inactiveText = MaterialTheme.colorScheme.onSurfaceVariant
 
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(8.dp),
-        color = if (isActive) Color(0x2606B6D4) else inactiveBg,
-        border = BorderStroke(if (isActive) 1.5.dp else 1.dp, if (isActive) Color(0xFF06B6D4) else inactiveBorder),
+        color = if (isActive) MaterialTheme.colorScheme.primaryContainer else inactiveBg,
+        border = if (isActive) BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary) else inactiveBorder,
         modifier = modifier.height(26.dp),
     ) {
         Row(
@@ -694,7 +693,7 @@ private fun DriveModePill(
             Icon(
                 painter = painterResource(iconRes),
                 contentDescription = label,
-                tint = if (isActive) Color(0xFF0284C7) else inactiveText,
+                tint = if (isActive) MaterialTheme.colorScheme.onPrimaryContainer else inactiveText,
                 modifier = Modifier.size(12.dp),
             )
             Spacer(modifier = Modifier.width(3.dp))
@@ -702,7 +701,7 @@ private fun DriveModePill(
                 text = label,
                 fontSize = 9.5.sp,
                 fontWeight = if (isActive) FontWeight.Bold else FontWeight.SemiBold,
-                color = if (isActive) Color(0xFF0284C7) else inactiveText,
+                color = if (isActive) MaterialTheme.colorScheme.onPrimaryContainer else inactiveText,
             )
         }
     }
@@ -714,8 +713,7 @@ private fun GearCircle(
     isSelected: Boolean,
     activeColor: Color,
 ) {
-    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-    val unselectedColor = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+    val unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
 
     Box(
         modifier = Modifier
@@ -746,17 +744,18 @@ private fun LivePowerMeterBar(
     val powerText = if (isPower) String.format(Locale.US, "+%.1f kW", powerKw).replace('.', ',') else "+0,0 kW"
 
     val modeColor = when (operationMode) {
-        OperationMode.ECO -> Color(0xFF10B981)
-        OperationMode.NORMAL -> Color(0xFF06B6D4)
-        OperationMode.SPORT -> Color(0xFFEF4444)
-        OperationMode.SNOW -> Color(0xFF38BDF8)
-        else -> Color(0xFF06B6D4)
+        OperationMode.ECO -> OverdriveTheme.colors.statusSuccess
+        OperationMode.NORMAL -> MaterialTheme.colorScheme.primary
+        OperationMode.SPORT -> OverdriveTheme.colors.statusDanger
+        OperationMode.SNOW -> OverdriveTheme.colors.tertiary
+        else -> MaterialTheme.colorScheme.primary
     }
 
-    val textSecondary = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
-    val trackColor = if (isDark) Color(0xFF0F172A) else Color(0xFFE2E8F0)
-    val tickColor = if (isDark) Color(0xFF64748B) else Color(0xFF475569)
-    val scaleColor = if (isDark) Color(0xFF64748B) else Color(0xFF94A3B8)
+    val regenFillColor = OverdriveTheme.colors.statusSuccess
+    val textSecondary = MaterialTheme.colorScheme.onSurfaceVariant
+    val trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+    val tickColor = MaterialTheme.colorScheme.outline
+    val scaleColor = MaterialTheme.colorScheme.onSurfaceVariant
 
     Column(modifier = modifier.fillMaxWidth()) {
         // Labels
@@ -775,7 +774,7 @@ private fun LivePowerMeterBar(
                 text = "GÜÇ $powerText ▶",
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF0284C7),
+                color = MaterialTheme.colorScheme.primary,
             )
         }
 
@@ -814,7 +813,7 @@ private fun LivePowerMeterBar(
             if (powerKw < -0.05) {
                 val fillW = animatedFraction * cx
                 drawRoundRect(
-                    color = Color(0xFF10B981),
+                    color = regenFillColor,
                     topLeft = Offset(cx - fillW, 0f),
                     size = Size(fillW, h),
                     cornerRadius = CornerRadius(r, r),
@@ -862,19 +861,19 @@ private fun LivePedalMeterBar(
     operationMode: OperationMode,
     modifier: Modifier = Modifier,
 ) {
-    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
     val modeColor = when (operationMode) {
-        OperationMode.ECO -> Color(0xFF10B981)
-        OperationMode.NORMAL -> Color(0xFF06B6D4)
-        OperationMode.SPORT -> Color(0xFFF59E0B)
-        OperationMode.SNOW -> Color(0xFF38BDF8)
-        else -> Color(0xFF06B6D4)
+        OperationMode.ECO -> OverdriveTheme.colors.statusSuccess
+        OperationMode.NORMAL -> MaterialTheme.colorScheme.primary
+        OperationMode.SPORT -> OverdriveTheme.colors.statusDanger
+        OperationMode.SNOW -> OverdriveTheme.colors.tertiary
+        else -> MaterialTheme.colorScheme.primary
     }
 
-    val textSecondary = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
-    val trackColor = if (isDark) Color(0xFF0F172A) else Color(0xFFE2E8F0)
-    val tickColor = if (isDark) Color(0xFF64748B) else Color(0xFF475569)
-    val scaleColor = if (isDark) Color(0xFF64748B) else Color(0xFF94A3B8)
+    val brakeFillColor = OverdriveTheme.colors.statusDanger
+    val textSecondary = MaterialTheme.colorScheme.onSurfaceVariant
+    val trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+    val tickColor = MaterialTheme.colorScheme.outline
+    val scaleColor = MaterialTheme.colorScheme.onSurfaceVariant
 
     Column(modifier = modifier.fillMaxWidth()) {
         // Labels
@@ -931,7 +930,7 @@ private fun LivePedalMeterBar(
             if (brakeFraction > 0f) {
                 val fillW = brakeFraction * cx
                 drawRoundRect(
-                    color = Color(0xFFEF4444),
+                    color = brakeFillColor,
                     topLeft = Offset(cx - fillW, 0f),
                     size = Size(fillW, h),
                     cornerRadius = CornerRadius(r, r),
@@ -988,8 +987,8 @@ private fun Vehicle3DModelViewport(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFF0F172A))
-            .border(1.dp, Color(0xFF334155), RoundedCornerShape(12.dp)),
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp)),
         contentAlignment = Alignment.Center,
     ) {
         // Embedded 3D Three.js WebGL WebView
@@ -1070,8 +1069,8 @@ private fun Vehicle3DModelViewport(
         // 3D Status Overlay Badge (Top Left)
         Surface(
             shape = RoundedCornerShape(6.dp),
-            color = Color.Black.copy(alpha = 0.65f),
-            border = BorderStroke(1.dp, Color(0xFF00D4AA).copy(alpha = 0.5f)),
+            color = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.85f),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .padding(8.dp),
@@ -1085,13 +1084,13 @@ private fun Vehicle3DModelViewport(
                     modifier = Modifier
                         .size(6.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFF00D4AA))
+                        .background(MaterialTheme.colorScheme.primary)
                 )
                 Text(
                     text = "3D CANLI",
                     fontSize = 8.5.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF00D4AA),
+                    color = MaterialTheme.colorScheme.primary,
                 )
             }
         }
@@ -1116,7 +1115,7 @@ private fun Vehicle3DModelViewport(
         Text(
             text = "⟳ 360° Döndürmek için sürükleyin",
             fontSize = 7.5.sp,
-            color = Color(0xFF94A3B8),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 4.dp),
@@ -1131,7 +1130,7 @@ private fun Vehicle3DModelViewport(
         ) {
             Surface(
                 modifier = Modifier.fillMaxSize(),
-                color = Color(0xFF0A0A0E)
+                color = MaterialTheme.colorScheme.background
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     AndroidView(
@@ -1262,16 +1261,14 @@ private fun BatteryRangeCardContent(
     onNavigateToCharging: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-
-    val cardBg = if (isDark) Color(0xFF131D31) else Color.White
-    val cardBorder = BorderStroke(1.dp, if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0))
-    val innerContainerBg = if (isDark) Color(0xFF0F172A) else Color(0xFFF8FAFC)
-    val innerBorder = BorderStroke(1.dp, if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0))
-    val textPrimary = if (isDark) Color(0xFFF8FAFC) else Color(0xFF0F172A)
-    val textSecondary = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
-    val textMuted = if (isDark) Color(0xFF64748B) else Color(0xFF94A3B8)
-    val dividerColor = if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0)
+    val cardBg = MaterialTheme.colorScheme.surfaceContainer
+    val cardBorder = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    val innerContainerBg = MaterialTheme.colorScheme.surfaceContainerLow
+    val innerBorder = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    val textPrimary = MaterialTheme.colorScheme.onSurface
+    val textSecondary = MaterialTheme.colorScheme.onSurfaceVariant
+    val textMuted = MaterialTheme.colorScheme.outline
+    val dividerColor = MaterialTheme.colorScheme.outlineVariant
 
     val soc = battery.socPercent.coerceIn(0, 100)
     val batteryCap = if (battery.batteryCapacityKwh > 0) battery.batteryCapacityKwh else 82.5
@@ -1299,7 +1296,7 @@ private fun BatteryRangeCardContent(
                     Icon(
                         painter = painterResource(R.drawable.ic_card_battery),
                         contentDescription = null,
-                        tint = Color(0xFF06B6D4),
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(18.dp),
                     )
                     Spacer(modifier = Modifier.width(6.dp))
@@ -1308,7 +1305,7 @@ private fun BatteryRangeCardContent(
                             text = stringResource(R.string.vc_battery_card_title),
                             fontSize = 12.5.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF06B6D4),
+                            color = MaterialTheme.colorScheme.primary,
                             letterSpacing = 0.5.sp,
                         )
                         Text(
@@ -1327,15 +1324,15 @@ private fun BatteryRangeCardContent(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
-                            .background(Color(0x1510B981))
-                            .border(1.dp, Color(0xFF10B981), RoundedCornerShape(6.dp))
+                            .background(OverdriveTheme.colors.statusSuccessContainer)
+                            .border(1.dp, OverdriveTheme.colors.statusSuccess, RoundedCornerShape(6.dp))
                             .padding(horizontal = 6.dp, vertical = 2.dp),
                     ) {
                         Text(
                             text = "SOH %${battery.sohPercent.toInt()}",
                             fontSize = 9.5.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF10B981),
+                            color = OverdriveTheme.colors.statusSuccess,
                         )
                     }
 
@@ -1343,7 +1340,7 @@ private fun BatteryRangeCardContent(
                         text = stringResource(R.string.vc_history_arrow),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF0284C7),
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.clickable { onNavigateToCharging() },
                     )
                 }
@@ -1418,14 +1415,14 @@ private fun BatteryRangeCardContent(
                                     text = "$realistic",
                                     fontSize = 24.sp,
                                     fontWeight = FontWeight.ExtraBold,
-                                    color = Color(0xFF06B6D4),
+                                    color = MaterialTheme.colorScheme.primary,
                                 )
                                 Spacer(modifier = Modifier.width(2.dp))
                                 Text(
                                     text = "km",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF06B6D4),
+                                    color = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.padding(bottom = 2.dp),
                                 )
                             }
@@ -1460,7 +1457,7 @@ private fun BatteryRangeCardContent(
                                 text = "%$soc",
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.ExtraBold,
-                                color = Color(0xFF06B6D4),
+                                color = MaterialTheme.colorScheme.primary,
                             )
                             Text(
                                 text = String.format(Locale.US, "%.1f / %.1f kWh", currentKwh, batteryCap).replace('.', ','),
@@ -1479,7 +1476,7 @@ private fun BatteryRangeCardContent(
                             .fillMaxWidth()
                             .height(4.dp)
                             .clip(RoundedCornerShape(2.dp))
-                            .background(dividerColor),
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest),
                     ) {
                         val animatedSoc by animateFloatAsState(
                             targetValue = (soc / 100f),
@@ -1491,7 +1488,7 @@ private fun BatteryRangeCardContent(
                                 .fillMaxHeight()
                                 .fillMaxWidth(animatedSoc)
                                 .clip(RoundedCornerShape(2.dp))
-                                .background(Color(0xFF06B6D4))
+                                .background(MaterialTheme.colorScheme.primary)
                         )
                     }
                 }
@@ -1563,7 +1560,7 @@ private fun BatteryRangeCardContent(
                     title = stringResource(R.string.vc_substat_regen_savings),
                     value = regenValText,
                     subtitle = stringResource(R.string.vc_substat_recovered_energy),
-                    valueColor = Color(0xFF10B981),
+                    valueColor = OverdriveTheme.colors.statusSuccess,
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -1579,12 +1576,11 @@ private fun SubStatCard(
     valueColor: Color? = null,
     modifier: Modifier = Modifier,
 ) {
-    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-    val containerBg = if (isDark) Color(0xFF0F172A) else Color(0xFFF8FAFC)
-    val containerBorder = BorderStroke(1.dp, if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0))
-    val textPrimary = if (isDark) Color(0xFFF8FAFC) else Color(0xFF0F172A)
-    val textSecondary = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
-    val textMuted = if (isDark) Color(0xFF64748B) else Color(0xFF94A3B8)
+    val containerBg = MaterialTheme.colorScheme.surfaceContainerLow
+    val containerBorder = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    val textPrimary = MaterialTheme.colorScheme.onSurface
+    val textSecondary = MaterialTheme.colorScheme.onSurfaceVariant
+    val textMuted = MaterialTheme.colorScheme.outline
 
     Surface(
         shape = RoundedCornerShape(6.dp),
@@ -1620,6 +1616,7 @@ private fun SubStatCard(
     }
 }
 
+
 // -----------------------------------------------------------------------------
 // 3C. SAĞDA: ŞASİ & GÜÇ TELEMETRİSİ KARTI
 // -----------------------------------------------------------------------------
@@ -1638,14 +1635,13 @@ private fun ChassisTelemetryCockpitCard(
     onPageChange: (Int) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-    val cardBg = if (isDark) Color(0xFF131D31) else Color.White
-    val cardBorder = BorderStroke(1.dp, if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0))
-    val innerContainerBg = if (isDark) Color(0xFF0F172A) else Color(0xFFF8FAFC)
-    val textPrimary = if (isDark) Color(0xFFF8FAFC) else Color(0xFF0F172A)
-    val textSecondary = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
-    val dividerColor = if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0)
-    val dotInactiveColor = if (isDark) Color(0xFF334155) else Color(0xFFCBD5E1)
+    val cardBg = MaterialTheme.colorScheme.surfaceContainer
+    val cardBorder = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    val innerContainerBg = MaterialTheme.colorScheme.surfaceContainerLow
+    val textPrimary = MaterialTheme.colorScheme.onSurface
+    val textSecondary = MaterialTheme.colorScheme.onSurfaceVariant
+    val dividerColor = MaterialTheme.colorScheme.outlineVariant
+    val dotInactiveColor = MaterialTheme.colorScheme.surfaceContainerHighest
     val pagerState = rememberPagerState(initialPage = carouselPage.coerceIn(0, 2), pageCount = { 3 })
     val coroutineScope = rememberCoroutineScope()
 
@@ -1678,7 +1674,7 @@ private fun ChassisTelemetryCockpitCard(
                 Text(
                     text = "⚡",
                     fontSize = 15.sp,
-                    color = Color(0xFFFACC15),
+                    color = OverdriveTheme.colors.statusWarning,
                 )
                 Spacer(modifier = Modifier.width(6.dp))
 
@@ -1688,7 +1684,7 @@ private fun ChassisTelemetryCockpitCard(
                             text = stringResource(R.string.vc_chassis_telemetry_title),
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF06B6D4),
+                            color = MaterialTheme.colorScheme.primary,
                             letterSpacing = 0.5.sp,
                             modifier = Modifier.weight(1f),
                         )
@@ -1701,7 +1697,7 @@ private fun ChassisTelemetryCockpitCard(
                                 text = stringResource(R.string.vc_vehicle_health_title),
                                 fontSize = 11.5.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF06B6D4),
+                                color = MaterialTheme.colorScheme.primary,
                                 letterSpacing = 0.5.sp,
                             )
                             Text(
@@ -1712,18 +1708,21 @@ private fun ChassisTelemetryCockpitCard(
                         }
 
                         val badgeOk = health.isAllNormal
+                        val badgeBg = if (badgeOk) OverdriveTheme.colors.statusSuccessContainer else OverdriveTheme.colors.statusDangerContainer
+                        val badgeBorderColor = if (badgeOk) OverdriveTheme.colors.statusSuccess else OverdriveTheme.colors.statusDanger
+                        val badgeTextColor = if (badgeOk) OverdriveTheme.colors.statusSuccess else OverdriveTheme.colors.statusDanger
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
-                                .background(if (badgeOk) Color(0x1510B981) else Color(0x15EF4444))
-                                .border(1.dp, if (badgeOk) Color(0xFF10B981) else Color(0xFFEF4444), RoundedCornerShape(6.dp))
+                                .background(badgeBg)
+                                .border(1.dp, badgeBorderColor, RoundedCornerShape(6.dp))
                                 .padding(horizontal = 6.dp, vertical = 2.dp),
                         ) {
                             Text(
                                 text = stringResource(if (badgeOk) R.string.vc_health_badge_normal else R.string.vc_health_badge_warning),
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (badgeOk) Color(0xFF10B981) else Color(0xFFEF4444),
+                                color = badgeTextColor,
                             )
                         }
                     }
@@ -1732,22 +1731,22 @@ private fun ChassisTelemetryCockpitCard(
                             text = stringResource(R.string.vc_energy_flow_title),
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF06B6D4),
+                            color = MaterialTheme.colorScheme.primary,
                             letterSpacing = 0.5.sp,
                             modifier = Modifier.weight(1f),
                         )
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
-                                .background(Color(0x1506B6D4))
-                                .border(1.dp, Color(0xFF06B6D4), RoundedCornerShape(6.dp))
+                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f))
+                                .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(6.dp))
                                 .padding(horizontal = 6.dp, vertical = 2.dp),
                         ) {
                             Text(
                                 text = if (isAwd) "AWD" else "RWD",
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF06B6D4),
+                                color = MaterialTheme.colorScheme.primary,
                             )
                         }
                     }
@@ -1956,9 +1955,9 @@ private fun ChassisTelemetryCockpitCard(
                             else -> stringResource(R.string.vc_flow_idle)
                         }
                         val modeColor = when {
-                            isDriving -> Color(0xFF0284C7)
-                            isRegen -> Color(0xFF10B981)
-                            isChg -> Color(0xFFF59E0B)
+                            isDriving -> MaterialTheme.colorScheme.primary
+                            isRegen -> OverdriveTheme.colors.statusSuccess
+                            isChg -> OverdriveTheme.colors.statusWarning
                             else -> textSecondary
                         }
                         val schemaText = when {
@@ -2050,7 +2049,7 @@ private fun ChassisTelemetryCockpitCard(
                                 .width(if (isSelected) 24.dp else 14.dp)
                                 .height(3.5.dp)
                                 .clip(RoundedCornerShape(2.dp))
-                                .background(if (isSelected) Color(0xFF06B6D4) else dotInactiveColor)
+                                .background(if (isSelected) MaterialTheme.colorScheme.primary else dotInactiveColor)
                         )
                     }
                 }
@@ -2065,10 +2064,9 @@ private fun TyreCallout(
     tempC: Int,
     modifier: Modifier = Modifier,
 ) {
-    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-    val textPrimary = if (isDark) Color(0xFFF8FAFC) else Color(0xFF0F172A)
-    val textSecondary = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
-    val dividerColor = if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0)
+    val textPrimary = MaterialTheme.colorScheme.onSurface
+    val textSecondary = MaterialTheme.colorScheme.onSurfaceVariant
+    val dividerColor = MaterialTheme.colorScheme.outlineVariant
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -2102,8 +2100,7 @@ private fun HealthItemRow(
     item: HealthCheckItem,
     modifier: Modifier = Modifier,
 ) {
-    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-    val textPrimary = if (isDark) Color(0xFFF8FAFC) else Color(0xFF334155)
+    val textPrimary = MaterialTheme.colorScheme.onSurface
 
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -2123,7 +2120,7 @@ private fun HealthItemRow(
             text = if (item.isNormal) stringResource(R.string.vc_status_normal) else "● ${item.statusText}",
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
-            color = if (item.isNormal) Color(0xFF10B981) else Color(0xFFEF4444),
+            color = if (item.isNormal) OverdriveTheme.colors.statusSuccess else OverdriveTheme.colors.statusDanger,
         )
     }
 }
@@ -2135,8 +2132,7 @@ private fun QuickStatusItem(
     isWarning: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-    val textSecondary = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+    val textSecondary = MaterialTheme.colorScheme.onSurfaceVariant
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -2151,7 +2147,7 @@ private fun QuickStatusItem(
             text = statusText,
             fontSize = 10.5.sp,
             fontWeight = FontWeight.Bold,
-            color = if (isWarning) Color(0xFFEF4444) else Color(0xFF10B981),
+            color = if (isWarning) OverdriveTheme.colors.statusDanger else OverdriveTheme.colors.statusSuccess,
         )
     }
 }
@@ -2240,7 +2236,7 @@ private fun VehicleControlsExpandedCard(
                         Icon(
                             painter = painterResource(R.drawable.ic_clear),
                             contentDescription = "Close",
-                            tint = Color(0xFF64748B),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(18.dp),
                         )
                     }
@@ -2970,13 +2966,12 @@ private fun VehicleControlDockBar(
     onTabSelected: (VehicleControlTab) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-    val cardBg = if (isDark) Color(0xFF131D31) else Color.White
-    val cardBorder = BorderStroke(1.dp, if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0))
-    val textSelected = if (isDark) Color(0xFFF8FAFC) else Color(0xFF0F172A)
-    val textUnselected = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
-    val iconSelected = if (isDark) Color(0xFF38BDF8) else Color(0xFF0284C7)
-    val iconUnselected = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+    val cardBg = MaterialTheme.colorScheme.surfaceContainer
+    val cardBorder = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    val textSelected = MaterialTheme.colorScheme.primary
+    val textUnselected = MaterialTheme.colorScheme.onSurfaceVariant
+    val iconSelected = MaterialTheme.colorScheme.primary
+    val iconUnselected = MaterialTheme.colorScheme.onSurfaceVariant
 
     val tabs = listOf(
         VehicleControlTab.SECURITY to (R.string.vc_dock_security to R.drawable.ic_dock_security),
@@ -3021,12 +3016,12 @@ private fun VehicleControlDockBar(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(2.dp),
                     ) {
-                        // Green Dot Indicator for Active Tab
+                        // Brand Teal Dot Indicator for Active Tab
                         Box(
                             modifier = Modifier
                                 .size(4.dp)
                                 .clip(CircleShape)
-                                .background(if (isSelected) Color(0xFF10B981) else Color.Transparent)
+                                .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
                         )
 
                         Icon(

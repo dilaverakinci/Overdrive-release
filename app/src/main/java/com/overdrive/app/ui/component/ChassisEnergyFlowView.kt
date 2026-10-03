@@ -53,14 +53,14 @@ class ChassisEnergyFlowView @JvmOverloads constructor(
     private var flowAnimator: ValueAnimator? = null
     private var animPhase: Float = 0f
 
-    // Colors
-    private val colPowerGlow = Color.parseColor("#00D2FF") // Cyan
+    // Colors (Overdrive Theme Brand Teal & Status Success)
+    private val colPowerGlow = Color.parseColor("#5DDBB6") // Overdrive Brand Teal
     private val colPowerCore = Color.parseColor("#FFFFFF") // White core
-    private val colPowerBattery = Color.parseColor("#2600D2FF") // Transparent Cyan
+    private val colPowerBattery = Color.parseColor("#265DDBB6") // Transparent Brand Teal
 
-    private val colRegenGlow = Color.parseColor("#28FF70") // Neon Emerald
+    private val colRegenGlow = Color.parseColor("#5BD382") // Status Success Emerald
     private val colRegenCore = Color.parseColor("#F0FFF4") // Light Mint
-    private val colRegenBattery = Color.parseColor("#2B28FF70") // Transparent Green
+    private val colRegenBattery = Color.parseColor("#2B5BD382") // Transparent Green
 
     init {
         loadBitmaps()
