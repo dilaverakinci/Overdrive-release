@@ -61,7 +61,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Slider
+import com.overdrive.app.ui.component.OverdriveSlider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -1175,7 +1175,7 @@ private fun VideoPlayerStage(
             ) {
                 // Seekbar slider
                 val maxDuration = if (durationMs > 0) durationMs.toFloat() else 1f
-                Slider(
+                OverdriveSlider(
                     value = currentPosMs.toFloat().coerceIn(0f, maxDuration),
                     onValueChange = { newPos ->
                         currentPosMs = newPos.toLong()

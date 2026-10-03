@@ -32,7 +32,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Slider
+import com.overdrive.app.ui.component.OverdriveSlider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -777,7 +777,7 @@ private fun WarningsTabContent(
                             color = OverdriveTheme.colors.primary
                         )
                     }
-                    Slider(
+                    OverdriveSlider(
                         value = state.warnAudioVolume.toFloat(),
                         onValueChange = { onAudioVolumeChange(it.toInt()) },
                         valueRange = 10f..100f,
@@ -857,7 +857,7 @@ private fun WarningsTabContent(
                             color = OverdriveTheme.colors.primary
                         )
                     }
-                    Slider(
+                    OverdriveSlider(
                         value = state.warnLeadSeconds,
                         onValueChange = onLeadSecondsChange,
                         valueRange = 2f..8f,
@@ -892,7 +892,7 @@ private fun WarningsTabContent(
                             color = OverdriveTheme.colors.primary
                         )
                     }
-                    Slider(
+                    OverdriveSlider(
                         value = state.detectionSensitivity,
                         onValueChange = onSensitivityChange,
                         valueRange = 0.7f..1.3f,
@@ -1409,7 +1409,7 @@ private fun BlindSpotTabContent(
                         color = OverdriveTheme.colors.primary
                     )
                 }
-                Slider(
+                OverdriveSlider(
                     value = state.bsRectifyStrength.toFloat(),
                     onValueChange = { onBsRectifyChange(it.toInt()) },
                     valueRange = 0f..100f,

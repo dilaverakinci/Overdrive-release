@@ -25,7 +25,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
+import com.overdrive.app.ui.component.OverdriveSlider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -1251,7 +1251,7 @@ private fun OverlayPane(
                         )
                     }
 
-                    Slider(
+                    OverdriveSlider(
                         value = state.remoteOutputLevel.toFloat(),
                         onValueChange = { onRemoteOutputLevelChange(it.toInt()) },
                         valueRange = 0f..100f,

@@ -25,7 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
+import com.overdrive.app.ui.component.OverdriveSlider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -1202,7 +1202,7 @@ private fun TripTimelineScrubberCard(
 
             // Slider Bar
             Column(modifier = Modifier.fillMaxWidth()) {
-                Slider(
+                OverdriveSlider(
                     value = currentIndex.toFloat(),
                     onValueChange = { onScrubberChange(it.toInt()) },
                     valueRange = 0f..(points.size - 1).coerceAtLeast(1).toFloat(),

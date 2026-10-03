@@ -38,7 +38,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Slider
+import com.overdrive.app.ui.component.OverdriveSlider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -628,7 +628,7 @@ private fun AddEditTabContent(
                     fontSize = 14.sp,
                     color = OverdriveTheme.colors.textPrimary
                 )
-                Slider(
+                OverdriveSlider(
                     value = f.minIntervalSeconds.toFloat(),
                     onValueChange = { onFormChange(f.copy(minIntervalSeconds = it.toInt())) },
                     valueRange = 1f..30f,

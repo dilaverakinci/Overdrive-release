@@ -28,7 +28,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Slider
+import com.overdrive.app.ui.component.OverdriveSlider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -552,44 +552,12 @@ private fun ChargingLimitsCard(
             Spacer(modifier = Modifier.height(2.dp))
 
             // Modern EV Charging Slider
-            @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
-            Slider(
+            OverdriveSlider(
                 value = targetSoc.toFloat(),
                 onValueChange = { onTargetSocChange(it.toInt()) },
                 valueRange = 50f..100f,
                 steps = 9,
-                thumb = {
-                    Box(
-                        modifier = Modifier
-                            .size(20.dp)
-                            .shadow(2.dp, CircleShape)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary)
-                            .border(2.dp, MaterialTheme.colorScheme.surface, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(6.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.onPrimary)
-                        )
-                    }
-                },
-                track = { sliderState ->
-                    SliderDefaults.Track(
-                        sliderState = sliderState,
-                        modifier = Modifier.height(6.dp),
-                        thumbTrackGapSize = 0.dp,
-                        trackInsideCornerSize = 3.dp,
-                        drawStopIndicator = null,
-                        colors = SliderDefaults.colors(
-                            activeTrackColor = MaterialTheme.colorScheme.primary,
-                            inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                        )
-                    )
-                },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(4.dp))

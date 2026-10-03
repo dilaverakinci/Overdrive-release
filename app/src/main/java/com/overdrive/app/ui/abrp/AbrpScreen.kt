@@ -39,8 +39,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import com.overdrive.app.ui.component.OverdriveSlider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -466,7 +466,7 @@ private fun StatusTabContent(
                         color = OverdriveTheme.colors.accentGreen
                     )
                 }
-                Slider(
+                OverdriveSlider(
                     value = state.minIntervalSeconds.toFloat(),
                     onValueChange = { onMinIntervalChange(it.toInt()) },
                     valueRange = 1f..30f,
@@ -496,7 +496,7 @@ private fun StatusTabContent(
                         color = OverdriveTheme.colors.accentGreen
                     )
                 }
-                Slider(
+                OverdriveSlider(
                     value = state.maxIntervalSeconds.toFloat(),
                     onValueChange = { onMaxIntervalChange(it.toInt()) },
                     valueRange = 30f..1800f,
@@ -579,7 +579,7 @@ private fun StatusTabContent(
                             color = OverdriveTheme.colors.accentGreen
                         )
                     }
-                    Slider(
+                    OverdriveSlider(
                         value = state.appGraceSeconds.toFloat(),
                         onValueChange = { onAppGraceChange(it.toInt()) },
                         valueRange = 0f..600f,

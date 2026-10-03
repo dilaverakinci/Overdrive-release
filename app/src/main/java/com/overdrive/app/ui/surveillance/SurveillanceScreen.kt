@@ -42,6 +42,7 @@ import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -72,7 +73,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.overdrive.app.ui.component.OverdrivePillStatus
+import com.overdrive.app.ui.component.OverdriveSlider
 import com.overdrive.app.ui.component.OverdriveStatusPill
 import com.overdrive.app.ui.theme.OverdriveTheme
 import java.util.Locale
@@ -104,9 +107,14 @@ data class SurveillanceUiState(
     val eventsToday: Int = 0,
     val scheduleEnabled: Boolean = false,
     val parkingIntelligenceEnabled: Boolean = false,
+    val parkingEndTrigger: String = "return", // "return", "power_on", "drive_away"
     val parkingStillsEnabled: Boolean = true,
     val neighbourTimelineEnabled: Boolean = true,
     val garageSignageEnabled: Boolean = true,
+    val parkingGeocodingEnabled: Boolean = false,
+    val parkingGeocodingOnline: Boolean = false,
+    val parkingRetentionDays: Int = 90,
+    val parkingStorageCapMb: Int = 300,
     val screenDeterrentEnabled: Boolean = false,
     val screenDeterrentDuration: Int = 10,
     val screenDeterrentMessage: String = "",
@@ -202,9 +210,14 @@ fun SurveillanceScreen(
     onLowSocCutoffChange: (Int) -> Unit,
     onToggleSchedule: (Boolean) -> Unit = {},
     onToggleParkingIntelligence: (Boolean) -> Unit = {},
+    onParkingEndTriggerChange: (String) -> Unit = {},
     onToggleParkingStills: (Boolean) -> Unit = {},
     onToggleNeighbourTimeline: (Boolean) -> Unit = {},
     onToggleGarageSignage: (Boolean) -> Unit = {},
+    onToggleParkingGeocoding: (Boolean) -> Unit = {},
+    onToggleParkingGeocodingOnline: (Boolean) -> Unit = {},
+    onParkingRetentionDaysChange: (Int) -> Unit = {},
+    onParkingStorageCapMbChange: (Int) -> Unit = {},
     onToggleScreenDeterrent: (Boolean) -> Unit,
     onScreenDeterrentDurationChange: (Int) -> Unit,
     onScreenDeterrentMessageChange: (String) -> Unit,
@@ -339,9 +352,14 @@ fun SurveillanceScreen(
                         onLowSocCutoffChange = onLowSocCutoffChange,
                         onToggleSchedule = onToggleSchedule,
                         onToggleParkingIntelligence = onToggleParkingIntelligence,
+                        onParkingEndTriggerChange = onParkingEndTriggerChange,
                         onToggleParkingStills = onToggleParkingStills,
                         onToggleNeighbourTimeline = onToggleNeighbourTimeline,
                         onToggleGarageSignage = onToggleGarageSignage,
+                        onToggleParkingGeocoding = onToggleParkingGeocoding,
+                        onToggleParkingGeocodingOnline = onToggleParkingGeocodingOnline,
+                        onParkingRetentionDaysChange = onParkingRetentionDaysChange,
+                        onParkingStorageCapMbChange = onParkingStorageCapMbChange,
                         onToggleScreenDeterrent = onToggleScreenDeterrent,
                         onScreenDeterrentDurationChange = onScreenDeterrentDurationChange,
                         onScreenDeterrentMessageChange = onScreenDeterrentMessageChange,
@@ -621,9 +639,14 @@ private fun GeneralTabContent(
     onLowSocCutoffChange: (Int) -> Unit,
     onToggleSchedule: (Boolean) -> Unit,
     onToggleParkingIntelligence: (Boolean) -> Unit,
+    onParkingEndTriggerChange: (String) -> Unit,
     onToggleParkingStills: (Boolean) -> Unit,
     onToggleNeighbourTimeline: (Boolean) -> Unit,
     onToggleGarageSignage: (Boolean) -> Unit,
+    onToggleParkingGeocoding: (Boolean) -> Unit,
+    onToggleParkingGeocodingOnline: (Boolean) -> Unit,
+    onParkingRetentionDaysChange: (Int) -> Unit,
+    onParkingStorageCapMbChange: (Int) -> Unit,
     onToggleScreenDeterrent: (Boolean) -> Unit,
     onScreenDeterrentDurationChange: (Int) -> Unit,
     onScreenDeterrentMessageChange: (String) -> Unit,
@@ -823,40 +846,128 @@ private fun GeneralTabContent(
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
 
-                // Switches
+                // 1. Keep head unit awake while parked
                 SettingToggleRow(
-                    title = "USB Güç Koruma (Keep USB Power)",
-                    subtitle = "Park halindeyken USB portlarının enerjisini açık tutarak harici depolama ve kameraların kapanmasını engeller.",
+                    title = "Keep head unit awake while parked",
+                    subtitle = "Araç kapatıldıktan sonra USB bağlantı noktalarını ve ana üniteyi açık tutar (örneğin telefonu şarj etmek, harici depolama veya bir aksesuarı çalıştırmak için). Ana ünitenin uykuya geçmesini ve 12V aküyü korumak için kapatın. Araç bir sonraki kapatıldığında geçerli olur.",
                     checked = state.keepUsbPowerOnAccOff,
                     onCheckedChange = onToggleKeepUsbPower
                 )
+                if (!state.keepUsbPowerOnAccOff) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp, bottom = 4.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFFE65100).copy(alpha = 0.12f))
+                            .border(1.dp, Color(0xFFE65100).copy(alpha = 0.35f), RoundedCornerShape(8.dp))
+                            .padding(10.dp)
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = Color(0xFFFFB74D),
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Text(
+                                text = "USB gücü kapalı, bu nedenle park halindeyken SD kart yuvasına güç verilmez. Gözetim, USB gücü yeniden açılana kadar dahili depolamaya kaydedilir.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                } else {
+                    Text(
+                        text = "Bu mod Android'i uyanık tutabilir ancak park halindeki USB ve SD kart gücü araç donanımı tarafından kontrol edildiğinden en iyi çaba esasına dayanır.",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(start = 4.dp, top = 2.dp, bottom = 4.dp)
+                    )
+                }
 
+                HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f))
+
+                // 2. Keep mobile data awaked while parked
                 SettingToggleRow(
-                    title = "Mobil Veri Canlı Tutma",
-                    subtitle = "Park halindeyken mobil ağ bağlantısını aktif tutarak uzaktan bildirim ve erişim sağlar.",
+                    title = "Keep mobile data awaked while parked",
+                    subtitle = "Bazı modellerde araç kapatıldıktan bir süre sonra mobil veri modülü uykuya geçer ve araç park halindeyken ağ bağlantısı kesilir. Uyanık tutmak için bunu açın. Park halindeyken hücresel bağlantıyı gerçekten kaybetmiyorsanız kapalı bırakmanız önerilir (ekstra batarya ve mobil veri tüketir).",
                     checked = state.mobileDataKeepAlive,
                     onCheckedChange = onToggleMobileDataKeepAlive
                 )
 
+                HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f))
+
+                // 3. Experimental: Keep DI5 awake using BYD Cloud
                 SettingToggleRow(
-                    title = "Di5 Bulut Canlı Tutma",
-                    subtitle = "DiLink 5 bulut servislerinin arka planda uyutulmasını önler.",
+                    title = "Experimental: Keep DI5 awake using BYD Cloud",
+                    subtitle = "ACC kapalıyken her 15 saniyede bir BYD Cloud üzerinden araç durumunu sorgular. Bağlı bir BYD hesabı ve internet erişimi gerektirir. Araç SIM verisini kullanabilir, derin uykuyu önleyebilir ve park halindeki batarya tüketimini artırabilir. ACC açıldığında durur.",
                     checked = state.di5CloudKeepAlive,
                     onCheckedChange = onToggleDi5CloudKeepAlive
                 )
+                Text(
+                    text = "Bu seçeneği etkinleştirmeden önce BYD Cloud hesabınızı bağlayın ve doğrulayın.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    modifier = Modifier.padding(start = 4.dp, top = 2.dp, bottom = 4.dp)
+                )
 
+                HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f))
+
+                // 4. Experimental: DiLink5 parked keep alive
                 SettingToggleRow(
-                    title = "Düşük Güç Modu",
-                    subtitle = "Park halindeyken CPU frekansını düşürerek enerji tüketimini optimize eder.",
+                    title = "Experimental: DiLink5 parked keep alive",
+                    subtitle = "DiLink 5 ana üniteleri için (tüm kamera modlarında). Araç kapatıldıktan sonra MCU'nun kamera ve USB hatlarını kesmemesi için aracı nöbetçi modunda tutar ve MCU uykuya geçerse yeniden uyandırır. Daha fazla 12V akü tüketir; voltaj kesme sınırının altına indiğinde otomatik durur.",
+                    checked = state.diLink5KeepAlive,
+                    onCheckedChange = onToggleDiLink5KeepAlive
+                )
+                if (state.diLink5KeepAlive) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp, bottom = 4.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFFE65100).copy(alpha = 0.12f))
+                            .border(1.dp, Color(0xFFE65100).copy(alpha = 0.35f), RoundedCornerShape(8.dp))
+                            .padding(10.dp)
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = Color(0xFFFFB74D),
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Text(
+                                text = "Bu deneysel özellik araç kapalıyken nöbetçi modunu tutar ve MCU'yu uyanık tutar; bu da daha fazla 12V akü tüketir. Voltaj kesme değerinin altına indiğinde kendiliğinden durur.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f))
+
+                // 5. Park halindeyken düşük güç modu
+                SettingToggleRow(
+                    title = "Park halindeyken düşük güç modu",
+                    subtitle = "Hiçbir şey olmadığında kamerayı düşük kare hızında (~5 fps) çalıştırarak bataryayı korur; hareket algılandığı anda tam kaliteye döner. Hareket ve nesne algılama etkilenmez, aynı olaylar yakalanır ancak sakin anlardaki video güç tasarrufu için daha kesintilidir.",
                     checked = state.lowPowerMode,
                     onCheckedChange = onToggleLowPowerMode
                 )
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
 
-                // Düşük batarya kesme
+                // 6. Düşük Batarya Kesme
                 Text(
-                    text = "Düşük batarya kesme",
+                    text = "Düşük Batarya Kesme",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -876,7 +987,7 @@ private fun GeneralTabContent(
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
 
-                Slider(
+                OverdriveSlider(
                     value = state.lowSocCutoff.toFloat(),
                     onValueChange = { onLowSocCutoffChange(it.toInt()) },
                     valueRange = 0f..30f,
@@ -895,6 +1006,13 @@ private fun GeneralTabContent(
                     Text(text = "Kapalı", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(text = "30%", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
+
+                Text(
+                    text = "Yüksek değerler bataryayı daha çok korur ama gözetimi daha erken sonlandırır. Kapalı, batarya kritik seviyeye inene kadar izlemeyi sürdürür.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    modifier = Modifier.padding(top = 4.dp, bottom = 8.dp)
+                )
 
                 Spacer(modifier = Modifier.height(14.dp))
 
@@ -1023,6 +1141,67 @@ private fun GeneralTabContent(
                 if (state.parkingIntelligenceEnabled) {
                     HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
 
+                    Text(
+                        text = "Oturum Sonlandırma",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Park oturumunun ne zaman kapanacağını belirler.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp, bottom = 6.dp)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.5f))
+                            .padding(3.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            listOf(
+                                "return" to "Geri döndüğümde",
+                                "power_on" to "Araç çalıştığında",
+                                "drive_away" to "Sürüşe başladığımda"
+                            ).forEach { (trigger, label) ->
+                                val isSelected = state.parkingEndTrigger == trigger
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(38.dp)
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
+                                        .clickable { onParkingEndTriggerChange(trigger) },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = label,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    Text(
+                        text = when (state.parkingEndTrigger) {
+                            "return" -> "İlk kapı açılışı veya kilit açıldığında (ya da araç çalıştığında) oturum tamamlanır."
+                            "power_on" -> "Kapı ve kilit yalnızca fotoğrafları yeniler; oturum araç çalıştığında kapanır."
+                            else -> "Vites P'den ayrılana kadar bekler; ardından oturumu kapatır."
+                        },
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(start = 4.dp, top = 4.dp, bottom = 8.dp)
+                    )
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+
                     SettingToggleRow(
                         title = "Varış / dönüş anlık görüntüleri",
                         subtitle = "Kapatıldıktan ~90 s sonra ve ilk kapı açılışında veya kilit açılışında dört kameralı fotoğraflar. Ayrıca bildirimlerdeki resim.",
@@ -1047,6 +1226,108 @@ private fun GeneralTabContent(
                         checked = state.garageSignageEnabled,
                         onCheckedChange = onToggleGarageSignage
                     )
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+
+                    SettingToggleRow(
+                        title = "Adres Çözümleme (Address lookup)",
+                        subtitle = "Park GPS konumunu bildirim ve oturum listesi için ilçe / sokak etiketine dönüştürür.",
+                        checked = state.parkingGeocodingEnabled,
+                        onCheckedChange = onToggleParkingGeocoding
+                    )
+
+                    if (state.parkingGeocodingEnabled) {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        SettingToggleRow(
+                            title = "Çevrimiçi Çözücü Kullan (Online resolver)",
+                            subtitle = "Cihaz içi coğrafi kodlama yeri adlandıramadığında OpenStreetMap Nominatim servisine başvurur.",
+                            checked = state.parkingGeocodingOnline,
+                            onCheckedChange = onToggleParkingGeocodingOnline
+                        )
+                    }
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+
+                    // Oturum Saklama Süresi
+                    Text(
+                        text = "Oturumları Saklama Süresi: ${state.parkingRetentionDays} gün",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Eski park oturumlarının cihazda ne kadar süre tutulacağı.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp, bottom = 6.dp)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.5f))
+                            .padding(3.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            listOf(30, 60, 90, 180, 365).forEach { days ->
+                                val isSelected = state.parkingRetentionDays == days
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(34.dp)
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
+                                        .clickable { onParkingRetentionDaysChange(days) },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "$days g",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+
+                    // Fotoğraf & Kare Depolama Sınırı
+                    Text(
+                        text = "Fotoğraf & Kare Depolama Sınırı: ${state.parkingStorageCapMb} MB",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Park oturumu fotoğrafları ve komşu araç kareleri için maksimum depolama alanı.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp, bottom = 6.dp)
+                    )
+                    OverdriveSlider(
+                        value = state.parkingStorageCapMb.toFloat().coerceIn(50f, 1000f),
+                        onValueChange = { onParkingStorageCapMbChange(it.toInt()) },
+                        valueRange = 50f..1000f,
+                        steps = 18,
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary,
+                            activeTrackColor = MaterialTheme.colorScheme.primary,
+                            inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = "50 MB", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(text = "1000 MB", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
             }
         }
@@ -1072,7 +1353,7 @@ private fun GeneralTabContent(
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Slider(
+                    OverdriveSlider(
                         value = state.screenDeterrentDuration.toFloat(),
                         onValueChange = { onScreenDeterrentDurationChange(it.toInt()) },
                         valueRange = 5f..30f,
@@ -1296,16 +1577,11 @@ private fun DetectionTabContent(
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
 
-                Slider(
+                OverdriveSlider(
                     value = state.sensitivityLevel.toFloat(),
                     onValueChange = { onSensitivityChange(it.toInt()) },
                     valueRange = 1f..5f,
                     steps = 3,
-                    colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
-                        activeTrackColor = MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
-                    ),
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -1384,15 +1660,10 @@ private fun DetectionTabContent(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
-                Slider(
+                OverdriveSlider(
                     value = state.loiteringTimeSeconds.toFloat(),
                     onValueChange = { onLoiteringTimeChange(it.toInt()) },
                     valueRange = 1f..10f,
-                    colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
-                        activeTrackColor = MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
-                    ),
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -1417,15 +1688,10 @@ private fun DetectionTabContent(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
-                Slider(
+                OverdriveSlider(
                     value = state.approachTriggerSeconds.toFloat(),
                     onValueChange = { onApproachTriggerChange(it.toInt()) },
                     valueRange = 0f..10f,
-                    colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
-                        activeTrackColor = MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
-                    ),
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -1644,15 +1910,10 @@ private fun RecordingTabContent(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
-                Slider(
+                OverdriveSlider(
                     value = state.preRecordSeconds.toFloat(),
                     onValueChange = { onPreRecordSecondsChange(it.toInt()) },
                     valueRange = 2f..15f,
-                    colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
-                        activeTrackColor = MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
-                    ),
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -1677,15 +1938,10 @@ private fun RecordingTabContent(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
-                Slider(
+                OverdriveSlider(
                     value = state.postRecordSeconds.toFloat(),
                     onValueChange = { onPostRecordSecondsChange(it.toInt()) },
                     valueRange = 5f..30f,
-                    colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
-                        activeTrackColor = MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
-                    ),
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -1916,15 +2172,10 @@ private fun RecordingTabContent(
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Slider(
+                OverdriveSlider(
                     value = state.rectifyStrength.toFloat(),
                     onValueChange = { onRectifyStrengthChange(it.toInt()) },
                     valueRange = 0f..100f,
-                    colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
-                        activeTrackColor = MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
-                    ),
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -2313,16 +2564,11 @@ private fun StorageTabContent(
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
 
-                Slider(
+                OverdriveSlider(
                     value = state.storageLimitMb.toFloat().coerceIn(100f, 100000f),
                     onValueChange = { onStorageLimitChange(it.toInt()) },
                     valueRange = 100f..100000f,
                     steps = 0,
-                    colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
-                        activeTrackColor = MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
-                    ),
                     modifier = Modifier.fillMaxWidth()
                 )
 

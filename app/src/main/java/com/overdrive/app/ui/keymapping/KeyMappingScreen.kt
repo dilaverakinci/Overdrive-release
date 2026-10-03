@@ -34,7 +34,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Slider
+import com.overdrive.app.ui.component.OverdriveSlider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -1751,7 +1751,7 @@ private fun ManualClipConfig(
                     color = OverdriveTheme.colors.primary
                 )
             }
-            Slider(
+            OverdriveSlider(
                 value = beforeSec.toFloat(),
                 onValueChange = { onBeforeChange(it.toInt()) },
                 valueRange = 0f..60f,
@@ -1781,7 +1781,7 @@ private fun ManualClipConfig(
                     color = OverdriveTheme.colors.primary
                 )
             }
-            Slider(
+            OverdriveSlider(
                 value = afterSec.toFloat(),
                 onValueChange = { onAfterChange(it.toInt()) },
                 valueRange = 0f..60f,
@@ -2011,7 +2011,7 @@ private fun SettingsTab(
                     )
                 }
 
-                Slider(
+                OverdriveSlider(
                     value = state.doubleTapWindowMs.toFloat(),
                     onValueChange = { onDoubleTapWindowChange(it.toLong()) },
                     valueRange = 250f..1500f,

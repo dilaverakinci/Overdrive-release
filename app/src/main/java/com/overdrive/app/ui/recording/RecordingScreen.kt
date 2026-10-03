@@ -40,6 +40,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -70,7 +71,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.overdrive.app.ui.component.OverdrivePillStatus
+import com.overdrive.app.ui.component.OverdriveSlider
 import com.overdrive.app.ui.component.OverdriveStatusPill
 import com.overdrive.app.ui.theme.OverdriveTheme
 import java.util.Locale
@@ -1073,6 +1076,99 @@ private fun QualityTabContent(
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Uyarı Kutusu (clip_duration_warning)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFFE65100).copy(alpha = 0.12f))
+                        .border(1.dp, Color(0xFFE65100).copy(alpha = 0.35f), RoundedCornerShape(8.dp))
+                        .padding(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = Color(0xFFFFB74D),
+                            modifier = Modifier.size(20.dp).padding(top = 1.dp)
+                        )
+                        Text(
+                            text = "Daha uzun klipler, daha az ve daha büyük dosya demektir — ancak devam eden bir klip yalnızca değişim sırasında sonlandırılır. Ani güç kaybında (ör. çarpma sırasında batarya kesilmesi) mevcut klip kaybolabilir; bu nedenle 10 dakikalık ayar, 2 dakikaya kıyasla 10 dakikaya kadar kaydedilmemiş görüntü kaybı riski taşır. Aracınız aniden güç kaybedebiliyorsa 2 dakikada tutun.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            lineHeight = 18.sp
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Bilgi Paneli: Sen ayarladıkça & Yerli (active_estimate & native_resolution)
+                val bitrateMbps = when (state.recordingQuality) {
+                    "ECONOMY" -> 2
+                    "STANDARD" -> 4
+                    "HIGH" -> 8
+                    "PREMIUM" -> 10
+                    "MAX" -> 12
+                    else -> 4
+                }
+                val mbPerClip = ((bitrateMbps * 1_000_000L / 8L) * (state.segmentDurationMinutes * 60L) / (1024L * 1024L)).toInt()
+                val gbPerHour = String.format(Locale.US, "%.1f", (bitrateMbps * 1_000_000.0 / 8.0 * 3600.0) / (1024.0 * 1024.0 * 1024.0))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.45f))
+                        .padding(12.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Sen ayarladıkça",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = "$bitrateMbps Mbps · ~$gbPerHour GB / saat · ~$mbPerClip MB / ${state.segmentDurationMinutes} dk",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f),
+                            thickness = 0.5.dp
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Yerli",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                            )
+                            Text(
+                                text = "2560×1920 mozaik · 4 × 1280×960 kamera",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                }
             }
         }
 
@@ -1103,7 +1199,7 @@ private fun QualityTabContent(
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
 
-                Slider(
+                OverdriveSlider(
                     value = state.rectifyStrength.toFloat(),
                     onValueChange = { onRectifyStrengthChange(it.toInt()) },
                     valueRange = 0f..100f,
@@ -1594,7 +1690,7 @@ private fun StorageTabContent(
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
 
-                Slider(
+                OverdriveSlider(
                     value = state.storageLimitMb.toFloat().coerceIn(100f, 100000f),
                     onValueChange = { onStorageLimitChange(it.toInt()) },
                     valueRange = 100f..100000f,

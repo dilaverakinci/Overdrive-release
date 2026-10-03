@@ -40,7 +40,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
+import com.overdrive.app.ui.component.OverdriveSlider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -464,7 +464,7 @@ fun VideoPlayerScreen(
                                 color = Color.White
                             )
 
-                            Slider(
+                            OverdriveSlider(
                                 value = if (durationMs > 0) (currentPosMs.toFloat() / durationMs.toFloat()).coerceIn(0f, 1f) else 0f,
                                 onValueChange = { ratio ->
                                     val target = (ratio * durationMs).toLong()

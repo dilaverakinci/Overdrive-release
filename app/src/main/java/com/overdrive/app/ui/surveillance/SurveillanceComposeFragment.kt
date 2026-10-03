@@ -54,9 +54,14 @@ class SurveillanceComposeFragment : Fragment() {
                         onLowSocCutoffChange = { v -> updatePowerKey("lowSocCutoffPercent", v) },
                         onToggleSchedule = { en -> toggleSchedule(en) },
                         onToggleParkingIntelligence = { v -> updateSurveillanceKey("parkingIntelligenceEnabled", v) },
+                        onParkingEndTriggerChange = { trigger -> updateParkingSubSettingValue("endTrigger", trigger) },
                         onToggleParkingStills = { v -> updateParkingSubSetting("snapshots", v) },
                         onToggleNeighbourTimeline = { v -> updateParkingSubSetting("neighbours", v) },
                         onToggleGarageSignage = { v -> updateParkingSubSetting("signage", v) },
+                        onToggleParkingGeocoding = { v -> updateParkingGeocoding(enabled = v) },
+                        onToggleParkingGeocodingOnline = { v -> updateParkingGeocoding(online = v) },
+                        onParkingRetentionDaysChange = { days -> updateParkingSubSettingValue("retentionDays", days) },
+                        onParkingStorageCapMbChange = { mb -> updateParkingSubSettingValue("storageCapMb", mb) },
                         onToggleScreenDeterrent = { v -> updateSurveillanceKey("screenDeterrentEnabled", v) },
                         onScreenDeterrentDurationChange = { v -> updateSurveillanceKey("screenDeterrentDurationSeconds", v) },
                         onScreenDeterrentMessageChange = { msg -> updateSurveillanceKey("screenDeterrentMessage", msg) },
@@ -144,9 +149,12 @@ class SurveillanceComposeFragment : Fragment() {
                 val diLink5 = surv.optBoolean("diLink5KeepAlive", false)
                 val parking = fullConfig.optJSONObject("parking") ?: JSONObject()
                 val parkingIntel = parking.optBoolean("enabled", surv.optBoolean("parkingIntelligenceEnabled", false))
+                val parkingEndTrigger = parking.optString("endTrigger", "return")
                 val parkingStills = parking.optBoolean("snapshots", true)
                 val neighbourTimeline = parking.optBoolean("neighbours", true)
                 val garageSignage = parking.optBoolean("signage", true)
+                val parkingRetentionDays = parking.optInt("retentionDays", 90)
+                val parkingStorageCapMb = parking.optInt("storageCapMb", 300)
                 val scheduleEn = surv.optBoolean("scheduleEnabled", false)
 
                 val env = surv.optString("environmentPreset", "outdoor")
@@ -224,9 +232,12 @@ class SurveillanceComposeFragment : Fragment() {
 
                 val geocoding = try { UnifiedConfigManager.getGeocoding() } catch (_: Throwable) { JSONObject() }
                 val survGeo = geocoding.optJSONObject("surveillance") ?: JSONObject()
+                val parkGeo = geocoding.optJSONObject("parking") ?: JSONObject()
                 val advGeo = geocoding.optJSONObject("advanced") ?: JSONObject()
                 val survGeoEn = survGeo.optBoolean("enabled", false)
                 val survGeoOn = survGeo.optBoolean("allowOnline", false)
+                val parkGeoEn = parkGeo.optBoolean("enabled", false)
+                val parkGeoOn = parkGeo.optBoolean("allowOnline", false)
                 val survGeoUrl = advGeo.optString("customNominatimBase", "")
 
                 val survTelemEn = try { UnifiedConfigManager.isTelemetryOverlayEnabledFor("surveillance") } catch (_: Throwable) { false }
@@ -332,9 +343,14 @@ class SurveillanceComposeFragment : Fragment() {
                         eventsToday = eventsToday,
                         scheduleEnabled = scheduleEn,
                         parkingIntelligenceEnabled = parkingIntel,
+                        parkingEndTrigger = parkingEndTrigger,
                         parkingStillsEnabled = parkingStills,
                         neighbourTimelineEnabled = neighbourTimeline,
                         garageSignageEnabled = garageSignage,
+                        parkingGeocodingEnabled = parkGeoEn,
+                        parkingGeocodingOnline = parkGeoOn,
+                        parkingRetentionDays = parkingRetentionDays,
+                        parkingStorageCapMb = parkingStorageCapMb,
                         screenDeterrentEnabled = screenDetEn,
                         screenDeterrentDuration = screenDetDur,
                         screenDeterrentMessage = screenDetMsg,
@@ -541,6 +557,60 @@ class SurveillanceComposeFragment : Fragment() {
                 mainHandler.post {
                     Toast.makeText(requireContext(), "Park ayarı kaydedilemedi: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
+            }
+        }
+    }
+
+    private fun updateParkingSubSettingValue(key: String, value: Any) {
+        when (key) {
+            "endTrigger" -> uiState = uiState.copy(parkingEndTrigger = value as String)
+            "retentionDays" -> uiState = uiState.copy(parkingRetentionDays = value as Int)
+            "storageCapMb" -> uiState = uiState.copy(parkingStorageCapMb = value as Int)
+        }
+        executor.execute {
+            try {
+                try {
+                    val payload = JSONObject().apply { put(key, value) }.toString()
+                    val conn = DaemonHttpClient.open("/api/parking/config", "POST", 2000, 3000)
+                    conn.doOutput = true
+                    conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
+                    conn.responseCode
+                    conn.disconnect()
+                } catch (_: Throwable) {}
+                UnifiedConfigManager.updateValues("parking", mapOf(key to value))
+            } catch (t: Throwable) {
+                mainHandler.post {
+                    Toast.makeText(requireContext(), "Park ayarı kaydedilemedi: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun updateParkingGeocoding(enabled: Boolean? = null, online: Boolean? = null) {
+        val newEnabled = enabled ?: uiState.parkingGeocodingEnabled
+        val newOnline = online ?: uiState.parkingGeocodingOnline
+        uiState = uiState.copy(parkingGeocodingEnabled = newEnabled, parkingGeocodingOnline = newOnline)
+        executor.execute {
+            try {
+                val delta = JSONObject().apply {
+                    put("parking", JSONObject().apply {
+                        put("enabled", newEnabled)
+                        put("allowOnline", newOnline)
+                    })
+                }
+                val payload = delta.toString()
+                val conn = DaemonHttpClient.open("/api/settings/geocoding", "POST", 2000, 3000)
+                conn.doOutput = true
+                conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
+                conn.responseCode
+                conn.disconnect()
+            } catch (_: Throwable) {
+                val current = UnifiedConfigManager.getGeocoding()
+                val park = current.optJSONObject("parking") ?: JSONObject()
+                park.put("enabled", newEnabled)
+                park.put("allowOnline", newOnline)
+                current.put("parking", park)
+                UnifiedConfigManager.setGeocoding(current)
             }
         }
     }
