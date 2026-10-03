@@ -79,7 +79,7 @@ $versionTag = "v1.0.$commitCount"
 $releaseTitle = "BetterOverdrive v1.0.$commitCount (Build $commitCount)"
 Write-Host ">>> Belirlenen Versiyon: $versionTag ($commitCount Moredrive commiti)" -ForegroundColor Cyan
 
-# 3. APK Kontrolü veya Derleme
+# 3. APK Kontrolü veya Derleme (KRİTİK: Kör nokta / BSD ve ADB daemon servisleri için DAİMA assembleDebug kullanılmalıdır!)
 $apkPath = Join-Path $repoRoot "app\build\outputs\apk\debug\app-arm64-v8a-debug.apk"
 if (-not (Test-Path $apkPath) -and -not $SkipBuild) {
     Write-Host ">>> APK bulunamadi, derleme baslatiliyor (assembleDebug)..." -ForegroundColor Yellow
@@ -97,13 +97,15 @@ if (-not (Test-Path $apkPath)) {
 
 $apkFileSize = (Get-Item $apkPath).Length
 $apkSizeMB = [math]::Round($apkFileSize / 1MB, 2)
-Write-Host ">>> Derlenmis APK: $apkPath ($apkSizeMB MB)" -ForegroundColor Green
+Write-Host ">>> Derlenmis APK: $apkPath ($apkSizeMB MB - Debug / Blind Spot Ready)" -ForegroundColor Green
 
 # 4. Release Notları
 $releaseBody = @"
 ## 🚗 BetterOverdrive $versionTag
 
-Moredrive projesi kapsamındaki en güncel geliştirmeleri ve optimizasyonları içeren hata ayıklama (debug) paketidir.
+Moredrive projesi kapsamındaki en güncel geliştirmeleri ve optimizasyonları içeren **Debug** derlemesidir.
+
+> ⚠️ **Kritik Mimari Not:** Kör nokta (Blind Spot) kamera akışı ve arka plan daemon servislerinin (UID 2000 / SurfaceControl) ADB \`run-as\` üzerinden sorunsuz çalışabilmesi için uygulama daima **Debug** modunda derlenir.
 
 ### 🌟 Son Yenilikler ve İyileştirmeler:
 - ⚡ **BYD Doğrudan Kablosuz ADB Motoru:** Araç multimedya ekranı üzerinden (ts-framework IPC) tek tıkla kablosuz ADB etkinleştirme ve port 5555 yönetimi.
@@ -113,8 +115,8 @@ Moredrive projesi kapsamındaki en güncel geliştirmeleri ve optimizasyonları 
 - 🗺️ **Türkiye EV Şarj Rehberi & Haritası:** 22.000+ şarj istasyonu desteği ve Navion akıllı oturum düzenleyicisi.
 
 ---
-**APK Dosyası:** `betteroverdrive.apk` ($apkSizeMB MB)  
-**Hedef Mimari:** arm64-v8a (BYD DiLink Android 10/12)
+**APK Dosyası:** \`betteroverdrive.apk\` ($apkSizeMB MB)  
+**Derleme Tipi:** Debug (arm64-v8a - BYD DiLink Android 10/12)
 "@
 
 # 5. GitHub Release Oluşturma
