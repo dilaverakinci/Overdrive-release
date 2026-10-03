@@ -79,11 +79,11 @@ import com.overdrive.app.ui.theme.OverdriveTheme
 import java.util.Locale
 
 enum class RecordingTab(val title: String, val icon: ImageVector) {
-    CAPTURE("Capture", Icons.Default.Videocam),
-    STATUS("Status", Icons.Default.Adjust),
-    QUALITY("Quality", Icons.Default.Edit),
-    OEM("Dashcam", Icons.Default.CameraAlt),
-    STORAGE("Storage", Icons.Default.Storage)
+    CAPTURE("Kayıt", Icons.Default.Videocam),
+    STATUS("Durum", Icons.Default.Adjust),
+    QUALITY("Kalite", Icons.Default.Edit),
+    OEM("Araç Kamerası", Icons.Default.CameraAlt),
+    STORAGE("Depolama", Icons.Default.Storage)
 }
 
 data class RecordingUiState(
@@ -505,9 +505,9 @@ private fun CaptureTabContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Card 1: Kayıt Mode (ACC ON)
+        // Card 1: Kayıt Modu (Kontak Açık / ACC ON)
         CollapsibleCard(
-            title = "Kayıt Mode (ACC ON)",
+            title = "Kayıt Modu (Kontak Açık / ACC ON)",
             icon = Icons.Default.Videocam
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -530,8 +530,8 @@ private fun CaptureTabContent(
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     RadioOptionCard(
-                        title = "Hiç (Özel olarak)",
-                        subtitle = "Kayıt yok - pil ve kaynak tasarruf eder",
+                        title = "Kapalı",
+                        subtitle = "Kayıt yapılmaz - batarya ve sistem kaynaklarından tasarruf eder",
                         icon = Icons.Default.Block,
                         isSelected = state.recordingMode == "NONE",
                         modifier = Modifier.weight(1f),
@@ -539,7 +539,7 @@ private fun CaptureTabContent(
                     )
                     RadioOptionCard(
                         title = "Sürekli",
-                        subtitle = "Kameraların aktif olduğu tüm zamanları kaydet .",
+                        subtitle = "Sürüş boyunca kameralardan kesintisiz kayıt yapar",
                         icon = Icons.Default.Videocam,
                         isSelected = state.recordingMode == "CONTINUOUS",
                         modifier = Modifier.weight(1f),
@@ -554,16 +554,16 @@ private fun CaptureTabContent(
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     RadioOptionCard(
-                        title = "Sürücü Modu",
-                        subtitle = "Sadece sürüş sırasında kaydedilmelidir (D/R/S/M ekipmanları)",
+                        title = "Sürüş Modu",
+                        subtitle = "Yalnızca araç hareket halindeyken kaydeder (D/R/S/M vitesleri)",
                         icon = Icons.Default.DirectionsCar,
                         isSelected = state.recordingMode == "DRIVE_MODE",
                         modifier = Modifier.weight(1f),
                         onClick = { onRecordingModeSelected("DRIVE_MODE") }
                     )
                     RadioOptionCard(
-                        title = "Yakınlık Muhafızları",
-                        subtitle = "Nesnelerin arabaya yaklaştığını kaydet",
+                        title = "Yakınlık Koruması",
+                        subtitle = "Araca yaklaşan nesneleri ve tehlikeleri kaydeder",
                         icon = Icons.Default.Security,
                         isSelected = state.recordingMode == "PROXIMITY_GUARD",
                         modifier = Modifier.weight(1f),
@@ -671,7 +671,7 @@ private fun CaptureTabContent(
                 // Row 1: Yer isimleriyle dashcam kayıtlarını etiketleyin
                 SettingToggleRow(
                     title = "Yer isimleriyle dashcam kayıtlarını etiketleyin",
-                    subtitle = "GPS'i geriye çevirin, kayıt başlatın, bölge/şehir etiketine koyun ve her klipin yan arabasının yanında kaydetin.",
+                    subtitle = "GPS koordinatlarını ilçe/şehir adına çevirir ve her klibin meta verisine ekler.",
                     checked = state.geocodingEnabled,
                     onCheckedChange = onToggleGeocodingEnabled
                 )
@@ -853,9 +853,9 @@ private fun QualityTabContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Card 1: Video Kaliteli (matching Screenshot_1790775115.png & 1790775123.png)
+        // Card 1: Video Kalitesi (matching Screenshot_1790775115.png & 1790775123.png)
         CollapsibleCard(
-            title = "Video Kaliteli",
+            title = "Video Kalitesi",
             icon = Icons.Default.Videocam
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -888,8 +888,8 @@ private fun QualityTabContent(
                             "ECONOMY" to "Ekonomik",
                             "STANDARD" to "Standart",
                             "HIGH" to "Yüksek",
-                            "PREMIUM" to "Ödül",
-                            "MAX" to "Max ."
+                            "PREMIUM" to "Çok Yüksek",
+                            "MAX" to "Maksimum"
                         ).forEach { (qual, label) ->
                             val isSelected = state.recordingQuality == qual
                             Box(
@@ -1136,7 +1136,7 @@ private fun QualityTabContent(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Sen ayarladıkça",
+                                text = "Tahmini Boyut / Tüketim",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -1157,7 +1157,7 @@ private fun QualityTabContent(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Yerli",
+                                text = "Doğal Çözünürlük",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                             )
@@ -1221,15 +1221,15 @@ private fun QualityTabContent(
             }
         }
 
-        // Card 3: Telemetri Üstüleme (matching Screenshot_1790775164.png)
+        // Card 3: Telemetri Bindirmesi (matching Screenshot_1790775164.png)
         CollapsibleCard(
-            title = "Telemetri Üstüleme",
+            title = "Telemetri Bindirmesi",
             icon = Icons.Default.Edit
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 SettingToggleRow(
-                    title = "Kayıtlı Videolar Göster",
-                    subtitle = "Kaydedilen videoda örtüşme hızı, eşya, pedaller ve zaman damgası",
+                    title = "Videolara Telemetri Ekle",
+                    subtitle = "Kaydedilen videoya hız, vites, pedallar ve zaman damgasını bindirir",
                     checked = state.telemetryOverlayEnabled,
                     onCheckedChange = onToggleTelemetryOverlay
                 )
@@ -1293,9 +1293,9 @@ private fun OemDashcamTabContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Card 1: OEM Dashcam (matching Screenshot_1790775179.png)
+        // Card 1: Araç Kamerası (OEM Dashcam) (matching Screenshot_1790775179.png)
         CollapsibleCard(
-            title = "OEM Dashcam",
+            title = "Araç Kamerası (OEM Dashcam)",
             icon = Icons.Default.CameraAlt,
             statusBadge = if (!state.cameraProbeUnset) {
                 {
@@ -1494,9 +1494,9 @@ private fun StorageTabContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Card 1: Kayıtlama Depolama (matching Screenshot_1790775183.png & 1790775190.png)
+        // Card 1: Kayıt Depolama Alanı (matching Screenshot_1790775183.png & 1790775190.png)
         CollapsibleCard(
-            title = "Kayıtlama Depolama",
+            title = "Kayıt Depolama Alanı",
             icon = Icons.Default.Storage
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {

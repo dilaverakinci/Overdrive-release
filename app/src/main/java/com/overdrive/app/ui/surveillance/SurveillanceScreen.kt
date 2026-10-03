@@ -81,11 +81,11 @@ import com.overdrive.app.ui.theme.OverdriveTheme
 import java.util.Locale
 
 enum class SurveillanceTab(val title: String, val icon: ImageVector) {
-    GENERAL("General", Icons.Default.Security),
-    DETECTION("Detection", Icons.Default.Visibility),
-    RECORDING("Recording", Icons.Default.Videocam),
-    OEM("Dashcam", Icons.Default.CameraAlt),
-    STORAGE("Storage", Icons.Default.Storage)
+    GENERAL("Genel", Icons.Default.Security),
+    DETECTION("Algılama", Icons.Default.Visibility),
+    RECORDING("Kayıt", Icons.Default.Videocam),
+    OEM("Araç Kamerası", Icons.Default.CameraAlt),
+    STORAGE("Depolama", Icons.Default.Storage)
 }
 
 data class SurveillanceUiState(
@@ -846,9 +846,9 @@ private fun GeneralTabContent(
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
 
-                // 1. Keep head unit awake while parked
+                // 1. Park halindeyken ana üniteyi açık tut
                 SettingToggleRow(
-                    title = "Keep head unit awake while parked",
+                    title = "Park halindeyken ana üniteyi açık tut",
                     subtitle = "Araç kapatıldıktan sonra USB bağlantı noktalarını ve ana üniteyi açık tutar (örneğin telefonu şarj etmek, harici depolama veya bir aksesuarı çalıştırmak için). Ana ünitenin uykuya geçmesini ve 12V aküyü korumak için kapatın. Araç bir sonraki kapatıldığında geçerli olur.",
                     checked = state.keepUsbPowerOnAccOff,
                     onCheckedChange = onToggleKeepUsbPower
@@ -891,9 +891,9 @@ private fun GeneralTabContent(
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f))
 
-                // 2. Keep mobile data awaked while parked
+                // 2. Park halindeyken mobil veriyi açık tut
                 SettingToggleRow(
-                    title = "Keep mobile data awaked while parked",
+                    title = "Park halindeyken mobil veriyi açık tut",
                     subtitle = "Bazı modellerde araç kapatıldıktan bir süre sonra mobil veri modülü uykuya geçer ve araç park halindeyken ağ bağlantısı kesilir. Uyanık tutmak için bunu açın. Park halindeyken hücresel bağlantıyı gerçekten kaybetmiyorsanız kapalı bırakmanız önerilir (ekstra batarya ve mobil veri tüketir).",
                     checked = state.mobileDataKeepAlive,
                     onCheckedChange = onToggleMobileDataKeepAlive
@@ -901,9 +901,9 @@ private fun GeneralTabContent(
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f))
 
-                // 3. Experimental: Keep DI5 awake using BYD Cloud
+                // 3. Deneysel: BYD Cloud ile DI5'i uyanık tut
                 SettingToggleRow(
-                    title = "Experimental: Keep DI5 awake using BYD Cloud",
+                    title = "Deneysel: BYD Cloud ile DI5'i uyanık tut",
                     subtitle = "ACC kapalıyken her 15 saniyede bir BYD Cloud üzerinden araç durumunu sorgular. Bağlı bir BYD hesabı ve internet erişimi gerektirir. Araç SIM verisini kullanabilir, derin uykuyu önleyebilir ve park halindeki batarya tüketimini artırabilir. ACC açıldığında durur.",
                     checked = state.di5CloudKeepAlive,
                     onCheckedChange = onToggleDi5CloudKeepAlive
@@ -917,9 +917,9 @@ private fun GeneralTabContent(
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f))
 
-                // 4. Experimental: DiLink5 parked keep alive
+                // 4. Deneysel: DiLink5 park nöbetçi modu
                 SettingToggleRow(
-                    title = "Experimental: DiLink5 parked keep alive",
+                    title = "Deneysel: DiLink5 park nöbetçi modu",
                     subtitle = "DiLink 5 ana üniteleri için (tüm kamera modlarında). Araç kapatıldıktan sonra MCU'nun kamera ve USB hatlarını kesmemesi için aracı nöbetçi modunda tutar ve MCU uykuya geçerse yeniden uyandırır. Daha fazla 12V akü tüketir; voltaj kesme sınırının altına indiğinde otomatik durur.",
                     checked = state.diLink5KeepAlive,
                     onCheckedChange = onToggleDiLink5KeepAlive
@@ -1230,7 +1230,7 @@ private fun GeneralTabContent(
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
 
                     SettingToggleRow(
-                        title = "Adres Çözümleme (Address lookup)",
+                        title = "Adres Çözümleme",
                         subtitle = "Park GPS konumunu bildirim ve oturum listesi için ilçe / sokak etiketine dönüştürür.",
                         checked = state.parkingGeocodingEnabled,
                         onCheckedChange = onToggleParkingGeocoding
@@ -1239,7 +1239,7 @@ private fun GeneralTabContent(
                     if (state.parkingGeocodingEnabled) {
                         Spacer(modifier = Modifier.height(6.dp))
                         SettingToggleRow(
-                            title = "Çevrimiçi Çözücü Kullan (Online resolver)",
+                            title = "Çevrimiçi Çözücü Kullan",
                             subtitle = "Cihaz içi coğrafi kodlama yeri adlandıramadığında OpenStreetMap Nominatim servisine başvurur.",
                             checked = state.parkingGeocodingOnline,
                             onCheckedChange = onToggleParkingGeocodingOnline
@@ -1747,7 +1747,7 @@ private fun DetectionTabContent(
                 HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
 
                 SettingToggleRow(
-                    title = "Güçlü Harekette Kaydet (Strong Motion)",
+                    title = "Güçlü Harekette Kaydet",
                     subtitle = "Yapay zeka nesnesi tanımasa dahi ani büyük hareketlerde acil kayıt başlatır.",
                     checked = state.recordOnStrongMotion,
                     onCheckedChange = onToggleRecordOnStrongMotion
@@ -1832,9 +1832,9 @@ private fun DetectionTabContent(
             }
         }
 
-        // Card 3: Nesneleri Tespit Etmek
+        // Card 3: Algılanacak Nesneler
         CollapsibleCard(
-            title = "Nesneleri Tespit Etmek",
+            title = "Algılanacak Nesneler",
             icon = Icons.Default.Adjust
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -1976,8 +1976,8 @@ private fun RecordingTabContent(
                             "ECONOMY" to "Ekonomik",
                             "STANDARD" to "Standart",
                             "HIGH" to "Yüksek",
-                            "PREMIUM" to "Ödül",
-                            "MAX" to "Max ."
+                            "PREMIUM" to "Çok Yüksek",
+                            "MAX" to "Maksimum"
                         ).forEach { (qual, label) ->
                             val isSelected = state.surveillanceQuality == qual
                             Box(
@@ -2145,9 +2145,9 @@ private fun RecordingTabContent(
             }
         }
 
-        // Card 3: Telemetri Üstüleme
+        // Card 3: Telemetri Bindirmesi
         CollapsibleCard(
-            title = "Telemetri Üstüleme",
+            title = "Telemetri Bindirmesi",
             icon = Icons.Default.Edit
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -2200,9 +2200,9 @@ private fun DashcamTabContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Card 1: OEM Dashcam (matching Screenshot_1790775524.png)
+        // Card 1: Araç Kamerası (OEM Dashcam) (matching Screenshot_1790775524.png)
         CollapsibleCard(
-            title = "OEM Dashcam",
+            title = "Araç Kamerası (OEM Dashcam)",
             icon = Icons.Default.CameraAlt,
             statusBadge = if (!state.cameraProbeUnset) {
                 {
@@ -2371,9 +2371,9 @@ private fun StorageTabContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Card 1: Denetim Kaynaklama (matching Screenshot_1790775527.png)
+        // Card 1: Gözetim Depolama Alanı (matching Screenshot_1790775527.png)
         CollapsibleCard(
-            title = "Denetim Kaynaklama",
+            title = "Gözetim Depolama Alanı",
             icon = Icons.Default.Storage
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {

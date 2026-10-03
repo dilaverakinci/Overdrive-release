@@ -27,8 +27,8 @@
     <string name="action_done">Yapıldı</string>
     <string name="action_remind_me_later">Beni daha sonra hatırla .</string>
     <string name="action_retry">Tekrar dene</string>
-    <string name="action_run">Kaç .</string>
-    <string name="action_clear_output">Açık Çıkış</string>
+    <string name="action_run">Çalıştır</string>
+    <string name="action_clear_output">Çıktıyı Temizle</string>
     <!-- Nav header -->
     <!-- Common content descriptions -->
     <string name="cd_camera">Kamera</string>
@@ -37,7 +37,7 @@
     <string name="cd_show_hide_token">Göster / Sakla İşaret</string>
     <string name="cd_copy_token">Kopya Tokeni</string>
     <string name="cd_copy_url">Kopya URL</string>
-    <string name="cd_clear_logs">Açık kütükler</string>
+    <string name="cd_clear_logs">Günlükleri temizle</string>
     <string name="cd_expand_collapse">Genişleme / çökme</string>
     <string name="cd_recording_status">Kayıt durumu</string>
     <string name="cd_trip_tracking_status">Seyahat izleme durumu</string>
@@ -203,7 +203,7 @@
     <string name="language_label_auto_fmt">%1$s · Otomatik</string>
     <!-- fragment_adb_console -->
     <string name="adb_prompt">$</string>
-    <string name="adb_command_hint">Komutanlığı girin...</string>
+    <string name="adb_command_hint">Komut girin...</string>
     <string name="adb_preset_commands_header">Öntanımlı komutlar</string>
     <string name="adb_output_header">Çıktı</string>
     <string name="adb_output_ready">Komutlara hazır...</string>
@@ -236,11 +236,11 @@
     <string name="reset_cat_recordings">Kayıtlar (videolar)</string>
     <string name="reset_cat_recordings_desc">Kayıtlar klasöründeki tüm MP4\'ler</string>
     <string name="reset_cat_sentry_events">Gözetim etkinlikleri</string>
-    <string name="reset_cat_sentry_events_desc">Gözetim etkinliği klipleri ve JSON yan arabaları</string>
+    <string name="reset_cat_sentry_events_desc">Gözetim etkinliği klipleri ve JSON meta verileri</string>
     <string name="reset_cat_proximity">Yakınlık kayıtları</string>
     <string name="reset_cat_proximity_desc">Radarla tetiklenen etkinlik MP4\'leri</string>
     <string name="reset_cat_trip_files">Yolculuk Telemetri Dosyaları</string>
-    <string name="reset_cat_trip_files_desc">JSON\'in bir yolculuk için disket telemetrisi</string>
+    <string name="reset_cat_trip_files_desc">Yolculuklar için diskteki JSON telemetri dosyaları</string>
     <!-- fragment_abrp_settings -->
     <!-- fragment_recording_library -->
     <string name="recording_lib_chip_any">Herhangi bir</string>
@@ -266,20 +266,20 @@
     <string name="recording_lib_chip_type_normal">Normal</string>
     <string name="recording_lib_chip_type_proximity">Yakınlık</string>
     <string name="recording_lib_date_today">Bugün</string>
-    <string name="recording_lib_date_yesterday">- Dün .</string>
-    <string name="recording_lib_clip_count">%1$d klipleri</string>
-    <string name="recording_lib_clip_count_one">%1$d klipi</string>
-    <string name="recording_lib_pick_date">Bir randevu seç .</string>
+    <string name="recording_lib_date_yesterday">Dün</string>
+    <string name="recording_lib_clip_count">%1$d klip</string>
+    <string name="recording_lib_clip_count_one">%1$d klip</string>
+    <string name="recording_lib_pick_date">Tarih seç</string>
     <string name="recording_lib_date_all_days">Tüm Günler</string>
     <string name="cd_clear_date_filter">Tüm günleri göster</string>
-    <string name="recording_lib_section_morning">Sabah .</string>
-    <string name="recording_lib_section_afternoon">Günaydın .</string>
+    <string name="recording_lib_section_morning">Sabah</string>
+    <string name="recording_lib_section_afternoon">Öğleden sonra</string>
     <string name="recording_lib_section_evening">Akşam</string>
-    <string name="recording_lib_section_night">Gece .</string>
+    <string name="recording_lib_section_night">Gece</string>
     <string name="cd_previous_day">Önceki gün</string>
     <string name="cd_next_day">Ertesi gün</string>
-    <string name="cd_open_filters">Açık filtreler</string>
-    <string name="cd_clear_filter">Açık filtre</string>
+    <string name="cd_open_filters">Filtreleri aç</string>
+    <string name="cd_clear_filter">Filtreyi temizle</string>
     <!-- v5 redesign: SOTA empty state with CTA + tile type badges -->
     <string name="recording_lib_empty_title">Eşleşen kayıt yok</string>
     <string name="recording_lib_empty_body">Tarih aralığınızı veya çip filtrelerinizi ayarlamayı deneyin.</string>
@@ -725,7 +725,7 @@
     <!-- SOTA Diagnostics dashboard -->
     <string name="diagnostics_hero_title">Sistem teşhisleri</string>
     <string name="diagnostics_hero_subtitle">Sağlık kayıtları ve cihazın sondajları.</string>
-    <string name="diagnostics_health_clear">Her şey açık .</string>
+    <string name="diagnostics_health_clear">Sorun yok</string>
     <string name="diagnostics_health_section">Sağlık</string>
     <string name="diagnostics_health_network">Ağ</string>
     <string name="diagnostics_health_storage">Depolama</string>
@@ -737,16 +737,16 @@
          tunnel_state_online / tunnel_state_offline / tunnel_state_connecting. -->
     <string name="diagnostics_network_tunnel_label">Tunel · %1$s</string>
     <string name="diagnostics_tunnel_state_online">Çevrimiçi</string>
-    <string name="diagnostics_tunnel_state_offline">İletişimden uzak</string>
+    <string name="diagnostics_tunnel_state_offline">Çevrimdışı</string>
     <string name="diagnostics_tunnel_state_connecting">Bağlantı</string>
     <!-- Network top-line fallbacks when no Wi-Fi SSID is available. -->
     <string name="diagnostics_network_mobile">Mobil</string>
     <string name="diagnostics_network_ethernet">Ethernet</string>
-    <string name="diagnostics_network_offline">İletişimden uzak</string>
+    <string name="diagnostics_network_offline">Çevrimdışı</string>
     <!-- Storage tile lines. %1$d clip count, %2$s human-readable used size. -->
-    <string name="diagnostics_storage_used_line">%1$d klipleri · %2$s kullanılır</string>
+    <string name="diagnostics_storage_used_line">%1$d klip · %2$s kullanılıyor</string>
     <!-- Storage tile bottom line. %1$s human-readable free size. -->
-    <string name="diagnostics_storage_free_line">%1$s ücretsiz</string>
+    <string name="diagnostics_storage_free_line">%1$s boş alan</string>
     <string name="diagnostics_logs_card_title">Canlı etkinlik kaydı</string>
     <string name="diagnostics_logs_card_subtitle">Çalışan hizmetlerden gelen akış çıkışı.</string>
     <string name="diagnostics_tools_section">Araçlar</string>
@@ -812,9 +812,9 @@
     <string name="vehicle_dialog_summary_calibration">Son kalibrasyon: %1$.1f%% %2$s</string>
     <string name="vehicle_dialog_soh_unavailable">kullanılamıyor</string>
     <!-- Combined Recordings+Storage chip: e.g. "8.4 GB used · 12 GB free" -->
-    <string name="dashboard_metric_storage_chip">%1$s kullanıldı · %2$s ücretsiz</string>
+    <string name="dashboard_metric_storage_chip">%1$s kullanıldı · %2$s boş</string>
     <string name="dashboard_metric_storage_chip_pending">Depolama </string>
-    <string name="dashboard_tunnel_offline">İletişimden uzak</string>
+    <string name="dashboard_tunnel_offline">Çevrimdışı</string>
     <string name="dashboard_local_lan_url">Yerel Ağ: %s</string>
     <string name="dashboard_pwa_install_tip">💡 Telefonda Chrome ile açtığınızda \'OverDrive\'ı Yükle\' seçeneği ile ana ekranınıza uygulama olarak ekleyebilirsiniz.</string>
     <string name="dashboard_tunnel_online">Çevrimiçi</string>
@@ -870,8 +870,8 @@
     <string name="settings_privacy_storage_clips_label">Disk üzerindeki klipler</string>
     <string name="settings_privacy_storage_size_label">Toplam boyut</string>
     <string name="settings_privacy_storage_unavailable">Kullanılamıyor</string>
-    <string name="settings_privacy_storage_count_format">%1$d klipi</string>
-    <string name="settings_privacy_storage_count_format_plural">%1$d klipleri</string>
+    <string name="settings_privacy_storage_count_format">%1$d klip</string>
+    <string name="settings_privacy_storage_count_format_plural">%1$d klip</string>
     <string name="settings_privacy_reset_subtitle">Kategorileri seçin: kayıtlar, olaylar, daemon yapılandırmaları, önbelleğe alınmış telemetri...</string>
     <!-- Settings → Security pane copy + PIN unlock screen.
          The lock guards the OverDrive UI only. Cam daemon, AccSentry,
@@ -948,9 +948,9 @@
     <!-- Camera tile primary value: %1$d is the probed camera id (0..N). -->
     <string name="diagnostics_camera_value_camera_n">Kamera %1$d</string>
     <!-- Camera tile primary value when manual override is active. -->
-    <string name="diagnostics_camera_value_camera_n_manual">Kamera %1$d (elçici)</string>
-    <string name="diagnostics_camera_value_probing">Araştıran...</string>
-    <string name="diagnostics_camera_value_offline">İletişimden uzak</string>
+    <string name="diagnostics_camera_value_camera_n_manual">Kamera %1$d (manuel)</string>
+    <string name="diagnostics_camera_value_probing">Aranıyor...</string>
+    <string name="diagnostics_camera_value_offline">Çevrimdışı</string>
     <!-- Battery tile primary value: %1$.0f is the SOH percent (0..100). -->
     <string name="diagnostics_battery_value_soh">%1$.0f%%</string>
     <string name="diagnostics_battery_value_pending">Bekleyen veriler</string>
@@ -977,7 +977,7 @@
          %1$s = energy added (e.g. "12.4 kWh"); %2$s = duration (e.g. "1 hr 45 min"). -->
     <string name="dashboard_insight_last_charge">Son şarj: %2$s\'de +%1$s</string>
     <!-- Storage milestone. %1$d = clip count; %2$s = total size (e.g. "42 GB"). -->
-    <string name="dashboard_insight_storage_milestone">%1$d klipleri · %2$s kaydedildi</string>
+    <string name="dashboard_insight_storage_milestone">%1$d klip · %2$s kaydedildi</string>
     <!-- Number formatters used inside other insights. Translators may localize
          the unit suffix (e.g. "키와트" / "квт·ч") but should leave the float
          placeholder shape so the bold-ifier still finds the digits. -->
@@ -986,13 +986,13 @@
     <string name="dashboard_insight_hours_minutes">%1$d sa %2$d dk</string>
     <!-- Today's clips. -->
     <plurals name="dashboard_insight_today_clips">
-        <item quantity="one">%1$d klipi bugün kaydedildi .</item>
-        <item quantity="other">Bugün kaydedilen %1$d klipleri</item>
+        <item quantity="one">%1$d klip bugün kaydedildi</item>
+        <item quantity="other">Bugün kaydedilen %1$d klip</item>
     </plurals>
     <!-- Process uptime. Days form takes (days, hours); hours form takes hours only. -->
     <plurals name="dashboard_insight_uptime_days_hours">
-        <item quantity="one">%1$d gün, %2$d saat için çevrimiçi sürüş</item>
-        <item quantity="other">%1$d günleri, %2$d saatleri için online sürüş</item>
+        <item quantity="one">%1$d gün, %2$d saattir çevrimiçi</item>
+        <item quantity="other">%1$d gün, %2$d saattir çevrimiçi</item>
     </plurals>
     <plurals name="dashboard_insight_uptime_hours">
         <item quantity="one">%1$d saat boyunca online sürüş</item>
