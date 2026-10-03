@@ -237,47 +237,52 @@ fun DiagnosticsScreen(
                         color = MaterialTheme.colorScheme.primary,
                     )
 
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        HealthTile(
-                            title = stringResource(R.string.diagnostics_health_network),
-                            primaryText = state.networkSsid,
-                            secondaryText = state.tunnelState,
-                            isHealthy = state.isTunnelOnline,
-                            modifier = Modifier.weight(1f),
-                        )
-                        HealthTile(
-                            title = stringResource(R.string.diagnostics_health_storage),
-                            primaryText = state.storageUsed,
-                            secondaryText = state.storageFree,
-                            isHealthy = true,
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            HealthTile(
+                                title = stringResource(R.string.diagnostics_health_network),
+                                primaryText = state.networkSsid,
+                                secondaryText = state.tunnelState,
+                                isHealthy = state.isTunnelOnline,
+                                modifier = Modifier.weight(1f),
+                            )
+                            HealthTile(
+                                title = stringResource(R.string.diagnostics_health_storage),
+                                primaryText = state.storageUsed,
+                                secondaryText = state.storageFree,
+                                isHealthy = true,
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        HealthTile(
-                            title = stringResource(R.string.diagnostics_health_camera),
-                            primaryText = state.cameraStatus,
-                            secondaryText = if (state.isCameraOnline) "4x AVM Akışı Aktif" else "Kamera Servisi Bekliyor",
-                            isHealthy = state.isCameraOnline,
-                            onClick = onCameraProbeClick,
-                            modifier = Modifier.weight(1f),
-                        )
-                        HealthTile(
-                            title = stringResource(R.string.diagnostics_health_battery),
-                            primaryText = state.batterySoh,
-                            secondaryText = if (state.isBatteryReviewNeeded) "İnceleme Gerekli" else "BMS Dengeli",
-                            isHealthy = state.isBatteryGood,
-                            onClick = onBatteryHealthClick,
-                            onLongClick = onBatteryLongClick,
-                            modifier = Modifier.weight(1f),
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            HealthTile(
+                                title = stringResource(R.string.diagnostics_health_camera),
+                                primaryText = state.cameraStatus,
+                                secondaryText = if (state.isCameraOnline) "4x AVM Akışı Aktif" else "Kamera Servisi Bekliyor",
+                                isHealthy = state.isCameraOnline,
+                                onClick = onCameraProbeClick,
+                                modifier = Modifier.weight(1f),
+                            )
+                            HealthTile(
+                                title = stringResource(R.string.diagnostics_health_battery),
+                                primaryText = state.batterySoh,
+                                secondaryText = if (state.isBatteryReviewNeeded) "İnceleme Gerekli" else "BMS Dengeli",
+                                isHealthy = state.isBatteryGood,
+                                onClick = onBatteryHealthClick,
+                                onLongClick = onBatteryLongClick,
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(2.dp))
@@ -777,7 +782,10 @@ private fun HealthTile(
     onLongClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
-    OverdriveCard(modifier = modifier) {
+    OverdriveCard(
+        modifier = modifier,
+        contentPadding = 0.dp
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -789,8 +797,8 @@ private fun HealthTile(
                         )
                     } else Modifier
                 )
-                .padding(10.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+                .padding(horizontal = 8.dp, vertical = 6.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -836,7 +844,8 @@ private fun ToolCard(
     modifier: Modifier = Modifier,
 ) {
     OverdriveCard(
-        modifier = modifier
+        modifier = modifier,
+        contentPadding = 0.dp
     ) {
         Column(
             modifier = Modifier
@@ -845,7 +854,7 @@ private fun ToolCard(
                     onClick = onClick,
                     onLongClick = { onLongClick?.invoke() }
                 )
-                .padding(10.dp),
+                .padding(horizontal = 10.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Row(
