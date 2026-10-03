@@ -34,7 +34,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -116,6 +118,16 @@ fun DashboardScreen(
 ) {
     val scrollState = rememberScrollState()
 
+    // Smoothly scroll down when remote access card is expanded so its content is fully visible
+    LaunchedEffect(remoteState.isExpanded) {
+        if (remoteState.isExpanded) {
+            delay(100)
+            scrollState.animateScrollTo(scrollState.maxValue)
+            delay(150)
+            scrollState.animateScrollTo(scrollState.maxValue)
+        }
+    }
+
     Surface(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
@@ -128,7 +140,7 @@ fun DashboardScreen(
                     start = 16.dp,
                     end = 16.dp,
                     top = 8.dp,
-                    bottom = 8.dp,
+                    bottom = 80.dp,
                 ),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -191,6 +203,9 @@ fun DashboardScreen(
                     RecentActivityCard(activityState = uiState.activity)
                 }
             }
+
+            // Bottom clearance spacer for automotive dock & insets
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
