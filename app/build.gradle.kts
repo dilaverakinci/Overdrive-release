@@ -670,3 +670,12 @@ dependencies {
     testImplementation(files(bydautoStubsJar.flatMap { it.archiveFile }))
 }
 
+tasks.register<Exec>("publishRelease") {
+    group = "publishing"
+    description = "Derlenmis APK'yi GitHub Releases alanina betteroverdrive.apk olarak yukler."
+    dependsOn("assembleDebug")
+    workingDir = rootDir
+    commandLine("powershell.exe", "-ExecutionPolicy", "Bypass", "-File", "${rootDir}/publish_release.ps1", "-SkipBuild")
+}
+
+
