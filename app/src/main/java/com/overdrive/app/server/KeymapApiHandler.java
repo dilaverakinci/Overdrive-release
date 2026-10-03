@@ -253,6 +253,12 @@ public final class KeymapApiHandler {
             return 0;
         }
 
+        if (isEmulator()) {
+            // Emulators do not run the BYD hardware accessibility service; never force-kill on emulator!
+            watchdogTickSettled = true;
+            return 0;
+        }
+
         boolean precondition = isAccessibilityServiceEnabled();
         if (!precondition) {
             // Listed-but-master-off, or not listed at all. Cheap, non-disruptive
@@ -318,6 +324,14 @@ public final class KeymapApiHandler {
      * watchdog thread.
      */
     private static void forceRestartAppForA11y() {
+        if (isEmulator()) {
+            logger.info("Keymap a11y watchdog: running in emulator; force-restart suppressed");
+            return;
+        }
+        if (isAppInForeground()) {
+            logger.warn("Keymap a11y watchdog: app is currently in foreground; force-restart suppressed to avoid closing user UI");
+            return;
+        }
         String script =
                 "am force-stop " + APP_PACKAGE + "; " +
                 "sleep 3; " +
@@ -343,6 +357,38 @@ public final class KeymapApiHandler {
         } catch (Throwable t) {
             logger.warn("Keymap a11y watchdog: force-restart failed: " + t.getMessage());
         }
+    }
+
+    public static boolean isEmulator() {
+        String hardware = android.os.Build.HARDWARE != null ? android.os.Build.HARDWARE.toLowerCase() : "";
+        String product = android.os.Build.PRODUCT != null ? android.os.Build.PRODUCT.toLowerCase() : "";
+        String fingerprint = android.os.Build.FINGERPRINT != null ? android.os.Build.FINGERPRINT.toLowerCase() : "";
+        String model = android.os.Build.MODEL != null ? android.os.Build.MODEL.toLowerCase() : "";
+        return hardware.contains("ranchu")
+                || hardware.contains("goldfish")
+                || product.contains("sdk")
+                || product.contains("emulator")
+                || product.contains("google_sdk")
+                || model.contains("sdk")
+                || model.contains("emulator")
+                || fingerprint.startsWith("generic")
+                || fingerprint.contains("sdk_gphone");
+    }
+
+    private static boolean isAppInForeground() {
+        try {
+            Process p = new ProcessBuilder("sh", "-c", "dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'").start();
+            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.contains(APP_PACKAGE)) {
+                    p.destroy();
+                    return true;
+                }
+            }
+            p.waitFor(1, java.util.concurrent.TimeUnit.SECONDS);
+        } catch (Throwable ignored) {}
+        return false;
     }
 
     public static boolean handle(String method, String path, String body, OutputStream out) throws Exception {

@@ -110,11 +110,12 @@ fun VideoPlayerScreen(
     var controlsVisible by remember { mutableStateOf(true) }
     var isBuffering by remember { mutableStateOf(true) }
     var showSpeedMenu by remember { mutableStateOf(false) }
+    var lastInteractionTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
 
-    // Auto-hide controls after 3.5 seconds
-    LaunchedEffect(controlsVisible, isPlaying) {
+    // Auto-hide controls after 4 seconds of inactivity
+    LaunchedEffect(controlsVisible, isPlaying, lastInteractionTime) {
         if (controlsVisible && isPlaying) {
-            delay(3500)
+            delay(4000)
             controlsVisible = false
         }
     }
@@ -152,7 +153,12 @@ fun VideoPlayerScreen(
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
-                onClick = { controlsVisible = !controlsVisible }
+                onClick = {
+                    controlsVisible = !controlsVisible
+                    if (controlsVisible) {
+                        lastInteractionTime = System.currentTimeMillis()
+                    }
+                }
             )
     ) {
         // 1. Hardware Video Texture
@@ -160,8 +166,30 @@ fun VideoPlayerScreen(
             factory = { context ->
                 ZoomableVideoView(context).apply {
                     videoViewRef = this
+                    if (currentPath.contains("dvr_") || currentPath.contains("dashcam")) {
+                        setLayout(ZoomableVideoView.Layout.DASHCAM)
+                    } else {
+                        setLayout(ZoomableVideoView.Layout.STANDARD)
+                    }
                     setVideoURI(uri)
                     setQuadrant(selectedQuadrant, false)
+
+                    // Single tap toggles chrome controls
+                    setOnClickListener {
+                        controlsVisible = !controlsVisible
+                        if (controlsVisible) {
+                            lastInteractionTime = System.currentTimeMillis()
+                        }
+                    }
+
+                    // Double tap zooms into quadrant or resets to full mosaic
+                    setOnDoubleTapListener { target ->
+                        selectedQuadrant = target
+                        setQuadrant(target, true)
+                        controlsVisible = true
+                        lastInteractionTime = System.currentTimeMillis()
+                    }
+
                     setOnPreparedListener { mp ->
                         mediaPlayerRef = mp
                         isBuffering = false
@@ -191,6 +219,9 @@ fun VideoPlayerScreen(
             },
             update = { vv ->
                 videoViewRef = vv
+                if (vv.getQuadrant() != selectedQuadrant) {
+                    vv.setQuadrant(selectedQuadrant, true)
+                }
             },
             modifier = Modifier.fillMaxSize()
         )
@@ -225,6 +256,11 @@ fun VideoPlayerScreen(
                             Brush.verticalGradient(
                                 colors = listOf(Color.Black.copy(alpha = 0.85f), Color.Transparent)
                             )
+                        )
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = { lastInteractionTime = System.currentTimeMillis() }
                         )
                         .padding(horizontal = 16.dp, vertical = 12.dp)
                 ) {
@@ -388,55 +424,31 @@ fun VideoPlayerScreen(
                                 colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.9f))
                             )
                         )
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = { lastInteractionTime = System.currentTimeMillis() }
+                        )
                         .padding(horizontal = 20.dp, vertical = 14.dp)
                 ) {
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        // 1. Quadrant Camera Selector Pills (4 Kamera / Tek Kadran)
+                        // 1. Quadrant Camera Selector (2x2 Grid Affordance)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Surface(
-                                shape = RoundedCornerShape(10.dp),
-                                color = Color.Black.copy(alpha = 0.65f),
-                                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(4.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                ) {
-                                    val quadrants = listOf(
-                                        ZoomableVideoView.Quadrant.ALL to "Tümü (Mozaik)",
-                                        ZoomableVideoView.Quadrant.FRONT to "Ön",
-                                        ZoomableVideoView.Quadrant.REAR to "Arka",
-                                        ZoomableVideoView.Quadrant.LEFT to "Sol",
-                                        ZoomableVideoView.Quadrant.RIGHT to "Sağ"
-                                    )
-                                    quadrants.forEach { (quad, label) ->
-                                        val isSelected = selectedQuadrant == quad
-                                        Surface(
-                                            onClick = {
-                                                selectedQuadrant = quad
-                                                videoViewRef?.setQuadrant(quad, true)
-                                            },
-                                            shape = RoundedCornerShape(6.dp),
-                                            color = if (isSelected) OverdriveTheme.colors.primaryContainer else Color.Transparent
-                                        ) {
-                                            Text(
-                                                text = label,
-                                                style = MaterialTheme.typography.labelSmall,
-                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                                color = if (isSelected) OverdriveTheme.colors.onPrimaryContainer else Color.White,
-                                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                                            )
-                                        }
-                                    }
+                            VideoQuadrantSelector(
+                                selectedQuadrant = selectedQuadrant,
+                                onQuadrantSelected = { quad ->
+                                    selectedQuadrant = quad
+                                    videoViewRef?.setQuadrant(quad, true)
+                                    lastInteractionTime = System.currentTimeMillis()
                                 }
-                            }
+                            )
                         }
 
                         // 2. Timeline Scrubber & Times

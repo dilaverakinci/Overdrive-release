@@ -193,6 +193,10 @@ public final class SocCutoffMonitor {
      * head-unit's resources cleanly before our own exit.
      */
     private static void performShutdown(double finalSoc) {
+        if (isEmulator()) {
+            logger.warn("performShutdown: SoC=" + finalSoc + "% on emulator — suppressing voluntary shutdown");
+            return;
+        }
         logger.warn("performShutdown: SoC=" + finalSoc + "% — beginning voluntary exit");
 
         // 1. Stop the V2 monitor's wake-lock + handler.
@@ -353,7 +357,19 @@ public final class SocCutoffMonitor {
         return DEFAULT_CUTOFF_PERCENT;
     }
 
-    // resolveDevice(...) by collector-field is intentionally absent —
-    // process-local resolve via appContext is what works in any daemon
-    // process (see BatteryVoltageMonitorV2 for the same comment).
+    public static boolean isEmulator() {
+        String hardware = android.os.Build.HARDWARE != null ? android.os.Build.HARDWARE.toLowerCase() : "";
+        String product = android.os.Build.PRODUCT != null ? android.os.Build.PRODUCT.toLowerCase() : "";
+        String fingerprint = android.os.Build.FINGERPRINT != null ? android.os.Build.FINGERPRINT.toLowerCase() : "";
+        String model = android.os.Build.MODEL != null ? android.os.Build.MODEL.toLowerCase() : "";
+        return hardware.contains("ranchu")
+                || hardware.contains("goldfish")
+                || product.contains("sdk")
+                || product.contains("emulator")
+                || product.contains("google_sdk")
+                || model.contains("sdk")
+                || model.contains("emulator")
+                || fingerprint.startsWith("generic")
+                || fingerprint.contains("sdk_gphone");
+    }
 }

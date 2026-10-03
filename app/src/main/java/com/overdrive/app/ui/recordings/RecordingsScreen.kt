@@ -95,6 +95,7 @@ import com.overdrive.app.R
 import com.overdrive.app.ui.component.OverdriveDialog
 import com.overdrive.app.ui.model.RecordingFile
 import com.overdrive.app.ui.theme.LocalOverdriveColors
+import com.overdrive.app.ui.player.VideoQuadrantSelector
 import com.overdrive.app.ui.view.ZoomableVideoView
 import kotlinx.coroutines.delay
 import java.util.Locale
@@ -1152,6 +1153,17 @@ private fun VideoPlayerStage(
                 modifier = Modifier.fillMaxSize()
             )
 
+            // Floating 2x2 Grid Quadrant Selector at Top-End
+            VideoQuadrantSelector(
+                selectedQuadrant = selectedQuadrant,
+                onQuadrantSelected = { quad ->
+                    onQuadrantSelected(quad)
+                    videoViewRef?.setQuadrant(quad, true)
+                },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
+            )
 
             // Transport Control Overlay (Bottom Overlay)
             Column(
