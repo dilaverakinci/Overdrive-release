@@ -1750,8 +1750,8 @@
             }
         };
 
-        // Camera-first entry: ALL is selected before the stream starts.
-        BYD.stream.currentViewMode = 0;
+        // Camera-first entry: FRONT (1) is selected before the stream starts for fast, instant loading.
+        BYD.stream.currentViewMode = 1;
         
         BYD.stream.selectCamera = async function(mode, allowToggle = false) {
             // Invalidate every older route response, including a DVR
@@ -1861,6 +1861,7 @@
             };
             
             this.currentViewMode = mode;
+            try { localStorage.setItem('overdrive_active_camera', mode); } catch(e){}
 
             // Helper: switch view mode + revert UI on backend rejection. The
             // backend returns {success:false, error} when the requested
@@ -2305,7 +2306,9 @@
             BYD.qualityMenu.init();
             if (!BYD.stream.autoStartRequested) {
                 BYD.stream.autoStartRequested = true;
-                await BYD.stream.selectCamera(0, false);
+                const savedMode = parseInt(localStorage.getItem('overdrive_active_camera') || '1', 10);
+                const targetMode = (!isNaN(savedMode) && savedMode >= 1 && savedMode <= 6) ? savedMode : 1;
+                await BYD.stream.selectCamera(targetMode, false);
             }
         });
 

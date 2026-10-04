@@ -132,6 +132,10 @@ public class VehicleDataMonitor {
         } catch (Exception e) { return null; }
     }
 
+    public BydVehicleData getVehicleData() {
+        return getVd();
+    }
+
     /** One stable charging publication: the exact vehicle snapshot used to derive its state. */
     public static final class ChargingSnapshot {
         private final BydVehicleData vehicleData;

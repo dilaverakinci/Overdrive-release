@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.util.Locale
 import java.util.zip.GZIPInputStream
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -32,10 +33,16 @@ object TripTelemetryLoader {
                         searchDirs.add(dir)
                     }
                 }
+                sm.tripJournalDir?.let { journal ->
+                    if (!searchDirs.any { it.absolutePath == journal.absolutePath }) {
+                        searchDirs.add(journal)
+                    }
+                }
             }
         } catch (_: Throwable) {}
 
         listOf(
+            File("/data/local/tmp/overdrive_trip_journal"),
             File("/storage/0000-0000/Overdrive/trips"),
             File("/storage/emulated/0/Overdrive/trips"),
             File("/sdcard/Overdrive/trips"),
@@ -78,7 +85,7 @@ object TripTelemetryLoader {
     }
 
     /**
-     * Load all trips, preferring device files and falling back to assets.
+     * Load all trips, preferring device files and falling back to assets and daemon DB.
      */
     @Synchronized
     fun loadTrips(context: Context): List<TripUiItem> {
@@ -113,6 +120,34 @@ object TripTelemetryLoader {
             }
         }
 
+        // Query background daemon /api/trips to load any DB trips not yet on disk or in journal
+        try {
+            val url = java.net.URL("http://127.0.0.1:8080/api/trips?days=30&limit=50")
+            val conn = url.openConnection() as java.net.HttpURLConnection
+            conn.connectTimeout = 1200
+            conn.readTimeout = 1200
+            if (conn.responseCode == 200) {
+                val text = conn.inputStream.bufferedReader().use { it.readText() }
+                val json = JSONObject(text)
+                val tripsArr = json.optJSONArray("trips")
+                if (tripsArr != null) {
+                    for (i in 0 until tripsArr.length()) {
+                        val tObj = tripsArr.optJSONObject(i) ?: continue
+                        val tripId = tObj.optLong("id", 0L)
+                        if (tripId > 0 && !deletedSet.contains(tripId.toString()) && !seenTripIds.contains(tripId)) {
+                            parseTripFromDaemonJson(tObj)?.let {
+                                seenTripIds.add(tripId)
+                                trips.add(it)
+                            }
+                        }
+                    }
+                }
+            }
+            conn.disconnect()
+        } catch (_: Throwable) {
+            // Daemon not running or starting up
+        }
+
         // Fallback or complete with bundled APK assets if not deleted
         val assetNames = listOf("100.jsonl.gz", "99.jsonl.gz", "98.jsonl.gz", "66.jsonl.gz")
         assetNames.forEach { name ->
@@ -136,6 +171,39 @@ object TripTelemetryLoader {
         isLoaded = true
 
         return cachedTrips
+    }
+
+    private fun parseTripFromDaemonJson(obj: JSONObject): TripUiItem? {
+        val id = obj.optLong("id", 0L)
+        if (id <= 0) return null
+        val startMs = obj.optLong("startTime", System.currentTimeMillis())
+        val endMs = obj.optLong("endTime", startMs)
+        val distKm = obj.optDouble("distanceKm", 0.0).toFloat()
+        val durationSec = obj.optLong("durationSeconds", 0L)
+        val durationMins = if (durationSec > 0) (durationSec / 60).toInt().coerceAtLeast(1) else 1
+        val avgSpeed = obj.optDouble("avgSpeedKmh", 0.0).toFloat()
+        val maxSpeed = obj.optDouble("maxSpeedKmh", 0.0).toInt()
+        val socStart = obj.optDouble("socStart", 0.0).toInt()
+        val socEnd = obj.optDouble("socEnd", 0.0).toInt()
+        val energyUsed = obj.optDouble("consumedKwh", 0.0).toFloat()
+        val eff = obj.optDouble("efficiencyKwhPer100Km", 0.0).toFloat()
+        val cost = obj.optDouble("electricCost", 0.0)
+        val costFormatted = if (cost > 0) String.format(Locale.US, "₺%.1f", cost) else null
+
+        return TripUiItem(
+            id = id,
+            startTimeMs = startMs,
+            endTimeMs = endMs,
+            distanceKm = distKm,
+            durationMinutes = durationMins,
+            avgSpeedKmh = avgSpeed,
+            maxSpeedKmh = maxSpeed,
+            socStart = socStart,
+            socEnd = socEnd,
+            energyUsedKwh = energyUsed,
+            efficiencyKwhPer100Km = eff,
+            tripCostFormatted = costFormatted
+        )
     }
 
     /**

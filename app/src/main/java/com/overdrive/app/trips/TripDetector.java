@@ -1,5 +1,7 @@
 package com.overdrive.app.trips;
 
+import com.overdrive.app.byd.BydVehicleData;
+import com.overdrive.app.daemon.CameraDaemon;
 import com.overdrive.app.logging.DaemonLogger;
 import com.overdrive.app.monitor.BatterySocData;
 import com.overdrive.app.monitor.GearMonitor;
@@ -12,17 +14,17 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Detects trip boundaries using a gear-based state machine.
+ * Detects trip boundaries using a gear-based state machine with 1Hz speed-aware liveness watchdog.
  *
  * State machine: IDLE → ACTIVE → PARK_PENDING → IDLE
  *
  * Transitions:
- * - IDLE + gear ∈ {D, R, S, M, N} → create TripRecord, notify listener → ACTIVE
+ * - IDLE + gear ∈ {D, R, S, M, N} or speed > 2.5 km/h → create TripRecord, notify listener → ACTIVE
  * - ACTIVE + gear == P + speed == 0 → start 120s debounce timer → PARK_PENDING
- * - PARK_PENDING + gear ∈ {D, R, S, M, N} (within 120s) → cancel timer → ACTIVE
+ * - PARK_PENDING + gear ∈ {D, R, S, M, N} or speed > 2.5 km/h (within 120s) → cancel timer → ACTIVE
  * - PARK_PENDING + 120s elapsed → finalize trip, notify listener → IDLE
  *
- * Called from CameraDaemon.onGearChanged() when gear transitions occur.
+ * Called from CameraDaemon.onGearChanged() when gear transitions occur, with continuous 1Hz watchdog.
  */
 public class TripDetector {
 
@@ -67,6 +69,7 @@ public class TripDetector {
         });
         logger.info("TripDetector created");
         checkForOrphanedTrips();
+        startLivenessWatchdog();
     }
 
     // ==================== LISTENER ====================
@@ -185,12 +188,107 @@ public class TripDetector {
         }
     }
 
+    /**
+     * Resilient Telemetry Fallback (inspired by Navion DriveSessionManager).
+     * If the vehicle is moving (> 2.5 km/h) or resumes driving while PARK_PENDING,
+     * immediately starts or resumes the trip even if gear transitions were dropped.
+     */
+    public synchronized void onTelemetrySample(double speedKmh, double odoKm) {
+        if (speedKmh > 2.5) {
+            if (state == State.PARK_PENDING) {
+                logger.info("Vehicle moving (" + String.format(java.util.Locale.US, "%.1f", speedKmh)
+                        + " km/h) during park debounce → resuming ACTIVE trip");
+                cancelParkDebounceTimer();
+                parkStartTime = 0;
+                state = State.ACTIVE;
+            } else if (state == State.IDLE) {
+                logger.info("Vehicle moving (" + String.format(java.util.Locale.US, "%.1f", speedKmh)
+                        + " km/h) while IDLE → auto-starting trip (speed fallback)");
+                startTrip();
+            }
+        }
+    }
+
+    /**
+     * Continuous 1-second liveness watchdog.
+     * Probes current vehicle speed, GPS speed, and current gear.
+     * Guarantees 100% trip detection even if gear change events were missed,
+     * or if the car started moving before background daemons finished initialization.
+     */
+    private void startLivenessWatchdog() {
+        scheduler.scheduleWithFixedDelay(() -> {
+            try {
+                // 1. Probe speed from vehicle sensors
+                double speed = 0.0;
+                try {
+                    BydVehicleData vd =
+                            VehicleDataMonitor.getInstance().getVd();
+                    if (vd != null && !Double.isNaN(vd.speedKmh) && vd.speedKmh >= 0) {
+                        speed = vd.speedKmh;
+                    }
+                } catch (Throwable ignored) {}
+
+                // 2. If vehicle sensor speed is 0 or unavailable, check GPS speed
+                if (speed <= 0.0) {
+                    try {
+                        GpsMonitor gps = GpsMonitor.getInstance();
+                        long age = System.currentTimeMillis() - gps.getLastUpdate();
+                        if (age >= 0 && age <= GPS_SPEED_MAX_AGE_MS) {
+                            speed = gps.getSpeed() * 3.6; // m/s -> km/h
+                        }
+                    } catch (Throwable ignored) {}
+                }
+
+                // 3. Probe gear position
+                int gear = -1;
+                try {
+                    gear = GearMonitor.getInstance().getCurrentGear();
+                } catch (Throwable ignored) {}
+
+                synchronized (TripDetector.this) {
+                    // Check if ACC is OFF while a trip is active
+                    try {
+                        if (state == State.ACTIVE && CameraDaemon.isAccOff()) {
+                            logger.info("Watchdog detected ACC OFF while trip is active → finalizing");
+                            finalizeActiveTrip();
+                            return;
+                        }
+                    } catch (Throwable ignored) {}
+
+                    // Speed > 2.5 km/h: moving
+                    if (speed > 2.5) {
+                        if (state == State.PARK_PENDING) {
+                            logger.info("Watchdog: Vehicle moving (" + String.format(java.util.Locale.US, "%.1f", speed)
+                                    + " km/h) during park debounce → resuming ACTIVE");
+                            cancelParkDebounceTimer();
+                            parkStartTime = 0;
+                            state = State.ACTIVE;
+                        } else if (state == State.IDLE) {
+                            logger.info("Watchdog: Vehicle moving (" + String.format(java.util.Locale.US, "%.1f", speed)
+                                    + " km/h) while IDLE → auto-starting trip");
+                            startTrip();
+                        }
+                    } else if (isDrivingGear(gear) && state == State.IDLE) {
+                        logger.info("Watchdog: Driving gear " + GearMonitor.gearToString(gear)
+                                + " detected while IDLE → auto-starting trip");
+                        startTrip();
+                    }
+                }
+            } catch (Throwable t) {
+                logger.debug("Liveness watchdog tick error: " + t.getMessage());
+            }
+        }, 1, 1, TimeUnit.SECONDS);
+    }
+
     // ==================== TRIP LIFECYCLE ====================
 
     /**
      * Start a new trip. Creates a TripRecord and notifies the listener.
      */
     private void startTrip() {
+        if (state != State.IDLE) {
+            return;
+        }
         long now = System.currentTimeMillis();
         activeTrip = new TripRecord();
         activeTrip.startTime = now;

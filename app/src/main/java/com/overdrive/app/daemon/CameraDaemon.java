@@ -4086,6 +4086,15 @@ public class CameraDaemon {
                 // is recovered by the ACC-ON gear probe in onAccOn(), and by
                 // GearMonitor's next notification.
                 tripAnalyticsManager = manager;
+                try {
+                    boolean accIsOff = isAccOff();
+                    if (!accIsOff) {
+                        log("Trip Analytics published while car awake — probing gear & trip start");
+                        manager.onAccOn();
+                    }
+                } catch (Throwable probeError) {
+                    log("Trip Analytics initial ACC probe error: " + probeError.getMessage());
+                }
                 return true;
             } catch (Exception e) {
                 log("Trip Analytics publication failed: "
@@ -7743,6 +7752,15 @@ public class CameraDaemon {
         } catch (Throwable failure) {
             log("Trip Analytics ACC " + (accIsOff ? "OFF" : "ON")
                     + " error: " + failure.getMessage());
+        }
+    }
+
+    /**
+     * Check if vehicle ACC is currently known to be OFF.
+     */
+    public static boolean isAccOff() {
+        synchronized (parkTerminateLock) {
+            return latestAccIsOff != null && latestAccIsOff.booleanValue();
         }
     }
 

@@ -65,7 +65,7 @@ enum class StreamConnectionState {
 }
 
 data class LiveViewUiState(
-    val activeCamera: LiveCameraMode = LiveCameraMode.ALL,
+    val activeCamera: LiveCameraMode = LiveCameraMode.FRONT,
     val selectedQuality: StreamQuality = StreamQuality.MEDIUM,
     val connectionState: StreamConnectionState = StreamConnectionState.LIVE,
     val isRecording: Boolean = true,

@@ -12,6 +12,15 @@ import androidx.fragment.app.Fragment
 import com.overdrive.app.ui.component.OverdriveComposeContainer
 import com.overdrive.app.ui.theme.OverdriveTheme
 
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
 /**
  * 100% Jetpack Compose Native Fragment for Trips and Driving Analytics.
  * Directly replaces legacy WebViewFragment for /trips.
@@ -101,6 +110,33 @@ class TripsComposeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        loadRealTrips()
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                while (isActive) {
+                    delay(4000)
+                    context?.let { ctx ->
+                        val loaded = withContext(Dispatchers.IO) {
+                            TripTelemetryLoader.refreshTrips(ctx)
+                        }
+                        if (isActive && loaded.isNotEmpty()) {
+                            val currentFilter = uiState.filter
+                            val currentSelected = uiState.selectedTripForDetail
+                            val currentTable = uiState.isTableView
+                            uiState = TripsUiState.fromTrips(loaded, isTableView = currentTable).copy(
+                                filter = currentFilter,
+                                selectedTripForDetail = currentSelected?.let { sel -> loaded.firstOrNull { it.id == sel.id } ?: sel }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
         loadRealTrips()
     }
 

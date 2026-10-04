@@ -148,6 +148,15 @@ public class TripAnalyticsManager {
         }
     }
 
+    /**
+     * Forward telemetry sample to TripDetector for speed-based fallback and trip recovery.
+     */
+    public void onTelemetrySample(double speedKmh, double odoKm) {
+        if (enabled && detector != null) {
+            detector.onTelemetrySample(speedKmh, odoKm);
+        }
+    }
+
     // ==================== ACC LIFECYCLE ====================
 
     /**

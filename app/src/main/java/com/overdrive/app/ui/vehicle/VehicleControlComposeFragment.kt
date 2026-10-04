@@ -32,6 +32,7 @@ import java.net.HttpURLConnection
 import java.util.Locale
 import java.util.concurrent.Executors
 import kotlin.math.abs
+import com.overdrive.app.telemetry.VehiclePowerEstimator
 
 /**
  * 100% Jetpack Compose Native Fragment for Vehicle Control & Live Cockpit.
@@ -608,9 +609,8 @@ class VehicleControlComposeFragment : Fragment() {
                 launch {
                     RepositoryProvider.powertrainRepository.powertrainState.collect { pt ->
                         uiState = uiState.copy(
-                            powertrain = VehiclePowertrainUiState(
-                                speedKmh = pt.speedKmh,
-                                powerKw = if (kotlin.math.abs(pt.enginePowerKw) > 0.01) pt.enginePowerKw else uiState.powertrain.powerKw,
+                            powertrain = uiState.powertrain.copy(
+                                speedKmh = if (pt.speedKmh >= 0) pt.speedKmh else uiState.powertrain.speedKmh,
                                 gear = if (pt.gear != com.overdrive.app.domain.model.Gear.UNKNOWN) pt.gear else uiState.powertrain.gear,
                                 operationMode = pt.operationMode
                             )
@@ -619,13 +619,6 @@ class VehicleControlComposeFragment : Fragment() {
                 }
                 launch {
                     RepositoryProvider.batteryRepository.batteryState.collect { bat ->
-                        val power = if (bat.isCharging && bat.chargingPowerKw > 0) {
-                            -bat.chargingPowerKw
-                        } else if (kotlin.math.abs(bat.hvBatteryPowerKw) > 0.01) {
-                            bat.hvBatteryPowerKw
-                        } else {
-                            uiState.powertrain.powerKw
-                        }
                         uiState = uiState.copy(
                             battery = VehicleBatteryUiState(
                                 socPercent = bat.socPercent.toInt().coerceIn(0, 100),
@@ -636,8 +629,7 @@ class VehicleControlComposeFragment : Fragment() {
                                 isCharging = bat.isCharging,
                                 chargingPowerKw = bat.chargingPowerKw,
                                 voltage12v = if (bat.voltage12v > 0) bat.voltage12v else 12.8
-                            ),
-                            powertrain = if (kotlin.math.abs(power) > 0.01) uiState.powertrain.copy(powerKw = power) else uiState.powertrain
+                            )
                         )
                     }
                 }
@@ -665,7 +657,14 @@ class VehicleControlComposeFragment : Fragment() {
                 val d = collector.data
                 if (d != null) {
                     val spd = collector.readCurrentSpeedKmh()
-                    val speedVal = if (!spd.isNaN() && spd >= 0) spd else (if (!d.speedKmh.isNaN()) d.speedKmh else 0.0)
+                    val rawSpeed = if (!spd.isNaN() && spd >= 0) spd else (if (!d.speedKmh.isNaN()) d.speedKmh else 0.0)
+                    // Hız göstergesi için mikro titreşim (deadband) filtresi: 0.25 km/s altındaki CAN dalgalanmalarını filtrele
+                    val speedVal = if (abs(rawSpeed - uiState.powertrain.speedKmh) < 0.25 && rawSpeed > 0.0) {
+                        uiState.powertrain.speedKmh
+                    } else {
+                        rawSpeed
+                    }
+
                     val g = com.overdrive.app.recording.RecordingModeManager.gearToString(d.gearMode)
                     val gearVal = when (g?.uppercase(Locale.ROOT)) {
                         "P" -> Gear.P
@@ -684,25 +683,32 @@ class VehicleControlComposeFragment : Fragment() {
                         0 -> OperationMode.NORMAL
                         else -> uiState.powertrain.operationMode
                     }
-                    var pKw = 0.0
-                    val isCharging = (d.chargingGunState == 1 || d.chargingState == 1) || (!d.chargingPowerKw.isNaN() && d.chargingPowerKw > 0.1)
-                    if (isCharging && !d.chargingPowerKw.isNaN() && d.chargingPowerKw > 0.1) {
-                        pKw = -d.chargingPowerKw
-                    } else if (!d.hvBatteryPowerKw.isNaN() && kotlin.math.abs(d.hvBatteryPowerKw) > 0.01) {
-                        pKw = d.hvBatteryPowerKw
-                    } else if (!d.hvPackVoltage.isNaN() && !d.hvPackCurrentAmps.isNaN() && d.hvPackVoltage > 50) {
-                        pKw = (d.hvPackVoltage * d.hvPackCurrentAmps) / 1000.0
-                    } else if (!d.enginePowerKw.isNaN() && kotlin.math.abs(d.enginePowerKw) > 0.01) {
-                        pKw = d.enginePowerKw
-                    }
+
                     val accelVal = if (d.accelPercent != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE) d.accelPercent else uiState.powertrain.accelPedalPercent
                     val brakeVal = if (d.brakePercent != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE) d.brakePercent else uiState.powertrain.brakePedalPercent
+                    val isCharging = (d.chargingGunState == 1 || d.chargingState == 1) || (!d.chargingPowerKw.isNaN() && d.chargingPowerKw > 0.1)
+                    val chgKw = if (!d.chargingPowerKw.isNaN()) d.chargingPowerKw else 0.0
+
+                    // 3-Katmanlı Güç Tahmin Motoru (Sıfır Hız Rejen Filtresi & Fizik Modeli Dahil)
+                    val targetPowerKw = VehiclePowerEstimator.calculateLivePowerKw(
+                        context = context,
+                        speedKmh = speedVal,
+                        gear = gearVal,
+                        accelPercent = accelVal,
+                        brakePercent = brakeVal,
+                        isAcOn = uiState.climate.isAcOn,
+                        fanLevel = uiState.climate.fanLevel,
+                        isCharging = isCharging,
+                        chargingPowerKw = chgKw,
+                        deltaTimeSec = 0.1
+                    )
+                    val smoothedPower = VehiclePowerEstimator.smoothPowerForDisplay(targetPowerKw, uiState.powertrain.powerKw)
 
                     uiState = uiState.copy(
                         powertrain = uiState.powertrain.copy(
                             speedKmh = speedVal,
                             gear = gearVal,
-                            powerKw = pKw,
+                            powerKw = smoothedPower,
                             operationMode = opModeVal,
                             accelPedalPercent = accelVal,
                             brakePedalPercent = brakeVal
@@ -851,17 +857,50 @@ class VehicleControlComposeFragment : Fragment() {
         val newIsCharging = bat?.optBoolean("isCharging", uiState.battery.isCharging) ?: uiState.battery.isCharging
         val newChargingKw = bat?.optDouble("chargingPowerKw", uiState.battery.chargingPowerKw)?.takeIf { it >= 0 } ?: uiState.battery.chargingPowerKw
         val newRealisticRange = bat?.optInt("realisticRangeKm", uiState.battery.realisticRangeKm)?.takeIf { it > 0 } ?: newRangeKm
-        val newAvg50Km = if (bat != null && bat.has("avg50KmKwh")) bat.optDouble("avg50KmKwh", 0.0) else uiState.battery.avg50KmKwh
-        val newAvgLifetime = if (bat != null && bat.has("avgLifetimeKwh")) bat.optDouble("avgLifetimeKwh", 0.0) else uiState.battery.avgLifetimeKwh
-        val newSinceLastChargeKm = if (bat != null && bat.has("sinceLastChargeKm")) bat.optDouble("sinceLastChargeKm", 0.0) else uiState.battery.sinceLastChargeKm
-        val newSinceLastChargeAvg = if (bat != null && bat.has("sinceLastChargeAvgKwh")) bat.optDouble("sinceLastChargeAvgKwh", 0.0) else uiState.battery.sinceLastChargeAvgKwh
-        val newActiveTripKm = if (bat != null && bat.has("activeTripKm")) bat.optDouble("activeTripKm", 0.0) else uiState.battery.activeTripKm
-        val newActiveTripMinutes = if (bat != null && bat.has("activeTripMinutes")) bat.optInt("activeTripMinutes", 0) else uiState.battery.activeTripMinutes
-        val newRegenKwh = if (bat != null && bat.has("regenKwh")) bat.optDouble("regenKwh", 0.0) else uiState.battery.regenKwh
+        val newAvg50Km = if (bat != null && bat.has("avg50KmKwh")) {
+            val v = bat.optDouble("avg50KmKwh", 0.0)
+            if (v > 0.0) v else uiState.battery.avg50KmKwh
+        } else uiState.battery.avg50KmKwh
+
+        val newAvgLifetime = if (bat != null && bat.has("avgLifetimeKwh")) {
+            val v = bat.optDouble("avgLifetimeKwh", 0.0)
+            if (v > 0.0) v else uiState.battery.avgLifetimeKwh
+        } else uiState.battery.avgLifetimeKwh
+
+        val newSinceLastChargeKm = if (bat != null && bat.has("sinceLastChargeKm")) {
+            val v = bat.optDouble("sinceLastChargeKm", 0.0)
+            if (v > 0.0) v else uiState.battery.sinceLastChargeKm
+        } else uiState.battery.sinceLastChargeKm
+
+        val newSinceLastChargeAvg = if (bat != null && bat.has("sinceLastChargeAvgKwh")) {
+            val v = bat.optDouble("sinceLastChargeAvgKwh", 0.0)
+            if (v > 0.0) v else uiState.battery.sinceLastChargeAvgKwh
+        } else uiState.battery.sinceLastChargeAvgKwh
+
+        val newActiveTripKm = if (bat != null && bat.has("activeTripKm")) {
+            val v = bat.optDouble("activeTripKm", 0.0)
+            if (v > 0.0) v else uiState.battery.activeTripKm
+        } else uiState.battery.activeTripKm
+
+        val newActiveTripMinutes = if (bat != null && bat.has("activeTripMinutes")) {
+            val v = bat.optInt("activeTripMinutes", 0)
+            if (v > 0) v else uiState.battery.activeTripMinutes
+        } else uiState.battery.activeTripMinutes
+
+        val newRegenKwh = if (bat != null && bat.has("regenKwh")) {
+            val v = bat.optDouble("regenKwh", 0.0)
+            if (v > 0.0) v else uiState.battery.regenKwh
+        } else uiState.battery.regenKwh
 
         // Powertrain Telemetry
         val pt = json.optJSONObject("powertrain")
-        val newSpeedKmh = pt?.optDouble("speedKmh", uiState.powertrain.speedKmh)?.takeIf { it >= 0 } ?: uiState.powertrain.speedKmh
+        val rawSpeedKmh = pt?.optDouble("speedKmh", uiState.powertrain.speedKmh)?.takeIf { it >= 0 } ?: uiState.powertrain.speedKmh
+        val newSpeedKmh = if (abs(rawSpeedKmh - uiState.powertrain.speedKmh) < 0.25 && rawSpeedKmh > 0.0) {
+            uiState.powertrain.speedKmh
+        } else {
+            rawSpeedKmh
+        }
+
         val gearStr = pt?.optString("gear")
         val newGear = when (gearStr?.uppercase(Locale.ROOT)) {
             "P" -> Gear.P
@@ -882,16 +921,23 @@ class VehicleControlComposeFragment : Fragment() {
             else -> uiState.powertrain.operationMode
         }
 
-        // Live Power Estimation / Extraction
-        var rawPowerKw = pt?.optDouble("powerKw", uiState.powertrain.powerKw) ?: uiState.powertrain.powerKw
         val accel = pt?.optInt("accelPercent", uiState.powertrain.accelPedalPercent) ?: uiState.powertrain.accelPedalPercent
         val brake = pt?.optInt("brakePercent", uiState.powertrain.brakePedalPercent) ?: uiState.powertrain.brakePedalPercent
 
-        if (newIsCharging && newChargingKw > 0) {
-            rawPowerKw = -newChargingKw
-        } else if (abs(rawPowerKw) <= 0.05 && (newSpeedKmh > 1.5 || newGear != Gear.P)) {
-            rawPowerKw = estimateLivePowerKw(newSpeedKmh, newGear, accel, brake, acOn)
-        }
+        // Live Power Estimation / Extraction (Doğrulanmış 3 Katmanlı Motor & Sıfır Hız Filtresi)
+        val targetPowerKw = VehiclePowerEstimator.calculateLivePowerKw(
+            context = context,
+            speedKmh = newSpeedKmh,
+            gear = newGear,
+            accelPercent = accel,
+            brakePercent = brake,
+            isAcOn = acOn,
+            fanLevel = fan,
+            isCharging = newIsCharging,
+            chargingPowerKw = newChargingKw,
+            deltaTimeSec = 0.1
+        )
+        val smoothedPower = VehiclePowerEstimator.smoothPowerForDisplay(targetPowerKw, uiState.powertrain.powerKw)
 
         val tpmsNormal = listOfNotNull(newTyresState.flPsi, newTyresState.frPsi, newTyresState.rlPsi, newTyresState.rrPsi)
             .let { list -> list.isEmpty() || list.all { it in 28f..48f } }
@@ -922,7 +968,7 @@ class VehicleControlComposeFragment : Fragment() {
             powertrain = uiState.powertrain.copy(
                 speedKmh = newSpeedKmh,
                 gear = newGear,
-                powerKw = rawPowerKw,
+                powerKw = smoothedPower,
                 operationMode = newOpMode,
                 accelPedalPercent = accel,
                 brakePedalPercent = brake
@@ -956,41 +1002,18 @@ class VehicleControlComposeFragment : Fragment() {
         brakePercent: Int,
         isAcOn: Boolean
     ): Double {
-        val auxKw = if (isAcOn) 1.8 else 0.35
-        if (gear == Gear.P || gear == Gear.N || speedKmh <= 1.5) {
-            return auxKw
-        }
-        if (gear == Gear.D || gear == Gear.R || gear == Gear.S || gear == Gear.M) {
-            if (accelPercent > 0) {
-                val ratio = accelPercent / 100.0
-                val cruisingKw = 2.8 + (speedKmh * 0.16)
-                val accelDemandKw = (ratio * 20.0) + (Math.pow(ratio, 1.85) * 160.0)
-                val drivingKw = if (ratio <= 0.25) {
-                    (cruisingKw * (0.65 + 1.2 * ratio)) + (ratio * 16.0)
-                } else {
-                    (cruisingKw * 0.9) + accelDemandKw
-                }
-                return Math.max(1.0, Math.round((drivingKw + auxKw) * 10.0) / 10.0)
-            } else if (brakePercent > 0) {
-                if (speedKmh <= 3.0) return auxKw
-                val taper = ((speedKmh - 3.0) / 7.0).coerceIn(0.0, 1.0)
-                val speedFactor = Math.min(1.0, speedKmh / 65.0) * taper
-                val baseRegen = (2.8 + (speedFactor * 5.5)) * taper
-                val brakeRatio = brakePercent / 100.0
-                val maxRegen = 35.0
-                val brakeRegen = Math.pow(brakeRatio, 0.9) * maxRegen * taper
-                val grossRegen = Math.min(50.0, baseRegen + brakeRegen)
-                val netRegen = -(grossRegen - (auxKw * 0.5))
-                return Math.min(-0.2, Math.round(netRegen * 10.0) / 10.0)
-            } else if (speedKmh > 3.0) {
-                val taper = ((speedKmh - 3.0) / 7.0).coerceIn(0.0, 1.0)
-                val speedFactor = Math.min(1.0, speedKmh / 65.0) * taper
-                val coastingRegen = (2.5 + (speedFactor * 5.0)) * taper
-                val netRegen = -(coastingRegen - (auxKw * 0.5))
-                return Math.min(-0.2, Math.round(netRegen * 10.0) / 10.0)
-            }
-        }
-        return auxKw
+        return VehiclePowerEstimator.calculateLivePowerKw(
+            context = context,
+            speedKmh = speedKmh,
+            gear = gear,
+            accelPercent = accelPercent,
+            brakePercent = brakePercent,
+            isAcOn = isAcOn,
+            fanLevel = uiState.climate.fanLevel,
+            isCharging = uiState.battery.isCharging,
+            chargingPowerKw = uiState.battery.chargingPowerKw,
+            deltaTimeSec = 0.1
+        )
     }
 
     private fun executeCommand(

@@ -679,11 +679,25 @@ private fun LiveCameraViewport(
         """.trimIndent()
     }
 
+    val startCameraJs = remember(state.activeCamera.id) {
+        """
+        (function() {
+            var targetMode = ${state.activeCamera.id};
+            try { localStorage.setItem('overdrive_active_camera', targetMode); } catch(e){}
+            function tryStart(retries) {
+                if (window.BYD && window.BYD.stream && typeof window.BYD.stream.selectCamera === 'function') {
+                    window.BYD.stream.selectCamera(targetMode, false);
+                } else if (retries > 0) {
+                    setTimeout(function() { tryStart(retries - 1); }, 150);
+                }
+            }
+            tryStart(20);
+        })();
+        """.trimIndent()
+    }
+
     LaunchedEffect(state.activeCamera) {
-        webViewRef?.evaluateJavascript(
-            "if (window.BYD && window.BYD.stream && window.BYD.stream.selectCamera) { window.BYD.stream.selectCamera(${state.activeCamera.id}, false); }",
-            null
-        )
+        webViewRef?.evaluateJavascript(startCameraJs, null)
     }
 
     LaunchedEffect(state.selectedQuality) {
@@ -728,10 +742,7 @@ private fun LiveCameraViewport(
                             view?.evaluateJavascript(hideRailCssJs) {
                                 view.visibility = android.view.View.VISIBLE
                                 isWebViewReady = true
-                                view.evaluateJavascript(
-                                    "if (window.BYD && window.BYD.stream && window.BYD.stream.selectCamera) { window.BYD.stream.selectCamera(${state.activeCamera.id}, false); }",
-                                    null
-                                )
+                                view.evaluateJavascript(startCameraJs, null)
                             }
                         }
                     }

@@ -29,11 +29,14 @@ class LiveViewViewModel(application: Application) : AndroidViewModel(application
         // Load selected vehicle model
         loadVehicleModel()
 
-        // Restore last desired view mode if previously selected
+        // Restore last desired view mode if previously selected, defaulting to FRONT for instant single-camera stream
         val lastModeId = StreamingApiHandler.getLastDesiredViewMode()
-        if (lastModeId in 0..6) {
-            _uiState.update { it.copy(activeCamera = LiveCameraMode.fromId(lastModeId)) }
+        val initialMode = if (lastModeId in 1..6) {
+            LiveCameraMode.fromId(lastModeId)
+        } else {
+            LiveCameraMode.FRONT
         }
+        _uiState.update { it.copy(activeCamera = initialMode) }
 
         // Feature-gate OEM Dashcam on car diagram
         val hasOem = try {
@@ -51,8 +54,9 @@ class LiveViewViewModel(application: Application) : AndroidViewModel(application
             }
         }
 
-        // Fetch streaming status & quality from backend
+        // Fetch streaming status & quality from backend, and start streaming initial camera immediately
         viewModelScope.launch {
+            selectCamera(initialMode)
             fetchInitialStatus()
         }
     }
