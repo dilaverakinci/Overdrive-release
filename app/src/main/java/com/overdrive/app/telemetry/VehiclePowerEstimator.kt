@@ -231,11 +231,14 @@ object VehiclePowerEstimator {
      * Göstergenin titremesini ve sıçramasını önler.
      */
     fun smoothPowerForDisplay(targetPowerKw: Double, currentDisplayPowerKw: Double): Double {
-        if (abs(targetPowerKw - currentDisplayPowerKw) < 0.15) {
-            return currentDisplayPowerKw
+        // Zero-Speed / Stop Guard: When target power is non-negative (stopped or accelerating),
+        // snap out of negative regen immediately so the green bar doesn't linger while stationary.
+        val adjustedCurrent = if (targetPowerKw >= 0.0 && currentDisplayPowerKw < 0.0) 0.0 else currentDisplayPowerKw
+        if (abs(targetPowerKw - adjustedCurrent) < 0.15) {
+            return adjustedCurrent
         }
         val alpha = 0.35 // %35 yeni değer, %65 geçmiş değer ile yumuşak geçiş
-        val smoothed = (alpha * targetPowerKw) + ((1.0 - alpha) * currentDisplayPowerKw)
+        val smoothed = (alpha * targetPowerKw) + ((1.0 - alpha) * adjustedCurrent)
         return round(smoothed * 10.0) / 10.0
     }
 }

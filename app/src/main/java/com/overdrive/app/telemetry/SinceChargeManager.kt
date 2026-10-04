@@ -202,6 +202,7 @@ class SinceChargeManager private constructor() {
         val curSoc = if (soc > 0) soc else 50.0
         val usableKwh = (curSoc / 100.0) * packCap
         cachedRealisticRangeKm = Math.round((usableKwh * 100.0) / cachedSinceLastChargeAvgKwh).toInt()
+        activeTripRegenKwh = 0.0
 
         persistBaseline()
         logger.info("User reset since-charge baseline successfully: odo=$baselineOdometerKm, elecCon=$baselineTotalElecConKwh, soc=$baselineSoc")
@@ -335,4 +336,22 @@ class SinceChargeManager private constructor() {
 
     @Synchronized
     fun getRealisticRangeKm(): Int = cachedRealisticRangeKm
+
+    private var activeTripRegenKwh: Double = 0.0
+    private var activeTripId: Long = 0L
+
+    @Synchronized
+    fun trackActiveTripRegen(powerKw: Double, deltaTimeSec: Double, tripId: Long) {
+        if (tripId != activeTripId && tripId > 0L) {
+            activeTripId = tripId
+            activeTripRegenKwh = 0.0
+        }
+        if (powerKw < -0.05 && deltaTimeSec > 0.0) {
+            val recovered = (kotlin.math.abs(powerKw) * deltaTimeSec) / 3600.0
+            activeTripRegenKwh += recovered
+        }
+    }
+
+    @Synchronized
+    fun getActiveTripRegenKwh(): Double = Math.round(activeTripRegenKwh * 100.0) / 100.0
 }

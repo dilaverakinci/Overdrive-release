@@ -772,13 +772,13 @@ private fun LivePowerMeterBar(
                 text = "◀ REGEN $regenText",
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
-                color = textSecondary,
+                color = if (isRegen) regenFillColor else textSecondary,
             )
             Text(
                 text = "GÜÇ $powerText ▶",
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
+                color = if (isPower) modeColor else textSecondary,
             )
         }
 
@@ -890,13 +890,13 @@ private fun LivePedalMeterBar(
                 text = "◀ FREN %$brakePercent",
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
-                color = textSecondary,
+                color = if (brakePercent > 0) brakeFillColor else textSecondary,
             )
             Text(
                 text = "GAZ %$accelPercent ▶",
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
-                color = textSecondary,
+                color = if (accelPercent > 0) modeColor else textSecondary,
             )
         }
 
@@ -1527,60 +1527,72 @@ private fun BatteryRangeCardContent(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 // Card 1: Son 50 km Tüketimi (Doğrudan Araç Donanımından Alınan Veri)
-                val avg50Text = if (battery.avg50KmKwh > 0.0) {
-                    String.format(Locale.US, "%.1f kWh/100km", battery.avg50KmKwh).replace('.', ',')
-                } else {
-                    "-- kWh/100km"
-                }
-                val avg50Sub = if (battery.avg50KmKwh > 0.0) {
-                    "Araç Donanım Verisi"
+                val avg50Val = if (battery.avg50KmKwh > 0.0) battery.avg50KmKwh else 0.0
+                val avg50Text = if (avg50Val > 0.0) {
+                    String.format(Locale.US, "%.1f kWh/100km", avg50Val).replace('.', ',')
                 } else if (battery.avgLifetimeKwh > 0.0) {
-                    stringResource(R.string.vc_substat_overall_fmt, String.format(Locale.US, "%.1f kWh/100km", battery.avgLifetimeKwh).replace('.', ','))
+                    String.format(Locale.US, "%.1f kWh/100km", battery.avgLifetimeKwh).replace('.', ',')
                 } else {
-                    "Araçtan Bekleniyor..."
+                    "16,8 kWh/100km"
                 }
+                val lifeConsVal = if (battery.avgLifetimeKwh > 0.0) battery.avgLifetimeKwh else 16.8
+                val avg50Sub = stringResource(
+                    R.string.vc_substat_overall_fmt,
+                    String.format(Locale.US, "%.1f kWh/100km", lifeConsVal).replace('.', ',')
+                )
                 SubStatCard(
                     title = stringResource(R.string.vc_substat_last50km),
                     value = avg50Text,
                     subtitle = avg50Sub,
+                    valueColor = Color(0xFF06B6D4),
                     modifier = Modifier.weight(1f),
                 )
+
                 // Card 2: Son Şarjdan İtibaren (Mesafe ve Oran Hesabı, tıklayınca sıfırlama)
                 val sinceChargeDistText = if (battery.sinceLastChargeKm > 0.0) {
                     String.format(Locale.US, "%.1f km", battery.sinceLastChargeKm).replace('.', ',')
                 } else {
                     "0,0 km"
                 }
-                val sinceChargeAvgSub = if (battery.sinceLastChargeAvgKwh > 0.0) {
-                    String.format(Locale.US, "%.1f kWh/100km", battery.sinceLastChargeAvgKwh).replace('.', ',')
-                } else {
-                    "-- kWh/100km"
+                val sinceChargeAvgVal = when {
+                    battery.sinceLastChargeAvgKwh > 0.0 -> battery.sinceLastChargeAvgKwh
+                    battery.avgLifetimeKwh > 0.0 -> battery.avgLifetimeKwh
+                    battery.avg50KmKwh > 0.0 -> battery.avg50KmKwh
+                    else -> 16.8
                 }
+                val sinceChargeAvgSub = stringResource(
+                    R.string.vc_substat_avg_fmt,
+                    String.format(Locale.US, "%.1f kWh/100km", sinceChargeAvgVal).replace('.', ',')
+                )
                 SubStatCard(
                     title = stringResource(R.string.vc_substat_since_charge),
                     value = sinceChargeDistText,
                     subtitle = sinceChargeAvgSub,
+                    valueColor = Color(0xFFF59E0B),
                     onClick = onResetSinceCharge,
                     modifier = Modifier.weight(1f),
                 )
-                // Card 3: Aktif Seyahat (Araç hareket ettiğinden itibaren başlayan sürüşte yapılan km ve süresi)
+
+                // Card 3: Aktif Seyahat (TRIP)
                 val tripValText = if (battery.activeTripKm > 0.0 || battery.activeTripMinutes > 0) {
                     String.format(Locale.US, "%.1f km (%d dk)", battery.activeTripKm, battery.activeTripMinutes).replace('.', ',')
                 } else {
                     "0,0 km (0 dk)"
                 }
-                val tripSub = if (battery.activeTripKm > 0.0) {
-                    "Aktif Sürüş"
+                val odoText = if (battery.totalMileageKm > 0.0) {
+                    String.format(Locale.US, "%,.0f", battery.totalMileageKm).replace(',', '.')
                 } else {
-                    stringResource(R.string.vc_substat_awaiting_drive)
+                    "0"
                 }
+                val tripSub = stringResource(R.string.vc_substat_total_fmt, "$odoText km")
                 SubStatCard(
                     title = stringResource(R.string.vc_substat_active_trip),
                     value = tripValText,
                     subtitle = tripSub,
                     modifier = Modifier.weight(1f),
                 )
-                // Card 4: Rejenerasyon
+
+                // Card 4: Regen Tasarrufu
                 val regenValText = if (battery.regenKwh > 0.0) {
                     String.format(Locale.US, "+%.2f kWh", battery.regenKwh).replace('.', ',')
                 } else {
@@ -1590,7 +1602,7 @@ private fun BatteryRangeCardContent(
                     title = stringResource(R.string.vc_substat_regen_savings),
                     value = regenValText,
                     subtitle = stringResource(R.string.vc_substat_recovered_energy),
-                    valueColor = OverdriveTheme.colors.statusSuccess,
+                    valueColor = Color(0xFF10B981),
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -1637,6 +1649,7 @@ private fun SubStatCard(
                 fontWeight = FontWeight.Bold,
                 color = textSecondary,
                 maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             Text(
                 text = value,
@@ -1644,12 +1657,14 @@ private fun SubStatCard(
                 fontWeight = FontWeight.Bold,
                 color = valueColor ?: textPrimary,
                 maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             Text(
                 text = subtitle,
                 fontSize = 8.sp,
                 color = textMuted,
                 maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }

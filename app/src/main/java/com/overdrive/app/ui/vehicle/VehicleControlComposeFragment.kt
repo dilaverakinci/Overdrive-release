@@ -699,8 +699,20 @@ class VehicleControlComposeFragment : Fragment() {
                         else -> uiState.powertrain.operationMode
                     }
 
-                    val accelVal = if (d.accelPercent != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE) d.accelPercent else uiState.powertrain.accelPedalPercent
-                    val brakeVal = if (d.brakePercent != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE) d.brakePercent else uiState.powertrain.brakePedalPercent
+                    val liveAccel = try { collector.readAccelNow() } catch (_: Throwable) { -1 }
+                    val liveBrake = try { collector.readBrakeNow() } catch (_: Throwable) { -1 }
+
+                    val accelVal = when {
+                        liveAccel in 0..100 -> liveAccel
+                        d.accelPercent in 0..100 -> d.accelPercent
+                        else -> 0
+                    }
+
+                    val brakeVal = when {
+                        liveBrake in 0..100 -> liveBrake
+                        d.brakePercent in 0..100 -> d.brakePercent
+                        else -> 0
+                    }
                     val isCharging = (d.chargingGunState == 1 || d.chargingState == 1) || (!d.chargingPowerKw.isNaN() && d.chargingPowerKw > 0.1)
                     val chgKw = if (!d.chargingPowerKw.isNaN()) d.chargingPowerKw else 0.0
 
@@ -736,6 +748,17 @@ class VehicleControlComposeFragment : Fragment() {
                         Math.round(d.avgElecConPer100Km * 10.0) / 10.0
                     } else uiState.battery.avgLifetimeKwh
 
+                    val totalOdo = if (d.totalMileageKm != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE && d.totalMileageKm > 0) {
+                        d.totalMileageKm.toDouble()
+                    } else {
+                        try {
+                            val odo = com.overdrive.app.trips.OdometerReader.getInstance().readOdometerKm()
+                            if (odo > 0) odo else uiState.battery.totalMileageKm
+                        } catch (_: Throwable) {
+                            uiState.battery.totalMileageKm
+                        }
+                    }
+
                     // SinceChargeManager & TripAnalyticsManager
                     val tam = com.overdrive.app.daemon.CameraDaemon.getTripAnalyticsManager()
                     val scm = com.overdrive.app.telemetry.SinceChargeManager.getInstance()
@@ -746,9 +769,15 @@ class VehicleControlComposeFragment : Fragment() {
                     val realisticRangeRaw = scm.getRealisticRangeKm()
                     val realisticRange = if (realisticRangeRaw > 0) realisticRangeRaw else (if (uiState.battery.realisticRangeKm > 0) uiState.battery.realisticRangeKm else newElecRange)
 
-                    val activeTripKm = tam?.activeTrip?.let { Math.round(it.distanceKm * 10.0) / 10.0 } ?: 0.0
-                    val activeTripMinutes = tam?.activeTrip?.let { Math.max(0, it.durationSeconds / 60) } ?: 0
-                    val regenKwh = tam?.activeTrip?.let { at ->
+                    val activeTrip = tam?.activeTrip
+                    val activeTripKm = activeTrip?.let { Math.round(it.distanceKm * 10.0) / 10.0 } ?: 0.0
+                    val activeTripMinutes = activeTrip?.let { Math.max(0, it.durationSeconds / 60) } ?: 0
+
+                    val tripId = activeTrip?.startTime ?: 1L
+                    if (speedVal > 0.5 || gearVal != Gear.P) {
+                        scm.trackActiveTripRegen(smoothedPower, 0.1, tripId)
+                    }
+                    val measuredRegen = activeTrip?.let { at ->
                         if (at.energyPerKm < 0 && at.distanceKm > 0) {
                             Math.round(Math.abs(at.energyPerKm * at.distanceKm) * 100.0) / 100.0
                         } else if (at.elecConStart >= 0 && at.elecConEnd >= at.elecConStart && at.kwhStart > 0 && at.kwhEnd > 0) {
@@ -757,6 +786,7 @@ class VehicleControlComposeFragment : Fragment() {
                             if (grossKwh > netKwh) Math.round((grossKwh - netKwh) * 100.0) / 100.0 else 0.0
                         } else 0.0
                     } ?: 0.0
+                    val regenKwh = maxOf(scm.getActiveTripRegenKwh(), measuredRegen)
 
                     // Tyres (from d.tyrePressure and d.tyreTemperature)
                     val tp = d.tyrePressure
@@ -847,6 +877,7 @@ class VehicleControlComposeFragment : Fragment() {
                             activeTripKm = activeTripKm,
                             activeTripMinutes = activeTripMinutes,
                             regenKwh = regenKwh,
+                            totalMileageKm = totalOdo,
                         ),
                         tyres = updatedTyres,
                         doors = updatedDoors,
@@ -1010,6 +1041,10 @@ class VehicleControlComposeFragment : Fragment() {
             if (v > 0.0) v else uiState.battery.regenKwh
         } else uiState.battery.regenKwh
 
+        val newTotalMileage = if (bat != null && bat.has("totalMileageKm")) {
+            bat.optDouble("totalMileageKm", 0.0)
+        } else uiState.battery.totalMileageKm
+
         // Powertrain Telemetry
         val pt = json.optJSONObject("powertrain")
         val rawSpeedKmh = pt?.optDouble("speedKmh", uiState.powertrain.speedKmh)?.takeIf { it >= 0 } ?: uiState.powertrain.speedKmh
@@ -1108,7 +1143,8 @@ class VehicleControlComposeFragment : Fragment() {
                 sinceLastChargeAvgKwh = newSinceLastChargeAvg,
                 activeTripKm = newActiveTripKm,
                 activeTripMinutes = newActiveTripMinutes,
-                regenKwh = newRegenKwh
+                regenKwh = newRegenKwh,
+                totalMileageKm = newTotalMileage,
             )
         )
     }

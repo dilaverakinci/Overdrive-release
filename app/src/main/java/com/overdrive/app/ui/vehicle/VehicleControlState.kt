@@ -106,6 +106,7 @@ data class VehicleBatteryUiState(
     val activeTripKm: Double = 0.0,
     val activeTripMinutes: Int = 0,
     val regenKwh: Double = 0.0,
+    val totalMileageKm: Double = 0.0,
 )
 
 data class HealthCheckItem(

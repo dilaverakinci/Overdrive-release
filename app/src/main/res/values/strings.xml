@@ -2256,10 +2256,11 @@
     <!-- Vehicle Control Battery SubStats -->
     <string name="vc_substat_last50km">LAST 50 KM AVG</string>
     <string name="vc_substat_since_charge">SINCE LAST CHARGE</string>
-    <string name="vc_substat_active_trip">ACTIVE TRIP</string>
+    <string name="vc_substat_active_trip">ACTIVE TRIP (TRIP)</string>
     <string name="vc_substat_regen_savings">REGEN SAVINGS</string>
     <string name="vc_substat_overall_fmt">Overall: %1$s</string>
     <string name="vc_substat_avg_fmt">Avg: %1$s</string>
+    <string name="vc_substat_total_fmt">Total: %1$s</string>
     <string name="vc_substat_dist_fmt">Dist: %1$s</string>
     <string name="vc_substat_awaiting_drive">Awaiting drive</string>
     <string name="vc_substat_recovered_energy">Recovered Energy</string>

@@ -1149,6 +1149,7 @@ public class VehicleControlApiHandler {
         battery.put("activeTripKm", activeTripKm >= 0 ? activeTripKm : 0.0);
         battery.put("activeTripMinutes", Math.max(0, activeTripMinutes));
         battery.put("regenKwh", regenKwh >= 0 ? regenKwh : 0.0);
+        battery.put("totalMileageKm", data.totalMileageKm != BydVehicleData.UNAVAILABLE ? data.totalMileageKm : 0);
 
         response.put("battery", battery);
 

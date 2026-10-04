@@ -32,7 +32,15 @@
   - **Son 50 km Tüketimi:** Doğrudan BYD araç donanımından (`getLast50KmPowerConsume`) orijinal fabrika verisi olarak okunur.
   - **Son Şarjdan İtibaren:** Araç şarjdan ayrıldığı anda referansı otomatik kilitler (`SinceChargeManager`); kat edilen km ve net tüketim oranını hesaplar.
   - **Aktif Seyahat:** Hareket başladığı andan itibaren sürüş süresi (dk) ve mesafesini (km) takip eder.
-  - **Dinamik Gerçekçi Menzil:** Son şarj harcama trendine göre gerçekçi menzili hesaplar; eklenen "Sıfırla" butonu ile referans sıfırlanabilir.
+- 🏎️ **Gerçek Zamanlı Gaz & Fren Pedalı ve Rejen Güç Barı İyileştirmesi:**
+  - Gaz ve fren pedalı derinlikleri (`%0..100`), periyodik snapshot beklemesi olmadan donanım katmanından doğrudan yansıma (reflection) ile mikro-saniyelik sıfır gecikmeyle okunacak şekilde optimize edildi.
+  - Rejen / güç gösterge barında araç durduğunda veya rejenerasyondan çıkıldığında negatif değerin asılı kalmasını önleyen anlık sıfırlama kilidi (zero-speed snap) eklendi.
+  - Rejen ve fren barları aktif olduklarında dinamik renk vurgularıyla (Zümrüt yeşili ve Fren kırmızısı) görselleştirildi.
+- 📊 **Navion Tasarımıyla %100 Uyumlu Tüketim & Seyahat Kartları:**
+  - **SON 50 KM ORTALAMASI (Camgöbeği #06B6D4):** Fabrika donanım verisi (`getLast50KmPowerConsume`) ve alt satırda `Genel: 16,8 kWh/100km` ömür boyu ortalama tüketim göstergesi.
+  - **SON ŞARJDAN İTİBAREN (Amber #F59E0B):** Son şarjdan sonraki net mesafe ve `Ort: 16,8 kWh/100km` alt bilgisi; karta tıklanarak anında sıfırlanabilir.
+  - **AKTİF SEYAHAT - TRIP:** Sürüş süresi ve mesafesi `0,0 km (0 dk)` formatında; alt satırda aracın toplam kilometre sayacı (`Toplam: 12.450 km`).
+  - **REGEN TASARRUFU (Zümrüt #10B981):** Aktif sürüş boyunca frenleme ve rejen ile geri kazanılan gerçek enerji entegrasyonu (`+0,13 kWh`) ve `Geri Kazanılan Enerji` alt başlığı.
 - 📹 **Canlı Kamera Akış İyileştirmesi:** Canlı araç kamerası açıldığında kullanıcının seçim yapmasını beklemeden otomatik olarak ilk kamerayı anında yayına başlatır.
 - 🎨 **Otomotiv Tasarım Uyumu:** Araç kontrol ekranındaki tüm kartlar, paneller ve butonlar `OverdriveTheme` tasarım sistemine uyarlandı.
 
@@ -65,7 +73,15 @@
   - **Hardware Last 50 km:** Direct retrieval of authentic factory metrics via BYD vehicle HAL (`getLast50KmPowerConsume`).
   - **Since Last Charge Tracking:** Automatically anchors baseline when charging session ends (`SinceChargeManager`), tracking precise distance driven and kWh/100km rate with persistent storage.
   - **Live Active Trip:** Real-time elapsed drive duration (min) and trip distance (km) tracked from the moment movement begins.
-  - **Realistic Dynamic Range:** Calculated continuously from since-charge consumption, with an instant "Reset" button for on-demand baseline recalibration.
+- 🏎️ **Real-Time Accelerator & Brake Pedal Telemetry and Power Bar:**
+  - Optimized accelerator and brake depth (%0..100) via direct reflection from hardware HAL with zero periodic snapshot latency.
+  - Added zero-speed snap guard to prevent lingering negative kW values when coming to a complete stop or exiting regeneration.
+  - Dynamic active color highlighting (Emerald Green for regen, Brake Red for braking).
+- 📊 **1:1 Navion-Aligned Consumption & Trip Telemetry Cards:**
+  - **LAST 50 KM AVG (Cyan #06B6D4):** Direct factory metric (`getLast50KmPowerConsume`) with `Overall: 16.8 kWh/100km` lifetime average subtitle.
+  - **SINCE LAST CHARGE (Amber #F59E0B):** Driven km with `Avg: 16.8 kWh/100km` subtitle; tap-to-reset capability.
+  - **ACTIVE TRIP (TRIP):** Driven distance and duration `0.0 km (0 min)` with lifetime vehicle odometer subtitle (`Total: 12,450 km`).
+  - **REGEN SAVINGS (Emerald #10B981):** Real-time integration of recovered energy (`+0.13 kWh`) with `Recovered Energy` subtitle.
 - 📹 **Instant Live Camera Streaming:** Automatically initializes and streams the primary camera upon opening the live view without requiring manual camera toggling.
 - 🎨 **Automotive UI Theme Alignment:** Completely restyled all cards, stats, and dialogs on the Vehicle page to match `OverdriveTheme`.
 

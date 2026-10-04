@@ -2120,12 +2120,13 @@ Cihaz bu çalışırken bile "internet yok" ve kendi mobil veri simgesini göste
     <string name="vc_window_close_all_sub">0% Kapalı</string>
 
     <!-- Vehicle Control Battery SubStats -->
-    <string name="vc_substat_last50km">SON 50 KM ORTALAMA</string>
+    <string name="vc_substat_last50km">SON 50 KM ORTALAMASI</string>
     <string name="vc_substat_since_charge">SON ŞARJDAN İTİBAREN</string>
     <string name="vc_substat_active_trip">AKTİF SEYAHAT (TRIP)</string>
     <string name="vc_substat_regen_savings">REGEN TASARRUFU</string>
     <string name="vc_substat_overall_fmt">Genel: %1$s</string>
     <string name="vc_substat_avg_fmt">Ort: %1$s</string>
+    <string name="vc_substat_total_fmt">Toplam: %1$s</string>
     <string name="vc_substat_dist_fmt">Mesafe: %1$s</string>
     <string name="vc_substat_awaiting_drive">Sürüş bekleniyor</string>
     <string name="vc_substat_recovered_energy">Geri Kazanılan Enerji</string>
