@@ -53,6 +53,12 @@ class RecordingComposeFragment : Fragment() {
                         onFpsSelected = { fps -> updateCameraKey("targetFps", fps) },
                         onClipDurationSelected = { mins -> updateRecordingKey("segmentDurationMinutes", mins) },
                         onRectifyStrengthChange = { str -> updateRecordingKey("rectifyStrength", str) },
+                        onToggleRectifyPerCamera = { v -> updateRecordingKey("rectifyPerCameraEnabled", v) },
+                        onRectifyStrengthFrontChange = { v -> updateRecordingKey("rectifyStrengthFront", v) },
+                        onRectifyStrengthRightChange = { v -> updateRecordingKey("rectifyStrengthRight", v) },
+                        onRectifyStrengthRearChange = { v -> updateRecordingKey("rectifyStrengthRear", v) },
+                        onRectifyStrengthLeftChange = { v -> updateRecordingKey("rectifyStrengthLeft", v) },
+                        onApplySealionPreset = { applySealionPreset() },
                         onToggleTelemetryOverlay = { v -> updateRecordingTelemetryOverlay(v) },
                         onToggleTelemetryField = { field, add -> toggleTelemetryField(field, add) },
                         onToggleAudioRecording = { v -> updateAudioRecording(v) },
@@ -126,6 +132,11 @@ class RecordingComposeFragment : Fragment() {
                 val fps = cam.optInt("targetFps", 15)
                 val clipMins = rec.optInt("segmentDurationMinutes", 2)
                 val rectify = rec.optInt("rectifyStrength", 0)
+                val rectifyPerCam = rec.optBoolean("rectifyPerCameraEnabled", false)
+                val rectifyFront = rec.optInt("rectifyStrengthFront", 10)
+                val rectifyRight = rec.optInt("rectifyStrengthRight", 50)
+                val rectifyRear = rec.optInt("rectifyStrengthRear", 15)
+                val rectifyLeft = rec.optInt("rectifyStrengthLeft", 50)
                 val telemetry = rec.optBoolean("telemetryOverlayEnabled", true)
 
                 var oemMode = oem.optString("recordingMode", "off")
@@ -240,6 +251,11 @@ class RecordingComposeFragment : Fragment() {
                         targetFps = fps,
                         segmentDurationMinutes = clipMins,
                         rectifyStrength = rectify,
+                        rectifyPerCameraEnabled = rectifyPerCam,
+                        rectifyStrengthFront = rectifyFront,
+                        rectifyStrengthRight = rectifyRight,
+                        rectifyStrengthRear = rectifyRear,
+                        rectifyStrengthLeft = rectifyLeft,
                         telemetryOverlayEnabled = telemetry,
                         oemRecordingMode = oemMode,
                         oemTelemetryOverlay = oemTelem,
@@ -292,6 +308,11 @@ class RecordingComposeFragment : Fragment() {
             "recordingCodec" -> uiState = uiState.copy(recordingCodec = value as String)
             "segmentDurationMinutes" -> uiState = uiState.copy(segmentDurationMinutes = value as Int)
             "rectifyStrength" -> uiState = uiState.copy(rectifyStrength = value as Int)
+            "rectifyPerCameraEnabled" -> uiState = uiState.copy(rectifyPerCameraEnabled = value as Boolean)
+            "rectifyStrengthFront" -> uiState = uiState.copy(rectifyStrengthFront = value as Int)
+            "rectifyStrengthRight" -> uiState = uiState.copy(rectifyStrengthRight = value as Int)
+            "rectifyStrengthRear" -> uiState = uiState.copy(rectifyStrengthRear = value as Int)
+            "rectifyStrengthLeft" -> uiState = uiState.copy(rectifyStrengthLeft = value as Int)
             "telemetryOverlayEnabled" -> uiState = uiState.copy(telemetryOverlayEnabled = value as Boolean)
             "storageType" -> uiState = uiState.copy(storageType = value as String)
             "storageLimitMb" -> uiState = uiState.copy(storageLimitMb = value as Int)
@@ -304,6 +325,28 @@ class RecordingComposeFragment : Fragment() {
             } catch (t: Throwable) {
                 mainHandler.post {
                     Toast.makeText(requireContext(), "Kayıt ayarı kaydedilemedi: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun applySealionPreset() {
+        uiState = uiState.copy(
+            rectifyPerCameraEnabled = true,
+            rectifyStrengthFront = 10,
+            rectifyStrengthRight = 50,
+            rectifyStrengthRear = 15,
+            rectifyStrengthLeft = 50
+        )
+        executor.execute {
+            try {
+                UnifiedConfigManager.setPerCameraRectifyStrengths(10, 50, 15, 50)
+                mainHandler.post {
+                    Toast.makeText(requireContext(), "BYD Sealion 7 / Seal profili uygulandı (Ön: 10%, Yanlar: 50%, Arka: 15%)", Toast.LENGTH_SHORT).show()
+                }
+            } catch (t: Throwable) {
+                mainHandler.post {
+                    Toast.makeText(requireContext(), "Profil uygulanamadı: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }

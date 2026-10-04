@@ -58,6 +58,8 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import com.overdrive.app.ui.component.OverdriveButton
+import com.overdrive.app.ui.component.OverdriveButtonVariant
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -113,6 +115,11 @@ data class RecordingUiState(
     val targetFps: Int = 15, // 10, 15, 20, 25, 30
     val segmentDurationMinutes: Int = 2, // 2, 5, 10
     val rectifyStrength: Int = 0, // 0 - 100
+    val rectifyPerCameraEnabled: Boolean = false,
+    val rectifyStrengthFront: Int = 10,
+    val rectifyStrengthRight: Int = 50,
+    val rectifyStrengthRear: Int = 15,
+    val rectifyStrengthLeft: Int = 50,
     val telemetryOverlayEnabled: Boolean = true,
     val telemetryFields: Set<String> = setOf("speed", "gear", "gasPedal", "brake", "driverBelt", "passengerBelt", "turnSignals", "timestamp", "batteryPercent", "voltage12v", "lowBeam", "highBeam", "location", "vin"),
     val audioRecordingEnabled: Boolean = false,
@@ -173,6 +180,12 @@ fun RecordingScreen(
     onFpsSelected: (Int) -> Unit,
     onClipDurationSelected: (Int) -> Unit,
     onRectifyStrengthChange: (Int) -> Unit,
+    onToggleRectifyPerCamera: (Boolean) -> Unit = {},
+    onRectifyStrengthFrontChange: (Int) -> Unit = {},
+    onRectifyStrengthRightChange: (Int) -> Unit = {},
+    onRectifyStrengthRearChange: (Int) -> Unit = {},
+    onRectifyStrengthLeftChange: (Int) -> Unit = {},
+    onApplySealionPreset: () -> Unit = {},
     onToggleTelemetryOverlay: (Boolean) -> Unit,
     onToggleTelemetryField: (String, Boolean) -> Unit = { _, _ -> },
     onToggleAudioRecording: (Boolean) -> Unit = {},
@@ -283,6 +296,12 @@ fun RecordingScreen(
                         onFpsSelected = onFpsSelected,
                         onClipDurationSelected = onClipDurationSelected,
                         onRectifyStrengthChange = onRectifyStrengthChange,
+                        onToggleRectifyPerCamera = onToggleRectifyPerCamera,
+                        onRectifyStrengthFrontChange = onRectifyStrengthFrontChange,
+                        onRectifyStrengthRightChange = onRectifyStrengthRightChange,
+                        onRectifyStrengthRearChange = onRectifyStrengthRearChange,
+                        onRectifyStrengthLeftChange = onRectifyStrengthLeftChange,
+                        onApplySealionPreset = onApplySealionPreset,
                         onToggleTelemetryOverlay = onToggleTelemetryOverlay,
                         onToggleTelemetryField = onToggleTelemetryField,
                         onToggleAudioRecording = onToggleAudioRecording
@@ -841,6 +860,12 @@ private fun QualityTabContent(
     onFpsSelected: (Int) -> Unit,
     onClipDurationSelected: (Int) -> Unit,
     onRectifyStrengthChange: (Int) -> Unit,
+    onToggleRectifyPerCamera: (Boolean) -> Unit = {},
+    onRectifyStrengthFrontChange: (Int) -> Unit = {},
+    onRectifyStrengthRightChange: (Int) -> Unit = {},
+    onRectifyStrengthRearChange: (Int) -> Unit = {},
+    onRectifyStrengthLeftChange: (Int) -> Unit = {},
+    onApplySealionPreset: () -> Unit = {},
     onToggleTelemetryOverlay: (Boolean) -> Unit,
     onToggleTelemetryField: (String, Boolean) -> Unit,
     onToggleAudioRecording: (Boolean) -> Unit
@@ -1178,45 +1203,124 @@ private fun QualityTabContent(
             icon = Icons.Default.Public
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "Düzeltme Gücü",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = "Kayıtlardaki ve gözetim kliplerindeki artık balıkgözü fıçı eğrisini düzeltir. 0 = kapalı (ham HAL çıkışı). Yüksek değerler çevresel pikselleri içe doğru çeker.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp, bottom = 8.dp)
+                SettingToggleRow(
+                    title = "4 Parça Bağımsız Düzeltme (Ön, Arka, Yan Aynalar)",
+                    subtitle = "Her kameranın kendine has lens bükülmesini ayrı ayrı düzeltir. Ön ve arkayı bozmadan yan aynaları doğrultur.",
+                    checked = state.rectifyPerCameraEnabled,
+                    onCheckedChange = onToggleRectifyPerCamera
                 )
 
-                Text(
-                    text = if (state.rectifyStrength > 0) "${state.rectifyStrength}%" else "Kapalı",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
+                if (state.rectifyPerCameraEnabled) {
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                OverdriveSlider(
-                    value = state.rectifyStrength.toFloat(),
-                    onValueChange = { onRectifyStrengthChange(it.toInt()) },
-                    valueRange = 0f..100f,
-                    colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
-                        activeTrackColor = MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                    // Preset Button for Sealion 7 / Seal
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f))
+                            .clickable { onApplySealionPreset() }
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "BYD Sealion 7 / Seal Optimum Profili",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Text(
+                                text = "Ön: %10, Arka: %15, Sol Ayna: %50, Sağ Ayna: %50",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                            )
+                        }
+                        OverdriveButton(
+                            text = "Uygula",
+                            onClick = onApplySealionPreset,
+                            variant = OverdriveButtonVariant.PRIMARY
+                        )
+                    }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(text = "Kapalı", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(text = "Maks.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    CameraDewarpSlider(
+                        title = "🚗 Ön Kamera (Panjur / Grille)",
+                        subtitle = "Standart açı; aşırı değer orta kısmı esnetir.",
+                        value = state.rectifyStrengthFront,
+                        onValueChange = onRectifyStrengthFrontChange
+                    )
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    CameraDewarpSlider(
+                        title = "🚗 Arka Kamera (Bagaj / Plaka)",
+                        subtitle = "Aşağı açılı; hafif/orta seviye düzeltme önerilir.",
+                        value = state.rectifyStrengthRear,
+                        onValueChange = onRectifyStrengthRearChange
+                    )
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    CameraDewarpSlider(
+                        title = "🪞 Sol Ayna Kamerası (Kör Nokta)",
+                        subtitle = "180°+ ultra geniş balıkgözü lens. Kapı ve yol çizgilerini doğrultur.",
+                        value = state.rectifyStrengthLeft,
+                        onValueChange = onRectifyStrengthLeftChange
+                    )
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    CameraDewarpSlider(
+                        title = "🪞 Sağ Ayna Kamerası (Kör Nokta)",
+                        subtitle = "180°+ ultra geniş balıkgözü lens. Kapı ve yol çizgilerini doğrultur.",
+                        value = state.rectifyStrengthRight,
+                        onValueChange = onRectifyStrengthRightChange
+                    )
+                } else {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Genel Düzeltme Gücü (Tüm Kameralar)",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Tüm 4 kameraya eşit oranda balıkgözü düzeltmesi uygular. 0 = kapalı (ham görüntü).",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp, bottom = 8.dp)
+                    )
+
+                    Text(
+                        text = if (state.rectifyStrength > 0) "${state.rectifyStrength}%" else "Kapalı",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+
+                    OverdriveSlider(
+                        value = state.rectifyStrength.toFloat(),
+                        onValueChange = { onRectifyStrengthChange(it.toInt()) },
+                        valueRange = 0f..100f,
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary,
+                            activeTrackColor = MaterialTheme.colorScheme.primary,
+                            inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = "Kapalı", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(text = "Maks.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
             }
         }
@@ -2098,6 +2202,52 @@ private fun SettingTextFieldRow(
                 focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
                 unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer
             )
+        )
+    }
+}
+
+@Composable
+private fun CameraDewarpSlider(
+    title: String,
+    subtitle: String,
+    value: Int,
+    onValueChange: (Int) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = if (value > 0) "%$value" else "Kapalı",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = if (value > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Text(
+            text = subtitle,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 2.dp, bottom = 4.dp)
+        )
+        OverdriveSlider(
+            value = value.toFloat(),
+            onValueChange = { onValueChange(it.toInt()) },
+            valueRange = 0f..100f,
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.primary,
+                inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+            ),
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }

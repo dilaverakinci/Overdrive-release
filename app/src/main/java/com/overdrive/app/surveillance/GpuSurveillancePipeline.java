@@ -2374,9 +2374,19 @@ public class GpuSurveillancePipeline {
             // We push regardless of layout so a layout flip later picks up
             // the user's setting without a daemon restart.
             try {
-                int rectifyStrength = com.overdrive.app.config
-                    .UnifiedConfigManager.getRectifyStrength();
-                recorder.setRectifyStrength((float) rectifyStrength);
+                boolean perCam = com.overdrive.app.config.UnifiedConfigManager.isRectifyPerCameraEnabled();
+                if (perCam) {
+                    recorder.setPerCameraRectifyStrength(
+                        (float) com.overdrive.app.config.UnifiedConfigManager.getRectifyStrengthFront(),
+                        (float) com.overdrive.app.config.UnifiedConfigManager.getRectifyStrengthRight(),
+                        (float) com.overdrive.app.config.UnifiedConfigManager.getRectifyStrengthRear(),
+                        (float) com.overdrive.app.config.UnifiedConfigManager.getRectifyStrengthLeft()
+                    );
+                } else {
+                    int rectifyStrength = com.overdrive.app.config
+                        .UnifiedConfigManager.getRectifyStrength();
+                    recorder.setRectifyStrength((float) rectifyStrength);
+                }
                 // Push tile aspect (tile_height / tile_width) from the
                 // active profile so the dewarp's radial math runs in true
                 // pixel space. Profile.panoHeight is the per-cam tile
@@ -2424,10 +2434,19 @@ public class GpuSurveillancePipeline {
                 if (!"recording".equals(section)) return;
                 GpuMosaicRecorder activeRecorder = recorder;
                 if (activeRecorder == null) return;
-                int strength = sectionConfig.optInt("rectifyStrength", 0);
-                if (strength < 0) strength = 0;
-                if (strength > 100) strength = 100;
-                activeRecorder.setRectifyStrength((float) strength);
+                boolean perCam = sectionConfig.optBoolean("rectifyPerCameraEnabled", false);
+                if (perCam) {
+                    int front = sectionConfig.optInt("rectifyStrengthFront", 10);
+                    int right = sectionConfig.optInt("rectifyStrengthRight", 50);
+                    int rear  = sectionConfig.optInt("rectifyStrengthRear", 15);
+                    int left  = sectionConfig.optInt("rectifyStrengthLeft", 50);
+                    activeRecorder.setPerCameraRectifyStrength((float) front, (float) right, (float) rear, (float) left);
+                } else {
+                    int strength = sectionConfig.optInt("rectifyStrength", 0);
+                    if (strength < 0) strength = 0;
+                    if (strength > 100) strength = 100;
+                    activeRecorder.setRectifyStrength((float) strength);
+                }
             };
             com.overdrive.app.config.UnifiedConfigManager
                 .addListener(rectifyConfigListener);

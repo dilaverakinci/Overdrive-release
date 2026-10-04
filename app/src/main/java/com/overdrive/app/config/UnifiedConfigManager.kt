@@ -2686,6 +2686,72 @@ object UnifiedConfigManager {
         ))
     }
 
+    /** Whether independent 4-camera dewarp is active instead of global master slider. */
+    @JvmStatic
+    fun isRectifyPerCameraEnabled(): Boolean {
+        return getRecording().optBoolean("rectifyPerCameraEnabled", false)
+    }
+
+    @JvmStatic
+    fun setRectifyPerCameraEnabled(enabled: Boolean): Boolean {
+        return updateValues("recording", mapOf("rectifyPerCameraEnabled" to enabled))
+    }
+
+    @JvmStatic
+    fun getRectifyStrengthFront(): Int {
+        val raw = getRecording().optInt("rectifyStrengthFront", 10)
+        return raw.coerceIn(0, 100)
+    }
+
+    @JvmStatic
+    fun setRectifyStrengthFront(strength: Int): Boolean {
+        return updateValues("recording", mapOf("rectifyStrengthFront" to strength.coerceIn(0, 100)))
+    }
+
+    @JvmStatic
+    fun getRectifyStrengthRight(): Int {
+        val raw = getRecording().optInt("rectifyStrengthRight", 50)
+        return raw.coerceIn(0, 100)
+    }
+
+    @JvmStatic
+    fun setRectifyStrengthRight(strength: Int): Boolean {
+        return updateValues("recording", mapOf("rectifyStrengthRight" to strength.coerceIn(0, 100)))
+    }
+
+    @JvmStatic
+    fun getRectifyStrengthRear(): Int {
+        val raw = getRecording().optInt("rectifyStrengthRear", 15)
+        return raw.coerceIn(0, 100)
+    }
+
+    @JvmStatic
+    fun setRectifyStrengthRear(strength: Int): Boolean {
+        return updateValues("recording", mapOf("rectifyStrengthRear" to strength.coerceIn(0, 100)))
+    }
+
+    @JvmStatic
+    fun getRectifyStrengthLeft(): Int {
+        val raw = getRecording().optInt("rectifyStrengthLeft", 50)
+        return raw.coerceIn(0, 100)
+    }
+
+    @JvmStatic
+    fun setRectifyStrengthLeft(strength: Int): Boolean {
+        return updateValues("recording", mapOf("rectifyStrengthLeft" to strength.coerceIn(0, 100)))
+    }
+
+    @JvmStatic
+    fun setPerCameraRectifyStrengths(front: Int, right: Int, rear: Int, left: Int): Boolean {
+        return updateValues("recording", mapOf(
+            "rectifyPerCameraEnabled" to true,
+            "rectifyStrengthFront" to front.coerceIn(0, 100),
+            "rectifyStrengthRight" to right.coerceIn(0, 100),
+            "rectifyStrengthRear" to rear.coerceIn(0, 100),
+            "rectifyStrengthLeft" to left.coerceIn(0, 100)
+        ))
+    }
+
     /**
      * Shared clip segment length in minutes for BOTH the ACC-on dashcam and
      * ACC-off / OEM surveillance flows. The UI exposes the control in each

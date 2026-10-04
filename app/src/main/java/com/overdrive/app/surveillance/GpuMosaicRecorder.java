@@ -81,17 +81,26 @@ public class GpuMosaicRecorder {
     //
     // Volatile — UI thread writes via the public setter, GL thread reads
     // inside the dirty-flag CAS block in drawFrame.
-    private volatile float rectifyK1 = 0.0f;
-    private volatile float rectifyK2 = 0.0f;
+    private volatile float rectifyFrontK1 = 0.0f;
+    private volatile float rectifyFrontK2 = 0.0f;
+    private volatile float rectifyRightK1 = 0.0f;
+    private volatile float rectifyRightK2 = 0.0f;
+    private volatile float rectifyRearK1  = 0.0f;
+    private volatile float rectifyRearK2  = 0.0f;
+    private volatile float rectifyLeftK1  = 0.0f;
+    private volatile float rectifyLeftK2  = 0.0f;
+
     // Per-cam tile aspect ratio (height/width). Default 0.75 = Seal
     // (1280×960). Pipeline pushes the profile-resolved value via
     // setRectifyAspect on init; volatile because the writer is the camera
     // GL thread (init) and the reader is the encoder GL thread (drawFrame),
     // and there's no enclosing lock between them.
     private volatile float rectifyAspect = 0.75f;
-    private int uRectifyK1Location;
-    private int uRectifyK2Location;
-    private int uRectifyAspectLocation;
+    private int uRectifyFrontLocation = -1;
+    private int uRectifyRightLocation = -1;
+    private int uRectifyRearLocation  = -1;
+    private int uRectifyLeftLocation  = -1;
+    private int uRectifyAspectLocation = -1;
     private int uRecordLayoutLocation;
     // Optional dedicated windshield camera (dashcam top band). uWindshieldTex
     // is bound to GL_TEXTURE2 in drawFrame; uWindshieldReady gates its use.
@@ -641,9 +650,10 @@ public class GpuMosaicRecorder {
         uFlipForRearLocation  = GLES20.glGetUniformLocation(programId, "uFlipForRear");
         uFlipForLeftLocation  = GLES20.glGetUniformLocation(programId, "uFlipForLeft");
         uRedMaskStrengthLocation = GLES20.glGetUniformLocation(programId, "uRedMaskStrength");
-        uApaCenterInsetLocation = GLES20.glGetUniformLocation(programId, "uApaCenterInset");
-        uRectifyK1Location = GLES20.glGetUniformLocation(programId, "uRectifyK1");
-        uRectifyK2Location = GLES20.glGetUniformLocation(programId, "uRectifyK2");
+        uRectifyFrontLocation  = GLES20.glGetUniformLocation(programId, "uRectifyFront");
+        uRectifyRightLocation  = GLES20.glGetUniformLocation(programId, "uRectifyRight");
+        uRectifyRearLocation   = GLES20.glGetUniformLocation(programId, "uRectifyRear");
+        uRectifyLeftLocation   = GLES20.glGetUniformLocation(programId, "uRectifyLeft");
         uRectifyAspectLocation = GLES20.glGetUniformLocation(programId, "uRectifyAspect");
         uRecordLayoutLocation = GLES20.glGetUniformLocation(programId, "uRecordLayout");
         uWindshieldTexLocation = GLES20.glGetUniformLocation(programId, "uWindshieldTex");
@@ -966,11 +976,17 @@ public class GpuMosaicRecorder {
             if (uApaCenterInsetLocation >= 0) {
                 GLES20.glUniform1f(uApaCenterInsetLocation, apaCenterInset);
             }
-            if (uRectifyK1Location >= 0) {
-                GLES20.glUniform1f(uRectifyK1Location, rectifyK1);
+            if (uRectifyFrontLocation >= 0) {
+                GLES20.glUniform2f(uRectifyFrontLocation, rectifyFrontK1, rectifyFrontK2);
             }
-            if (uRectifyK2Location >= 0) {
-                GLES20.glUniform1f(uRectifyK2Location, rectifyK2);
+            if (uRectifyRightLocation >= 0) {
+                GLES20.glUniform2f(uRectifyRightLocation, rectifyRightK1, rectifyRightK2);
+            }
+            if (uRectifyRearLocation >= 0) {
+                GLES20.glUniform2f(uRectifyRearLocation, rectifyRearK1, rectifyRearK2);
+            }
+            if (uRectifyLeftLocation >= 0) {
+                GLES20.glUniform2f(uRectifyLeftLocation, rectifyLeftK1, rectifyLeftK2);
             }
             if (uRectifyAspectLocation >= 0) {
                 GLES20.glUniform1f(uRectifyAspectLocation, rectifyAspect);
@@ -1909,30 +1925,61 @@ public class GpuMosaicRecorder {
      * @param strength 0..100; clamped if outside.
      */
     public void setRectifyStrength(float strength) {
-        float clamped = Math.max(0f, Math.min(100f, strength));
-        float t = clamped / 100f;
-        // 3:1 split favours the primary term so mid-slider values stay
-        // visually similar to the prior single-parameter behaviour; the
-        // r⁴ term only becomes dominant near the corners at high slider
-        // values, which is exactly where the previous model under-
-        // corrected. Combined denominator at the corner (r²=2): up to
-        // 1 + 0.30·2 + 0.10·4 = 2.0 at slider==100 — a 50% radial pull-in
-        // before zoom-to-fill, vs 40% under the old single-parameter
-        // ceiling. Same maximum periphery crop (~32%) but with smoother
-        // corner-region geometry.
-        float k1 = 0.30f * t;
-        float k2 = 0.10f * t;
-        if (Float.compare(k1, this.rectifyK1) == 0
-                && Float.compare(k2, this.rectifyK2) == 0) return;
-        this.rectifyK1 = k1;
-        this.rectifyK2 = k2;
+        setPerCameraRectifyStrength(strength, strength, strength, strength);
+    }
+
+    /**
+     * Sets independent per-camera dewarp strengths (0..100) for Front, Right, Rear, Left.
+     */
+    public void setPerCameraRectifyStrength(float front, float right, float rear, float left) {
+        float fClamped = Math.max(0f, Math.min(100f, front));
+        float rClamped = Math.max(0f, Math.min(100f, right));
+        float bClamped = Math.max(0f, Math.min(100f, rear));
+        float lClamped = Math.max(0f, Math.min(100f, left));
+
+        float fk1 = 0.30f * (fClamped / 100f);
+        float fk2 = 0.10f * (fClamped / 100f);
+
+        float rk1 = 0.30f * (rClamped / 100f);
+        float rk2 = 0.10f * (rClamped / 100f);
+
+        float bk1 = 0.30f * (bClamped / 100f);
+        float bk2 = 0.10f * (bClamped / 100f);
+
+        float lk1 = 0.30f * (lClamped / 100f);
+        float lk2 = 0.10f * (lClamped / 100f);
+
+        if (Float.compare(fk1, this.rectifyFrontK1) == 0 && Float.compare(fk2, this.rectifyFrontK2) == 0
+                && Float.compare(rk1, this.rectifyRightK1) == 0 && Float.compare(rk2, this.rectifyRightK2) == 0
+                && Float.compare(bk1, this.rectifyRearK1) == 0 && Float.compare(bk2, this.rectifyRearK2) == 0
+                && Float.compare(lk1, this.rectifyLeftK1) == 0 && Float.compare(lk2, this.rectifyLeftK2) == 0) {
+            return;
+        }
+
+        this.rectifyFrontK1 = fk1;
+        this.rectifyFrontK2 = fk2;
+        this.rectifyRightK1 = rk1;
+        this.rectifyRightK2 = rk2;
+        this.rectifyRearK1  = bk1;
+        this.rectifyRearK2  = bk2;
+        this.rectifyLeftK1  = lk1;
+        this.rectifyLeftK2  = lk2;
+
         this.uniformsDirty.set(true);
     }
 
-    /** Current primary dewarp coefficient (0.0 = off). */
-    public float getRectifyK1() { return rectifyK1; }
-    /** Current 4th-order dewarp coefficient (0.0 = off). */
-    public float getRectifyK2() { return rectifyK2; }
+    /** Current primary dewarp coefficient for front camera (0.0 = off). */
+    public float getRectifyK1() { return rectifyFrontK1; }
+    /** Current 4th-order dewarp coefficient for front camera (0.0 = off). */
+    public float getRectifyK2() { return rectifyFrontK2; }
+    public float getRectifyFrontK1() { return rectifyFrontK1; }
+    public float getRectifyFrontK2() { return rectifyFrontK2; }
+    public float getRectifyRightK1() { return rectifyRightK1; }
+    public float getRectifyRightK2() { return rectifyRightK2; }
+    public float getRectifyRearK1()  { return rectifyRearK1; }
+    public float getRectifyRearK2()  { return rectifyRearK2; }
+    public float getRectifyLeftK1()  { return rectifyLeftK1; }
+    public float getRectifyLeftK2()  { return rectifyLeftK2; }
 
     /**
      * Sets the per-cam tile aspect ratio (tile_height / tile_width) used
@@ -2149,13 +2196,12 @@ public class GpuMosaicRecorder {
             // on uncalibrated cars where the dealer hasn't calibrated yet.
             "uniform float uRedMaskStrength;\n" +
             "uniform float uApaCenterInset;\n" +
-            // Two-parameter division-model dewarp coefficients. Identity at
-            // (0, 0); positive values straighten residual barrel curvature
-            // in the legacy 4-strip BYD HAL output. k1 is the primary r²
-            // term; k2 is the r⁴ corner-boost term. Only sampled in the
-            // uApaMode==0 branch — see comment near the dewarp block.
-            "uniform float uRectifyK1;\n" +
-            "uniform float uRectifyK2;\n" +
+            // Independent per-camera division-model dewarp uniforms.
+            // Each camera (Front, Right, Rear, Left) has its own (k1, k2) pair.
+            "uniform vec2 uRectifyFront;\n" +
+            "uniform vec2 uRectifyRight;\n" +
+            "uniform vec2 uRectifyRear;\n" +
+            "uniform vec2 uRectifyLeft;\n" +
             // Per-cam tile aspect ratio (height / width). 0.75 on Seal
             // (1280×960), 0.5625 on Tang (1280×720). Used inside the
             // dewarp block so the radial distance is computed in true
@@ -2166,35 +2212,18 @@ public class GpuMosaicRecorder {
             "uniform float uRectifyAspect;\n" +
             "uniform float uRecordLayout;\n" +
             "varying vec2 vTexCoord;\n" +
-            // NOTE: the previous revision of this file had a 4-tap
-            // Catmull-Rom bicubic sampler here, gated on uRectifyK1 > 0.
-            // It saturated the Adreno 610 command queue at 2560×1920 and
-            // pushed the encoder eglSwap into 65-80ms territory; the
-            // shared-EGL-group AiLaneGl pipeline's glClientWaitSync then
-            // crashed on KGSL-reaped fence handles. Reverted to the
-            // single-tap bilinear (the OES sampler's hardware filter)
-            // which has been stable for the entire pre-fisheye history.
-            // The 2-parameter division-model dewarp + aspect correction
-            // are kept; bicubic was a marginal sharpness gain that's not
-            // worth the GPU pressure.
-            // Shared lens dewarp — the "un-fisheye" setting
-            // (recording.rectifyStrength → uRectifyK1/K2). `t` is a per-camera
-            // tile coord in 0..1; returns the dewarped sample coord in 0..1
-            // (clamped). Identity when k1 = k2 = 0 (setting off). The dashcam
-            // 360 slices call this so they honour the setting exactly like the
-            // standard 2x2 branch. NOTE: this mirrors the inline dewarp in the
-            // standard branch below — kept as a separate copy so this (new,
-            // on-device-unverified) helper can't regress the proven standard
-            // path; unify once verified on-device.
-            "vec2 rectifyTile(vec2 t) {\n" +
+            // Shared per-camera lens dewarp. `t` is a per-camera tile coord
+            // in 0..1; `k` is the camera's vec2(k1, k2). Returns dewarped coord.
+            "vec2 rectifyTileWithK(vec2 t, vec2 k) {\n" +
+            "    if (k.x <= 0.0 && k.y <= 0.0) return t;\n" +
             "    vec2 nxy = t * 2.0 - 1.0;\n" +
             "    vec2 nxyAspect = vec2(nxy.x, nxy.y * uRectifyAspect);\n" +
             "    float r2 = dot(nxyAspect, nxyAspect);\n" +
             "    float r4 = r2 * r2;\n" +
-            "    float invDenom = 1.0 / (1.0 + uRectifyK1 * r2 + uRectifyK2 * r4);\n" +
+            "    float invDenom = 1.0 / (1.0 + k.x * r2 + k.y * r4);\n" +
             "    float aspect2 = uRectifyAspect * uRectifyAspect;\n" +
             "    float aspect4 = aspect2 * aspect2;\n" +
-            "    float zoom = 1.0 + uRectifyK1 * aspect2 + uRectifyK2 * aspect4;\n" +
+            "    float zoom = 1.0 + k.x * aspect2 + k.y * aspect4;\n" +
             "    vec2 srcAspect = (nxyAspect * invDenom) * zoom;\n" +
             "    vec2 srcTile = vec2(srcAspect.x, srcAspect.y / uRectifyAspect);\n" +
             "    vec2 camUV = srcTile * 0.5 + 0.5;\n" +
@@ -2225,15 +2254,17 @@ public class GpuMosaicRecorder {
             "        // Pick the producer corner + flip flags for this role.\n" +
             "        vec2 producerCorner = uProducerForFront;\n" +
             "        vec2 flip = uFlipForFront;\n" +
-            "        if (inRight) { producerCorner = uProducerForRight; flip = uFlipForRight; }\n" +
-            "        else if (inRear)  { producerCorner = uProducerForRear;  flip = uFlipForRear;  }\n" +
-            "        else if (inLeft)  { producerCorner = uProducerForLeft;  flip = uFlipForLeft;  }\n" +
+            "        vec2 k = uRectifyFront;\n" +
+            "        if (inRight) { producerCorner = uProducerForRight; flip = uFlipForRight; k = uRectifyRight; }\n" +
+            "        else if (inRear)  { producerCorner = uProducerForRear;  flip = uFlipForRear;  k = uRectifyRear;  }\n" +
+            "        else if (inLeft)  { producerCorner = uProducerForLeft;  flip = uFlipForLeft;  k = uRectifyLeft;  }\n" +
             "        // Apply X/Y flip within the local 0.5-wide window. flip.x>0.5\n" +
             "        // mirrors left-right; flip.y>0.5 mirrors top-bottom.\n" +
             "        vec2 sampledLocal = local;\n" +
             "        if (flip.x > 0.5) sampledLocal.x = 0.5 - sampledLocal.x;\n" +
             "        if (flip.y > 0.5) sampledLocal.y = 0.5 - sampledLocal.y;\n" +
-            "        samplePos = producerCorner + sampledLocal;\n" +
+            "        vec2 dewarpedLocal = rectifyTileWithK(sampledLocal * 2.0, k) * 0.5;\n" +
+            "        samplePos = producerCorner + dewarpedLocal;\n" +
             com.overdrive.app.camera.GlUtil.APA_CENTER_INSET_GLSL +
             "    } else if (uApaMode > 1.5) {\n" +
             "        if (vTexCoord.x < 0.5) {\n" +
@@ -2254,11 +2285,8 @@ public class GpuMosaicRecorder {
             // Reuses the same per-camera 0.25-wide producer columns as the
             // standard 2x2 branch (frontOffset / leftOffset / rearOffset /
             // rightOffset), just rearranged. The 360 slices run through
-            // rectifyTile() so they honour the same lens-dewarp / "un-fisheye"
-            // setting as the standard mosaic. The optional dedicated
-            // windshield camera (top band) is rectilinear, so it is sampled
-            // raw (not dewarped) when present; otherwise the 360 front slice
-            // is the documented graceful fallback.
+            // rectifyTileWithK() so they honour the same lens-dewarp / "un-fisheye"
+            // setting as the standard mosaic.
             "        float split = 0.70;\n" +
             "        if (vTexCoord.y < split) {\n" +
             "            float ly = vTexCoord.y / split;\n" +
@@ -2272,7 +2300,7 @@ public class GpuMosaicRecorder {
             "                gl_FragColor = texture2D(uWindshieldTex, wuv);\n" +
             "                return;\n" +
             "            }\n" +
-            "            vec2 camUV = rectifyTile(vec2(vTexCoord.x, ly));\n" +
+            "            vec2 camUV = rectifyTileWithK(vec2(vTexCoord.x, ly), uRectifyFront);\n" +
             "            samplePos = vec2(frontOffset + camUV.x * 0.25, camUV.y);\n" +
             "        } else {\n" +
             "            float by = (vTexCoord.y - split) / (1.0 - split);\n" +
@@ -2280,78 +2308,36 @@ public class GpuMosaicRecorder {
             "            float cell = floor(bx);\n" +
             "            float lx = bx - cell;\n" +
             "            float off = leftOffset;\n" +
-            "            if (cell > 1.5) off = rightOffset;\n" +
-            "            else if (cell > 0.5) off = rearOffset;\n" +
-            "            vec2 camUV = rectifyTile(vec2(lx, by));\n" +
+            "            vec2 k = uRectifyLeft;\n" +
+            "            if (cell > 1.5) { off = rightOffset; k = uRectifyRight; }\n" +
+            "            else if (cell > 0.5) { off = rearOffset; k = uRectifyRear; }\n" +
+            "            vec2 camUV = rectifyTileWithK(vec2(lx, by), k);\n" +
             "            samplePos = vec2(off + camUV.x * 0.25, camUV.y);\n" +
             "        }\n" +
             "    } else {\n" +
             "        vec2 gridPos = step(0.5, vTexCoord);\n" +
             "        float stripOffsetX;\n" +
+            "        vec2 k;\n" +
             "        if (gridPos.x < 0.5) {\n" +
-            "            stripOffsetX = gridPos.y < 0.5 ? frontOffset : rearOffset;\n" +
+            "            if (gridPos.y < 0.5) {\n" +
+            "                stripOffsetX = frontOffset;\n" +
+            "                k = uRectifyFront;\n" +
+            "            } else {\n" +
+            "                stripOffsetX = rearOffset;\n" +
+            "                k = uRectifyRear;\n" +
+            "            }\n" +
             "        } else {\n" +
-            "            stripOffsetX = gridPos.y < 0.5 ? rightOffset : leftOffset;\n" +
+            "            if (gridPos.y < 0.5) {\n" +
+            "                stripOffsetX = rightOffset;\n" +
+            "                k = uRectifyRight;\n" +
+            "            } else {\n" +
+            "                stripOffsetX = leftOffset;\n" +
+            "                k = uRectifyLeft;\n" +
+            "            }\n" +
             "        }\n" +
-            "        float localX = mod(vTexCoord.x, 0.5) * 0.5;\n" +  // 0..0.25 in producer strip
-            "        float localY = mod(vTexCoord.y, 0.5) * 2.0;\n" +  // 0..1
-            // Two-parameter division-model dewarp:
-            //     samplePos = outputPos / (1 + k1·r² + k2·r⁴)
-            // Applied in per-CAMERA image space (treat the per-cam tile as
-            // a square 0..1 region) so the radial geometry isn't
-            // anisotropically squashed by the strip's 0.25-wide × 1.0-tall
-            // aspect.
-            //
-            // Why two terms: r² alone runs out of corner-correction power
-            // — at high strengths the centre keeps stretching but corners
-            // stop straightening proportionally. r⁴ grows 4× faster than
-            // r² between mid-radius and corner, so it disproportionately
-            // pulls corner samples in without affecting central pixels.
-            //
-            // Zoom-to-fill: post-divide we multiply by (1 + k1 + k2),
-            // which is exactly the corner denominator (r²=2 → 1+2k1+4k2,
-            // wait — that's not quite right; we want the corners of the
-            // rectified output to map to the corners of the source). The
-            // zoom factor is set so the rectified image fills the tile
-            // edge-to-edge instead of leaving a black ring. Trade-off:
-            // some peripheral pixels are cropped out at high slider
-            // values. Identity when k1 = k2 = 0 (zoom = 1, denom = 1, the
-            // formula collapses to samplePos = outputPos).
-            //
-            // Final clamp keeps samplePos strictly inside the camera's
-            // 0.25-wide column of the producer strip — a single-precision
-            // jitter at r² near 0 cannot push us into the neighbouring
-            // quadrant.
-            "        vec2 nxy = vec2(localX / 0.25, localY) * 2.0 - 1.0;\n" + // -1..+1 in tile units
-            // Aspect-correct radial: compute r² in true tile-pixel space
-            // by squashing the y-axis by the tile aspect (height / width
-            // < 1 for landscape). This keeps iso-distortion lines
-            // circular in pixel space; without it vertical content is
-            // under-corrected. Reuse `aspectY` for the inverse on the way
-            // out so the final UV mapping back to the strip is consistent.
-            "        vec2 nxyAspect = vec2(nxy.x, nxy.y * uRectifyAspect);\n" +
-            "        float r2 = dot(nxyAspect, nxyAspect);\n" +
-            "        float r4 = r2 * r2;\n" +
-            "        float invDenom = 1.0 / (1.0 + uRectifyK1 * r2 + uRectifyK2 * r4);\n" +
-            // Zoom factor: pick so the cardinal-axis edge midpoint of
-            // the SHORTER axis (Y on a 4:3 landscape tile) maps exactly
-            // to the source's Y edge. Using the longer-axis edge would
-            // leave a black band on top/bottom; using the corner would
-            // crop too aggressively. Shorter-axis fill is the standard
-            // "fill" projection — outer X content is cropped, content
-            // stretches to fill the full tile in both axes, no black
-            // borders. The Y-edge midpoint is at nxyAspect = (0, aspect)
-            // → r² = aspect², so the matching denominator is
-            // 1 + k1·aspect² + k2·aspect⁴.
-            "        float aspect2 = uRectifyAspect * uRectifyAspect;\n" +
-            "        float aspect4 = aspect2 * aspect2;\n" +
-            "        float zoom = 1.0 + uRectifyK1 * aspect2 + uRectifyK2 * aspect4;\n" +
-            // Apply the dewarp in aspect-squashed space, then invert the
-            // squash so the final UV is back in tile coords.
-            "        vec2 srcAspect = (nxyAspect * invDenom) * zoom;\n" +
-            "        vec2 srcTile = vec2(srcAspect.x, srcAspect.y / uRectifyAspect);\n" +
-            "        vec2 camUV = srcTile * 0.5 + 0.5;\n" +
-            "        camUV = clamp(camUV, vec2(0.0), vec2(1.0));\n" +
+            "        float localX = mod(vTexCoord.x, 0.5) * 0.5;\n" +
+            "        float localY = mod(vTexCoord.y, 0.5) * 2.0;\n" +
+            "        vec2 camUV = rectifyTileWithK(vec2(localX / 0.25, localY), k);\n" +
             "        samplePos = vec2(stripOffsetX + camUV.x * 0.25, camUV.y);\n" +
             "    }\n" +
             "    vec4 src = texture2D(uCameraTex, samplePos);\n" +
