@@ -581,16 +581,24 @@ class VehicleControlComposeFragment : Fragment() {
                     RepositoryProvider.chassisRepository.chassisState.collect { chassis ->
                         if (chassis.tyrePressureFlKpa > 0 || chassis.tyrePressureFrKpa > 0) {
                             val kpaToPsi = 0.1450377f
+                            val flKpa = if (chassis.tyrePressureFlKpa > 0) chassis.tyrePressureFlKpa else null
+                            val frKpa = if (chassis.tyrePressureFrKpa > 0) chassis.tyrePressureFrKpa else null
+                            val rlKpa = if (chassis.tyrePressureRlKpa > 0) chassis.tyrePressureRlKpa else null
+                            val rrKpa = if (chassis.tyrePressureRrKpa > 0) chassis.tyrePressureRrKpa else null
                             uiState = uiState.copy(
                                 tyres = VehicleTyresState(
-                                    flPsi = if (chassis.tyrePressureFlKpa > 0) Math.round(chassis.tyrePressureFlKpa * kpaToPsi * 10f) / 10f else null,
-                                    frPsi = if (chassis.tyrePressureFrKpa > 0) Math.round(chassis.tyrePressureFrKpa * kpaToPsi * 10f) / 10f else null,
-                                    rlPsi = if (chassis.tyrePressureRlKpa > 0) Math.round(chassis.tyrePressureRlKpa * kpaToPsi * 10f) / 10f else null,
-                                    rrPsi = if (chassis.tyrePressureRrKpa > 0) Math.round(chassis.tyrePressureRrKpa * kpaToPsi * 10f) / 10f else null,
-                                    flTemp = if (chassis.tyreTempFlC > 0) chassis.tyreTempFlC else null,
-                                    frTemp = if (chassis.tyreTempFrC > 0) chassis.tyreTempFrC else null,
-                                    rlTemp = if (chassis.tyreTempRlC > 0) chassis.tyreTempRlC else null,
-                                    rrTemp = if (chassis.tyreTempRrC > 0) chassis.tyreTempRrC else null,
+                                    flPsi = flKpa?.let { Math.round(it * kpaToPsi * 10f) / 10f },
+                                    frPsi = frKpa?.let { Math.round(it * kpaToPsi * 10f) / 10f },
+                                    rlPsi = rlKpa?.let { Math.round(it * kpaToPsi * 10f) / 10f },
+                                    rrPsi = rrKpa?.let { Math.round(it * kpaToPsi * 10f) / 10f },
+                                    flTemp = if (chassis.tyreTempFlC > -40) chassis.tyreTempFlC else null,
+                                    frTemp = if (chassis.tyreTempFrC > -40) chassis.tyreTempFrC else null,
+                                    rlTemp = if (chassis.tyreTempRlC > -40) chassis.tyreTempRlC else null,
+                                    rrTemp = if (chassis.tyreTempRrC > -40) chassis.tyreTempRrC else null,
+                                    flKpa = flKpa,
+                                    frKpa = frKpa,
+                                    rlKpa = rlKpa,
+                                    rrKpa = rrKpa,
                                 )
                             )
                         }
@@ -623,15 +631,15 @@ class VehicleControlComposeFragment : Fragment() {
                 launch {
                     RepositoryProvider.batteryRepository.batteryState.collect { bat ->
                         uiState = uiState.copy(
-                            battery = VehicleBatteryUiState(
+                            battery = uiState.battery.copy(
                                 socPercent = bat.socPercent.toInt().coerceIn(0, 100),
                                 elecRangeKm = bat.elecRangeKm,
-                                batteryCapacityKwh = if (bat.remainKwh > 0) Math.round(bat.remainKwh * 10.0) / 10.0 else 71.8,
-                                batteryTempC = if (!bat.avgCellTempC.isNaN()) bat.avgCellTempC.toInt() else 25,
-                                sohPercent = if (bat.sohPercent > 0) bat.sohPercent else 100.0,
+                                batteryCapacityKwh = if (bat.remainKwh > 0) Math.round(bat.remainKwh * 10.0) / 10.0 else uiState.battery.batteryCapacityKwh,
+                                batteryTempC = if (!bat.avgCellTempC.isNaN()) bat.avgCellTempC.toInt() else uiState.battery.batteryTempC,
+                                sohPercent = if (bat.sohPercent > 0) bat.sohPercent else uiState.battery.sohPercent,
                                 isCharging = bat.isCharging,
                                 chargingPowerKw = bat.chargingPowerKw,
-                                voltage12v = if (bat.voltage12v > 0) bat.voltage12v else 12.8
+                                voltage12v = if (bat.voltage12v > 0) bat.voltage12v else uiState.battery.voltage12v
                             )
                         )
                     }
@@ -661,12 +669,6 @@ class VehicleControlComposeFragment : Fragment() {
                 if (d != null) {
                     val spd = collector.readCurrentSpeedKmh()
                     val rawSpeed = if (!spd.isNaN() && spd >= 0) spd else (if (!d.speedKmh.isNaN()) d.speedKmh else 0.0)
-                    // Hız göstergesi için mikro titreşim (deadband) filtresi: 0.25 km/s altındaki CAN dalgalanmalarını filtrele
-                    val speedVal = if (abs(rawSpeed - uiState.powertrain.speedKmh) < 0.25 && rawSpeed > 0.0) {
-                        uiState.powertrain.speedKmh
-                    } else {
-                        rawSpeed
-                    }
 
                     val g = com.overdrive.app.recording.RecordingModeManager.gearToString(d.gearMode)
                     val gearVal = when (g?.uppercase(Locale.ROOT)) {
@@ -678,6 +680,16 @@ class VehicleControlComposeFragment : Fragment() {
                         "S" -> Gear.S
                         else -> uiState.powertrain.gear
                     }
+
+                    // Strict speed deadband:
+                    // Under 1.8 km/h or parked gear (P) -> strictly 0.0 km/h
+                    val speedFiltered = if (rawSpeed < 1.8 || gearVal == Gear.P) 0.0 else rawSpeed
+                    val speedVal = if (abs(speedFiltered - uiState.powertrain.speedKmh) < 0.25 && speedFiltered > 0.0) {
+                        uiState.powertrain.speedKmh
+                    } else {
+                        speedFiltered
+                    }
+
                     val opModeVal = when (d.operationMode) {
                         1 -> OperationMode.NORMAL
                         2 -> OperationMode.ECO
@@ -707,6 +719,108 @@ class VehicleControlComposeFragment : Fragment() {
                     )
                     val smoothedPower = VehiclePowerEstimator.smoothPowerForDisplay(targetPowerKw, uiState.powertrain.powerKw)
 
+                    // Battery & Range Telemetry
+                    val newSoc = if (!d.socPercent.isNaN() && d.socPercent >= 0) d.socPercent.toInt().coerceIn(0, 100) else uiState.battery.socPercent
+                    val newElecRange = if (d.elecRangeKm != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE && d.elecRangeKm >= 0) d.elecRangeKm else uiState.battery.elecRangeKm
+                    val newRemainKwh = if (!d.remainKwh.isNaN() && d.remainKwh > 0) Math.round(d.remainKwh * 10.0) / 10.0 else uiState.battery.batteryCapacityKwh
+                    val newSoh = if (!d.sohPercent.isNaN() && d.sohPercent > 0) d.sohPercent else uiState.battery.sohPercent
+                    val newCellTemp = if (!d.avgCellTempC.isNaN()) d.avgCellTempC.toInt() else uiState.battery.batteryTempC
+                    val new12v = if (!d.voltage12v.isNaN() && d.voltage12v > 0) d.voltage12v else uiState.battery.voltage12v
+
+                    // Son 50 km tüketimi ve Genel tüketim
+                    val avg50Km = if (!d.last50KmConsumption.isNaN() && d.last50KmConsumption > 0.0 && d.last50KmConsumption < 100.0) {
+                        Math.round(d.last50KmConsumption * 10.0) / 10.0
+                    } else uiState.battery.avg50KmKwh
+
+                    val avgLifetime = if (!d.avgElecConPer100Km.isNaN() && d.avgElecConPer100Km > 0.0 && d.avgElecConPer100Km < 100.0) {
+                        Math.round(d.avgElecConPer100Km * 10.0) / 10.0
+                    } else uiState.battery.avgLifetimeKwh
+
+                    // SinceChargeManager & TripAnalyticsManager
+                    val tam = com.overdrive.app.daemon.CameraDaemon.getTripAnalyticsManager()
+                    val scm = com.overdrive.app.telemetry.SinceChargeManager.getInstance()
+                    scm.update(d, tam)
+
+                    val sinceLastChargeKm = scm.getSinceLastChargeKm()
+                    val sinceLastChargeAvg = scm.getSinceLastChargeAvgKwh()
+                    val realisticRangeRaw = scm.getRealisticRangeKm()
+                    val realisticRange = if (realisticRangeRaw > 0) realisticRangeRaw else (if (uiState.battery.realisticRangeKm > 0) uiState.battery.realisticRangeKm else newElecRange)
+
+                    val activeTripKm = tam?.activeTrip?.let { Math.round(it.distanceKm * 10.0) / 10.0 } ?: 0.0
+                    val activeTripMinutes = tam?.activeTrip?.let { Math.max(0, it.durationSeconds / 60) } ?: 0
+                    val regenKwh = tam?.activeTrip?.let { at ->
+                        if (at.energyPerKm < 0 && at.distanceKm > 0) {
+                            Math.round(Math.abs(at.energyPerKm * at.distanceKm) * 100.0) / 100.0
+                        } else if (at.elecConStart >= 0 && at.elecConEnd >= at.elecConStart && at.kwhStart > 0 && at.kwhEnd > 0) {
+                            val grossKwh = at.elecConEnd - at.elecConStart
+                            val netKwh = at.kwhStart - at.kwhEnd
+                            if (grossKwh > netKwh) Math.round((grossKwh - netKwh) * 100.0) / 100.0 else 0.0
+                        } else 0.0
+                    } ?: 0.0
+
+                    // Tyres (from d.tyrePressure and d.tyreTemperature)
+                    val tp = d.tyrePressure
+                    val tt = d.tyreTemperature ?: collector.getTyreTemperatures()
+                    val flKpa = if (tp != null && tp.size > 0 && tp[0] > 0 && tp[0] != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE) tp[0] else null
+                    val frKpa = if (tp != null && tp.size > 1 && tp[1] > 0 && tp[1] != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE) tp[1] else null
+                    val rlKpa = if (tp != null && tp.size > 2 && tp[2] > 0 && tp[2] != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE) tp[2] else null
+                    val rrKpa = if (tp != null && tp.size > 3 && tp[3] > 0 && tp[3] != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE) tp[3] else null
+
+                    val flTemp = if (tt != null && tt.size > 0 && tt[0] != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE && tt[0] > -50 && tt[0] < 150) tt[0] else null
+                    val frTemp = if (tt != null && tt.size > 1 && tt[1] != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE && tt[1] > -50 && tt[1] < 150) tt[1] else null
+                    val rlTemp = if (tt != null && tt.size > 2 && tt[2] != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE && tt[2] > -50 && tt[2] < 150) tt[2] else null
+                    val rrTemp = if (tt != null && tt.size > 3 && tt[3] != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE && tt[3] > -50 && tt[3] < 150) tt[3] else null
+
+                    val updatedTyres = VehicleTyresState(
+                        flPsi = flKpa?.let { Math.round(it * 0.1450377f * 10f) / 10f },
+                        frPsi = frKpa?.let { Math.round(it * 0.1450377f * 10f) / 10f },
+                        rlPsi = rlKpa?.let { Math.round(it * 0.1450377f * 10f) / 10f },
+                        rrPsi = rrKpa?.let { Math.round(it * 0.1450377f * 10f) / 10f },
+                        flTemp = flTemp,
+                        frTemp = frTemp,
+                        rlTemp = rlTemp,
+                        rrTemp = rrTemp,
+                        flKpa = flKpa,
+                        frKpa = frKpa,
+                        rlKpa = rlKpa,
+                        rrKpa = rrKpa,
+                    )
+
+                    // Door & Lid Open States
+                    val ds = collector.readAllDoorOpenStates()
+                    val updatedDoors = uiState.doors.copy(
+                        frontLeftOpen = if (ds.size > 0 && ds[0] >= 0) ds[0] == 1 else uiState.doors.frontLeftOpen,
+                        frontRightOpen = if (ds.size > 1 && ds[1] >= 0) ds[1] == 1 else uiState.doors.frontRightOpen,
+                        rearLeftOpen = if (ds.size > 2 && ds[2] >= 0) ds[2] == 1 else uiState.doors.rearLeftOpen,
+                        rearRightOpen = if (ds.size > 3 && ds[3] >= 0) ds[3] == 1 else uiState.doors.rearRightOpen,
+                        hoodOpen = if (ds.size > 4 && ds[4] >= 0) ds[4] == 1 else uiState.doors.hoodOpen,
+                        trunkOpen = if (ds.size > 5 && ds[5] >= 0) ds[5] == 1 else uiState.doors.trunkOpen,
+                    )
+
+                    // Door Locks (Overall lock status)
+                    val lockVal = if (d.doorLockStatus != null && d.doorLockStatus.size >= 7 && d.doorLockStatus[6] in 1..2) {
+                        d.doorLockStatus[6] == 1 // 1=locked, 2=unlocked
+                    } else if (d.doorLockStatus != null && d.doorLockStatus.size >= 4) {
+                        val anyUnlocked = d.doorLockStatus.take(4).any { it == 2 }
+                        val allLocked = d.doorLockStatus.take(4).all { it == 1 }
+                        if (anyUnlocked) false else if (allLocked) true else uiState.security.isLocked
+                    } else {
+                        uiState.security.isLocked
+                    }
+
+                    // Windows
+                    val wp = d.windowOpenPercent
+                    val updatedWindows = if (wp != null && wp.size >= 4) {
+                        uiState.windows.copy(
+                            frontLeftOpen = wp[0] > 0,
+                            frontRightOpen = wp[1] > 0,
+                            rearLeftOpen = wp[2] > 0,
+                            rearRightOpen = wp[3] > 0,
+                            sunroofOpen = if (wp.size >= 5) wp[4] > 0 else uiState.windows.sunroofOpen,
+                            sunshadeOpen = if (wp.size >= 6) wp[5] > 0 else uiState.windows.sunshadeOpen,
+                        )
+                    } else uiState.windows
+
                     uiState = uiState.copy(
                         powertrain = uiState.powertrain.copy(
                             speedKmh = speedVal,
@@ -715,7 +829,31 @@ class VehicleControlComposeFragment : Fragment() {
                             operationMode = opModeVal,
                             accelPedalPercent = accelVal,
                             brakePedalPercent = brakeVal
-                        )
+                        ),
+                        battery = uiState.battery.copy(
+                            socPercent = newSoc,
+                            elecRangeKm = newElecRange,
+                            realisticRangeKm = realisticRange,
+                            batteryCapacityKwh = newRemainKwh,
+                            batteryTempC = newCellTemp,
+                            sohPercent = newSoh,
+                            isCharging = isCharging,
+                            chargingPowerKw = chgKw,
+                            voltage12v = new12v,
+                            avg50KmKwh = avg50Km,
+                            avgLifetimeKwh = avgLifetime,
+                            sinceLastChargeKm = sinceLastChargeKm,
+                            sinceLastChargeAvgKwh = sinceLastChargeAvg,
+                            activeTripKm = activeTripKm,
+                            activeTripMinutes = activeTripMinutes,
+                            regenKwh = regenKwh,
+                        ),
+                        tyres = updatedTyres,
+                        doors = updatedDoors,
+                        security = uiState.security.copy(
+                            isLocked = lockVal
+                        ),
+                        windows = updatedWindows,
                     )
                 }
             }
@@ -726,9 +864,16 @@ class VehicleControlComposeFragment : Fragment() {
         if (isRefreshing) return
         isRefreshing = true
 
-        // Fast-path in-memory telemetry immediately on main thread (0ms latency for speed/power bar)
-        pollFastInMemoryTelemetry()
+        val collector = com.overdrive.app.byd.BydDataCollector.getInstance()
+        if (collector != null && collector.isInitialized) {
+            // Running directly on vehicle: 100% in-process zero-latency telemetry (no loopback HTTP overhead or race conditions)
+            pollFastInMemoryTelemetry()
+            isRefreshing = false
+            scheduleNextRefresh()
+            return
+        }
 
+        // Off-vehicle / Remote Dev Fallback: query /api/vehicle/state over HTTP
         workerExecutor.execute {
             var conn: HttpURLConnection? = null
             var parsedJson: JSONObject? = null
@@ -743,74 +888,12 @@ class VehicleControlComposeFragment : Fragment() {
                 try { conn?.disconnect() } catch (_: Throwable) {}
             }
 
-            // Also poll in-memory repositories if collector is initialized in this process
-            try {
-                com.overdrive.app.domain.engine.VehicleDataDispatcher.pollCurrent()
-            } catch (_: Throwable) {}
-
-            var directJson: JSONObject? = parsedJson
-            if (directJson == null) {
-                try {
-                    val collector = com.overdrive.app.byd.BydDataCollector.getInstance()
-                    if (collector != null && collector.isInitialized) {
-                        val d = collector.data
-                        if (d != null) {
-                            val synth = JSONObject()
-                            val bat = JSONObject()
-                            if (!d.socPercent.isNaN()) bat.put("soc", d.socPercent)
-                            if (d.elecRangeKm != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE) bat.put("rangeKm", d.elecRangeKm)
-                            if (!d.remainKwh.isNaN()) bat.put("remainKwh", d.remainKwh)
-                            val isChg = d.chargingGunState == 1 || d.chargingState == 1 || (!d.chargingPowerKw.isNaN() && d.chargingPowerKw > 0.1)
-                            bat.put("isCharging", isChg)
-                            if (!d.chargingPowerKw.isNaN()) bat.put("chargingPowerKw", d.chargingPowerKw)
-                            if (!d.voltage12v.isNaN()) bat.put("voltage12v", d.voltage12v)
-
-                            // Telemetry enrichment in fallback mode:
-                            val tam = com.overdrive.app.daemon.CameraDaemon.getTripAnalyticsManager()
-                            val scm = com.overdrive.app.telemetry.SinceChargeManager.getInstance()
-                            scm.update(d, tam)
-
-                            if (!d.last50KmConsumption.isNaN() && d.last50KmConsumption > 0.0) {
-                                bat.put("avg50KmKwh", Math.round(d.last50KmConsumption * 10.0) / 10.0)
-                            }
-                            if (!d.avgElecConPer100Km.isNaN() && d.avgElecConPer100Km > 0.0) {
-                                bat.put("avgLifetimeKwh", Math.round(d.avgElecConPer100Km * 10.0) / 10.0)
-                            }
-                            bat.put("sinceLastChargeKm", scm.getSinceLastChargeKm())
-                            bat.put("sinceLastChargeAvgKwh", scm.getSinceLastChargeAvgKwh())
-                            bat.put("realisticRangeKm", scm.getRealisticRangeKm())
-
-                            if (tam != null && tam.activeTrip != null) {
-                                val at = tam.activeTrip
-                                bat.put("activeTripKm", Math.round(at.distanceKm * 10.0) / 10.0)
-                                bat.put("activeTripMinutes", Math.max(0, at.durationSeconds / 60))
-                            } else {
-                                bat.put("activeTripKm", 0.0)
-                                bat.put("activeTripMinutes", 0)
-                            }
-
-                            synth.put("battery", bat)
-
-                            val pt = JSONObject()
-                            val spd = collector.readCurrentSpeedKmh()
-                            pt.put("speedKmh", if (!spd.isNaN() && spd >= 0) spd else (if (!d.speedKmh.isNaN()) d.speedKmh else 0.0))
-                            pt.put("gear", com.overdrive.app.recording.RecordingModeManager.gearToString(d.gearMode))
-                            pt.put("operationMode", if (d.operationMode != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE) d.operationMode else 2)
-                            synth.put("powertrain", pt)
-                            directJson = synth
-                        }
-                    }
-                } catch (_: Throwable) {}
-            }
-
-            val json = directJson
-
             mainHandler.post {
                 isRefreshing = false
                 if (!isAdded || view == null) return@post
 
-                if (json != null) {
-                    applyVehicleStateJson(json)
+                if (parsedJson != null) {
+                    applyVehicleStateJson(parsedJson)
                 }
                 scheduleNextRefresh()
             }
@@ -854,6 +937,10 @@ class VehicleControlComposeFragment : Fragment() {
                 frTemp = if (fr != null && fr.has("temperatureC")) fr.optInt("temperatureC") else null,
                 rlTemp = if (rl != null && rl.has("temperatureC")) rl.optInt("temperatureC") else null,
                 rrTemp = if (rr != null && rr.has("temperatureC")) rr.optInt("temperatureC") else null,
+                flKpa = if (fl != null && fl.has("kPa")) fl.optInt("kPa") else null,
+                frKpa = if (fr != null && fr.has("kPa")) fr.optInt("kPa") else null,
+                rlKpa = if (rl != null && rl.has("kPa")) rl.optInt("kPa") else null,
+                rrKpa = if (rr != null && rr.has("kPa")) rr.optInt("kPa") else null,
             )
         } else {
             uiState.tyres
@@ -884,7 +971,10 @@ class VehicleControlComposeFragment : Fragment() {
         val new12v = bat?.optDouble("voltage12v", uiState.battery.voltage12v)?.takeIf { it > 0 } ?: uiState.battery.voltage12v
         val newIsCharging = bat?.optBoolean("isCharging", uiState.battery.isCharging) ?: uiState.battery.isCharging
         val newChargingKw = bat?.optDouble("chargingPowerKw", uiState.battery.chargingPowerKw)?.takeIf { it >= 0 } ?: uiState.battery.chargingPowerKw
-        val newRealisticRange = bat?.optInt("realisticRangeKm", uiState.battery.realisticRangeKm)?.takeIf { it > 0 } ?: newRangeKm
+        val newRealisticRange = if (bat != null && bat.has("realisticRangeKm")) {
+            val r = bat.optInt("realisticRangeKm", 0)
+            if (r > 0) r else (if (uiState.battery.realisticRangeKm > 0) uiState.battery.realisticRangeKm else newRangeKm)
+        } else (if (uiState.battery.realisticRangeKm > 0) uiState.battery.realisticRangeKm else newRangeKm)
         val newAvg50Km = if (bat != null && bat.has("avg50KmKwh")) {
             val v = bat.optDouble("avg50KmKwh", 0.0)
             if (v > 0.0) v else uiState.battery.avg50KmKwh

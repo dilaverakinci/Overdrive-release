@@ -149,17 +149,26 @@ object VehicleDataDomainMapper {
         val windows = data.windowOpenPercent
 
         val isLocked = if (data.doorLockStatus != null && data.doorLockStatus.isNotEmpty()) {
-            data.doorLockStatus.all { it != 0 && it != -1 }
+            if (data.doorLockStatus.size >= 7 && data.doorLockStatus[6] in 1..2) {
+                data.doorLockStatus[6] == 1
+            } else {
+                val anyUnlocked = data.doorLockStatus.take(4).any { it == 2 }
+                val allLocked = data.doorLockStatus.take(4).all { it == 1 }
+                if (anyUnlocked) false else if (allLocked) true else null
+            }
         } else null
+
+        val collector = try { com.overdrive.app.byd.BydDataCollector.getInstance() } catch (_: Throwable) { null }
+        val ds = collector?.readAllDoorOpenStates()
 
         return BodyworkState(
             isLocked = isLocked,
-            doorOpenFl = false,
-            doorOpenFr = false,
-            doorOpenRl = false,
-            doorOpenRr = false,
-            hoodOpen = false,
-            trunkOpen = false,
+            doorOpenFl = if (ds != null && ds.size > 0 && ds[0] >= 0) ds[0] == 1 else false,
+            doorOpenFr = if (ds != null && ds.size > 1 && ds[1] >= 0) ds[1] == 1 else false,
+            doorOpenRl = if (ds != null && ds.size > 2 && ds[2] >= 0) ds[2] == 1 else false,
+            doorOpenRr = if (ds != null && ds.size > 3 && ds[3] >= 0) ds[3] == 1 else false,
+            hoodOpen = if (ds != null && ds.size > 4 && ds[4] >= 0) ds[4] == 1 else false,
+            trunkOpen = if (ds != null && ds.size > 5 && ds[5] >= 0) ds[5] == 1 else false,
             chargePortOpen = false,
             windowPercentFl = if (windows != null && windows.isNotEmpty() && windows[0] != BydVehicleData.UNAVAILABLE) windows[0] else 0,
             windowPercentFr = if (windows != null && windows.size > 1 && windows[1] != BydVehicleData.UNAVAILABLE) windows[1] else 0,

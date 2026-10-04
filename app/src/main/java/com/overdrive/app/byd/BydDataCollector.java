@@ -9355,6 +9355,59 @@ public class BydDataCollector {
                 ? raw : BydVehicleData.UNAVAILABLE;
     }
 
+    public int readTyrePressureSafe(int area) {
+        if (tyreDevice == null) return BydVehicleData.UNAVAILABLE;
+        Object value = BydDeviceHelper.callGetter(tyreDevice, "getTyrePressureValueByType", area);
+        if (!(value instanceof Number)) {
+            value = BydDeviceHelper.callGetter(tyreDevice, "getTyrePressureValue", area);
+        }
+        if (!(value instanceof Number)) {
+            value = BydDeviceHelper.callGetter(tyreDevice, "getTyrePressure", area);
+        }
+        if (!(value instanceof Number)) {
+            value = BydDeviceHelper.callGetter(tyreDevice, "getWheelPressure", area);
+        }
+        if (value instanceof Number) {
+            double raw = ((Number) value).doubleValue();
+            if (raw >= 1.5 && raw <= 5.5) {
+                return (int) Math.round(raw * 100.0); // Bar to kPa
+            } else if (raw >= 15.0 && raw <= 65.0) {
+                return (int) Math.round(raw * 6.89476); // PSI to kPa
+            } else if (raw >= 1000.0 && raw <= 6000.0) {
+                return (int) Math.round(raw / 10.0); // 1/10 kPa to kPa
+            } else if (raw >= 50.0 && raw <= 600.0) {
+                return (int) Math.round(raw);
+            }
+        }
+        return BydVehicleData.UNAVAILABLE;
+    }
+
+    public int readTyreTemperatureSafe(int area) {
+        if (tyreDevice == null) return BydVehicleData.UNAVAILABLE;
+        Object value = BydDeviceHelper.callGetter(tyreDevice, "getTyreTemperatureValueByType", area);
+        if (!(value instanceof Number)) {
+            value = BydDeviceHelper.callGetter(tyreDevice, "getTyreTemperature", area);
+        }
+        if (!(value instanceof Number)) {
+            value = BydDeviceHelper.callGetter(tyreDevice, "getWheelTemperature", area);
+        }
+        if (!(value instanceof Number)) {
+            value = BydDeviceHelper.callGetter(tyreDevice, "getTyreTemperatureValue", area);
+        }
+        if (!(value instanceof Number)) {
+            value = BydDeviceHelper.callGetter(tyreDevice, "getTyreBatteryValue", area);
+        }
+        if (value instanceof Number) {
+            int raw = ((Number) value).intValue();
+            if (raw >= -40 && raw <= 85) {
+                return raw;
+            } else if (raw >= 86 && raw <= 180) {
+                return raw - 40;
+            }
+        }
+        return BydVehicleData.UNAVAILABLE;
+    }
+
     private int readDiLink5TyrePressureKpa(int area) {
         Object value = BydDeviceHelper.callGetter(
                 tyreDevice, "getTyrePressureValueByType", area);
@@ -9424,7 +9477,11 @@ public class BydDataCollector {
                     ? fourWheelValues(b.tyreSignalState)
                     : new int[4];
             for (int i = 0; i < 4; i++) {
-                if (dilink5) {
+                int safeP = readTyrePressureSafe(i + 1);
+                if (safeP != BydVehicleData.UNAVAILABLE && safeP > 0) {
+                    pressures[i] = safeP;
+                    if (dilink5) diLink5TyrePressureAt.set(i, nowElapsed);
+                } else if (dilink5) {
                     int pressure = adapterReady
                             ? readDiLink5TyrePressureKpa(i + 1)
                             : BydVehicleData.UNAVAILABLE;
@@ -9502,7 +9559,15 @@ public class BydDataCollector {
                 // answer getTyreBatteryValue(area) with the same temperature
                 // value the cluster reads. callGetter is null-safe so this
                 // is a no-op on firmwares that don't expose the getter.
-                if (!dilink5) pollPerWheelTyreTemp(i);
+                int safeT = readTyreTemperatureSafe(i + 1);
+                if (safeT != BydVehicleData.UNAVAILABLE) {
+                    synchronized (tyreTemperatureCache) {
+                        tyreTemperatureCache[i] = safeT;
+                    }
+                    if (dilink5) diLink5TyreTemperatureAt.set(i, nowElapsed);
+                } else if (!dilink5) {
+                    pollPerWheelTyreTemp(i);
+                }
             }
             b.tyrePressure(pressures);
             b.tyrePressureState(pressureStates);
@@ -10240,6 +10305,10 @@ public class BydDataCollector {
         }
     }
 
+    public int[] getTyreTemperatures() {
+        return snapshotTyreTemperatures();
+    }
+
     // Diagnostic: log each unknown tyre feature ID at most once, capped at 32
     // unique IDs total. The cap prevents a chatty HAL (some emit a feature ID
     // every 100ms for trip metrics) from flooding the log if an unknown one
@@ -10635,6 +10704,36 @@ public class BydDataCollector {
     private int readDoorOpenState(int area, boolean rightHandDrive) {
         if (bodyworkDevice == null) return Integer.MIN_VALUE;
 
+        // Dedicated Hood check (BYD Sealion 7 / Seal / Atto 3 / Han)
+        if (area == BodyworkConstants.AREA_HOOD) {
+            Object h = BydDeviceHelper.callGetter(bodyworkDevice, "getFrontEngineCoverState");
+            if (!(h instanceof Number)) {
+                h = BydDeviceHelper.callGetter(bodyworkDevice, "getEngineHoodState");
+            }
+            if (!(h instanceof Number)) {
+                h = BydDeviceHelper.callGetter(bodyworkDevice, "getFrontCoverState");
+            }
+            if (h instanceof Number) {
+                int state = ((Number) h).intValue();
+                if (state == 0 || state == 1) return state;
+            }
+        }
+
+        // Dedicated Trunk / Tailgate check
+        if (area == BodyworkConstants.AREA_TRUNK) {
+            Object t = BydDeviceHelper.callGetter(bodyworkDevice, "getBackDoorCurState");
+            if (!(t instanceof Number)) {
+                t = BydDeviceHelper.callGetter(bodyworkDevice, "getTrunkState");
+            }
+            if (!(t instanceof Number)) {
+                t = BydDeviceHelper.callGetter(bodyworkDevice, "getTailgateState");
+            }
+            if (t instanceof Number) {
+                int state = ((Number) t).intValue();
+                if (state == 0 || state == 1) return state;
+            }
+        }
+
         int featureId = doorFeatureForArea(area, rightHandDrive);
         if (BydFeatureIds.isResolved(featureId)) {
             int managerState = BydManagerChannel.getInt(context, bodyworkDevice, featureId);
@@ -10677,24 +10776,24 @@ public class BydDataCollector {
     }
 
     private void collectDoorLock(BydVehicleData.Builder b) {
-        // The BYDAutoDoorLockDevice service does not expose lock state to
-        // user-UID processes on most BYD firmwares — every getDoorLockStatus(area)
-        // call returns INVALID(0) and onDoorLockStatusChanged never fires.
-        // Field testing confirmed this on Sealion 6 / Atto 3 / others.
-        //
-        // Lock state is sourced exclusively from the BYD cloud REST/MQTT path
-        // via BydCloudDataProvider. The vehicle-control page calls the cloud
-        // API directly on load; the lock-gate uses CloudLockStateListener.
-        //
-        // We still publish a doorLockStatus[] array on the snapshot for
-        // compatibility with downstream consumers, but with all-UNAVAILABLE
-        // values — the cloud-lock fields on the JSON response carry the
-        // authoritative state.
-        if (b.doorLockStatus == null) {
-            int[] locks = new int[7];
-            for (int i = 0; i < 7; i++) locks[i] = -1;
-            b.doorLockStatus(locks);
+        int[] locks = new int[7];
+        for (int i = 0; i < 7; i++) locks[i] = -1;
+
+        Object dev = (doorLockDevice != null) ? doorLockDevice : bodyworkDevice;
+        if (dev != null) {
+            for (int i = 1; i <= 4; i++) {
+                Object l = BydDeviceHelper.callGetter(dev, "getDoorLockStatus", i);
+                if (l instanceof Number) {
+                    locks[i - 1] = ((Number) l).intValue();
+                }
+            }
+            if (locks[0] == 1 && locks[1] == 1 && locks[2] == 1 && locks[3] == 1) {
+                locks[6] = 1; // All locked
+            } else if (locks[0] == 2 || locks[1] == 2 || locks[2] == 2 || locks[3] == 2) {
+                locks[6] = 2; // Any unlocked
+            }
         }
+        b.doorLockStatus(locks);
     }
 
     private void collectSensor(BydVehicleData.Builder b) {

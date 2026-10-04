@@ -108,6 +108,8 @@ import com.overdrive.app.ui.component.OverdriveCard
 import com.overdrive.app.ui.component.OverdrivePillStatus
 import com.overdrive.app.ui.component.OverdriveStatusPill
 import com.overdrive.app.ui.theme.OverdriveDimensions
+import kotlin.math.roundToInt
+import androidx.compose.ui.graphics.nativeCanvas
 import com.overdrive.app.ui.theme.OverdriveTheme
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -1823,29 +1825,13 @@ private fun ChassisTelemetryCockpitCard(
                                     .height(carH)
                                     .width(214.dp),
                             ) {
-                                // Center: Top-Down Vehicle Silhouette with Battery SoC Overlay
-                                Box(
+                                // Center: Top-Down Vehicle Silhouette with Battery SoC Overlay & Green Gradient Fill
+                                ChassisVehicleBatteryGraphic(
+                                    socPercent = battery.socPercent,
                                     modifier = Modifier
                                         .align(Alignment.Center)
                                         .size(width = carW, height = carH),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    Image(
-                                        painter = painterResource(R.drawable.img_car_topview),
-                                        contentDescription = "Car Top View",
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentScale = ContentScale.Fit,
-                                    )
-
-                                    // Battery SoC inside center of car silhouette
-                                    Text(
-                                        text = "%${battery.socPercent}",
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Black,
-                                        color = Color.White,
-                                        textAlign = TextAlign.Center,
-                                    )
-                                }
+                                )
 
                                 // Front Left Tyre (FL) - Exactly aligned with front wheel
                                 Box(
@@ -1854,8 +1840,8 @@ private fun ChassisTelemetryCockpitCard(
                                         .offset(y = (carH * 0.17f - 16.dp).coerceAtLeast(0.dp))
                                 ) {
                                     TyreCallout(
-                                        kpa = tyres.flPsi?.let { (it * 6.89476f).toInt() } ?: 290,
-                                        tempC = tyres.flTemp ?: 33,
+                                        kpa = tyres.flKpa ?: tyres.flPsi?.let { (it * 6.89476f).roundToInt() },
+                                        tempC = tyres.flTemp,
                                     )
                                 }
 
@@ -1866,8 +1852,8 @@ private fun ChassisTelemetryCockpitCard(
                                         .offset(y = (carH * 0.17f - 16.dp).coerceAtLeast(0.dp))
                                 ) {
                                     TyreCallout(
-                                        kpa = tyres.frPsi?.let { (it * 6.89476f).toInt() } ?: 295,
-                                        tempC = tyres.frTemp ?: 35,
+                                        kpa = tyres.frKpa ?: tyres.frPsi?.let { (it * 6.89476f).roundToInt() },
+                                        tempC = tyres.frTemp,
                                     )
                                 }
 
@@ -1878,8 +1864,8 @@ private fun ChassisTelemetryCockpitCard(
                                         .offset(y = carH * 0.63f - 16.dp)
                                 ) {
                                     TyreCallout(
-                                        kpa = tyres.rlPsi?.let { (it * 6.89476f).toInt() } ?: 290,
-                                        tempC = tyres.rlTemp ?: 33,
+                                        kpa = tyres.rlKpa ?: tyres.rlPsi?.let { (it * 6.89476f).roundToInt() },
+                                        tempC = tyres.rlTemp,
                                     )
                                 }
 
@@ -1890,8 +1876,8 @@ private fun ChassisTelemetryCockpitCard(
                                         .offset(y = carH * 0.63f - 16.dp)
                                 ) {
                                     TyreCallout(
-                                        kpa = tyres.rrPsi?.let { (it * 6.89476f).toInt() } ?: 297,
-                                        tempC = tyres.rrTemp ?: 37,
+                                        kpa = tyres.rrKpa ?: tyres.rrPsi?.let { (it * 6.89476f).roundToInt() },
+                                        tempC = tyres.rrTemp,
                                     )
                                 }
                             }
@@ -2096,24 +2082,145 @@ private fun ChassisTelemetryCockpitCard(
 }
 
 @Composable
+fun ChassisVehicleBatteryGraphic(
+    socPercent: Int,
+    modifier: Modifier = Modifier,
+) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val carBitmap = remember(context) {
+        try {
+            val d = androidx.core.content.ContextCompat.getDrawable(context, R.drawable.img_car_topview)
+            if (d != null) {
+                val bmp = android.graphics.Bitmap.createBitmap(
+                    d.intrinsicWidth.coerceAtLeast(100),
+                    d.intrinsicHeight.coerceAtLeast(100),
+                    android.graphics.Bitmap.Config.ARGB_8888
+                )
+                val c = android.graphics.Canvas(bmp)
+                d.setBounds(0, 0, c.width, c.height)
+                d.draw(c)
+                bmp
+            } else null
+        } catch (_: Throwable) {
+            null
+        }
+    }
+
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val strokeWidthPx = remember(density) { with(density) { 3.dp.toPx() } }
+    val textSizePx = remember(density) { with(density) { 13.sp.toPx() } }
+    val shadowRadiusPx = remember(density) { with(density) { 3.dp.toPx() } }
+    val textOffsetYPx = remember(density) { with(density) { 5.dp.toPx() } }
+
+    val bitmapPaint = remember {
+        android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG or android.graphics.Paint.FILTER_BITMAP_FLAG)
+    }
+    val batteryFillPaint = remember {
+        android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            style = android.graphics.Paint.Style.FILL
+            xfermode = android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_ATOP)
+        }
+    }
+    val waterlinePaint = remember(strokeWidthPx) {
+        android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            style = android.graphics.Paint.Style.STROKE
+            strokeWidth = strokeWidthPx
+            color = android.graphics.Color.parseColor("#E634D399")
+            strokeCap = android.graphics.Paint.Cap.ROUND
+            xfermode = android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_ATOP)
+        }
+    }
+    val socTextPaint = remember(textSizePx, shadowRadiusPx) {
+        android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.parseColor("#FFFFFF")
+            textSize = textSizePx
+            typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+            textAlign = android.graphics.Paint.Align.CENTER
+            setShadowLayer(shadowRadiusPx, 0f, 0f, android.graphics.Color.parseColor("#CC000000"))
+        }
+    }
+
+    val carBounds = remember { android.graphics.RectF() }
+    val fillBounds = remember { android.graphics.RectF() }
+
+    Canvas(modifier = modifier) {
+        val bmp = carBitmap ?: return@Canvas
+        val viewW = size.width
+        val viewH = size.height
+
+        val bmpW = bmp.width.toFloat()
+        val bmpH = bmp.height.toFloat()
+        val scale = minOf(viewW / bmpW, viewH / bmpH) * 0.98f
+        val targetW = bmpW * scale
+        val targetH = bmpH * scale
+
+        val left = (viewW - targetW) / 2f
+        val top = (viewH - targetH) / 2f
+        carBounds.set(left, top, left + targetW, top + targetH)
+
+        val nativeCanvas = drawContext.canvas.nativeCanvas
+        val layerId = nativeCanvas.saveLayer(carBounds, null)
+
+        // 1. Draw car silhouette (Destination)
+        nativeCanvas.drawBitmap(bmp, null, carBounds, bitmapPaint)
+
+        // 2. Battery fill upwards (from bottom bumper to front hood)
+        val clampedSoc = socPercent.coerceIn(0, 100)
+        val carHeight = carBounds.height()
+        val fillHeight = carHeight * (clampedSoc / 100f)
+        val fillTop = carBounds.bottom - fillHeight
+
+        fillBounds.set(carBounds.left, fillTop, carBounds.right, carBounds.bottom)
+
+        if (clampedSoc > 0) {
+            val fillGradient = android.graphics.LinearGradient(
+                0f, fillBounds.top, 0f, fillBounds.bottom,
+                android.graphics.Color.parseColor("#9934D399"), // 60% emerald green
+                android.graphics.Color.parseColor("#B3059669"), // 70% deep green
+                android.graphics.Shader.TileMode.CLAMP
+            )
+            batteryFillPaint.shader = fillGradient
+            nativeCanvas.drawRect(fillBounds, batteryFillPaint)
+
+            if (clampedSoc in 1..99) {
+                nativeCanvas.drawLine(
+                    carBounds.left, fillTop,
+                    carBounds.right, fillTop,
+                    waterlinePaint
+                )
+            }
+        }
+
+        nativeCanvas.restoreToCount(layerId)
+
+        // Centered %SOC text
+        val textY = carBounds.centerY() + textOffsetYPx
+        nativeCanvas.drawText("%$clampedSoc", carBounds.centerX(), textY, socTextPaint)
+    }
+}
+
+@Composable
 private fun TyreCallout(
-    kpa: Int,
-    tempC: Int,
+    kpa: Int?,
+    tempC: Int?,
     modifier: Modifier = Modifier,
 ) {
     val textPrimary = MaterialTheme.colorScheme.onSurface
     val textSecondary = MaterialTheme.colorScheme.onSurfaceVariant
     val dividerColor = MaterialTheme.colorScheme.outlineVariant
 
+    val hasKpa = kpa != null && kpa > 0
+    val hasTemp = tempC != null && tempC != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE && tempC > -50 && tempC < 150
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.width(50.dp),
+        modifier = modifier.width(52.dp),
     ) {
         Text(
-            text = "$kpa kPa",
+            text = if (hasKpa) "$kpa kPa" else "-- kPa",
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
-            color = textPrimary,
+            color = if (hasKpa) textPrimary else textSecondary.copy(alpha = 0.5f),
         )
         Box(
             modifier = Modifier
@@ -2123,10 +2230,10 @@ private fun TyreCallout(
                 .background(dividerColor)
         )
         Text(
-            text = "$tempC °C",
+            text = if (hasTemp) "$tempC °C" else "-- °C",
             fontSize = 10.sp,
             fontWeight = FontWeight.SemiBold,
-            color = textSecondary,
+            color = if (hasTemp) textSecondary else textSecondary.copy(alpha = 0.4f),
         )
     }
 }

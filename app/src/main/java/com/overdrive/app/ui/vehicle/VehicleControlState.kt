@@ -32,6 +32,10 @@ data class VehicleTyresState(
     val frTemp: Int? = null,
     val rlTemp: Int? = null,
     val rrTemp: Int? = null,
+    val flKpa: Int? = null,
+    val frKpa: Int? = null,
+    val rlKpa: Int? = null,
+    val rrKpa: Int? = null,
 )
 
 data class VehicleDoorsState(

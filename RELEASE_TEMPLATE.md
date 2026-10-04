@@ -10,17 +10,25 @@
 > ⚠️ **Kritik Mimari Not:** Kör nokta (Blind Spot) kamera akışı ve arka plan daemon servislerinin (UID 2000 / SurfaceControl) ADB `run-as` üzerinden sorunsuz çalışabilmesi için uygulama daima **Debug** modunda derlenir.
 
 #### 🌟 Son Yenilikler ve İyileştirmeler:
+- ⚡ **Sıfır Gecikmeli Bellek İçi Telemetri (Veri Dalgalanması & Çakışma Çözümü):**
+  - Yerel HTTP loopback (`/api/vehicle/state`) sorguları native Compose ekranında kaldırılarak 100% in-process paylaşımlı bellek mimarisine geçildi.
+  - Ekranda gözlemlenen "LOCKED <-> UNLOCKED" ve "206 km <-> 96 km" arasındaki ani veri zıplamaları ve yarış durumları (race-condition) tamamen engellendi.
+  - Hız için mikro titreşim deadband filtresi (< 1.8 km/s veya P vitesi -> 0.0 km/s) ve araç dururken sıfır rejen koruması devreye alındı.
+- 🚗 **Şasi Kartı & Zümrüt Yeşili Batarya Dolgusu (Navion Mimarisi):**
+  - Navion'daki `ChassisVehicleBatteryView` görselleştirme mimarisi Compose Canvas (`nativeCanvas.saveLayer` ve `PorterDuff.Mode.SRC_ATOP`) ile uyarlandı.
+  - Araç silüetinin içine taşma yapmadan, batarya doluluğuna (%SoC) göre arkadan öne yükselen zümrüt yeşili degrade dolgu, su seviyesi (waterline) çizgisi ve merkezde batarya yüzdesi eklendi.
+- 🛞 **Gerçek Lastik Basınç ve Sıcaklık Telemetrisi (TPMS):**
+  - Statik/sabit sahte değerler tamamen kaldırıldı.
+  - Araçtan gelen çok katmanlı TPMS donanım metodları (`readTyrePressureSafe`, `readTyreTemperatureSafe`) ile her 4 tekerleğin anlık kPa ve °C değerleri gerçek zamanlı okundu.
+- 🚪 **Canlı Kaput, Kapı, Cam ve Bagaj Sensörleri:**
+  - Ön kaput (`getFrontEngineCoverState`), bagaj kapağı (`getBackDoorCurState`), kapı kilitleri (`getDoorLockStatus 1..4`) ve cam açıklıkları araç donanımından canlı çekilerek alt durum çubuğuna aktarıldı.
 - 🔋 **Tüketim & Gerçekçi Menzil Revizyonu:**
-  - **Son 50 km Tüketimi:** Doğrudan BYD araç donanımından (`getLast50KmPowerConsume`) orijinal fabrika verisi olarak okunur ve gösterilir.
-  - **Son Şarjdan İtibaren:** Araç şarjdan ayrıldığı anda referansı otomatik kilitler ve kalıcı hafızaya alır (`SinceChargeManager`); kat edilen km ve net tüketilen kWh/100km oranını hesaplar.
-  - **Aktif Seyahat:** Araç hareket ettiği andan itibaren başlayan sürüşün süresini (dk) ve mesafesini (km) gerçek zamanlı canlı takip eder.
-  - **Dinamik Gerçekçi Menzil:** Son şarj harcama trendine göre anlık kalan menzili hesaplar; eklenen "Sıfırla" butonu ile istenildiği anda referans sıfırlanabilir.
+  - **Son 50 km Tüketimi:** Doğrudan BYD araç donanımından (`getLast50KmPowerConsume`) orijinal fabrika verisi olarak okunur.
+  - **Son Şarjdan İtibaren:** Araç şarjdan ayrıldığı anda referansı otomatik kilitler (`SinceChargeManager`); kat edilen km ve net tüketim oranını hesaplar.
+  - **Aktif Seyahat:** Hareket başladığı andan itibaren sürüş süresi (dk) ve mesafesini (km) takip eder.
+  - **Dinamik Gerçekçi Menzil:** Son şarj harcama trendine göre gerçekçi menzili hesaplar; eklenen "Sıfırla" butonu ile referans sıfırlanabilir.
 - 📹 **Canlı Kamera Akış İyileştirmesi:** Canlı araç kamerası açıldığında kullanıcının seçim yapmasını beklemeden otomatik olarak ilk kamerayı anında yayına başlatır.
-- 📊 **Telemetri & Gösterge Kararlılığı:** Hız, tüketim ve regen/güç barındaki tutarsız dalgalanmalar filtrelendi; sürüş esnasında Trip kaydının kesintisiz çalışması güvenceye alındı.
 - 🎨 **Otomotiv Tasarım Uyumu:** Araç kontrol ekranındaki tüm kartlar, paneller ve butonlar `OverdriveTheme` tasarım sistemine uyarlandı.
-- ⚡ **BYD Doğrudan Kablosuz ADB Motoru:** Araç multimedya ekranı üzerinden (ts-framework IPC) tek tıkla kablosuz ADB etkinleştirme ve port 5555 yönetimi.
-- 🩺 **Gelişmiş CAN-Bus Teşhisleri:** 9-ECU canlı telemetri monitörü, BMS hücre voltaj dengesizliği (Δ) takibi ve OBD-II DTC arıza kodları tarayıcısı/silicisi.
-- 🔄 **Akıllı Otomatik Güncelleyici (AppUpdater):** Doğrudan `dilaverakinci/Overdrive-release` reposuna bağlandı; eski `51.8` sürümünden geçiş toleransı ile donatıldı.
 
 ---
 
@@ -29,17 +37,25 @@
 > ⚠️ **Critical Architectural Note:** To ensure background daemon services (`fast_cam_capture` / UID 2000 / SurfaceControl) and Blind Spot camera streaming function correctly via ADB `run-as`, the application is always compiled in **Debug** mode.
 
 #### 🌟 Recent Features & Improvements:
-- 🔋 **Consumption & Dynamic Range Overhaul:**
+- ⚡ **Zero-Latency In-Memory Telemetry Engine:**
+  - Replaced localhost HTTP loopback polling with 100% in-process shared memory binding in Compose.
+  - Eliminated data toggling and race-condition flickering between LOCKED <-> UNLOCKED and 206 km <-> 96 km.
+  - Enforced speed deadband (< 1.8 km/h or Park gear -> 0.0 km/h) and stationary zero-regen filtering.
+- 🚗 **Chassis Silhouette & Emerald Green Battery Fill (Navion Architecture):**
+  - Integrated top-down vehicle silhouette with dynamic Compose Canvas `nativeCanvas.saveLayer` using `PorterDuff.Mode.SRC_ATOP`.
+  - Battery fills upwards proportional to SoC% with emerald green gradient, crisp waterline indicator, and centered bold %SoC without overflowing the vehicle outline.
+- 🛞 **Real TPMS Tyre Pressure & Temperature Telemetry:**
+  - Removed all hardcoded static values.
+  - Probes live multi-method vehicle TPMS sensors (`readTyrePressureSafe`, `readTyreTemperatureSafe`) to display authentic corner kPa and °C.
+- 🚪 **Live Hood, Doors, Windows & Trunk Sensors:**
+  - Synchronized front engine cover (`getFrontEngineCoverState`), tailgate (`getBackDoorCurState`), door locks (`getDoorLockStatus 1..4`), and window positions directly from hardware HAL.
+- 🔋 **Consumption & Dynamic Range Engine:**
   - **Hardware Last 50 km:** Direct retrieval of authentic factory metrics via BYD vehicle HAL (`getLast50KmPowerConsume`).
   - **Since Last Charge Tracking:** Automatically anchors baseline when charging session ends (`SinceChargeManager`), tracking precise distance driven and kWh/100km rate with persistent storage.
   - **Live Active Trip:** Real-time elapsed drive duration (min) and trip distance (km) tracked from the moment movement begins.
   - **Realistic Dynamic Range:** Calculated continuously from since-charge consumption, with an instant "Reset" button for on-demand baseline recalibration.
 - 📹 **Instant Live Camera Streaming:** Automatically initializes and streams the primary camera upon opening the live view without requiring manual camera toggling.
-- 📊 **Telemetry & Gauge Stabilization:** Filtered erratic fluctuations on speed, power bar, and consumption gauges; ensured 100% trip recording reliability during driving.
 - 🎨 **Automotive UI Theme Alignment:** Completely restyled all cards, stats, and dialogs on the Vehicle page to match `OverdriveTheme`.
-- ⚡ **BYD Direct Wireless ADB Engine:** One-click wireless ADB activation and port 5555 management directly from the vehicle infotainment display (ts-framework IPC).
-- 🩺 **Advanced CAN-Bus Diagnostics:** 9-ECU live telemetry monitor, BMS cell voltage imbalance (Δ) tracking, and OBD-II DTC fault code scanner/clearing.
-- 🔄 **Smart In-App Updater (AppUpdater):** Directed updates to `dilaverakinci/Overdrive-release` with backwards compatibility tolerance for upgrading from upstream `51.8`.
 
 ---
 **APK Dosyası / File:** `betteroverdrive.apk` ({APK_SIZE_MB} MB)  
