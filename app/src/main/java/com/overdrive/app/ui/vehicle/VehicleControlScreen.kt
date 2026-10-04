@@ -166,6 +166,7 @@ fun VehicleControlScreen(
     onSelectDriveMode: (OperationMode) -> Unit = {},
     onSelectModelClick: () -> Unit = {},
     onNavigateToCharging: () -> Unit = {},
+    onResetSinceCharge: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var expandedTab by remember { mutableStateOf<VehicleControlTab?>(null) }
@@ -223,6 +224,7 @@ fun VehicleControlScreen(
                         battery = state.battery,
                         onNavigateToCharging = onNavigateToCharging,
                         onSelectModelClick = onSelectModelClick,
+                        onResetSinceCharge = onResetSinceCharge,
                         modifier = Modifier
                             .weight(1.70f)
                             .fillMaxHeight(),
@@ -1204,6 +1206,7 @@ private fun VehicleCenterModelAndBatteryCard(
     battery: VehicleBatteryUiState,
     onNavigateToCharging: () -> Unit = {},
     onSelectModelClick: () -> Unit = {},
+    onResetSinceCharge: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -1251,6 +1254,7 @@ private fun VehicleCenterModelAndBatteryCard(
         BatteryRangeCardContent(
             battery = battery,
             onNavigateToCharging = onNavigateToCharging,
+            onResetSinceCharge = onResetSinceCharge,
         )
     }
 }
@@ -1259,6 +1263,7 @@ private fun VehicleCenterModelAndBatteryCard(
 private fun BatteryRangeCardContent(
     battery: VehicleBatteryUiState,
     onNavigateToCharging: () -> Unit = {},
+    onResetSinceCharge: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val cardBg = MaterialTheme.colorScheme.surfaceContainer
@@ -1403,12 +1408,32 @@ private fun BatteryRangeCardContent(
                                 .weight(1f)
                                 .padding(start = 6.dp)
                         ) {
-                            Text(
-                                text = "GERÇEKÇİ MENZİL",
-                                fontSize = 9.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = textSecondary,
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "GERÇEKÇİ MENZİL",
+                                    fontSize = 9.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = textSecondary,
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                                        .clickable { onResetSinceCharge() }
+                                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                                ) {
+                                    Text(
+                                        text = "Sıfırla",
+                                        fontSize = 8.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
                             Row(verticalAlignment = Alignment.Bottom) {
                                 val realistic = if (battery.realisticRangeKm > 0) battery.realisticRangeKm else battery.elecRangeKm
                                 Text(
@@ -1427,7 +1452,7 @@ private fun BatteryRangeCardContent(
                                 )
                             }
                             Text(
-                                text = "Dinamik Sürüş Tahmini",
+                                text = "Son Şarj Tüketimine Göre",
                                 fontSize = 9.sp,
                                 color = textMuted,
                             )
@@ -1499,16 +1524,18 @@ private fun BatteryRangeCardContent(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                // Card 1
-                val avg50Text = when {
-                    battery.avg50KmKwh > 0.0 -> String.format(Locale.US, "%.1f kWh/100km", battery.avg50KmKwh).replace('.', ',')
-                    battery.avgLifetimeKwh > 0.0 -> String.format(Locale.US, "%.1f kWh/100km", battery.avgLifetimeKwh).replace('.', ',')
-                    else -> "-- kWh/100km"
+                // Card 1: Son 50 km Tüketimi (Doğrudan Araç Donanımından Alınan Veri)
+                val avg50Text = if (battery.avg50KmKwh > 0.0) {
+                    String.format(Locale.US, "%.1f kWh/100km", battery.avg50KmKwh).replace('.', ',')
+                } else {
+                    "-- kWh/100km"
                 }
-                val avg50Sub = if (battery.avgLifetimeKwh > 0.0) {
+                val avg50Sub = if (battery.avg50KmKwh > 0.0) {
+                    "Araç Donanım Verisi"
+                } else if (battery.avgLifetimeKwh > 0.0) {
                     stringResource(R.string.vc_substat_overall_fmt, String.format(Locale.US, "%.1f kWh/100km", battery.avgLifetimeKwh).replace('.', ','))
                 } else {
-                    stringResource(R.string.vc_substat_overall_fmt, "--")
+                    "Araçtan Bekleniyor..."
                 }
                 SubStatCard(
                     title = stringResource(R.string.vc_substat_last50km),
@@ -1516,31 +1543,32 @@ private fun BatteryRangeCardContent(
                     subtitle = avg50Sub,
                     modifier = Modifier.weight(1f),
                 )
-                // Card 2
+                // Card 2: Son Şarjdan İtibaren (Mesafe ve Oran Hesabı, tıklayınca sıfırlama)
                 val sinceChargeDistText = if (battery.sinceLastChargeKm > 0.0) {
                     String.format(Locale.US, "%.1f km", battery.sinceLastChargeKm).replace('.', ',')
                 } else {
                     "0,0 km"
                 }
                 val sinceChargeAvgSub = if (battery.sinceLastChargeAvgKwh > 0.0) {
-                    stringResource(R.string.vc_substat_avg_fmt, String.format(Locale.US, "%.1f kWh/100km", battery.sinceLastChargeAvgKwh).replace('.', ','))
+                    String.format(Locale.US, "%.1f kWh/100km", battery.sinceLastChargeAvgKwh).replace('.', ',')
                 } else {
-                    stringResource(R.string.vc_substat_avg_fmt, "--")
+                    "-- kWh/100km"
                 }
                 SubStatCard(
                     title = stringResource(R.string.vc_substat_since_charge),
                     value = sinceChargeDistText,
                     subtitle = sinceChargeAvgSub,
+                    onClick = onResetSinceCharge,
                     modifier = Modifier.weight(1f),
                 )
-                // Card 3
+                // Card 3: Aktif Seyahat (Araç hareket ettiğinden itibaren başlayan sürüşte yapılan km ve süresi)
                 val tripValText = if (battery.activeTripKm > 0.0 || battery.activeTripMinutes > 0) {
                     String.format(Locale.US, "%.1f km (%d dk)", battery.activeTripKm, battery.activeTripMinutes).replace('.', ',')
                 } else {
                     "0,0 km (0 dk)"
                 }
                 val tripSub = if (battery.activeTripKm > 0.0) {
-                    stringResource(R.string.vc_substat_dist_fmt, String.format(Locale.US, "%.1f km", battery.activeTripKm).replace('.', ','))
+                    "Aktif Sürüş"
                 } else {
                     stringResource(R.string.vc_substat_awaiting_drive)
                 }
@@ -1550,7 +1578,7 @@ private fun BatteryRangeCardContent(
                     subtitle = tripSub,
                     modifier = Modifier.weight(1f),
                 )
-                // Card 4
+                // Card 4: Rejenerasyon
                 val regenValText = if (battery.regenKwh > 0.0) {
                     String.format(Locale.US, "+%.2f kWh", battery.regenKwh).replace('.', ',')
                 } else {
@@ -1574,6 +1602,7 @@ private fun SubStatCard(
     value: String,
     subtitle: String,
     valueColor: Color? = null,
+    onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     val containerBg = MaterialTheme.colorScheme.surfaceContainerLow
@@ -1582,11 +1611,19 @@ private fun SubStatCard(
     val textSecondary = MaterialTheme.colorScheme.onSurfaceVariant
     val textMuted = MaterialTheme.colorScheme.outline
 
+    val cardModifier = if (onClick != null) {
+        modifier
+            .clip(RoundedCornerShape(6.dp))
+            .clickable(onClick = onClick)
+    } else {
+        modifier
+    }
+
     Surface(
         shape = RoundedCornerShape(6.dp),
         color = containerBg,
         border = containerBorder,
-        modifier = modifier,
+        modifier = cardModifier,
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),

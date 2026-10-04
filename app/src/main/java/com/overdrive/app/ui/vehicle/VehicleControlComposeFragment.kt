@@ -328,6 +328,9 @@ class VehicleControlComposeFragment : Fragment() {
                             } catch (e: Exception) {
                                 android.util.Log.w("VehicleControl", "Cannot navigate to chargingFragment", e)
                             }
+                        },
+                        onResetSinceCharge = {
+                            resetSinceCharge()
                         }
                     )
                 }
@@ -761,6 +764,31 @@ class VehicleControlComposeFragment : Fragment() {
                             bat.put("isCharging", isChg)
                             if (!d.chargingPowerKw.isNaN()) bat.put("chargingPowerKw", d.chargingPowerKw)
                             if (!d.voltage12v.isNaN()) bat.put("voltage12v", d.voltage12v)
+
+                            // Telemetry enrichment in fallback mode:
+                            val tam = com.overdrive.app.daemon.CameraDaemon.getTripAnalyticsManager()
+                            val scm = com.overdrive.app.telemetry.SinceChargeManager.getInstance()
+                            scm.update(d, tam)
+
+                            if (!d.last50KmConsumption.isNaN() && d.last50KmConsumption > 0.0) {
+                                bat.put("avg50KmKwh", Math.round(d.last50KmConsumption * 10.0) / 10.0)
+                            }
+                            if (!d.avgElecConPer100Km.isNaN() && d.avgElecConPer100Km > 0.0) {
+                                bat.put("avgLifetimeKwh", Math.round(d.avgElecConPer100Km * 10.0) / 10.0)
+                            }
+                            bat.put("sinceLastChargeKm", scm.getSinceLastChargeKm())
+                            bat.put("sinceLastChargeAvgKwh", scm.getSinceLastChargeAvgKwh())
+                            bat.put("realisticRangeKm", scm.getRealisticRangeKm())
+
+                            if (tam != null && tam.activeTrip != null) {
+                                val at = tam.activeTrip
+                                bat.put("activeTripKm", Math.round(at.distanceKm * 10.0) / 10.0)
+                                bat.put("activeTripMinutes", Math.max(0, at.durationSeconds / 60))
+                            } else {
+                                bat.put("activeTripKm", 0.0)
+                                bat.put("activeTripMinutes", 0)
+                            }
+
                             synth.put("battery", bat)
 
                             val pt = JSONObject()
@@ -1014,6 +1042,17 @@ class VehicleControlComposeFragment : Fragment() {
             chargingPowerKw = uiState.battery.chargingPowerKw,
             deltaTimeSec = 0.1
         )
+    }
+
+    private fun resetSinceCharge() {
+        executeCommand("/api/vehicle/telemetry/reset-since-charge", null, "Son şarj ve gerçekçi menzil referansı sıfırlandı") {
+            try {
+                com.overdrive.app.telemetry.SinceChargeManager.getInstance().reset()
+            } catch (_: Throwable) {}
+            mainHandler.post {
+                pollFastInMemoryTelemetry()
+            }
+        }
     }
 
     private fun executeCommand(

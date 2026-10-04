@@ -11032,14 +11032,33 @@ public class BydDataCollector {
             logger.debug("collectInstrumentExtended tripElecConsumption error: " + e.getMessage());
         }
 
-        // Last 50km power consumption
+        // Last 50km power consumption directly from BYD vehicle hardware
         try {
-            if (instrumentDevice != null) {
-                Object last50km = BydDeviceHelper.callGetter(instrumentDevice, "getLast50KmPowerConsume");
-                if (last50km instanceof Number) {
-                    double val = ((Number) last50km).doubleValue();
-                    if (val >= 0) b.last50KmConsumption(val);
+            double last50Val = -1.0;
+            String[] getterNames = new String[] {
+                "getLast50KmPowerConsume", "getLast50kmPowerConsume",
+                "getLast50KmPowerConsumption", "getLast50KmElecConsume",
+                "getLast50KmElecConsumption"
+            };
+            Object[] candidates = new Object[] { instrumentDevice, statisticDevice, energyDevice };
+            for (Object dev : candidates) {
+                if (dev == null) continue;
+                for (String mName : getterNames) {
+                    try {
+                        Object res = BydDeviceHelper.callGetter(dev, mName);
+                        if (res instanceof Number) {
+                            double v = ((Number) res).doubleValue();
+                            if (v > 0.0 && v < 100.0) {
+                                last50Val = v;
+                                break;
+                            }
+                        }
+                    } catch (Throwable ignored) {}
                 }
+                if (last50Val > 0.0) break;
+            }
+            if (last50Val > 0.0) {
+                b.last50KmConsumption(last50Val);
             }
         } catch (Exception e) {
             logger.debug("collectInstrumentExtended last50km error: " + e.getMessage());

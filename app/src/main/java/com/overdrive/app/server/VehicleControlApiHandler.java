@@ -143,6 +143,18 @@ public class VehicleControlApiHandler {
             return true;
         }
 
+        // POST /api/vehicle/telemetry/reset-since-charge or /api/vehicle/realistic-range/reset
+        if ((cleanPath.equals("/api/vehicle/telemetry/reset-since-charge")
+                || cleanPath.equals("/api/vehicle/realistic-range/reset"))
+                && method.equals("POST")) {
+            com.overdrive.app.telemetry.SinceChargeManager.getInstance().reset();
+            JSONObject response = new JSONObject();
+            response.put("success", true);
+            response.put("message", "Son şarj ve gerçekçi menzil referansı sıfırlandı");
+            HttpResponse.sendJson(out, response.toString());
+            return true;
+        }
+
         // App-process actuator/activity final-boundary safety check. The caller fails
         // closed if this endpoint cannot be reached or returns malformed data.
         if (cleanPath.startsWith("/api/vehicle/driving-safety/")
@@ -1058,17 +1070,21 @@ public class VehicleControlApiHandler {
             activeTripMinutes = sCachedActiveTripMinutes;
             regenKwh = sCachedRegenKwh;
 
-            // Direct data overrides if available
-            if (!Double.isNaN(data.currentTripMileageKm) && data.currentTripMileageKm >= 0.0) {
-                activeTripKm = Math.round(data.currentTripMileageKm * 10.0) / 10.0;
-            }
-            if (!Double.isNaN(data.currentTripTimeHours) && data.currentTripTimeHours >= 0.0) {
-                activeTripMinutes = (int) Math.round(data.currentTripTimeHours * 60.0);
+            // Live Active Trip check so minutes and km update smoothly without cache freeze
+            com.overdrive.app.trips.TripAnalyticsManager tam =
+                    com.overdrive.app.daemon.CameraDaemon.getTripAnalyticsManager();
+            if (tam != null && tam.getActiveTrip() != null) {
+                com.overdrive.app.trips.TripRecord at = tam.getActiveTrip();
+                activeTripKm = Math.round(at.distanceKm * 10.0) / 10.0;
+                activeTripMinutes = Math.max(0, at.durationSeconds / 60);
+            } else {
+                activeTripKm = 0.0;
+                activeTripMinutes = 0;
             }
         } else {
             try {
                 // 1. Son 50 km ortalama tüketim:
-                // Doğrudan BYD DiLink donanımından gelen getLast50KmPowerConsume()
+                // Doğrudan BYD DiLink araç donanımından gelen getLast50KmPowerConsume()
                 if (!Double.isNaN(data.last50KmConsumption) && data.last50KmConsumption > 0.0 && data.last50KmConsumption < 100.0) {
                     avg50KmKwh = Math.round(data.last50KmConsumption * 10.0) / 10.0;
                 }
@@ -1080,136 +1096,36 @@ public class VehicleControlApiHandler {
                 }
 
                 // 3. Aktif Seyahat (Trip):
-                // Doğrudan BYD gösterge paneli (cluster) seyahat mesafesi ve süresi
-                if (!Double.isNaN(data.currentTripMileageKm) && data.currentTripMileageKm >= 0.0) {
-                    activeTripKm = Math.round(data.currentTripMileageKm * 10.0) / 10.0;
-                }
-                if (!Double.isNaN(data.currentTripTimeHours) && data.currentTripTimeHours >= 0.0) {
-                    activeTripMinutes = (int) Math.round(data.currentTripTimeHours * 60.0);
-                } else if (!Double.isNaN(data.drivingTimeHours) && data.drivingTimeHours >= 0.0) {
-                    activeTripMinutes = (int) Math.round(data.drivingTimeHours * 60.0);
-                }
-
+                // Araç hareket etmeye başladığı andan itibaren başlayan sürüşte yapılan km ve süresi
                 com.overdrive.app.trips.TripAnalyticsManager tam =
                         com.overdrive.app.daemon.CameraDaemon.getTripAnalyticsManager();
-                if (tam != null) {
+                if (tam != null && tam.getActiveTrip() != null) {
                     com.overdrive.app.trips.TripRecord activeTrip = tam.getActiveTrip();
-                    if (activeTrip != null) {
-                        if (activeTripKm <= 0.0 && activeTrip.distanceKm >= 0.0) {
-                            activeTripKm = Math.round(activeTrip.distanceKm * 10.0) / 10.0;
-                        }
-                        if (activeTripMinutes <= 0 && activeTrip.durationSeconds >= 0) {
-                            activeTripMinutes = Math.max(0, activeTrip.durationSeconds / 60);
-                        }
-                        if (activeTrip.energyPerKm < 0 && activeTrip.distanceKm > 0) {
-                            regenKwh = Math.round(Math.abs(activeTrip.energyPerKm * activeTrip.distanceKm) * 100.0) / 100.0;
-                        } else if (activeTrip.elecConStart >= 0 && activeTrip.elecConEnd >= activeTrip.elecConStart && activeTrip.kwhStart > 0 && activeTrip.kwhEnd > 0) {
-                            double grossKwh = activeTrip.elecConEnd - activeTrip.elecConStart;
-                            double netKwh = activeTrip.kwhStart - activeTrip.kwhEnd;
-                            if (grossKwh > netKwh) {
-                                regenKwh = Math.round((grossKwh - netKwh) * 100.0) / 100.0;
-                            }
+                    activeTripKm = Math.round(activeTrip.distanceKm * 10.0) / 10.0;
+                    activeTripMinutes = Math.max(0, activeTrip.durationSeconds / 60);
+                    if (activeTrip.energyPerKm < 0 && activeTrip.distanceKm > 0) {
+                        regenKwh = Math.round(Math.abs(activeTrip.energyPerKm * activeTrip.distanceKm) * 100.0) / 100.0;
+                    } else if (activeTrip.elecConStart >= 0 && activeTrip.elecConEnd >= activeTrip.elecConStart && activeTrip.kwhStart > 0 && activeTrip.kwhEnd > 0) {
+                        double grossKwh = activeTrip.elecConEnd - activeTrip.elecConStart;
+                        double netKwh = activeTrip.kwhStart - activeTrip.kwhEnd;
+                        if (grossKwh > netKwh) {
+                            regenKwh = Math.round((grossKwh - netKwh) * 100.0) / 100.0;
                         }
                     }
-
-                    com.overdrive.app.trips.TripDatabase tripDb = tam.getDatabase();
-                    if (tripDb != null) {
-                        if (avgLifetimeKwh <= 0.0) {
-                            com.overdrive.app.trips.ConsumptionBucket overall = tripDb.getOverallAverage();
-                            if (overall != null && overall.sampleCount > 0 && overall.getMean() > 0) {
-                                avgLifetimeKwh = Math.round(overall.getMean() * 100.0 * 10.0) / 10.0;
-                            }
-                        }
-                        if (avg50KmKwh <= 0.0) {
-                            java.util.List<com.overdrive.app.trips.TripRecord> recentTrips = tripDb.getTrips(30, 20);
-                            if (recentTrips != null && !recentTrips.isEmpty()) {
-                                double distAcc = 0;
-                                double energyAcc = 0;
-                                for (com.overdrive.app.trips.TripRecord tr : recentTrips) {
-                                    if (tr.distanceKm > 0 && tr.energyPerKm > 0) {
-                                        double takeDist = Math.min(tr.distanceKm, 50.0 - distAcc);
-                                        distAcc += takeDist;
-                                        energyAcc += takeDist * tr.energyPerKm;
-                                        if (distAcc >= 50.0) break;
-                                    }
-                                }
-                                if (distAcc > 0) {
-                                    avg50KmKwh = Math.round((energyAcc / distAcc) * 100.0 * 10.0) / 10.0;
-                                }
-                            }
-                        }
-                    }
-
-                    com.overdrive.app.trips.RangeEstimator re = tam.getRangeEstimator();
-                    if (re != null && !Double.isNaN(data.socPercent)) {
-                        try {
-                            int tempC = !Double.isNaN(data.outsideTempC) ? (int) data.outsideTempC : 22;
-                            com.overdrive.app.trips.RangeEstimate est =
-                                    re.estimate(data.socPercent, !Double.isNaN(data.speedKmh) ? data.speedKmh : 0.0, tempC, 80);
-                            if (est != null && est.predictedRangeKm > 0) {
-                                realisticRangeKm = Math.round(est.predictedRangeKm);
-                            }
-                        } catch (Throwable ignored) {}
-                    }
-                }
-
-                // Fallback dynamic range calculation if estimator has insufficient history
-                if (realisticRangeKm <= 0 && !Double.isNaN(data.socPercent) && data.socPercent > 0) {
-                    double effRate = avgLifetimeKwh > 0 ? (avgLifetimeKwh / 100.0) : (avg50KmKwh > 0 ? (avg50KmKwh / 100.0) : 0.168);
-                    double packCap = (!Double.isNaN(data.remainKwh) && data.remainKwh > 0) ? data.remainKwh : 82.5;
-                    double usableKwh = (data.socPercent / 100.0) * packCap;
-                    realisticRangeKm = Math.round(usableKwh / effRate);
-                }
-
-                // 4. Son Şarjdan İtibaren:
-                com.overdrive.app.monitor.SocHistoryDatabase socDb =
-                        com.overdrive.app.monitor.SocHistoryDatabase.getInstance();
-                if (socDb != null) {
-                    JSONObject lastCharge = socDb.getMostRecentCompletedChargingSession(8760);
-                    if (lastCharge != null) {
-                        long lastChargeEnd = lastCharge.optLong("endTime", 0);
-                        if (lastChargeEnd > 0 && tam != null && tam.getDatabase() != null) {
-                            java.util.List<com.overdrive.app.trips.TripRecord> tripsSinceCharge =
-                                    tam.getDatabase().getTripsBetween(lastChargeEnd, System.currentTimeMillis(), 200, 0);
-                            if (tripsSinceCharge != null) {
-                                double distSum = 0;
-                                double energySum = 0;
-                                for (com.overdrive.app.trips.TripRecord t : tripsSinceCharge) {
-                                    if (t.distanceKm > 0) {
-                                        distSum += t.distanceKm;
-                                        if (t.energyPerKm > 0) energySum += t.distanceKm * t.energyPerKm;
-                                    }
-                                }
-                                if (activeTripKm > 0) {
-                                    distSum += activeTripKm;
-                                    if (avg50KmKwh > 0) {
-                                        energySum += activeTripKm * (avg50KmKwh / 100.0);
-                                    } else if (avgLifetimeKwh > 0) {
-                                        energySum += activeTripKm * (avgLifetimeKwh / 100.0);
-                                    }
-                                }
-                                sinceLastChargeKm = Math.round(distSum * 10.0) / 10.0;
-                                if (distSum > 0 && energySum > 0) {
-                                    sinceLastChargeAvgKwh = Math.round((energySum / distSum) * 100.0 * 10.0) / 10.0;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (sinceLastChargeKm <= 0.0 && activeTripKm > 0.0) {
-                    sinceLastChargeKm = activeTripKm;
-                }
-                if (sinceLastChargeAvgKwh <= 0.0) {
-                    sinceLastChargeAvgKwh = avg50KmKwh > 0.0 ? avg50KmKwh : avgLifetimeKwh;
-                }
-
-                // 5. Regen tasarrufu:
-                if (regenKwh <= 0.0 && activeTripKm > 0.0) {
-                    regenKwh = Math.round(activeTripKm * 0.028 * 100.0) / 100.0;
-                } else if (activeTripKm <= 0.0) {
+                } else {
+                    activeTripKm = 0.0;
+                    activeTripMinutes = 0;
                     regenKwh = 0.0;
                 }
+
+                // 4. Son Şarjdan İtibaren ve Gerçekçi Menzil (SinceChargeManager):
+                // Aracın son şarj edildiği andan şimdiye kadar yapılan km ve harcanan enerjiye göre hesaplanır
+                com.overdrive.app.telemetry.SinceChargeManager scm =
+                        com.overdrive.app.telemetry.SinceChargeManager.getInstance();
+                scm.update(data, tam);
+                sinceLastChargeKm = scm.getSinceLastChargeKm();
+                sinceLastChargeAvgKwh = scm.getSinceLastChargeAvgKwh();
+                realisticRangeKm = scm.getRealisticRangeKm();
             } catch (Throwable t) {
                 logger.debug("Failed enriching battery card telemetry: " + t.getMessage());
             }

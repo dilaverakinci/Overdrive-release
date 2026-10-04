@@ -273,6 +273,36 @@ public class TripDetector {
                                 + " detected while IDLE → auto-starting trip");
                         startTrip();
                     }
+
+                    // Live Active Trip Updates (Item 3):
+                    // Continuously update duration and distance while driving
+                    if ((state == State.ACTIVE || state == State.PARK_PENDING) && activeTrip != null) {
+                        activeTrip.durationSeconds = (int) Math.max(0, (System.currentTimeMillis() - activeTrip.startTime) / 1000);
+
+                        double curOdo = -1.0;
+                        try {
+                            curOdo = OdometerReader.getInstance().readOdometerKm();
+                        } catch (Throwable ignored) {}
+                        if (curOdo <= 0) {
+                            BydVehicleData vd = VehicleDataMonitor.getInstance().getVd();
+                            if (vd != null && vd.totalMileageKm != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE && vd.totalMileageKm > 0) {
+                                curOdo = vd.totalMileageKm;
+                            }
+                        }
+                        if (curOdo > 0) {
+                            if (startOdometerKm <= 0) {
+                                startOdometerKm = curOdo;
+                                activeTrip.odometerStartKm = curOdo;
+                            } else if (curOdo >= startOdometerKm) {
+                                activeTrip.distanceKm = Math.round((curOdo - startOdometerKm) * 10.0) / 10.0;
+                            }
+                        } else if (listener != null) {
+                            double rec = listener.getRecordedDistanceKm();
+                            if (rec > 0) {
+                                activeTrip.distanceKm = Math.round(rec * 10.0) / 10.0;
+                            }
+                        }
+                    }
                 }
             } catch (Throwable t) {
                 logger.debug("Liveness watchdog tick error: " + t.getMessage());
