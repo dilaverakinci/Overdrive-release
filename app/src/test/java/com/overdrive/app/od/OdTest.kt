@@ -5,12 +5,10 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.math.cos
-import kotlin.math.max
-import kotlin.math.min
 import kotlin.math.sin
 import kotlin.math.tan
 
-class PureOdDewarpTest {
+class OdTest {
 
     private val eps = 1e-5f
 
@@ -31,8 +29,7 @@ class PureOdDewarpTest {
         )
         val output = FloatArray(20)
 
-        val success = PureOdDewarp.derive(input, output)
-        assertTrue(success)
+        Od.resolve(input, output)
 
         // Hand-calculated ground truth from C++ od_core.h
         val h0 = 0.25f
@@ -86,8 +83,8 @@ class PureOdDewarpTest {
         val outRight = FloatArray(20)
         val outLeft = FloatArray(20)
 
-        assertTrue(PureOdDewarp.derive(inputRight, outRight))
-        assertTrue(PureOdDewarp.derive(inputLeft, outLeft))
+        Od.resolve(inputRight, outRight)
+        Od.resolve(inputLeft, outLeft)
 
         // ctr and roll sin flip sign
         assertEquals(0.15f, outRight[5], eps)
@@ -103,14 +100,16 @@ class PureOdDewarpTest {
     fun testBufferSafetyAndNullHandling() {
         val validIn = FloatArray(11)
         val smallOut = FloatArray(10)
-        assertFalse(PureOdDewarp.derive(validIn, smallOut))
-        assertFalse(PureOdDewarp.derive(null, FloatArray(20)))
-        assertFalse(PureOdDewarp.derive(validIn, null))
+        Od.resolve(validIn, smallOut) // Should safely do nothing and not crash
 
         val odOut = FloatArray(20)
-        // Od.resolve with null should zero-fill
         odOut[0] = 999f
         Od.resolve(null, odOut)
+        assertEquals(0f, odOut[0], 0f)
+
+        val shortIn = FloatArray(5)
+        odOut[0] = 999f
+        Od.resolve(shortIn, odOut)
         assertEquals(0f, odOut[0], 0f)
     }
 
