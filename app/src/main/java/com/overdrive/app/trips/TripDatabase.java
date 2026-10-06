@@ -34,7 +34,7 @@ public class TripDatabase {
     // AUTO_COMPACT_FILL_RATE=50: idle-CPU tuning shared by all seven H2 stores
     // (see SocHistoryDatabase.JDBC_URL for the full rationale).
     private static final String JDBC_URL = "jdbc:h2:file:" + DB_PATH +
-            ";FILE_LOCK=SOCKET;TRACE_LEVEL_FILE=0;DB_CLOSE_ON_EXIT=FALSE" +
+            ";FILE_LOCK=SOCKET;TRACE_LEVEL_FILE=0;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1" +
             ";AUTO_COMPACT_FILL_RATE=50";
 
     // volatile: reassigned by reconnect() (now synchronized); the fence gives a
@@ -97,7 +97,7 @@ public class TripDatabase {
 
                 if (isLockError && attempt < maxRetries) {
                     logger.warn("Database locked (attempt " + attempt + "/" + maxRetries + "), cleaning up stale locks...");
-                    cleanupStaleLocks();
+                    cleanupStaleLocks(attempt >= 2);
                     try {
                         Thread.sleep(retryDelayMs * attempt); // Exponential backoff
                     } catch (InterruptedException ie) {
@@ -234,14 +234,14 @@ public class TripDatabase {
         }
     }
 
-    private void cleanupStaleLocks() {
+    private void cleanupStaleLocks(boolean force) {
         try {
             java.io.File lockFile = new java.io.File(DB_PATH + ".lock.db");
             if (lockFile.exists()) {
                 long ageMs = System.currentTimeMillis() - lockFile.lastModified();
-                if (ageMs > 5 * 60 * 1000) {
+                if (force || ageMs > 5 * 60 * 1000) {
                     if (lockFile.delete()) {
-                        logger.info("Deleted stale lock file (age: " + (ageMs / 1000) + "s)");
+                        logger.info("Deleted stale lock file (age: " + (ageMs / 1000) + "s, force=" + force + ")");
                     }
                 }
             }

@@ -51,7 +51,7 @@ public class SocHistoryDatabase {
     // a head unit loses power abruptly with the car, and raising the delay widens
     // the delayed-write loss window on every one of these stores.
     private static final String JDBC_URL = "jdbc:h2:file:" + DB_PATH +
-        ";FILE_LOCK=SOCKET;TRACE_LEVEL_FILE=0;DB_CLOSE_ON_EXIT=FALSE" +
+        ";FILE_LOCK=SOCKET;TRACE_LEVEL_FILE=0;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1" +
         ";AUTO_COMPACT_FILL_RATE=50";
     
     // Table names
@@ -506,7 +506,7 @@ public class SocHistoryDatabase {
                     
                     if (isLockError && attempt < maxRetries) {
                         logger.warn("Database locked (attempt " + attempt + "/" + maxRetries + "), cleaning up stale locks...");
-                        cleanupStaleLocks();
+                        cleanupStaleLocks(attempt >= 2);
                         try {
                             Thread.sleep(retryDelayMs * attempt);  // Exponential backoff
                         } catch (InterruptedException ie) {
@@ -525,15 +525,14 @@ public class SocHistoryDatabase {
     /**
      * Clean up stale lock files that may have been left by crashed processes.
      */
-    private void cleanupStaleLocks() {
+    private void cleanupStaleLocks(boolean force) {
         try {
             java.io.File lockFile = new java.io.File(DB_PATH + ".lock.db");
             if (lockFile.exists()) {
-                // Check if the lock file is stale (older than 5 minutes with no active process)
                 long ageMs = System.currentTimeMillis() - lockFile.lastModified();
-                if (ageMs > 5 * 60 * 1000) {  // 5 minutes
+                if (force || ageMs > 5 * 60 * 1000) {  // force or > 5 minutes
                     if (lockFile.delete()) {
-                        logger.info("Deleted stale lock file (age: " + (ageMs / 1000) + "s)");
+                        logger.info("Deleted stale lock file (age: " + (ageMs / 1000) + "s, force=" + force + ")");
                     }
                 }
             }
