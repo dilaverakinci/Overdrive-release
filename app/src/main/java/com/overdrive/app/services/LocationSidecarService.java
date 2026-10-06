@@ -5,7 +5,10 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
 import android.location.Location;
@@ -14,9 +17,14 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.util.Log;
 
 import androidx.core.content.ContextCompat;
+
+import com.overdrive.app.byd.BydDataCollector;
+import com.overdrive.app.monitor.AccMonitor;
+import com.overdrive.app.monitor.GearMonitor;
 
 import org.json.JSONObject;
 
@@ -69,6 +77,19 @@ public class LocationSidecarService extends Service implements LocationListener 
     // at cold boot until GPS/NTP corrects it).
     private volatile long fixElapsedMs = 0L;
     private boolean permissionGranted = false;
+
+    // ── Issue #321: Park Standby Mode (Qualcomm GNSS HAL Starvation Fix) ──
+    // Continuous 1Hz GPS_PROVIDER registration while parked starves Qualcomm's
+    // GNSS HAL, locking hardware channels and leaving native navigation with
+    // "No GPS Signal" on subsequent drives. Standby releases the provider while
+    // parked and re-acquires immediately on departure.
+    private volatile boolean isParkStandby = false;
+    private volatile boolean isGpsProviderRegistered = false;
+    private volatile boolean isNetworkProviderRegistered = false;
+    private long parkDetectedAtMs = 0L;
+    static final long PARK_STABILIZATION_MS = 15_000L; // 15s in GEAR_P before entering standby
+    static final long STANDBY_POLL_INTERVAL_MS = 5_000L; // 5s ping while in standby
+    private BroadcastReceiver vehicleStateReceiver = null;
 
     // SOTA: Throttling fields to prevent IPC/Disk spam.
     // Holds the last location that was actually SENT to the daemon or SAVED to disk.
@@ -197,7 +218,16 @@ public class LocationSidecarService extends Service implements LocationListener 
         periodicSender = new Runnable() {
             @Override
             public void run() {
+                // Issue #321: evaluate park standby state on every tick
+                evaluateParkStandbyState();
+
                 sendGpsViaTcp();
+
+                if (isParkStandby) {
+                    // Park Standby: skip GPS polling round-trip to avoid Qualcomm GNSS HAL starvation
+                    handler.postDelayed(this, STANDBY_POLL_INTERVAL_MS);
+                    return;
+                }
 
                 // Poll the provider's last-known fix and process it. Our own 1s
                 // GPS request (requestLocationUpdates GPS_PROVIDER, 1000ms) keeps
@@ -304,74 +334,277 @@ public class LocationSidecarService extends Service implements LocationListener 
                 return;
             }
             
-            // Keep GPS at 1s / 0m so RoadSense back-projection still sees the
-            // ~2 Hz distinct-fix stream its GpsRingBuffer is designed around
-            // (GPS_POLL_MS≈500, FIX_LATENCY≈700ms). The throttling that cuts
-            // IPC/disk spam happens downstream in onLocationChanged (the
-            // distance/time gate), NOT at the provider — coarsening the
-            // provider here would starve hazard approach detection.
-            //
-            // Register UNCONDITIONALLY — never gate on isProviderEnabled().
-            // The head unit disables location (location_mode=0) whenever the
-            // car is off, and app (re)starts almost always happen parked, so
-            // an isProviderEnabled gate here meant the listener was NEVER
-            // registered for that app instance and the callback path never
-            // delivered — fixes then only arrived via the periodic
-            // getLastKnownLocation poll, riding on the factory nav's own GPS
-            // request while driving. Android accepts registration while a
-            // provider is disabled and starts delivering the moment it comes
-            // on (ACC-on) — exactly the behavior we want.
+            // Get last known location immediately to seed volatile coordinates
             try {
-                locationManager.requestLocationUpdates(
-                    LocationManager.GPS_PROVIDER,
-                    1000,  // 1 second
-                    0.0f,  // every fix (no provider-side distance filter)
-                    this,
-                    workerThread.getLooper()  // deliver off the UI thread
-                );
-                Log.i(TAG, "GPS provider registered (1s/0m), enabled="
-                        + locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER));
+                Location lastGps = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                Location lastNetwork = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                
+                Log.i(TAG, "Last GPS: " + lastGps + ", Last Network: " + lastNetwork);
+                
+                if (lastGps != null) {
+                    onLocationChanged(lastGps);
+                } else if (lastNetwork != null) {
+                    onLocationChanged(lastNetwork);
+                } else {
+                    sendGpsViaTcp();
+                    Log.i(TAG, "No last known location, sent initial update");
+                }
+            } catch (SecurityException se) {
+                Log.w(TAG, "Location permission not yet active for last known fix: " + se.getMessage());
             } catch (Exception e) {
-                Log.e(TAG, "GPS provider registration failed: " + e.getMessage());
+                Log.w(TAG, "Failed to query last known location: " + e.getMessage());
             }
 
-            // Also use network provider as fallback. 5s cadence is fine; keep
-            // min-distance 0 so it doesn't pre-filter fixes the gate wants.
-            try {
-                locationManager.requestLocationUpdates(
-                    LocationManager.NETWORK_PROVIDER,
-                    5000,  // 5 seconds
-                    0.0f,  // every fix
-                    this,
-                    workerThread.getLooper()  // deliver off the UI thread
-                );
-                Log.i(TAG, "Network provider registered (5s/0m), enabled="
-                        + locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER));
-            } catch (Exception e) {
-                Log.e(TAG, "Network provider registration failed: " + e.getMessage());
-            }
-            
-            // Get last known location immediately
-            Location lastGps = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            Location lastNetwork = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            
-            Log.i(TAG, "Last GPS: " + lastGps + ", Last Network: " + lastNetwork);
-            
-            if (lastGps != null) {
-                onLocationChanged(lastGps);
-            } else if (lastNetwork != null) {
-                onLocationChanged(lastNetwork);
+            // Issue #321: If the vehicle is parked/asleep at startup, do NOT register 1Hz GPS_PROVIDER.
+            // Keeping 1Hz GPS active while parked starves Qualcomm GNSS HAL, locking hardware channels.
+            if (isVehicleParkedOrInactive()) {
+                enterParkStandby();
             } else {
-                // Send initial update (will fail if daemon not running yet, that's OK)
-                sendGpsViaTcp();
-                Log.i(TAG, "No last known location, sent initial update");
+                registerLocationProviders();
             }
+
+            registerVehicleStateReceiver();
             
         } catch (SecurityException e) {
             Log.e(TAG, "Location permission denied: " + e.getMessage());
         } catch (Exception e) {
             Log.e(TAG, "Failed to start location updates: " + e.getMessage());
         }
+    }
+
+    /**
+     * Registers GPS_PROVIDER (1s/0m) and NETWORK_PROVIDER (5s/0m) for active driving.
+     */
+    private void registerLocationProviders() {
+        if (locationManager == null || !permissionGranted) {
+            return;
+        }
+
+        if (!isGpsProviderRegistered) {
+            try {
+                locationManager.requestLocationUpdates(
+                    LocationManager.GPS_PROVIDER,
+                    1000,  // 1 second
+                    0.0f,  // every fix (no provider-side distance filter)
+                    this,
+                    workerThread != null ? workerThread.getLooper() : null
+                );
+                isGpsProviderRegistered = true;
+                Log.i(TAG, "GPS provider registered (1s/0m), enabled="
+                        + locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER));
+            } catch (Exception e) {
+                Log.e(TAG, "GPS provider registration failed: " + e.getMessage());
+            }
+        }
+
+        if (!isNetworkProviderRegistered) {
+            try {
+                locationManager.requestLocationUpdates(
+                    LocationManager.NETWORK_PROVIDER,
+                    5000,  // 5 seconds
+                    0.0f,  // every fix
+                    this,
+                    workerThread != null ? workerThread.getLooper() : null
+                );
+                isNetworkProviderRegistered = true;
+                Log.i(TAG, "Network provider registered (5s/0m), enabled="
+                        + locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER));
+            } catch (Exception e) {
+                Log.e(TAG, "Network provider registration failed: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Issue #321: Enter Park Standby mode.
+     * Unregisters GPS provider from Qualcomm GNSS HAL while keeping last known location in cache.
+     */
+    void enterParkStandby() {
+        if (isParkStandby) return;
+        isParkStandby = true;
+        Log.i(TAG, "Entering GPS park standby: releasing GPS provider to prevent Qualcomm GNSS HAL starvation (Issue #321)");
+
+        try {
+            if (locationManager != null) {
+                locationManager.removeUpdates(this);
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Error removing location updates for standby: " + e.getMessage());
+        } finally {
+            isGpsProviderRegistered = false;
+            isNetworkProviderRegistered = false;
+        }
+
+        saveToLocalCache();
+    }
+
+    /**
+     * Issue #321: Exit Park Standby mode on departure.
+     * Re-registers GPS provider (1s/0m) immediately for driving navigation and RoadSense.
+     */
+    void exitParkStandby() {
+        if (!isParkStandby) return;
+        isParkStandby = false;
+        parkDetectedAtMs = 0L;
+        Log.i(TAG, "Exiting GPS park standby: re-registering GPS provider (1s/0m) for departure (Issue #321)");
+
+        registerLocationProviders();
+
+        try {
+            if (locationManager != null) {
+                Location lastGps = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                if (lastGps != null) {
+                    processFix(lastGps);
+                }
+            }
+        } catch (Exception ignored) {}
+
+        sendGpsViaTcp();
+
+        if (handler != null && periodicSender != null) {
+            handler.removeCallbacks(periodicSender);
+            handler.post(periodicSender);
+        }
+    }
+
+    /**
+     * Checks vehicle status (ACC, Sentry, Gear, Speed, Provider status) to determine if parked.
+     */
+    boolean isVehicleParkedOrInactive() {
+        // 1. Authoritative ACC check from AccMonitor
+        try {
+            if (AccMonitor.isAccStateAuthoritative() && !AccMonitor.isAccOn()) {
+                return true;
+            }
+            if (AccMonitor.isInSentryMode()) {
+                return true;
+            }
+        } catch (Throwable ignored) {}
+
+        // 2. BydDataCollector ACC state
+        try {
+            BydDataCollector collector = BydDataCollector.getInstance();
+            if (collector != null && !collector.isAccOn()) {
+                return true;
+            }
+        } catch (Throwable ignored) {}
+
+        // 3. Android Location Provider disabled by head unit (location_mode=0 when car is off)
+        try {
+            if (locationManager != null && !locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                return true;
+            }
+        } catch (Throwable ignored) {}
+
+        // 4. Gear and Speed check: if in GEAR_P and stationary for > PARK_STABILIZATION_MS
+        try {
+            int gear = GearMonitor.GEAR_P;
+            boolean gearDetected = false;
+            try {
+                BydDataCollector collector = BydDataCollector.getInstance();
+                if (collector != null) {
+                    int collectorGear = collector.readGearNow();
+                    if (GearMonitor.isValidGearMode(collectorGear)) {
+                        gear = collectorGear;
+                        gearDetected = true;
+                    }
+                }
+            } catch (Throwable ignored) {}
+
+            if (!gearDetected) {
+                try {
+                    int gmGear = GearMonitor.getInstance().getCurrentGear();
+                    if (GearMonitor.isValidGearMode(gmGear)) {
+                        gear = gmGear;
+                        gearDetected = true;
+                    }
+                } catch (Throwable ignored) {}
+            }
+
+            if (gearDetected && gear == GearMonitor.GEAR_P) {
+                double speedKmh = 0.0;
+                try {
+                    BydDataCollector collector = BydDataCollector.getInstance();
+                    if (collector != null) {
+                        speedKmh = collector.readCurrentSpeedKmh();
+                    }
+                } catch (Throwable ignored) {}
+
+                if (Double.isNaN(speedKmh) || speedKmh <= 1.0) {
+                    long now = SystemClock.elapsedRealtime();
+                    if (parkDetectedAtMs == 0L) {
+                        parkDetectedAtMs = now;
+                    } else if (now - parkDetectedAtMs >= PARK_STABILIZATION_MS) {
+                        return true;
+                    }
+                    return false; // In P, waiting for debounce
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        parkDetectedAtMs = 0L;
+        return false;
+    }
+
+    /**
+     * Evaluates whether standby mode should transition.
+     */
+    void evaluateParkStandbyState() {
+        boolean shouldStandby = isVehicleParkedOrInactive();
+        if (shouldStandby && !isParkStandby) {
+            enterParkStandby();
+        } else if (!shouldStandby && isParkStandby) {
+            exitParkStandby();
+        }
+    }
+
+    /**
+     * Listens for system broadcast events that signal vehicle power/screen/location mode transitions.
+     */
+    private void registerVehicleStateReceiver() {
+        if (vehicleStateReceiver != null) return;
+        try {
+            vehicleStateReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    if (intent == null) return;
+                    String action = intent.getAction();
+                    if (LocationManager.PROVIDERS_CHANGED_ACTION.equals(action)
+                            || "android.location.MODE_CHANGED".equals(action)
+                            || Intent.ACTION_SCREEN_ON.equals(action)
+                            || Intent.ACTION_SCREEN_OFF.equals(action)) {
+                        if (handler != null) {
+                            handler.post(LocationSidecarService.this::evaluateParkStandbyState);
+                        }
+                    }
+                }
+            };
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(LocationManager.PROVIDERS_CHANGED_ACTION);
+            filter.addAction("android.location.MODE_CHANGED");
+            filter.addAction(Intent.ACTION_SCREEN_ON);
+            filter.addAction(Intent.ACTION_SCREEN_OFF);
+            registerReceiver(vehicleStateReceiver, filter);
+            Log.i(TAG, "Vehicle state receiver registered for GPS standby monitoring");
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to register vehicle state receiver: " + e.getMessage());
+        }
+    }
+
+    public boolean isParkStandby() {
+        return isParkStandby;
+    }
+
+    public boolean isGpsProviderRegistered() {
+        return isGpsProviderRegistered;
+    }
+
+    public boolean isNetworkProviderRegistered() {
+        return isNetworkProviderRegistered;
+    }
+
+    void setParkStandbyForTesting(boolean standby) {
+        this.isParkStandby = standby;
     }
 
     // Wall-clock of the last GPS_PROVIDER fix delivered by the PROVIDER CALLBACK
@@ -824,12 +1057,25 @@ public class LocationSidecarService extends Service implements LocationListener 
         } catch (Throwable t) {
             Log.w(TAG, "parked-marker gate failed (" + t.getMessage() + ") — proceeding");
         }
+
+        // Issue #321: Re-evaluate park standby on service start/restart
+        if (handler != null) {
+            handler.post(this::evaluateParkStandbyState);
+        }
+
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+
+        if (vehicleStateReceiver != null) {
+            try {
+                unregisterReceiver(vehicleStateReceiver);
+            } catch (Exception ignored) {}
+            vehicleStateReceiver = null;
+        }
         
         if (handler != null && periodicSender != null) {
             handler.removeCallbacks(periodicSender);
