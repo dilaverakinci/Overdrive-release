@@ -4,8 +4,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.SystemClock;
 
+import com.overdrive.app.byd.ac.AcControlEngine;
 import com.overdrive.app.byd.bodywork.BodyworkConstants;
+import com.overdrive.app.byd.bodywork.DoorStateEngine;
+import com.overdrive.app.byd.bodywork.WindowMotionEngine;
 import com.overdrive.app.byd.routing.DrivingSafetyGuard;
+import com.overdrive.app.byd.speed.SpeedDistanceUnitEngine;
+import com.overdrive.app.byd.tyre.TyreAlarmEngine;
 import com.overdrive.app.logging.DaemonLogger;
 import com.overdrive.app.server.Messages;
 
@@ -5451,15 +5456,15 @@ public class BydDataCollector {
     }
 
     static boolean isUsablePolledSoc(double soc, boolean diLink5) {
-        return soc >= (diLink5 ? 1.0 : 0.0) && soc <= 100.0;
+        return SpeedDistanceUnitEngine.isUsablePolledSoc(soc, diLink5);
     }
 
     static double statisticDistanceFactor(boolean diLink5, double legacyFactor) {
-        return diLink5 ? 1.0 : legacyFactor;
+        return SpeedDistanceUnitEngine.statisticDistanceFactor(diLink5, legacyFactor);
     }
 
     static boolean isUsableMileage(int value, boolean diLink5) {
-        return value >= (diLink5 ? 0 : 1) && value <= 2_000_000;
+        return SpeedDistanceUnitEngine.isUsableMileage(value, diLink5);
     }
 
     /**
@@ -5489,55 +5494,41 @@ public class BydDataCollector {
      * plausibility range check.
      */
     static boolean isUsableManagerMileage(int raw, boolean diLink5) {
-        return raw != BydFeatureIds.BMS_UNAVAILABLE
-                && raw != BydFeatureIds.INVALID_VALUE
-                && raw != BydFeatureIds.INVALID_VALUE_2
-                && raw != 65535
-                && isUsableMileage(raw, diLink5);
+        return SpeedDistanceUnitEngine.isUsableManagerMileage(raw, diLink5);
     }
 
     static boolean isPlausibleTotalMileage(double value) {
-        return Double.isFinite(value) && value > 0.0 && value <= 9_999_999.9;
+        return SpeedDistanceUnitEngine.isPlausibleTotalMileage(value);
     }
 
     /**
      * A raw total-distance register at or above this is being reported in 0.1 units rather
      * than whole ones — no production odometer legitimately reaches 1,000,000.
      */
-    public static final double RAW_TOTAL_MILEAGE_FINE_THRESHOLD = 1_000_000.0;
+    public static final double RAW_TOTAL_MILEAGE_FINE_THRESHOLD =
+            SpeedDistanceUnitEngine.RAW_TOTAL_MILEAGE_FINE_THRESHOLD;
 
     /**
      * Normalize a raw total-distance register to WHOLE cluster units.
-     *
-     * <p>Some trims report this register in 0.1 units. There is no unit flag to read, so the
-     * only available signal is magnitude — see {@link #RAW_TOTAL_MILEAGE_FINE_THRESHOLD}.
-     *
-     * <p><b>Known limit.</b> Below 100,000 real units a 0.1-unit register is indistinguishable
-     * from a whole-unit one and passes through 10x high; the threshold only rescues the high
-     * end. This exists so every consumer of the register applies the SAME rule instead of each
-     * repeating its own copy — the state this replaced, where the collector applied no rule and
-     * the MQTT/ABRP payloads each re-tested the already-converted km value. The calibrated fine
-     * register in {@code OdometerReader} is the only path that establishes the unit independently.
      */
     public static double normalizeRawTotalMileage(double raw) {
-        return raw >= RAW_TOTAL_MILEAGE_FINE_THRESHOLD ? raw / 10.0 : raw;
+        return SpeedDistanceUnitEngine.normalizeRawTotalMileage(raw);
     }
 
     static boolean isPlausibleElectricRange(int value) {
-        return value >= 0 && value <= 2_000;
+        return SpeedDistanceUnitEngine.isPlausibleElectricRange(value);
     }
 
     static boolean isPlausibleWaterTemperature(int value, boolean diLink5) {
-        return value >= (diLink5 ? 1 : 0) && value <= 200;
+        return SpeedDistanceUnitEngine.isPlausibleWaterTemperature(value, diLink5);
     }
 
     static boolean isPlausibleTotalElectricConsumption(double value) {
-        return Double.isFinite(value) && value >= -1_000.0 && value <= 1_676_721.4;
+        return SpeedDistanceUnitEngine.isPlausibleTotalElectricConsumption(value);
     }
 
     static boolean isPlausibleTotalFuelConsumption(double value, boolean diLink5) {
-        return Double.isFinite(value) && value >= 0.0
-                && value <= (diLink5 ? 9_999.9 : 104_857.4);
+        return SpeedDistanceUnitEngine.isPlausibleTotalFuelConsumption(value, diLink5);
     }
 
     private void collectStatTemp(BydVehicleData.Builder b, int featureId, String which) {
@@ -8004,41 +7995,21 @@ public class BydDataCollector {
     }
 
     static int normalizeAcTemperatureUnit(int unit, boolean diLink5) {
-        return diLink5 && isDiLink5UnavailableRail(unit)
-                ? BydVehicleData.UNAVAILABLE : unit;
+        return AcControlEngine.normalizeAcTemperatureUnit(unit, diLink5);
     }
 
-    /**
-     * The display unit implied by an already-validated setpoint READING, used when
-     * {@code getTemperatureUnit()} doesn't answer.
-     *
-     * <p>Sound because the two dial bands are disjoint — 17..33 C ends far below 64..91 F — so a
-     * reading can only belong to one of them. This matters: falling back to Celsius on an
-     * unreadable unit would clamp a legitimate 73 F step down to 33, yanking the dial across the
-     * scale. Inferring from the value keeps the step correct on a trim whose unit getter is
-     * dormant but whose dial reads fine.
-     *
-     * @return the unit constant, or {@link BydVehicleData#UNAVAILABLE} if [setpoint] is in neither band
-     */
     private static int inferUnitFromSetpoint(int setpoint) {
-        if (setpoint >= AC_SETPOINT_MIN_C && setpoint <= AC_SETPOINT_MAX_C) return 1;  // non-zero = Celsius
-        if (setpoint >= AC_SETPOINT_MIN_F && setpoint <= AC_SETPOINT_MAX_F) return TEMP_UNIT_FAHRENHEIT;
-        return BydVehicleData.UNAVAILABLE;
+        return AcControlEngine.inferUnitFromSetpoint(setpoint);
     }
 
     static int resolveAcTemperatureUnit(
             int reportedUnit, int currentSetpoint, boolean diLink5) {
-        reportedUnit = normalizeAcTemperatureUnit(reportedUnit, diLink5);
-        if (reportedUnit != BydVehicleData.UNAVAILABLE) return reportedUnit;
-        return diLink5 ? inferUnitFromSetpoint(currentSetpoint) : 1;
+        return AcControlEngine.resolveAcTemperatureUnit(reportedUnit, currentSetpoint, diLink5);
     }
 
     /** Clamp a setpoint into the dial range for [unit] (mirrors the OEM's own clamp). */
     public static int clampSetpoint(int value, int unit) {
-        boolean f = unit == TEMP_UNIT_FAHRENHEIT;
-        int min = f ? AC_SETPOINT_MIN_F : AC_SETPOINT_MIN_C;
-        int max = f ? AC_SETPOINT_MAX_F : AC_SETPOINT_MAX_C;
-        return value < min ? min : value > max ? max : value;
+        return AcControlEngine.clampSetpoint(value, unit);
     }
 
     /**
@@ -9359,17 +9330,11 @@ public class BydDataCollector {
     }
 
     static int normalizeDiLink5TyreLeakState(int raw) {
-        switch (raw) {
-            case 0: return 0;
-            case 1: return 2;
-            case 2: return 1;
-            default: return BydVehicleData.UNAVAILABLE;
-        }
+        return TyreAlarmEngine.normalizeDiLink5TyreLeakState(raw);
     }
 
     static int normalizeDiLink5TyreStatus(int raw) {
-        return !isDiLink5UnavailableRail(raw)
-                ? raw : BydVehicleData.UNAVAILABLE;
+        return TyreAlarmEngine.normalizeDiLink5TyreStatus(raw);
     }
 
     private int readDiLink5TyrePressureKpa(int area) {
@@ -10588,8 +10553,7 @@ public class BydDataCollector {
     }
 
     static boolean isValidDoorOpenState(int state) {
-        return state == BodyworkConstants.STATE_OPEN
-                || state == BodyworkConstants.STATE_CLOSED;
+        return DoorStateEngine.isValidDoorOpenState(state);
     }
 
     /**
@@ -10597,22 +10561,7 @@ public class BydDataCollector {
      * On RHD area 1 is physical RF and area 2 LF; on LHD they are LF and RF respectively.
      */
     static int doorFeatureForArea(int area, boolean rightHandDrive) {
-        switch (area) {
-            case BodyworkConstants.AREA_FRONT_DRIVER:
-                return rightHandDrive
-                        ? BydFeatureIds.BODYWORK_DOOR_RF
-                        : BydFeatureIds.BODYWORK_DOOR_LF;
-            case BodyworkConstants.AREA_FRONT_PASSENGER:
-                return rightHandDrive
-                        ? BydFeatureIds.BODYWORK_DOOR_LF
-                        : BydFeatureIds.BODYWORK_DOOR_RF;
-            case BodyworkConstants.AREA_REAR_LEFT: return BydFeatureIds.BODYWORK_DOOR_LR;
-            case BodyworkConstants.AREA_REAR_RIGHT: return BydFeatureIds.BODYWORK_DOOR_RR;
-            case BodyworkConstants.AREA_HOOD: return BydFeatureIds.BODYWORK_HOOD;
-            case BodyworkConstants.AREA_TRUNK: return BydFeatureIds.BODYWORK_TRUNK;
-            case BodyworkConstants.AREA_FUEL_CAP: return BydFeatureIds.BODYWORK_FUEL_CAP;
-            default: return BydFeatureIds.UNRESOLVED_ID;
-        }
+        return DoorStateEngine.doorFeatureForArea(area, rightHandDrive);
     }
 
     /**
@@ -10689,8 +10638,7 @@ public class BydDataCollector {
 
     /** Map the raw door read (which uses MIN_VALUE for unavailable) to the API's 1/0/-1. */
     private static int normalizeDoorOpen(int raw) {
-        return (raw == BodyworkConstants.STATE_OPEN || raw == BodyworkConstants.STATE_CLOSED)
-                ? raw : -1;
+        return DoorStateEngine.normalizeDoorOpen(raw);
     }
 
     private void collectDoorLock(BydVehicleData.Builder b) {
@@ -13745,9 +13693,7 @@ public class BydDataCollector {
 
     static boolean isAcSetpointReadbackConfirmed(
             int zone, int target, int driver, int passenger) {
-        if (zone == 0) return driver == target && passenger == target;
-        return zone == AC_TEMP_AREA_PASSENGER
-                ? passenger == target : driver == target;
+        return AcControlEngine.isAcSetpointReadbackConfirmed(zone, target, driver, passenger);
     }
 
     /**
@@ -14406,53 +14352,22 @@ public class BydDataCollector {
     }
 
     static boolean hasCompleteSideWindowPositionFeedback(int[] positions) {
-        if (positions == null || positions.length < 4) return false;
-        for (int i = 0; i < 4; i++) {
-            if (positions[i] < 0 || positions[i] > 100) return false;
-        }
-        return true;
+        return WindowMotionEngine.hasCompleteSideWindowPositionFeedback(positions);
     }
 
     static int sideWindowCommandTowardTarget(
             int currentPercent, int targetPercent, int tolerance) {
-        if (currentPercent < 0 || currentPercent > 100
-                || targetPercent < 0 || targetPercent > 100
-                || tolerance < 0) {
-            return -1;
-        }
-        if (Math.abs(currentPercent - targetPercent) <= tolerance) return 0;
-        return targetPercent > currentPercent ? 1 : 2;
+        return WindowMotionEngine.sideWindowCommandTowardTarget(currentPercent, targetPercent, tolerance);
     }
 
     static int[] planSideWindowCommands(
             int[] positions, int targetPercent, int tolerance) {
-        if (!hasCompleteSideWindowPositionFeedback(positions)
-                || targetPercent < 0 || targetPercent > 100
-                || tolerance < 0) {
-            return null;
-        }
-        int[] commands = new int[4];
-        for (int i = 0; i < commands.length; i++) {
-            commands[i] = sideWindowCommandTowardTarget(
-                    positions[i], targetPercent, tolerance);
-        }
-        return commands;
+        return WindowMotionEngine.planSideWindowCommands(positions, targetPercent, tolerance);
     }
 
     static boolean hasReachedSideWindowTarget(
             int currentPercent, int targetPercent, int direction, int tolerance) {
-        if (currentPercent < 0 || currentPercent > 100
-                || targetPercent < 0 || targetPercent > 100
-                || tolerance < 0) {
-            return false;
-        }
-        if (direction == 1) {
-            return currentPercent >= targetPercent - tolerance;
-        }
-        if (direction == 2) {
-            return currentPercent <= targetPercent + tolerance;
-        }
-        return Math.abs(currentPercent - targetPercent) <= tolerance;
+        return WindowMotionEngine.hasReachedSideWindowTarget(currentPercent, targetPercent, direction, tolerance);
     }
 
     /**
