@@ -3158,6 +3158,7 @@ public class CameraDaemon {
         try { com.overdrive.app.monitor.SocHistoryDatabase.getInstance().stop(); } catch (Exception ignored) {}
         try { com.overdrive.app.monitor.DataUsageMonitor.getInstance().shutdown(); } catch (Exception ignored) {}
         try { com.overdrive.app.notifications.NotificationStore.getInstance().stop(); } catch (Exception ignored) {}
+        try { com.overdrive.app.database.OverdriveSqliteMaster.getInstance().close(); } catch (Exception ignored) {}
 
         // Stop services. Both the trip analytics + recordings index inits
         // run on parallel threads (see main()); join with a short timeout
@@ -10138,6 +10139,13 @@ public class CameraDaemon {
 
         com.overdrive.app.notifications.push.VapidSigner signer =
                 new com.overdrive.app.notifications.push.VapidSigner(keyStore, "");
+
+        // Initialize Master SQLite Engine in WAL mode & trigger background migration
+        try {
+            com.overdrive.app.database.OverdriveSqliteMaster.getInstance().open();
+        } catch (Exception e) {
+            log("OverdriveSqliteMaster init failed: " + e.getMessage());
+        }
 
         // Persistent notification log (Notifications ▸ Log tab). Dedicated H2
         // store; the HistorySink writes EVERY bus event so history captures all

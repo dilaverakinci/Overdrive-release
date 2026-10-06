@@ -93,7 +93,7 @@ public final class RecordingsIndex {
     // AUTO_COMPACT_FILL_RATE=50: idle-CPU tuning shared by all seven H2 stores
     // (see SocHistoryDatabase.JDBC_URL for the full rationale).
     private static final String JDBC_URL = "jdbc:h2:file:" + DB_PATH +
-            ";FILE_LOCK=SOCKET;TRACE_LEVEL_FILE=0;DB_CLOSE_ON_EXIT=FALSE" +
+            ";FILE_LOCK=SOCKET;TRACE_LEVEL_FILE=0;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1" +
             ";AUTO_COMPACT_FILL_RATE=50";
 
     // Filename patterns mirror RecordingsApiHandler exactly. Kept in sync
