@@ -1615,4 +1615,47 @@
     <string name="charge_edit_cost_desc" translatable="false">Bu tamamlanan oturumun maliyetini güncelleyin veya sıfırlayın. Bir maliyet girin ya da yeniden hesaplanması için boş bırakın / -1 girin.</string>
     <string name="charge_cost_saved" translatable="false">Oturum maliyeti güncellendi</string>
     <string name="charge_cost_save_failed" translatable="false">Oturum maliyeti güncellenemedi</string>
+
+    <!-- Trips Native Screen Strings (TR) -->
+    <string name="rail_trips_native" translatable="false">Yolculuklar (Native)</string>
+    <string name="rail_trips_legacy" translatable="false">Yolculuklar (Eski)</string>
+    <string name="trip_page_title" translatable="false">Yolculuklar</string>
+    <string name="trip_page_subtitle" translatable="false">Yolculuklarınızı, verimliliği ve sürüş puanlarınızı analiz edin</string>
+    <string name="trip_filter_7d" translatable="false">7 Gün</string>
+    <string name="trip_filter_14d" translatable="false">14 Gün</string>
+    <string name="trip_filter_30d" translatable="false">30 Gün</string>
+    <string name="trip_filter_all" translatable="false">Tümü</string>
+    <string name="trip_tab_trips" translatable="false">Sürüşler</string>
+    <string name="trip_tab_stats" translatable="false">İstatistikler</string>
+    <string name="trip_tab_storage" translatable="false">Depolama</string>
+    <string name="trip_summary_trips" translatable="false">Sürüş Sayısı</string>
+    <string name="trip_summary_distance" translatable="false">Mesafe</string>
+    <string name="trip_summary_duration" translatable="false">Süre</string>
+    <string name="trip_summary_energy" translatable="false">Enerji</string>
+    <string name="trip_summary_cost" translatable="false">Maliyet</string>
+    <string name="trip_empty_title" translatable="false">Henüz kayıtlı yolculuk yok</string>
+    <string name="trip_empty_message" translatable="false">Sürüş analitiğini etkinleştirin ve sürüşlerinizi burada görmek için aracı kullanın</string>
+    <string name="trip_stats_driver_score" translatable="false">Sürücü Puanı</string>
+    <string name="trip_stats_personalized_range" translatable="false">Kişiselleştirilmiş Menzil</string>
+    <string name="trip_stats_range_note" translatable="false">Kişisel menzili görmek için daha fazla yolculuk yapın</string>
+    <string name="trip_stats_cost_per_km" translatable="false">Km Başına Maliyet</string>
+    <string name="trip_stats_driving_dna" translatable="false">Sürüş DNA\'sı</string>
+    <string name="trip_storage_settings_title" translatable="false">Yolculuk Depolama &amp; Analitik</string>
+    <string name="trip_setting_analytics_title" translatable="false">Sürüş Analitiği</string>
+    <string name="trip_setting_analytics_desc" translatable="false">Yolculukları otomatik kaydet ve sürüş puanlarını hesapla</string>
+    <string name="trip_setting_rate_title" translatable="false">Elektrik Tarifesi</string>
+    <string name="trip_setting_rate_desc" translatable="false">Yolculuk maliyeti hesabı için kWh başına ücret</string>
+    <string name="trip_setting_unit_title" translatable="false">Mesafe Birimi</string>
+    <string name="trip_setting_unit_desc" translatable="false">Mesafeleri ve hızları km veya mil olarak göster</string>
+    <string name="trip_setting_storage_location" translatable="false">Kayıt Konumu</string>
+    <string name="trip_setting_storage_location_desc" translatable="false">Yolculuk telemetrisinin nereye kaydedileceğini seçin</string>
+    <string name="trip_recovery_title" translatable="false">Yolculuk Geçmişini Kurtarma</string>
+    <string name="trip_recovery_desc" translatable="false">Depolamadaki telemetri dosyalarından eksik yolculukları yeniden oluştur</string>
+    <string name="trip_recover_button" translatable="false">Yolculukları Kurtar</string>
+    <string name="trip_detail_back" translatable="false">Yolculuklara Dön</string>
+    <string name="trip_rescore_button" translatable="false">Sürüş puanlarını hesapla</string>
+    <string name="trip_chart_speed_pedal" translatable="false">Hız &amp; Pedal Grafiği</string>
+    <string name="trip_chart_speed_dist" translatable="false">Hız Dağılımı</string>
+    <string name="trip_dialog_delete_title" translatable="false">Yolculuğu Sil</string>
+    <string name="trip_dialog_delete_message" translatable="false">Bu yolculuğu ve telemetri verisini silmek istediğinizden emin misiniz?</string>
 </resources>

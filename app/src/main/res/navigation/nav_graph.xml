@@ -141,11 +141,18 @@
         android:label="@string/rail_projection"
         tools:layout="@layout/fragment_projection" />
 
-    <!-- Trips (web canonical) -->
+    <!-- Trips (Native) -->
     <fragment
         android:id="@+id/tripsFragment"
+        android:name="com.overdrive.app.ui.fragment.TripsNativeFragment"
+        android:label="@string/rail_trips_native"
+        tools:layout="@layout/fragment_trips_native" />
+
+    <!-- Trips (Legacy Web) -->
+    <fragment
+        android:id="@+id/tripsLegacyFragment"
         android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_trips"
+        android:label="@string/rail_trips_legacy"
         tools:layout="@layout/fragment_webview">
         <argument
             android:name="page_path"

@@ -2251,4 +2251,47 @@
     <string name="charge_edit_cost_desc" translatable="false">Update or reset this completed session\'s cost. Enter a cost, or leave empty / enter -1 to recalculate.</string>
     <string name="charge_cost_saved" translatable="false">Session cost updated</string>
     <string name="charge_cost_save_failed" translatable="false">Could not update session cost</string>
+
+    <!-- Trips Native Screen Strings -->
+    <string name="rail_trips_native" translatable="false">Trips (Native)</string>
+    <string name="rail_trips_legacy" translatable="false">Trips (Eski)</string>
+    <string name="trip_page_title" translatable="false">Trips</string>
+    <string name="trip_page_subtitle" translatable="false">Analyze your trips, efficiency, and driving scores</string>
+    <string name="trip_filter_7d" translatable="false">7 Days</string>
+    <string name="trip_filter_14d" translatable="false">14 Days</string>
+    <string name="trip_filter_30d" translatable="false">30 Days</string>
+    <string name="trip_filter_all" translatable="false">All</string>
+    <string name="trip_tab_trips" translatable="false">Trips</string>
+    <string name="trip_tab_stats" translatable="false">Stats</string>
+    <string name="trip_tab_storage" translatable="false">Storage</string>
+    <string name="trip_summary_trips" translatable="false">Trips</string>
+    <string name="trip_summary_distance" translatable="false">Distance</string>
+    <string name="trip_summary_duration" translatable="false">Duration</string>
+    <string name="trip_summary_energy" translatable="false">Energy</string>
+    <string name="trip_summary_cost" translatable="false">Cost</string>
+    <string name="trip_empty_title" translatable="false">No trips recorded yet</string>
+    <string name="trip_empty_message" translatable="false">Enable trip analytics and start driving to see your trips here</string>
+    <string name="trip_stats_driver_score" translatable="false">Driver Score</string>
+    <string name="trip_stats_personalized_range" translatable="false">Personalized Range</string>
+    <string name="trip_stats_range_note" translatable="false">Drive more trips to unlock personalized range</string>
+    <string name="trip_stats_cost_per_km" translatable="false">Cost per km</string>
+    <string name="trip_stats_driving_dna" translatable="false">Driving DNA</string>
+    <string name="trip_storage_settings_title" translatable="false">Trip Storage &amp; Analytics</string>
+    <string name="trip_setting_analytics_title" translatable="false">Trip Analytics</string>
+    <string name="trip_setting_analytics_desc" translatable="false">Automatically record trips and compute driving scores</string>
+    <string name="trip_setting_rate_title" translatable="false">Electricity Rate</string>
+    <string name="trip_setting_rate_desc" translatable="false">Cost per kWh for trip cost calculation</string>
+    <string name="trip_setting_unit_title" translatable="false">Distance Unit</string>
+    <string name="trip_setting_unit_desc" translatable="false">Display distances and speeds in km or miles</string>
+    <string name="trip_setting_storage_location" translatable="false">Storage Location</string>
+    <string name="trip_setting_storage_location_desc" translatable="false">Choose where to save trip telemetry</string>
+    <string name="trip_recovery_title" translatable="false">Trip History Recovery</string>
+    <string name="trip_recovery_desc" translatable="false">Rebuild missing trip records from surviving telemetry files</string>
+    <string name="trip_recover_button" translatable="false">Recover Trips</string>
+    <string name="trip_detail_back" translatable="false">Back to Trips</string>
+    <string name="trip_rescore_button" translatable="false">Compute driving scores</string>
+    <string name="trip_chart_speed_pedal" translatable="false">Speed &amp; Pedal Timeline</string>
+    <string name="trip_chart_speed_dist" translatable="false">Speed Distribution</string>
+    <string name="trip_dialog_delete_title" translatable="false">Delete Trip</string>
+    <string name="trip_dialog_delete_message" translatable="false">Are you sure you want to delete this trip and its telemetry?</string>
 </resources>
