@@ -217,11 +217,18 @@
             android:defaultValue="/seat-positions" />
     </fragment>
 
-    <!-- Key Mapping (web canonical) -->
+    <!-- Key Mapping (Native) -->
     <fragment
         android:id="@+id/keyMappingFragment"
+        android:name="com.overdrive.app.ui.fragment.KeyMappingNativeFragment"
+        android:label="@string/rail_key_mapping_native"
+        tools:layout="@layout/fragment_key_mapping_native" />
+
+    <!-- Key Mapping (Legacy Web) -->
+    <fragment
+        android:id="@+id/keyMappingLegacyFragment"
         android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_key_mapping"
+        android:label="@string/rail_key_mapping_legacy"
         tools:layout="@layout/fragment_webview">
         <argument
             android:name="page_path"

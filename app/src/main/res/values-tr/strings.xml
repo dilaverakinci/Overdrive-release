@@ -1704,4 +1704,47 @@
     <string name="automation_label_else" translatable="false">AKSİ HALDE</string>
     <string name="automation_btn_test" translatable="false">Test Et</string>
     <string name="automation_btn_run_group" translatable="false">Çalıştır</string>
+
+    <!-- Key Mapping Native Screen Strings -->
+    <string name="rail_key_mapping_native" translatable="false">Tuş Atama (Native)</string>
+    <string name="rail_key_mapping_legacy" translatable="false">Tuş Atama (Eski)</string>
+    <string name="keymap_page_title" translatable="false">Tuş Atama</string>
+    <string name="keymap_page_subtitle" translatable="false">Direksiyon ve ön konsol tuşlarını araç komutlarına atayın</string>
+    <string name="keymap_tab_bindings" translatable="false">Atamalar</string>
+    <string name="keymap_tab_add" translatable="false">Atama Ekle</string>
+    <string name="keymap_master_enable" translatable="false">Tuş atamayı etkinleştir</string>
+    <string name="keymap_master_enable_desc" translatable="false">Ana anahtar. Kapalıyken tuşlar standart araç işlevlerini yürütür.</string>
+    <string name="keymap_allow_advanced" translatable="false">Gelişmiş eylemler</string>
+    <string name="keymap_allow_advanced_desc" translatable="false">Özel kabuk (shell) komutları çalıştıran atamalara izin verir.</string>
+    <string name="keymap_double_tap_speed" translatable="false">Çift basma hızı</string>
+    <string name="keymap_double_tap_desc" translatable="false">Tek basma eylemini çalıştırmadan önce çift basma algılama zaman aşımı süresi.</string>
+    <string name="keymap_empty_title" translatable="false">Kayıtlı Tuş Ataması Yok</string>
+    <string name="keymap_empty_hint" translatable="false">Direksiyon veya konsol tuşunu bir araç eylemine bağlamak için yeni atama oluşturun.</string>
+    <string name="keymap_a11y_needed_title" translatable="false">Erişilebilirlik Hizmeti Gerekli</string>
+    <string name="keymap_a11y_needed_desc" translatable="false">Direksiyon ve donanım tuşlarının yakalanabilmesi için OverDrive erişilebilirlik servisi açık olmalıdır.</string>
+    <string name="keymap_a11y_open_settings" translatable="false">Erişilebilirlik Ayarlarını Aç</string>
+    <string name="keymap_press_single" translatable="false">Tek Basma</string>
+    <string name="keymap_press_double" translatable="false">Çift Basma</string>
+    <string name="keymap_press_long" translatable="false">Uzun Basma</string>
+    <string name="keymap_button_label" translatable="false">Tuş</string>
+    <string name="keymap_capture_button" translatable="false">Tuşu Yakala</string>
+    <string name="keymap_capturing" translatable="false">Direksiyon veya konsoldaki bir tuşa basın...</string>
+    <string name="keymap_press_type_label" translatable="false">Basma Tipi</string>
+    <string name="keymap_block_single" translatable="false">Tek Tıklama Eylemini Engelle</string>
+    <string name="keymap_block_single_desc" translatable="false">Çift basma beklenirken aracın varsayılan tek tıklama eylemini bastırır.</string>
+    <string name="keymap_action_kind_label" translatable="false">Eylem Türü</string>
+    <string name="keymap_kind_curated" translatable="false">Araç Eylemi</string>
+    <string name="keymap_kind_app" translatable="false">Uygulama Aç</string>
+    <string name="keymap_kind_shell" translatable="false">Kabuk (Shell) Komutu</string>
+    <string name="keymap_vehicle_action_label" translatable="false">Araç Eylemi Seçin</string>
+    <string name="keymap_payload_label" translatable="false">Değer / Parametre</string>
+    <string name="keymap_app_label" translatable="false">Uygulama Seçin</string>
+    <string name="keymap_app_split" translatable="false">Bölünmüş Ekranda Aç</string>
+    <string name="keymap_shell_cmd_label" translatable="false">Kabuk Komutu</string>
+    <string name="keymap_steps_label" translatable="false">Zincirleme Eylem Dizisi</string>
+    <string name="keymap_add_step" translatable="false">Adım Ekle</string>
+    <string name="keymap_save_binding" translatable="false">Tuş Atamasını Kaydet</string>
+    <string name="keymap_delete_confirm_title" translatable="false">Tuş Atamasını Sil</string>
+    <string name="keymap_delete_confirm_msg" translatable="false">%s tuş atamasını silmek istediğinizden emin misiniz?</string>
+    <string name="keymap_test_action" translatable="false">Test Et</string>
 </resources>

@@ -107,6 +107,7 @@ open class MainActivity : AppCompatActivity() {
     private val RAIL_KEY_CHARGING_LEGACY = "charging_legacy"
     private val RAIL_KEY_TRIPS_LEGACY = "trips_legacy"
     private val RAIL_KEY_AUTOMATIONS_LEGACY = "automations_legacy"
+    private val RAIL_KEY_KEY_MAPPING_LEGACY = "key_mapping_legacy"
     private val RAIL_KEY_SETTINGS = "settings"
     private val RAIL_KEY_ABOUT = "about"
     private val KEY_RAIL_EXPANDED = "navigation_rail_expanded"
@@ -185,6 +186,7 @@ open class MainActivity : AppCompatActivity() {
                 NavigationRailCatalog.AUTOMATIONS,
                 RAIL_KEY_AUTOMATIONS_LEGACY,
                 NavigationRailCatalog.KEY_MAPPING,
+                RAIL_KEY_KEY_MAPPING_LEGACY,
                 NavigationRailCatalog.INTEGRATIONS,
             )
         ),
@@ -1796,7 +1798,10 @@ open class MainActivity : AppCompatActivity() {
                 R.drawable.ic_automations, R.string.rail_automations_legacy),
             RailItem(NavigationRailCatalog.KEY_MAPPING, R.id.railDestKeyMapping,
                 R.id.keyMappingFragment,
-                R.drawable.ic_key_mapping, R.string.rail_key_mapping),
+                R.drawable.ic_key_mapping, R.string.rail_key_mapping_native),
+            RailItem(RAIL_KEY_KEY_MAPPING_LEGACY, R.id.railDestKeyMappingLegacy,
+                R.id.keyMappingLegacyFragment,
+                R.drawable.ic_key_mapping, R.string.rail_key_mapping_legacy),
             RailItem(NavigationRailCatalog.INTEGRATIONS, R.id.railDestIntegrations,
                 R.id.integrationsFragment, R.drawable.ic_integrations,
                 R.string.rail_integrations,
