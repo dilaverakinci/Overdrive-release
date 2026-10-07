@@ -108,6 +108,7 @@ open class MainActivity : AppCompatActivity() {
     private val RAIL_KEY_TRIPS_LEGACY = "trips_legacy"
     private val RAIL_KEY_AUTOMATIONS_LEGACY = "automations_legacy"
     private val RAIL_KEY_KEY_MAPPING_LEGACY = "key_mapping_legacy"
+    private val RAIL_KEY_INTEGRATIONS_LEGACY = "integrations_legacy"
     private val RAIL_KEY_SETTINGS = "settings"
     private val RAIL_KEY_ABOUT = "about"
     private val KEY_RAIL_EXPANDED = "navigation_rail_expanded"
@@ -188,6 +189,7 @@ open class MainActivity : AppCompatActivity() {
                 NavigationRailCatalog.KEY_MAPPING,
                 RAIL_KEY_KEY_MAPPING_LEGACY,
                 NavigationRailCatalog.INTEGRATIONS,
+                RAIL_KEY_INTEGRATIONS_LEGACY,
             )
         ),
         RailSection(
@@ -1693,6 +1695,7 @@ open class MainActivity : AppCompatActivity() {
                 R.id.automationsFragment,
                 R.id.keyMappingFragment,
                 R.id.integrationsFragment,
+                R.id.integrationsLegacyFragment,
                 R.id.roadSenseFragment,
                 R.id.networkFragment,
                 R.id.diagnosticsFragment,
@@ -1804,7 +1807,10 @@ open class MainActivity : AppCompatActivity() {
                 R.drawable.ic_key_mapping, R.string.rail_key_mapping_legacy),
             RailItem(NavigationRailCatalog.INTEGRATIONS, R.id.railDestIntegrations,
                 R.id.integrationsFragment, R.drawable.ic_integrations,
-                R.string.rail_integrations,
+                R.string.rail_integrations_native),
+            RailItem(RAIL_KEY_INTEGRATIONS_LEGACY, R.id.railDestIntegrationsLegacy,
+                R.id.integrationsLegacyFragment, R.drawable.ic_integrations,
+                R.string.rail_integrations_legacy,
                 ownedDestinationIds = setOf(
                     R.id.telegramSettingsFragment,
                     R.id.abrpSettingsFragment,

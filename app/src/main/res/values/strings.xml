@@ -2383,4 +2383,62 @@
     <string name="keymap_delete_confirm_title" translatable="false">Delete Key Binding</string>
     <string name="keymap_delete_confirm_msg" translatable="false">Are you sure you want to delete the mapping for button %s?</string>
     <string name="keymap_test_action" translatable="false">Test</string>
+
+    <!-- Integrations Native Screen Strings -->
+    <string name="rail_integrations_native" translatable="false">Integrations (Native)</string>
+    <string name="rail_integrations_legacy" translatable="false">Integrations (Eski)</string>
+    <string name="integrations_tab_overview" translatable="false">Overview</string>
+    <string name="integrations_tab_telegram" translatable="false">Telegram</string>
+    <string name="integrations_tab_abrp" translatable="false">ABRP</string>
+    <string name="integrations_tab_mqtt" translatable="false">MQTT</string>
+    <string name="integrations_tab_byd_cloud" translatable="false">BYD Cloud</string>
+    <string name="integrations_open_legacy" translatable="false">Legacy Web</string>
+    <string name="integrations_configure_native" translatable="false">Configure</string>
+    <string name="integrations_service_connected" translatable="false">Connected</string>
+    <string name="integrations_service_stopped" translatable="false">Stopped</string>
+    
+    <string name="tg_bot_token_title" translatable="false">Telegram Bot Token</string>
+    <string name="tg_bot_token_desc" translatable="false">Create a bot with @BotFather on Telegram and paste the API token here.</string>
+    <string name="tg_save_token" translatable="false">Save &amp; Validate</string>
+    <string name="tg_clear_token" translatable="false">Clear Token</string>
+    <string name="tg_pairing_title" translatable="false">Bot Pairing</string>
+    <string name="tg_pairing_desc" translatable="false">Generate a 6-digit PIN and send it to your bot in Telegram to authorize your account.</string>
+    <string name="tg_generate_pin" translatable="false">Generate Pairing PIN</string>
+    <string name="tg_unpair_button" translatable="false">Unpair Account</string>
+    <string name="tg_prefs_title" translatable="false">Alert Notifications</string>
+    <string name="tg_pref_critical" translatable="false">Critical Security Alerts</string>
+    <string name="tg_pref_motion" translatable="false">Motion &amp; Sentry Warnings</string>
+    <string name="tg_pref_video" translatable="false">Upload Motion Video Clips</string>
+    <string name="tg_pref_tyre" translatable="false">Tyre Pressure Alerts</string>
+    <string name="tg_save_prefs" translatable="false">Save Preferences</string>
+    
+    <string name="abrp_telemetry_service" translatable="false">ABRP Telemetry Service</string>
+    <string name="abrp_telemetry_desc" translatable="false">Periodically upload live battery SoC, speed, and GPS location to A Better Routeplanner.</string>
+    <string name="abrp_user_token_title" translatable="false">ABRP User Token</string>
+    <string name="abrp_user_token_hint" translatable="false">User token (from ABRP app &gt; Settings &gt; Car)</string>
+    <string name="abrp_save_config" translatable="false">Save &amp; Connect</string>
+    <string name="abrp_clear_token" translatable="false">Clear Token</string>
+    <string name="abrp_live_data_title" translatable="false">Live Telemetry Snapshot</string>
+    
+    <string name="mqtt_brokers_title" translatable="false">Configured MQTT Brokers</string>
+    <string name="mqtt_no_brokers" translatable="false">No MQTT brokers configured</string>
+    <string name="mqtt_add_broker_title" translatable="false">Add / Configure Broker</string>
+    <string name="mqtt_broker_name_hint" translatable="false">Broker Name (e.g. Home Assistant)</string>
+    <string name="mqtt_broker_host_hint" translatable="false">Broker Host (e.g. 192.168.1.100)</string>
+    <string name="mqtt_broker_port_hint" translatable="false">Port (default: 1883)</string>
+    <string name="mqtt_username_hint" translatable="false">Username (optional)</string>
+    <string name="mqtt_password_hint" translatable="false">Password (optional)</string>
+    <string name="mqtt_topic_hint" translatable="false">Topic Prefix (e.g. overdrive)</string>
+    <string name="mqtt_tls_label" translatable="false">Use SSL / TLS Encryption</string>
+    <string name="mqtt_save_broker" translatable="false">Save Broker</string>
+    
+    <string name="byd_cloud_credentials_title" translatable="false">BYD Cloud Account Login</string>
+    <string name="byd_cloud_credentials_desc" translatable="false">Sign in to enable remote commands like door unlock, horn, and light flashing.</string>
+    <string name="byd_cloud_email_hint" translatable="false">Email / Phone Number</string>
+    <string name="byd_cloud_password_hint" translatable="false">Account Password</string>
+    <string name="byd_cloud_pin_hint" translatable="false">Control PIN (6 digits)</string>
+    <string name="byd_cloud_login_button" translatable="false">Save &amp; Authenticate</string>
+    <string name="byd_cloud_test_lights" translatable="false">Flash Lights</string>
+    <string name="byd_cloud_test_horn" translatable="false">Honk Horn</string>
+    <string name="byd_cloud_clear_button" translatable="false">Clear Credentials</string>
 </resources>

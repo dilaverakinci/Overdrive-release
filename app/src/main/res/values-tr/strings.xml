@@ -1747,4 +1747,62 @@
     <string name="keymap_delete_confirm_title" translatable="false">Tuş Atamasını Sil</string>
     <string name="keymap_delete_confirm_msg" translatable="false">%s tuş atamasını silmek istediğinizden emin misiniz?</string>
     <string name="keymap_test_action" translatable="false">Test Et</string>
+
+    <!-- Integrations Native Screen Strings -->
+    <string name="rail_integrations_native" translatable="false">Entegrasyonlar (Native)</string>
+    <string name="rail_integrations_legacy" translatable="false">Entegrasyonlar (Eski)</string>
+    <string name="integrations_tab_overview" translatable="false">Genel Bakış</string>
+    <string name="integrations_tab_telegram" translatable="false">Telegram</string>
+    <string name="integrations_tab_abrp" translatable="false">ABRP</string>
+    <string name="integrations_tab_mqtt" translatable="false">MQTT</string>
+    <string name="integrations_tab_byd_cloud" translatable="false">BYD Cloud</string>
+    <string name="integrations_open_legacy" translatable="false">Eski Web Görünümü</string>
+    <string name="integrations_configure_native" translatable="false">Yapılandır</string>
+    <string name="integrations_service_connected" translatable="false">Bağlandı</string>
+    <string name="integrations_service_stopped" translatable="false">Durduruldu</string>
+    
+    <string name="tg_bot_token_title" translatable="false">Telegram Bot Belirteci (Token)</string>
+    <string name="tg_bot_token_desc" translatable="false">Telegram üzerinde @BotFather ile bir bot oluşturup API anahtarını buraya girin.</string>
+    <string name="tg_save_token" translatable="false">Kaydet ve Doğrula</string>
+    <string name="tg_clear_token" translatable="false">Belirteci Temizle</string>
+    <string name="tg_pairing_title" translatable="false">Bot Eşleştirme</string>
+    <string name="tg_pairing_desc" translatable="false">6 haneli bir PIN kodu üretip Telegram botunuza göndererek hesabınızı bağlayın.</string>
+    <string name="tg_generate_pin" translatable="false">Eşleştirme PIN\'i Üret</string>
+    <string name="tg_unpair_button" translatable="false">Eşleştirmeyi Kaldır</string>
+    <string name="tg_prefs_title" translatable="false">Bildirim Tercihleri</string>
+    <string name="tg_pref_critical" translatable="false">Kritik Güvenlik Uyarıları</string>
+    <string name="tg_pref_motion" translatable="false">Hareket ve Nöbetçi Uyarıları</string>
+    <string name="tg_pref_video" translatable="false">Hareket Video Kliplerini Yükle</string>
+    <string name="tg_pref_tyre" translatable="false">Lastik Basıncı Uyarıları</string>
+    <string name="tg_save_prefs" translatable="false">Ayarları Kaydet</string>
+    
+    <string name="abrp_telemetry_service" translatable="false">ABRP Telemetri Servisi</string>
+    <string name="abrp_telemetry_desc" translatable="false">Canlı batarya doluluğu, hız ve GPS verilerini periyodik olarak A Better Routeplanner\'a aktarır.</string>
+    <string name="abrp_user_token_title" translatable="false">ABRP Kullanıcı Belirteci</string>
+    <string name="abrp_user_token_hint" translatable="false">Kullanıcı belirteci (ABRP uygulaması &gt; Ayarlar &gt; Araç)</string>
+    <string name="abrp_save_config" translatable="false">Kaydet ve Bağlan</string>
+    <string name="abrp_clear_token" translatable="false">Belirteci Sil</string>
+    <string name="abrp_live_data_title" translatable="false">Canlı Telemetri Özeti</string>
+    
+    <string name="mqtt_brokers_title" translatable="false">Yapılandırılmış MQTT Sunucuları</string>
+    <string name="mqtt_no_brokers" translatable="false">Kayıtlı MQTT sunucusu bulunamadı</string>
+    <string name="mqtt_add_broker_title" translatable="false">Sunucu Ekle / Düzenle</string>
+    <string name="mqtt_broker_name_hint" translatable="false">Bağlantı Adı (örn. Home Assistant)</string>
+    <string name="mqtt_broker_host_hint" translatable="false">Sunucu IP / Adresi (örn. 192.168.1.100)</string>
+    <string name="mqtt_broker_port_hint" translatable="false">Port (varsayılan: 1883)</string>
+    <string name="mqtt_username_hint" translatable="false">Kullanıcı Adı (isteğe bağlı)</string>
+    <string name="mqtt_password_hint" translatable="false">Şifre (isteğe bağlı)</string>
+    <string name="mqtt_topic_hint" translatable="false">Konu Öneki (örn. overdrive)</string>
+    <string name="mqtt_tls_label" translatable="false">SSL / TLS Şifrelemesi Kullan</string>
+    <string name="mqtt_save_broker" translatable="false">Sunucuyu Kaydet</string>
+    
+    <string name="byd_cloud_credentials_title" translatable="false">BYD Cloud Hesap Girişi</string>
+    <string name="byd_cloud_credentials_desc" translatable="false">Kapı açma/kilitleme, korna ve ışık yakma gibi uzaktan komutları etkinleştirmek için giriş yapın.</string>
+    <string name="byd_cloud_email_hint" translatable="false">E-posta / Telefon Numarası</string>
+    <string name="byd_cloud_password_hint" translatable="false">Hesap Şifresi</string>
+    <string name="byd_cloud_pin_hint" translatable="false">Kontrol PIN Kodu (6 haneli)</string>
+    <string name="byd_cloud_login_button" translatable="false">Kaydet ve Giriş Yap</string>
+    <string name="byd_cloud_test_lights" translatable="false">Işıkları Yak/Söndür</string>
+    <string name="byd_cloud_test_horn" translatable="false">Kornayı Çal</string>
+    <string name="byd_cloud_clear_button" translatable="false">Bilgileri Temizle</string>
 </resources>

@@ -236,11 +236,18 @@
             android:defaultValue="/key-mapping" />
     </fragment>
 
-    <!-- Integrations: roll-up of Telegram + ABRP + MQTT -->
+    <!-- Integrations (Native) -->
     <fragment
         android:id="@+id/integrationsFragment"
+        android:name="com.overdrive.app.ui.fragment.IntegrationsNativeFragment"
+        android:label="@string/rail_integrations_native"
+        tools:layout="@layout/fragment_integrations_native" />
+
+    <!-- Integrations (Legacy Hub) -->
+    <fragment
+        android:id="@+id/integrationsLegacyFragment"
         android:name="com.overdrive.app.ui.fragment.IntegrationsFragment"
-        android:label="@string/rail_integrations"
+        android:label="@string/rail_integrations_legacy"
         tools:layout="@layout/fragment_integrations" />
 
     <!-- Sub-destinations under Integrations (entered via cards, not the rail).
