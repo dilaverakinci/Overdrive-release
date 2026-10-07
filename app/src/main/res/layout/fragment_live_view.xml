@@ -215,7 +215,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="12dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -229,14 +229,14 @@
                     <FrameLayout
                         android:id="@+id/carHotspotContainer"
                         android:layout_width="match_parent"
-                        android:layout_height="250dp"
-                        android:layout_marginTop="8dp">
+                        android:layout_height="215dp"
+                        android:layout_marginTop="6dp">
 
                         <!-- Car Top View Image -->
                         <ImageView
                             android:id="@+id/ivCarTopView"
-                            android:layout_width="112dp"
-                            android:layout_height="230dp"
+                            android:layout_width="106dp"
+                            android:layout_height="195dp"
                             android:layout_gravity="center"
                             android:contentDescription="Car Top View"
                             android:scaleType="fitCenter"
@@ -434,7 +434,7 @@
                 style="@style/Widget.Material3.CardView.Filled"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="8dp"
                 app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp">
@@ -443,7 +443,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="12dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -477,47 +477,60 @@
                             android:textColor="?attr/colorOutline" />
                     </LinearLayout>
 
-                    <!-- Mini Map Preview Box (matches legacy live location card) -->
+                    <!-- Mini Map Frame with Streets and Car Position (1:1 to legacy mapContainer) -->
                     <FrameLayout
+                        android:id="@+id/locationMapFrame"
                         android:layout_width="match_parent"
-                        android:layout_height="100dp"
-                        android:layout_marginTop="10dp"
+                        android:layout_height="112dp"
+                        android:layout_marginTop="8dp"
                         android:background="@drawable/bg_card_rounded_border"
                         android:clipChildren="true"
                         android:clipToOutline="true">
 
-                        <!-- Subtle map placeholder background -->
-                        <View
+                        <!-- Base Vector Map with OSM Roads & Terrain -->
+                        <ImageView
+                            android:id="@+id/ivMapBase"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:background="#1F2428" />
+                            android:contentDescription="Map Preview"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/bg_map_preview_base" />
 
-                        <!-- Mini Car icon in center -->
+                        <!-- Dynamic Downloaded OSM Tile Layer (when connected to network) -->
                         <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="48dp"
-                            android:layout_gravity="center"
-                            android:contentDescription="Car location"
-                            android:scaleType="fitCenter"
-                            android:src="@drawable/car_top_view" />
+                            android:id="@+id/ivMapTile"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:contentDescription="Online Map Tile"
+                            android:scaleType="centerCrop"
+                            android:visibility="gone" />
 
-                        <!-- Coordinate chip / Pin bottom left -->
+                        <!-- Car Marker Centered on the Road, rotated to heading -->
+                        <ImageView
+                            android:id="@+id/ivMapCarMarker"
+                            android:layout_width="24dp"
+                            android:layout_height="50dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="Vehicle Map Marker"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/car_icon_map" />
+
+                        <!-- Bottom-Left Place / Distance Chip -->
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="24dp"
                             android:layout_gravity="bottom|start"
                             android:layout_margin="8dp"
-                            android:background="@drawable/bg_pill_state"
-                            android:backgroundTint="#D914171A"
+                            android:background="@drawable/bg_map_chip"
                             android:gravity="center_vertical"
-                            android:paddingHorizontal="8dp">
+                            android:paddingHorizontal="6dp">
 
                             <ImageView
                                 android:layout_width="12dp"
                                 android:layout_height="12dp"
                                 android:contentDescription="Pin"
                                 android:src="@drawable/ic_location_pin"
-                                app:tint="?attr/colorOutline" />
+                                app:tint="#616161" />
 
                             <TextView
                                 android:id="@+id/tvLocationCoordinates"
@@ -526,7 +539,8 @@
                                 android:layout_marginStart="4dp"
                                 android:text="—"
                                 android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
-                                android:textColor="?attr/colorOnSurface" />
+                                android:textColor="#212121"
+                                android:textStyle="bold" />
                         </LinearLayout>
 
                         <!-- Hidden tvLocationSpeed to keep logic safe -->
@@ -541,15 +555,19 @@
                         android:id="@+id/btnOpenMap"
                         style="@style/Widget.Material3.Button.TonalButton"
                         android:layout_width="match_parent"
-                        android:layout_height="36dp"
-                        android:layout_marginTop="12dp"
+                        android:layout_height="34dp"
+                        android:layout_marginTop="8dp"
+                        android:backgroundTint="#DFF0E8"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
                         android:text="Expand map"
                         android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                        android:textColor="#004D40"
+                        app:cornerRadius="10dp"
                         app:icon="@drawable/ic_fullscreen"
                         app:iconGravity="textStart"
-                        app:iconSize="16dp" />
+                        app:iconSize="16dp"
+                        app:iconTint="#004D40" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>

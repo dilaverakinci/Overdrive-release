@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="280dp"
+    android:height="120dp"
+    android:viewportWidth="280"
+    android:viewportHeight="120">
+
+    <!-- Land / Base terrain (OSM beige-grey) -->
+    <path
+        android:fillColor="#F2EFE9"
+        android:pathData="M0,0h280v120h-280z" />
+
+    <!-- Parks / Light green zone -->
+    <path
+        android:fillColor="#E1ECD8"
+        android:pathData="M0,0 L70,0 L60,45 L0,55 Z" />
+
+    <!-- Secondary street casing -->
+    <path
+        android:strokeColor="#DDD8CF"
+        android:strokeWidth="12"
+        android:strokeLineCap="square"
+        android:pathData="M140,-10 L140,130 M0,75 L280,75 M60,-10 L60,75" />
+
+    <!-- Secondary streets (white) -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="10"
+        android:strokeLineCap="square"
+        android:pathData="M140,-10 L140,130 M0,75 L280,75 M60,-10 L60,75" />
+
+    <!-- Diagonal primary avenue casing (tan) -->
+    <path
+        android:strokeColor="#E6D2A4"
+        android:strokeWidth="20"
+        android:strokeLineCap="square"
+        android:pathData="M225,-10 L275,130" />
+
+    <!-- Diagonal primary avenue (warm yellow) -->
+    <path
+        android:strokeColor="#FEE69C"
+        android:strokeWidth="16"
+        android:strokeLineCap="square"
+        android:pathData="M225,-10 L275,130" />
+
+</vector>

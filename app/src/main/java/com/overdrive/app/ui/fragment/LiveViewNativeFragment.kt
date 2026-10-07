@@ -90,7 +90,10 @@ class LiveViewNativeFragment : Fragment() {
 
     private var btnHotspotDvr: View? = null
 
-    // Location Card
+    // Location Card & Mini Map
+    private lateinit var ivMapBase: ImageView
+    private lateinit var ivMapTile: ImageView
+    private lateinit var ivMapCarMarker: ImageView
     private lateinit var tvLocationCoordinates: TextView
     private var tvLocationSpeed: TextView? = null
     private lateinit var tvGpsFreshness: TextView
@@ -149,6 +152,10 @@ class LiveViewNativeFragment : Fragment() {
         labelHotspotRear = view.findViewById(R.id.labelHotspotRear)
 
         btnHotspotDvr = view.findViewById(R.id.btnHotspotDvr)
+
+        ivMapBase = view.findViewById(R.id.ivMapBase)
+        ivMapTile = view.findViewById(R.id.ivMapTile)
+        ivMapCarMarker = view.findViewById(R.id.ivMapCarMarker)
 
         tvLocationCoordinates = view.findViewById(R.id.tvLocationCoordinates)
         tvLocationSpeed = view.findViewById(R.id.tvLocationSpeed)
@@ -419,7 +426,6 @@ class LiveViewNativeFragment : Fragment() {
             val collector = com.overdrive.app.byd.BydDataCollector.getInstance()
             val vehicleData = collector?.data
             val speedKmh = if (vehicleData != null && !vehicleData.speedKmh.isNaN()) vehicleData.speedKmh.toInt() else 0
-
             val locationManager = requireContext().getSystemService(android.content.Context.LOCATION_SERVICE) as? android.location.LocationManager
             val location = try {
                 locationManager?.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER)
@@ -428,12 +434,44 @@ class LiveViewNativeFragment : Fragment() {
                 null
             }
 
+            val heading = location?.bearing ?: 0f
+            ivMapCarMarker.rotation = heading
+
             if (location != null && location.latitude != 0.0 && location.longitude != 0.0) {
-                val lat = String.format(java.util.Locale.US, "%.5f", location.latitude)
-                val lon = String.format(java.util.Locale.US, "%.5f", location.longitude)
-                tvLocationCoordinates.text = "$lat° N, $lon° E"
+                val lat = location.latitude
+                val lon = location.longitude
+                tvLocationCoordinates.text = "—" // Matches legacy initial state
                 tvLocationSpeed?.text = "Hız: $speedKmh km/h"
                 tvGpsFreshness.text = "0s ago"
+
+                // Fetch dynamic OpenStreetMap tile asynchronously
+                viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                    try {
+                        val zoom = 17
+                        val n = 1 shl zoom
+                        val x = ((lon + 180.0) / 360.0 * n).toInt()
+                        val latRad = Math.toRadians(lat)
+                        val y = ((1.0 - Math.log(Math.tan(latRad) + 1.0 / Math.cos(latRad)) / Math.PI) / 2.0 * n).toInt()
+                        val tileUrl = "https://tile.openstreetmap.org/$zoom/$x/$y.png"
+                        val url = URL(tileUrl)
+                        val conn = url.openConnection() as HttpURLConnection
+                        conn.setRequestProperty("User-Agent", "OverDrive-InCar/1.0")
+                        conn.connectTimeout = 3000
+                        conn.readTimeout = 3000
+                        if (conn.responseCode == 200) {
+                            val bitmap = BitmapFactory.decodeStream(conn.inputStream)
+                            if (bitmap != null) {
+                                withContext(Dispatchers.Main) {
+                                    ivMapTile.setImageBitmap(bitmap)
+                                    ivMapTile.visibility = View.VISIBLE
+                                }
+                            }
+                        }
+                        conn.disconnect()
+                    } catch (e: Exception) {
+                        // Offline fallback gracefully uses vector base map
+                    }
+                }
             } else {
                 tvLocationCoordinates.text = "—"
                 tvLocationSpeed?.text = "Hız: $speedKmh km/h"
