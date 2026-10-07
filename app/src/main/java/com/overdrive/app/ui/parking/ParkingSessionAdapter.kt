@@ -3,6 +3,7 @@ package com.overdrive.app.ui.parking
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
@@ -13,17 +14,72 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+sealed class ParkingListItem {
+    data class DayHeader(val dayText: String) : ParkingListItem()
+    data class SessionCard(val session: ParkingSession) : ParkingListItem()
+}
+
 class ParkingSessionAdapter(
     private val onSessionClick: (ParkingSession) -> Unit
-) : ListAdapter<ParkingSession, ParkingSessionAdapter.SessionViewHolder>(DiffCallback) {
+) : ListAdapter<ParkingListItem, RecyclerView.ViewHolder>(DiffCallback) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SessionViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_parking_session, parent, false)
-        return SessionViewHolder(view)
+    companion object {
+        const val VIEW_TYPE_HEADER = 0
+        const val VIEW_TYPE_CARD = 1
     }
 
-    override fun onBindViewHolder(holder: SessionViewHolder, position: Int) {
-        holder.bind(getItem(position))
+    override fun getItemViewType(position: Int): Int {
+        return when (getItem(position)) {
+            is ParkingListItem.DayHeader -> VIEW_TYPE_HEADER
+            is ParkingListItem.SessionCard -> VIEW_TYPE_CARD
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        return if (viewType == VIEW_TYPE_HEADER) {
+            val view = inflater.inflate(R.layout.item_parking_day_header, parent, false)
+            HeaderViewHolder(view)
+        } else {
+            val view = inflater.inflate(R.layout.item_parking_session, parent, false)
+            SessionViewHolder(view)
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (val item = getItem(position)) {
+            is ParkingListItem.DayHeader -> (holder as HeaderViewHolder).bind(item.dayText)
+            is ParkingListItem.SessionCard -> (holder as SessionViewHolder).bind(item.session)
+        }
+    }
+
+    fun submitSessions(sessions: List<ParkingSession>) {
+        if (sessions.isEmpty()) {
+            submitList(emptyList())
+            return
+        }
+
+        val items = mutableListOf<ParkingListItem>()
+        val dayFormat = SimpleDateFormat("EEEE, d MMMM", Locale("tr"))
+        var lastDay = ""
+
+        sessions.forEach { s ->
+            val day = dayFormat.format(Date(s.start)).uppercase()
+            if (day != lastDay) {
+                items.add(ParkingListItem.DayHeader(day))
+                lastDay = day
+            }
+            items.add(ParkingListItem.SessionCard(s))
+        }
+        submitList(items)
+    }
+
+    inner class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val tvParkingDayHeader: TextView = itemView.findViewById(R.id.tvParkingDayHeader)
+
+        fun bind(dayText: String) {
+            tvParkingDayHeader.text = dayText
+        }
     }
 
     inner class SessionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -31,48 +87,47 @@ class ParkingSessionAdapter(
         private val tvSessionLiveTag: TextView = itemView.findViewById(R.id.tvSessionLiveTag)
         private val tvSentryEventsBadge: TextView = itemView.findViewById(R.id.tvSentryEventsBadge)
         private val tvSessionPlace: TextView = itemView.findViewById(R.id.tvSessionPlace)
-        private val tvSignageLevel: TextView = itemView.findViewById(R.id.tvSignageLevel)
+
         private val tvSessionDuration: TextView = itemView.findViewById(R.id.tvSessionDuration)
-        private val tvSessionEnergy: TextView = itemView.findViewById(R.id.tvSessionEnergy)
         private val layoutSessionEnergy: View = itemView.findViewById(R.id.layoutSessionEnergy)
+        private val tvSessionEnergy: TextView = itemView.findViewById(R.id.tvSessionEnergy)
+
+        private val layoutSessionSignage: View = itemView.findViewById(R.id.layoutSessionSignage)
+        private val tvSessionSignage: TextView = itemView.findViewById(R.id.tvSessionSignage)
+
         private val tvSessionNeighbours: TextView = itemView.findViewById(R.id.tvSessionNeighbours)
-        private val layoutSessionNeighbours: View = itemView.findViewById(R.id.layoutSessionNeighbours)
+        private val ivNeighboursIcon: ImageView = itemView.findViewById(R.id.ivNeighboursIcon)
+
+        private val tvSessionGps: TextView = itemView.findViewById(R.id.tvSessionGps)
+        private val tvSessionSentry: TextView = itemView.findViewById(R.id.tvSessionSentry)
 
         fun bind(session: ParkingSession) {
             val context = itemView.context
 
-            // Time & Date
-            val sdf = SimpleDateFormat("dd MMM, HH:mm", Locale.getDefault())
-            tvSessionTime.text = sdf.format(Date(session.start))
+            // Time
+            val timeSdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+            tvSessionTime.text = timeSdf.format(Date(session.start))
 
             // Live tag
             tvSessionLiveTag.visibility = if (session.isLive) View.VISIBLE else View.GONE
 
             // Sentry events badge
             tvSentryEventsBadge.text = session.eventsCount.toString()
-            when {
-                session.eventsCount == 0 -> {
-                    tvSentryEventsBadge.setTextColor(ContextCompat.getColor(context, R.color.brand_primary))
-                    tvSentryEventsBadge.backgroundTintList = ContextCompat.getColorStateList(context, R.color.brand_cyan_glow)
-                }
-                session.eventsCount in 1..3 -> {
-                    tvSentryEventsBadge.setTextColor(ContextCompat.getColor(context, R.color.status_warning))
-                    tvSentryEventsBadge.backgroundTintList = android.content.res.ColorStateList.valueOf(0x33F59E0B)
-                }
-                else -> {
-                    tvSentryEventsBadge.setTextColor(ContextCompat.getColor(context, R.color.status_error))
-                    tvSentryEventsBadge.backgroundTintList = android.content.res.ColorStateList.valueOf(0x33EF4444)
-                }
+            if (session.eventsCount == 0) {
+                tvSentryEventsBadge.setBackgroundResource(R.drawable.bg_parking_badge_none)
+                tvSentryEventsBadge.setTextColor(ContextCompat.getColor(context, R.color.text_muted))
+            } else {
+                tvSentryEventsBadge.setBackgroundResource(R.drawable.bg_parking_badge_active)
+                tvSentryEventsBadge.setTextColor(ContextCompat.getColor(context, R.color.brand_primary))
             }
 
-            // Place & Signage Level
-            tvSessionPlace.text = session.place
-            if (!session.signageLabel.isNullOrBlank()) {
-                tvSignageLevel.visibility = View.VISIBLE
-                tvSignageLevel.text = session.signageLabel
+            // Place & level text
+            val placeText = if (!session.signageLabel.isNullOrBlank()) {
+                "${session.place} · ${session.signageLabel}"
             } else {
-                tvSignageLevel.visibility = View.GONE
+                session.place
             }
+            tvSessionPlace.text = placeText
 
             // Duration
             val mins = session.durationMs / 60000
@@ -81,35 +136,74 @@ class ParkingSessionAdapter(
             tvSessionDuration.text = if (hours > 0) "${hours}s ${remMins}dk" else "${remMins}dk"
 
             // Energy / SOC
-            if (session.energyUsedKwh != null && session.energyUsedKwh > 0.0) {
+            if (session.energyUsedKwh != null) {
                 layoutSessionEnergy.visibility = View.VISIBLE
-                tvSessionEnergy.text = String.format(Locale.getDefault(), "%.1f kWh", session.energyUsedKwh)
-            } else if (session.socStart != null && session.socEnd != null) {
-                val diff = session.socEnd - session.socStart
+                val formatted = String.format(Locale.getDefault(), "%.2f kWh", session.energyUsedKwh)
+                val prefix = if (session.energyUsedKwh > 0) "+" else ""
+                tvSessionEnergy.text = "$prefix$formatted"
+            } else if (session.socDelta != null) {
                 layoutSessionEnergy.visibility = View.VISIBLE
-                tvSessionEnergy.text = if (diff >= 0) "+$diff%" else "$diff%"
+                val prefix = if (session.socDelta > 0) "+" else ""
+                tvSessionEnergy.text = String.format(Locale.getDefault(), "%s%.1f%% SoC", prefix, session.socDelta)
             } else {
                 layoutSessionEnergy.visibility = View.GONE
             }
 
-            // Neighbours
-            if (session.neighboursCount > 0) {
-                layoutSessionNeighbours.visibility = View.VISIBLE
-                tvSessionNeighbours.text = "${session.neighboursCount} Komşu"
+            // Signage capsule
+            if (!session.signageLabel.isNullOrBlank()) {
+                layoutSessionSignage.visibility = View.VISIBLE
+                tvSessionSignage.text = session.signageLabel
             } else {
-                layoutSessionNeighbours.visibility = View.GONE
+                layoutSessionSignage.visibility = View.GONE
             }
+
+            // Neighbours capsule
+            if (session.neighboursCount > 0) {
+                tvSessionNeighbours.text = "${session.neighboursCount} komşu"
+                tvSessionNeighbours.setTextColor(ContextCompat.getColor(context, R.color.text_secondary))
+                ivNeighboursIcon.imageTintList = ContextCompat.getColorStateList(context, R.color.brand_primary)
+            } else {
+                tvSessionNeighbours.text = "0 komşu"
+                tvSessionNeighbours.setTextColor(ContextCompat.getColor(context, R.color.text_muted))
+                ivNeighboursIcon.imageTintList = ContextCompat.getColorStateList(context, R.color.text_muted)
+            }
+
+            // GPS Quality
+            val gpsLabel = when (session.gpsQuality.uppercase()) {
+                "FRESH" -> "GPS güncel"
+                "RECENT" -> "GPS yakın"
+                "STALE" -> "GPS eski (kapalı otopark?)"
+                else -> "GPS yok"
+            }
+            tvSessionGps.text = gpsLabel
+
+            // Sentry State
+            val sentryLabel = when (session.sentryState.lowercase()) {
+                "armed" -> "Nöbetçi devrede"
+                "lock_wait" -> "Kilit bekleniyor"
+                "pipeline_down" -> "Kamera kapalı"
+                "suppressed_safe_zone" -> "Güvenli bölge"
+                "surveillance_off" -> "Nöbetçi kapalı"
+                else -> "Nöbetçi bilinmiyor"
+            }
+            tvSessionSentry.text = sentryLabel
 
             itemView.setOnClickListener { onSessionClick(session) }
         }
     }
 
-    object DiffCallback : DiffUtil.ItemCallback<ParkingSession>() {
-        override fun areItemsTheSame(oldItem: ParkingSession, newItem: ParkingSession): Boolean {
-            return oldItem.id == newItem.id
+    object DiffCallback : DiffUtil.ItemCallback<ParkingListItem>() {
+        override fun areItemsTheSame(oldItem: ParkingListItem, newItem: ParkingListItem): Boolean {
+            return when {
+                oldItem is ParkingListItem.DayHeader && newItem is ParkingListItem.DayHeader ->
+                    oldItem.dayText == newItem.dayText
+                oldItem is ParkingListItem.SessionCard && newItem is ParkingListItem.SessionCard ->
+                    oldItem.session.id == newItem.session.id
+                else -> false
+            }
         }
 
-        override fun areContentsTheSame(oldItem: ParkingSession, newItem: ParkingSession): Boolean {
+        override fun areContentsTheSame(oldItem: ParkingListItem, newItem: ParkingListItem): Boolean {
             return oldItem == newItem
         }
     }

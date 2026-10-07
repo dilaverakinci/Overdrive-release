@@ -1,355 +1,874 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/parkingRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
-    android:orientation="vertical"
-    android:paddingHorizontal="24dp"
-    android:paddingTop="16dp"
-    android:paddingBottom="8dp">
+    android:background="?attr/colorSurface">
 
-    <!-- Top Header Bar -->
+    <!-- Main Content Container (List and Settings) -->
     <LinearLayout
-        android:id="@+id/parkingHeaderBar"
+        android:id="@+id/layoutMainParkingContent"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp">
 
-        <TextView
-            android:id="@+id/tvParkingTitle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Park Zekası"
-            android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
-            android:textColor="?attr/colorOnSurface"
-            android:textStyle="bold" />
-
-        <!-- Master Status Badge -->
+        <!-- Top Header Bar -->
         <LinearLayout
-            android:id="@+id/parkingStatusBadge"
-            android:layout_width="wrap_content"
-            android:layout_height="32dp"
-            android:background="@drawable/bg_pill_state"
-            android:backgroundTint="?attr/colorSurfaceContainerHigh"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="12dp">
-
-            <View
-                android:id="@+id/parkingStatusDot"
-                android:layout_width="8dp"
-                android:layout_height="8dp"
-                android:background="@drawable/bg_circle_dot"
-                android:backgroundTint="@color/status_success" />
-
-            <TextView
-                android:id="@+id/tvParkingStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="AKTİF"
-                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
-                android:textColor="?attr/colorOnSurface"
-                android:textStyle="bold" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- Tab Selector: Oturumlar | Ayarlar -->
-    <com.google.android.material.button.MaterialButtonToggleGroup
-        android:id="@+id/toggleGroupParkingTabs"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        app:checkedButton="@id/btnTabSessions"
-        app:selectionRequired="true"
-        app:singleSelection="true">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnTabSessions"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="38dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:text="Oturumlar (Sessions)"
-            android:textAppearance="@style/TextAppearance.Material3.LabelMedium" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnTabSettings"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="38dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:text="Ayarlar (Settings)"
-            android:textAppearance="@style/TextAppearance.Material3.LabelMedium" />
-    </com.google.android.material.button.MaterialButtonToggleGroup>
-
-    <!-- Sessions Tab View Container -->
-    <LinearLayout
-        android:id="@+id/layoutSessionsContainer"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="12dp"
-        android:layout_weight="1"
-        android:orientation="vertical">
-
-        <!-- Hero Card: Parked Now (Şu An Park Halinde) -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardParkedNowHero"
-            style="@style/Widget.Material3.CardView.Filled"
+            android:id="@+id/parkingHeaderBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
-            app:strokeColor="?attr/colorPrimary"
-            app:strokeWidth="1dp">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
+            <TextView
+                android:id="@+id/tvParkingTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Park Zekası"
+                android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
+                android:textColor="?attr/colorOnSurface"
+                android:textStyle="bold" />
+
+            <!-- Master Status Badge: "● KAPALI" / "● AÇIK" -->
             <LinearLayout
+                android:id="@+id/parkingStatusBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:background="@drawable/bg_pill_state"
+                android:backgroundTint="?attr/colorSurfaceContainerHigh"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="14dp">
+
+                <View
+                    android:id="@+id/parkingStatusDot"
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:background="@drawable/bg_circle_dot"
+                    android:backgroundTint="@color/status_stopped" />
+
+                <TextView
+                    android:id="@+id/tvParkingStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="KAPALI"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                    android:textColor="?attr/colorOutline"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Tab Selector: [ Oturumlar (Sessions) | Ayarlar (Settings) ] -->
+        <LinearLayout
+            android:id="@+id/layoutParkingTabsContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/bg_parking_tab_group"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tabButtonSessions"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_parking_tab_left_active"
+                android:gravity="center"
+                android:paddingHorizontal="18dp"
+                android:text="Oturumlar (Sessions)"
+                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                android:textColor="#0F172A"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="#CBD5E1" />
+
+            <TextView
+                android:id="@+id/tabButtonSettings"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent"
+                android:gravity="center"
+                android:paddingHorizontal="18dp"
+                android:text="Ayarlar (Settings)"
+                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                android:textColor="#64748B"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <!-- Sessions Tab View Container -->
+        <LinearLayout
+            android:id="@+id/layoutSessionsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="14dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Hero Card: Parked Now (Şu An Park Halinde) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardParkedNowHero"
+                style="@style/Widget.Material3.CardView.Filled"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:layout_marginBottom="14dp"
+                android:visibility="gone"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/brand_primary"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-                    <View
-                        android:layout_width="8dp"
-                        android:layout_height="8dp"
-                        android:background="@drawable/bg_circle_dot"
-                        android:backgroundTint="@color/status_success" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_parking"
+                            app:tint="@color/brand_primary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="Şu an park halinde"
+                            android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvHeroLiveTag"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:background="@drawable/bg_pill_state"
+                            android:backgroundTint="@color/brand_cyan_glow"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="2dp"
+                            android:text="LIVE"
+                            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                            android:textColor="@color/brand_primary"
+                            android:textStyle="bold" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="1dp"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:id="@+id/tvHeroGpsStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="GPS güncel"
+                            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                            android:textColor="?attr/colorOutline" />
+                    </LinearLayout>
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:id="@+id/tvHeroPlace"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        android:text="ŞU AN PARK HALİNDE"
-                        android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
-                        android:textColor="?attr/colorPrimary"
+                        android:layout_marginTop="6dp"
+                        android:text="Kadıköy Katlı Otopark"
+                        android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                        android:textColor="?attr/colorOnSurface"
                         android:textStyle="bold" />
 
                     <TextView
-                        android:id="@+id/tvHeroGpsStatus"
+                        android:id="@+id/tvHeroSub"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="GPS Güncel"
-                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                        android:layout_marginTop="2dp"
+                        android:text="Pazartesi · 14:32 · GPS güncel · Nöbetçi devrede"
+                        android:textAppearance="@style/TextAppearance.Material3.BodySmall"
                         android:textColor="?attr/colorOutline" />
+
+                    <!-- 3 Stats Grid -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvHeroDuration"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="monospace"
+                                android:text="45 dk"
+                                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Park süresi"
+                                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                android:textColor="?attr/colorOutline" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvHeroSentryEvents"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="monospace"
+                                android:text="0"
+                                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Sentry olayı"
+                                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                android:textColor="?attr/colorOutline" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvHeroNeighbours"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="monospace"
+                                android:text="1"
+                                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Komşu araç"
+                                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                android:textColor="?attr/colorOutline" />
+                        </LinearLayout>
+                    </LinearLayout>
                 </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Quick Filter Buttons: [ 7 Gün ] [ ✓ 30 Gün ] [ 90 Gün ] [ Tümü ] -->
+            <LinearLayout
+                android:id="@+id/layoutParkingFilters"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/tvHeroPlace"
+                    android:id="@+id/btnFilter7Days"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Bağdat Caddesi, No: 42"
-                    android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
-                    android:textColor="?attr/colorOnSurface"
+                    android:layout_height="34dp"
+                    android:background="@drawable/bg_parking_filter_normal"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:paddingHorizontal="14dp"
+                    android:text="7 Gün"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                    android:textColor="#64748B"
                     android:textStyle="bold" />
 
-                <!-- 3 Stats Grid -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/btnFilter30Days"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_parking_filter_active"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:paddingHorizontal="14dp"
+                    android:text="✓ 30 Gün"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                    android:textColor="#064E3B"
+                    android:textStyle="bold" />
 
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
+                <TextView
+                    android:id="@+id/btnFilter90Days"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_parking_filter_normal"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:paddingHorizontal="14dp"
+                    android:text="90 Gün"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                    android:textColor="#64748B"
+                    android:textStyle="bold" />
 
-                        <TextView
-                            android:id="@+id/tvHeroDuration"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="monospace"
-                            android:text="45 dk"
-                            android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
-                            android:textColor="?attr/colorOnSurface"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="Park Süresi"
-                            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
-                            android:textColor="?attr/colorOutline" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/tvHeroSentryEvents"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="monospace"
-                            android:text="0"
-                            android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
-                            android:textColor="?attr/colorOnSurface"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="Sentry Olayı"
-                            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
-                            android:textColor="?attr/colorOutline" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/tvHeroNeighbours"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="monospace"
-                            android:text="1"
-                            android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
-                            android:textColor="?attr/colorOnSurface"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="Komşu Araç"
-                            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
-                            android:textColor="?attr/colorOutline" />
-                    </LinearLayout>
-                </LinearLayout>
+                <TextView
+                    android:id="@+id/btnFilterAll"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_parking_filter_normal"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:paddingHorizontal="14dp"
+                    android:text="Tümü"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                    android:textColor="#64748B"
+                    android:textStyle="bold" />
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
 
-        <!-- Quick Filter Chips -->
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/chipGroupParkingFilter"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            app:singleSelection="true">
+            <!-- Sessions Grid & Empty State Area -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1">
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipFilter7Days"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="7 Gün" />
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvParkingSessions"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:scrollbars="none" />
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipFilter30Days"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="30 Gün" />
+                <!-- Empty State (mirrors legacy empty-state exactly) -->
+                <LinearLayout
+                    android:id="@+id/emptyStateParking"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:maxWidth="480dp"
+                    android:orientation="vertical"
+                    android:padding="24dp"
+                    android:visibility="gone">
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipFilter90Days"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="90 Gün" />
+                    <ImageView
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:contentDescription="Empty"
+                        android:src="@drawable/ic_parking_sign_outline"
+                        app:tint="#94A3B8" />
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipFilterAll"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tümü" />
-        </com.google.android.material.chip.ChipGroup>
+                    <TextView
+                        android:id="@+id/tvEmptyTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Henüz park oturumu bulunmuyor"
+                        android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textStyle="bold" />
 
-        <!-- Sessions List -->
-        <FrameLayout
+                    <TextView
+                        android:id="@+id/tvEmptyText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:gravity="center"
+                        android:maxWidth="400dp"
+                        android:text="Araç stop edildiğinde ilk oturum otomatik başlatılır."
+                        android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                        android:textColor="?attr/colorOutline" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnEnableFromEmpty"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="16dp"
+                        android:backgroundTint="@color/brand_primary"
+                        android:text="Park Zekasını Aç"
+                        android:textColor="@android:color/white"
+                        android:visibility="gone"
+                        app:cornerRadius="8dp" />
+                </LinearLayout>
+
+                <!-- Loading Spinner -->
+                <ProgressBar
+                    android:id="@+id/pbParkingLoading"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_gravity="center"
+                    android:indeterminate="true"
+                    android:visibility="gone" />
+            </FrameLayout>
+        </LinearLayout>
+
+        <!-- Settings Tab View Container -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/layoutSettingsContainer"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_marginTop="14dp"
+            android:layout_weight="1"
+            android:fillViewport="true"
+            android:visibility="gone">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvParkingSessions"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clipToPadding="false"
-                android:scrollbars="none" />
-
-            <!-- Empty State -->
             <LinearLayout
-                android:id="@+id/emptyStateParking"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:visibility="gone">
+                android:orientation="vertical">
 
-                <ImageView
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:contentDescription="Empty"
-                    android:src="@drawable/ic_parking"
-                    app:tint="?attr/colorOutline" />
-
-                <TextView
-                    android:layout_width="wrap_content"
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Material3.CardView.Filled"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="Henüz park oturumu bulunmuyor"
-                    android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-                    android:textColor="?attr/colorOnSurface" />
+                    app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Araç stop edildiğinde ilk oturum otomatik başlatılır."
-                    android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-                    android:textColor="?attr/colorOutline" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+
+                        <!-- Row 1: Master Switch: Park Zekasını Etkinleştir -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Park Zekasını Etkinleştir"
+                                    android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:text="Her araç stop edildiğinde otomatik oturum açar: konum ve GPS tazeliği, araçtan uzaklaştığınızda ve geri döndüğünüzde 4 kamera fotoğrafı, nöbetçinin izlediği sırada yanınıza gelen veya ayrılan araçlar ve 2 bildirim ('Parked', 'Back at car'). Kapalı = iş parçacığı yok, depolama yok, hesaplama yok."
+                                    android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                                    android:textColor="?attr/colorOutline" />
+                            </LinearLayout>
+
+                            <com.google.android.material.materialswitch.MaterialSwitch
+                                android:id="@+id/switchParkingEnabled"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
+                        </LinearLayout>
+
+                        <!-- Sub-settings Container: dimmed when master switch is off -->
+                        <LinearLayout
+                            android:id="@+id/layoutSubSettings"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_marginVertical="16dp"
+                                android:background="?attr/colorOutlineVariant" />
+
+                            <!-- Row 2: Oturum sonu (Session ends dropdown) -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Oturum sonu"
+                                        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                                        android:textColor="?attr/colorOnSurface" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="2dp"
+                                        android:text="Park oturumunun ne zaman kapanacağı. 'Geri döndüğümde': ilk kapı açılması veya kilit açmada (veya kontak açmada). 'Araç çalıştığında': kapı ve kilit sadece dönüş fotoğraflarını yeniler. 'Sürüşe başladığımda': vites P'den çıkana kadar bekler; vites bilgisi yoksa kontak açıldıktan ~2 dakika sonra kapanır."
+                                        android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                                        android:textColor="?attr/colorOutline" />
+                                </LinearLayout>
+
+                                <Spinner
+                                    android:id="@+id/spinnerEndTrigger"
+                                    android:layout_width="190dp"
+                                    android:layout_height="40dp"
+                                    android:background="@drawable/bg_parking_filter_normal"
+                                    android:paddingHorizontal="8dp" />
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_marginVertical="16dp"
+                                android:background="?attr/colorOutlineVariant" />
+
+                            <!-- Row 3: Varış ve Dönüş Fotoğrafları -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Varış ve Dönüş Fotoğrafları"
+                                        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                                        android:textColor="?attr/colorOnSurface" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="2dp"
+                                        android:text="Stop edildikten ~90 sn sonra ve ilk kapı açılışı/kilit açılışında 4 kamera fotoğrafı. Ayrıca bildirimlerdeki görsel."
+                                        android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                                        android:textColor="?attr/colorOutline" />
+                                </LinearLayout>
+
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/switchSnapshots"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_marginVertical="16dp"
+                                android:background="?attr/colorOutlineVariant" />
+
+                            <!-- Row 4: Komşu Araç Takibi -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Komşu Araç Takibi"
+                                        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                                        android:textColor="?attr/colorOnSurface" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="2dp"
+                                        android:text="Nöbetçi taban çizgisi ve sonlandırılmış olaylardan yanınıza gelen veya ayrılan araçları takip eder ve her birinin en net karelerini saklar. Nöbetçi devrede olmalıdır."
+                                        android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                                        android:textColor="?attr/colorOutline" />
+                                </LinearLayout>
+
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/switchNeighbours"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_marginVertical="16dp"
+                                android:background="?attr/colorOutlineVariant" />
+
+                            <!-- Row 5: Otopark Tabelası OCR (v2) -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Otopark Tabelası OCR (v2)"
+                                        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                                        android:textColor="?attr/colorOnSurface" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="2dp"
+                                        android:text="Cihaz içi OCR modeli (PP-OCRv3, ~5.5 MB) ile fotoğraflardan ve yaklaşma kaydının son dakikasından kat / bölge / peron metnini okur. Varış fotoğraflarından hemen sonra bir kez çalışır; kayıt yapan bir sentry klibi nedeniyle ertelenen okuma daha sonra yeniden denenir."
+                                        android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                                        android:textColor="?attr/colorOutline" />
+                                </LinearLayout>
+
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/switchSignage"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_marginVertical="16dp"
+                                android:background="?attr/colorOutlineVariant" />
+
+                            <!-- Row 6: Adres arama (Geocoding Enabled) -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Adres arama"
+                                        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                                        android:textColor="?attr/colorOnSurface" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="2dp"
+                                        android:text="Park GPS konumunu 'Parked' bildirimi ve oturum listesi için ilçe / cadde etiketine dönüştürür. Burada belirleyene kadar nöbetçi veya araç kamerası konum etiketleme tercihini takip eder."
+                                        android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                                        android:textColor="?attr/colorOutline" />
+                                </LinearLayout>
+
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/switchGeocodingEnabled"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_marginVertical="16dp"
+                                android:background="?attr/colorOutlineVariant" />
+
+                            <!-- Row 7: Çevrim içi adres çözücü (Geocoding Online) -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Çevrim içi adres çözücü"
+                                        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                                        android:textColor="?attr/colorOnSurface" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="2dp"
+                                        android:text="Cihaz içi coğrafi kodlama konumu adlandıramadığında OpenStreetMap Nominatim servisine başvurur. Yalnızca park koordinatlarını ve cihaz dilinizi gönderir."
+                                        android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                                        android:textColor="?attr/colorOutline" />
+                                </LinearLayout>
+
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/switchGeocodingOnline"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_marginVertical="16dp"
+                                android:background="?attr/colorOutlineVariant" />
+
+                            <!-- Row 8: Oturumları sakla (gün) -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Oturumları sakla (gün)"
+                                        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                                        android:textColor="?attr/colorOnSurface" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="2dp"
+                                        android:text="Bu süreden daha eski oturumlar otomatik olarak temizlenir (7 - 730 gün)."
+                                        android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                                        android:textColor="?attr/colorOutline" />
+                                </LinearLayout>
+
+                                <EditText
+                                    android:id="@+id/etRetentionDays"
+                                    android:layout_width="96dp"
+                                    android:layout_height="40dp"
+                                    android:background="@drawable/bg_parking_filter_normal"
+                                    android:gravity="center"
+                                    android:imeOptions="actionDone"
+                                    android:inputType="number"
+                                    android:text="90"
+                                    android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
+                                    android:textColor="?attr/colorOnSurface" />
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_marginVertical="16dp"
+                                android:background="?attr/colorOutlineVariant" />
+
+                            <!-- Row 9: Fotoğraf & kare hafıza limiti (MB) -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Fotoğraf &amp; kare hafıza limiti (MB)"
+                                        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                                        android:textColor="?attr/colorOnSurface" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="2dp"
+                                        android:text="Park fotoğrafları ve kareleri için maksimum disk alanı limiti (50 - 4096 MB)."
+                                        android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                                        android:textColor="?attr/colorOutline" />
+                                </LinearLayout>
+
+                                <EditText
+                                    android:id="@+id/etStorageCapMb"
+                                    android:layout_width="96dp"
+                                    android:layout_height="40dp"
+                                    android:background="@drawable/bg_parking_filter_normal"
+                                    android:gravity="center"
+                                    android:imeOptions="actionDone"
+                                    android:inputType="number"
+                                    android:text="300"
+                                    android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
+                                    android:textColor="?attr/colorOnSurface" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
-
-            <!-- Loading Spinner -->
-            <ProgressBar
-                android:id="@+id/pbParkingLoading"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_gravity="center"
-                android:indeterminate="true"
-                android:visibility="gone" />
-        </FrameLayout>
+        </androidx.core.widget.NestedScrollView>
     </LinearLayout>
 
-    <!-- Settings Tab View Container -->
+    <!-- Session Detail Drill-in Container (pkDetailView equivalent) -->
     <androidx.core.widget.NestedScrollView
-        android:id="@+id/layoutSettingsContainer"
+        android:id="@+id/layoutDetailContainer"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="12dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
         android:fillViewport="true"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
         android:visibility="gone">
 
         <LinearLayout
@@ -357,10 +876,66 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <!-- Detail Header Bar: Back Button on left, Action Buttons on right -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/btnDetailBack"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:background="@drawable/bg_parking_filter_normal"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:text="← Tüm oturumlar"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/btnDetailMap"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:background="@drawable/bg_parking_filter_normal"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="12dp"
+                    android:text="Harita"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <TextView
+                    android:id="@+id/btnDetailRecordings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_parking_filter_normal"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="12dp"
+                    android:text="Kayıtlar"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                    android:textColor="?attr/colorOnSurface" />
+            </LinearLayout>
+
+            <!-- Detail Summary Card -->
             <com.google.android.material.card.MaterialCardView
                 style="@style/Widget.Material3.CardView.Filled"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp">
@@ -371,23 +946,46 @@
                     android:orientation="vertical"
                     android:padding="20dp">
 
-                    <!-- Master Switch -->
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/tvDetailPlace"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Kadıköy Katlı Otopark · KAT -2"
+                        android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvDetailSubtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Pazartesi, 6 Ekim · 14:32 – 16:47"
+                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                        android:textColor="?attr/colorOutline" />
+
+                    <!-- Summary 6-Stats Grid -->
+                    <GridLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:layout_marginTop="16dp"
+                        android:columnCount="4"
+                        android:rowCount="2">
 
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
+                            android:layout_columnWeight="1"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingVertical="8dp">
 
                             <TextView
+                                android:id="@+id/tvDetailDuration"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Park Zekasını Etkinleştir"
+                                android:fontFamily="monospace"
+                                android:text="2s 15dk"
                                 android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
                                 android:textColor="?attr/colorOnSurface"
                                 android:textStyle="bold" />
@@ -395,142 +993,322 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="Her araç stop edildiğinde otomatik oturum açar, GPS ve 4 kamera fotoğrafı kaydeder."
-                                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                                android:layout_marginTop="2dp"
+                                android:text="Süre"
+                                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
                                 android:textColor="?attr/colorOutline" />
                         </LinearLayout>
 
-                        <com.google.android.material.materialswitch.MaterialSwitch
-                            android:id="@+id/switchParkingEnabled"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
-                    </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingVertical="8dp">
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginVertical="16dp"
-                        android:background="?attr/colorOutlineVariant" />
+                            <TextView
+                                android:id="@+id/tvDetailEnergy"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="monospace"
+                                android:text="0.4 kWh"
+                                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textStyle="bold" />
 
-                    <!-- Snapshots Switch -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Enerji tüketimi"
+                                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                android:textColor="?attr/colorOutline" />
+                        </LinearLayout>
 
                         <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingVertical="8dp">
+
+                            <TextView
+                                android:id="@+id/tvDetailEvents"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="monospace"
+                                android:text="0"
+                                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Sentry olayı"
+                                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                android:textColor="?attr/colorOutline" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_columnWeight="1"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingVertical="8dp">
+
+                            <TextView
+                                android:id="@+id/tvDetailNeighbours"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="monospace"
+                                android:text="0"
+                                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Komşu araç"
+                                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                android:textColor="?attr/colorOutline" />
+                        </LinearLayout>
+                    </GridLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Stills Card (Fotoğraflar) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardDetailStills"
+                style="@style/Widget.Material3.CardView.Filled"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Fotoğraflar (Varış ve Dönüş)"
+                        android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvNoStillsHint"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="Bu oturum için çekilmiş fotoğraf bulunmuyor."
+                        android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                        android:textColor="?attr/colorOutline"
+                        android:visibility="gone" />
+
+                    <!-- Stills 2-Column Row: Arrived / Returned -->
+                    <LinearLayout
+                        android:id="@+id/layoutStillsColumns"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:orientation="horizontal">
+
+                        <!-- Arrived Mosaic Column -->
+                        <LinearLayout
+                            android:id="@+id/layoutArrivedStill"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:orientation="vertical">
 
                             <TextView
+                                android:id="@+id/tvArrivedStillLabel"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Varış ve Dönüş Fotoğrafları"
-                                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
-                                android:textColor="?attr/colorOnSurface" />
+                                android:text="Varış Fotoğrafı"
+                                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                android:textColor="@color/brand_primary"
+                                android:textStyle="bold" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="Ayrılışta ve kapı ilk açıldığında 4 kamera fotoğrafı çeker."
-                                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-                                android:textColor="?attr/colorOutline" />
+                            <ImageView
+                                android:id="@+id/ivArrivedMosaic"
+                                android:layout_width="match_parent"
+                                android:layout_height="140dp"
+                                android:layout_marginTop="6dp"
+                                android:background="@drawable/bg_parking_filter_normal"
+                                android:scaleType="centerCrop"
+                                android:clickable="true"
+                                android:focusable="true" />
                         </LinearLayout>
 
-                        <com.google.android.material.materialswitch.MaterialSwitch
-                            android:id="@+id/switchSnapshots"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginVertical="16dp"
-                        android:background="?attr/colorOutlineVariant" />
-
-                    <!-- Neighbours Switch -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
+                        <!-- Returned Mosaic Column -->
                         <LinearLayout
+                            android:id="@+id/layoutReturnedStill"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="14dp"
                             android:layout_weight="1"
                             android:orientation="vertical">
 
                             <TextView
+                                android:id="@+id/tvReturnedStillLabel"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Komşu Araç Takibi"
-                                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
-                                android:textColor="?attr/colorOnSurface" />
+                                android:text="Dönüş Fotoğrafı"
+                                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                android:textColor="@color/brand_primary"
+                                android:textStyle="bold" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="Yanınıza park eden veya ayrılan araçları kaydeder."
-                                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-                                android:textColor="?attr/colorOutline" />
+                            <ImageView
+                                android:id="@+id/ivReturnedMosaic"
+                                android:layout_width="match_parent"
+                                android:layout_height="140dp"
+                                android:layout_marginTop="6dp"
+                                android:background="@drawable/bg_parking_filter_normal"
+                                android:scaleType="centerCrop"
+                                android:clickable="true"
+                                android:focusable="true" />
                         </LinearLayout>
-
-                        <com.google.android.material.materialswitch.MaterialSwitch
-                            android:id="@+id/switchNeighbours"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginVertical="16dp"
-                        android:background="?attr/colorOutlineVariant" />
-
-                    <!-- Signage OCR Switch -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Otopark Tabelası OCR (v2)"
-                                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
-                                android:textColor="?attr/colorOnSurface" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="Kat, blok ve park yeri numaralarını cihaz içi OCR modeli ile okur."
-                                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-                                android:textColor="?attr/colorOutline" />
-                        </LinearLayout>
-
-                        <com.google.android.material.materialswitch.MaterialSwitch
-                            android:id="@+id/switchSignage"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            <!-- Garage Signage OCR Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardDetailSignage"
+                style="@style/Widget.Material3.CardView.Filled"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Otopark Tabelası OCR (v2)"
+                            android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvSignageStatusTag"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_pill_state"
+                            android:backgroundTint="@color/brand_cyan_glow"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="2dp"
+                            android:text="Okundu"
+                            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                            android:textColor="@color/brand_primary"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvSignageValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:fontFamily="monospace"
+                        android:text="KAT -2 · BLOK B"
+                        android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"
+                        android:textColor="@color/brand_primary"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvSignageConfidence"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Güven skoru: %94"
+                        android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                        android:textColor="?attr/colorOutline" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnRequeueSignage"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:layout_marginTop="12dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:text="Yeniden oku"
+                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Delete Session Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDeleteSession"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="20dp"
+                android:strokeColor="#EF4444"
+                android:text="Oturumu Sil"
+                android:textColor="#EF4444"
+                app:cornerRadius="10dp"
+                app:icon="@drawable/ic_delete"
+                app:iconTint="#EF4444" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-</LinearLayout>
+
+    <!-- Fullscreen Lightbox Overlay -->
+    <FrameLayout
+        android:id="@+id/layoutLightboxOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#E6000000"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/ivLightboxImage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:padding="24dp"
+            android:scaleType="fitCenter" />
+
+        <ImageView
+            android:id="@+id/btnLightboxClose"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="top|end"
+            android:layout_margin="20dp"
+            android:background="@drawable/bg_circle_dot"
+            android:backgroundTint="#33FFFFFF"
+            android:padding="8dp"
+            android:src="@drawable/ic_clear"
+            app:tint="@android:color/white" />
+    </FrameLayout>
+</FrameLayout>
