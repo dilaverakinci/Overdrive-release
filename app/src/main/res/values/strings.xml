@@ -977,17 +977,23 @@
 
     <!-- Top-level destinations (navigation rail labels) -->
     <string name="rail_dashboard">Dashboard</string>
-    <string name="rail_dashboard_native">Dashboard (Native)</string>
-    <string name="rail_dashboard_legacy">Dashboard (Eski)</string>
+    <string name="rail_dashboard_native" translatable="false">Dashboard (Native)</string>
+    <string name="rail_dashboard_legacy" translatable="false">Dashboard (Eski)</string>
     <string name="rail_assistant">Assistant</string>
-    <string name="rail_assistant_native">Assistant (Native)</string>
-    <string name="rail_assistant_legacy">Assistant (Eski)</string>
+    <string name="rail_assistant_native" translatable="false">Assistant (Native)</string>
+    <string name="rail_assistant_legacy" translatable="false">Assistant (Eski)</string>
     <string name="rail_live">Live</string>
+    <string name="rail_live_native" translatable="false">Live (Native)</string>
+    <string name="rail_live_legacy" translatable="false">Live (Eski)</string>
     <string name="rail_recordings">Recordings</string>
+    <string name="rail_recordings_native" translatable="false">Recordings (Native)</string>
+    <string name="rail_recordings_legacy" translatable="false">Recordings (Eski)</string>
     <string name="rail_vehicle">Vehicle</string>
     <string name="rail_projection">Projection</string>
     <string name="rail_trips">Trips</string>
     <string name="rail_parking">Parking</string>
+    <string name="rail_parking_native" translatable="false">Parking (Native)</string>
+    <string name="rail_parking_legacy" translatable="false">Parking (Eski)</string>
     <string name="rail_charging">Charging</string>
     <string name="rail_automations">Automations</string>
     <string name="rail_key_mapping">Key Mapping</string>
@@ -1934,49 +1940,49 @@
     <string name="roi_tap_to_add_points">Tap to add points (%1$d-%2$d)</string>
 
     <!-- OverDrive Native Assistant (Faz 4.2) -->
-    <string name="assistant_title">OverDrive Assistant</string>
-    <string name="assistant_state_off_title">GenAI is off</string>
-    <string name="assistant_state_off_desc">The master kill switch is off. No provider transport or background AI work is active.</string>
-    <string name="assistant_state_setup_title">Setup needed</string>
-    <string name="assistant_state_setup_desc">GenAI is enabled but no provider or API key is configured.</string>
-    <string name="assistant_state_ready_title">Ready: %1$s</string>
-    <string name="assistant_state_ready_desc">Using %1$s. Available while parked.</string>
-    <string name="assistant_configure">Configure</string>
-    <string name="assistant_routines_title">Routine suggestions</string>
-    <string name="assistant_routines_empty">Off by default. Enable local routine learning under Privacy.</string>
-    <string name="assistant_incidents_title">Incident evidence packs</string>
-    <string name="assistant_incidents_empty">Create a pack from a recording on the Events page.</string>
-    <string name="assistant_empty_title">Ask about your vehicle</string>
-    <string name="assistant_empty_desc">Text is the default. Vehicle data is attached only when you choose a grounded action or explicitly ask for it.</string>
-    <string name="assistant_input_hint">Ask OverDrive…</string>
-    <string name="assistant_voice_note">Voice appears only for providers with native realtime audio; OverDrive does not add speech-to-text fallback.</string>
-    <string name="assistant_tab_assistant">Assistant</string>
-    <string name="assistant_tab_provider">Provider</string>
-    <string name="assistant_tab_privacy">Privacy</string>
-    <string name="assistant_provider_title">Bring your own provider</string>
-    <string name="assistant_enable_title">Enable GenAI</string>
-    <string name="assistant_enable_desc">Master kill switch. Off cancels active requests and releases the provider transport.</string>
-    <string name="assistant_provider_label">Provider</string>
-    <string name="assistant_text_model_label">Text model</string>
-    <string name="assistant_custom_model_label">Custom model ID</string>
-    <string name="assistant_base_url_label">Provider base URL</string>
-    <string name="assistant_base_url_hint">HTTPS is recommended. HTTP is accepted for a trusted local compatible endpoint.</string>
-    <string name="assistant_api_key_label">API key</string>
-    <string name="assistant_api_key_hint">Leave blank to keep the saved key.</string>
-    <string name="assistant_max_tokens_label">Maximum output tokens</string>
-    <string name="assistant_realtime_model_label">Realtime voice model (optional)</string>
-    <string name="assistant_save">Save</string>
-    <string name="assistant_test_provider">Test provider</string>
-    <string name="assistant_privacy_title">Privacy and runtime</string>
-    <string name="assistant_routine_learn_title">Learn my routines locally</string>
-    <string name="assistant_routine_learn_desc">Opt-in. Stores only bounded climate and sunshade action patterns on this vehicle. No provider call is used, and accepted suggestions save as manual-only automations.</string>
-    <string name="assistant_parked_label">Parked availability</string>
-    <string name="assistant_transport_label">Current transport</string>
-    <string name="assistant_proxy_label">Proxy policy</string>
-    <string name="assistant_active_requests_label">Active requests</string>
-    <string name="assistant_save_routine">Save routine setting</string>
-    <string name="assistant_reset_routines">Reset learned patterns</string>
-    <string name="assistant_clear_key">Disable and clear API key</string>
-    <string name="assistant_send_message">Send</string>
-    <string name="assistant_voice_action">Voice</string>
+    <string name="assistant_title" translatable="false">OverDrive Assistant</string>
+    <string name="assistant_state_off_title" translatable="false">GenAI is off</string>
+    <string name="assistant_state_off_desc" translatable="false">The master kill switch is off. No provider transport or background AI work is active.</string>
+    <string name="assistant_state_setup_title" translatable="false">Setup needed</string>
+    <string name="assistant_state_setup_desc" translatable="false">GenAI is enabled but no provider or API key is configured.</string>
+    <string name="assistant_state_ready_title" translatable="false">Ready: %1$s</string>
+    <string name="assistant_state_ready_desc" translatable="false">Using %1$s. Available while parked.</string>
+    <string name="assistant_configure" translatable="false">Configure</string>
+    <string name="assistant_routines_title" translatable="false">Routine suggestions</string>
+    <string name="assistant_routines_empty" translatable="false">Off by default. Enable local routine learning under Privacy.</string>
+    <string name="assistant_incidents_title" translatable="false">Incident evidence packs</string>
+    <string name="assistant_incidents_empty" translatable="false">Create a pack from a recording on the Events page.</string>
+    <string name="assistant_empty_title" translatable="false">Ask about your vehicle</string>
+    <string name="assistant_empty_desc" translatable="false">Text is the default. Vehicle data is attached only when you choose a grounded action or explicitly ask for it.</string>
+    <string name="assistant_input_hint" translatable="false">Ask OverDrive…</string>
+    <string name="assistant_voice_note" translatable="false">Voice appears only for providers with native realtime audio; OverDrive does not add speech-to-text fallback.</string>
+    <string name="assistant_tab_assistant" translatable="false">Assistant</string>
+    <string name="assistant_tab_provider" translatable="false">Provider</string>
+    <string name="assistant_tab_privacy" translatable="false">Privacy</string>
+    <string name="assistant_provider_title" translatable="false">Bring your own provider</string>
+    <string name="assistant_enable_title" translatable="false">Enable GenAI</string>
+    <string name="assistant_enable_desc" translatable="false">Master kill switch. Off cancels active requests and releases the provider transport.</string>
+    <string name="assistant_provider_label" translatable="false">Provider</string>
+    <string name="assistant_text_model_label" translatable="false">Text model</string>
+    <string name="assistant_custom_model_label" translatable="false">Custom model ID</string>
+    <string name="assistant_base_url_label" translatable="false">Provider base URL</string>
+    <string name="assistant_base_url_hint" translatable="false">HTTPS is recommended. HTTP is accepted for a trusted local compatible endpoint.</string>
+    <string name="assistant_api_key_label" translatable="false">API key</string>
+    <string name="assistant_api_key_hint" translatable="false">Leave blank to keep the saved key.</string>
+    <string name="assistant_max_tokens_label" translatable="false">Maximum output tokens</string>
+    <string name="assistant_realtime_model_label" translatable="false">Realtime voice model (optional)</string>
+    <string name="assistant_save" translatable="false">Save</string>
+    <string name="assistant_test_provider" translatable="false">Test provider</string>
+    <string name="assistant_privacy_title" translatable="false">Privacy and runtime</string>
+    <string name="assistant_routine_learn_title" translatable="false">Learn my routines locally</string>
+    <string name="assistant_routine_learn_desc" translatable="false">Opt-in. Stores only bounded climate and sunshade action patterns on this vehicle. No provider call is used, and accepted suggestions save as manual-only automations.</string>
+    <string name="assistant_parked_label" translatable="false">Parked availability</string>
+    <string name="assistant_transport_label" translatable="false">Current transport</string>
+    <string name="assistant_proxy_label" translatable="false">Proxy policy</string>
+    <string name="assistant_active_requests_label" translatable="false">Active requests</string>
+    <string name="assistant_save_routine" translatable="false">Save routine setting</string>
+    <string name="assistant_reset_routines" translatable="false">Reset learned patterns</string>
+    <string name="assistant_clear_key" translatable="false">Disable and clear API key</string>
+    <string name="assistant_send_message" translatable="false">Send</string>
+    <string name="assistant_voice_action" translatable="false">Voice</string>
 </resources>

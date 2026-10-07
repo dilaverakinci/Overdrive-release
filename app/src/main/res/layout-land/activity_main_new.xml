@@ -113,12 +113,27 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
                     <include
+                        android:id="@+id/railDestLiveLegacy"
+                        layout="@layout/item_rail_destination"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                    <include
                         android:id="@+id/railDestRecordings"
                         layout="@layout/item_rail_destination"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
                     <include
+                        android:id="@+id/railDestRecordingsLegacy"
+                        layout="@layout/item_rail_destination"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                    <include
                         android:id="@+id/railDestParking"
+                        layout="@layout/item_rail_destination"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                    <include
+                        android:id="@+id/railDestParkingLegacy"
                         layout="@layout/item_rail_destination"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />

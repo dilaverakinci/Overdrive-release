@@ -99,6 +99,9 @@ open class MainActivity : AppCompatActivity() {
     private val RAIL_KEY_DASHBOARD = "dashboard"
     private val RAIL_KEY_DASHBOARD_LEGACY = "dashboard_legacy"
     private val RAIL_KEY_ASSISTANT_LEGACY = "assistant_legacy"
+    private val RAIL_KEY_LIVE_LEGACY = "live_legacy"
+    private val RAIL_KEY_RECORDINGS_LEGACY = "recordings_legacy"
+    private val RAIL_KEY_PARKING_LEGACY = "parking_legacy"
     private val RAIL_KEY_SETTINGS = "settings"
     private val RAIL_KEY_ABOUT = "about"
     private val KEY_RAIL_EXPANDED = "navigation_rail_expanded"
@@ -143,8 +146,11 @@ open class MainActivity : AppCompatActivity() {
             R.id.railSectionCameras, R.string.rail_section_cameras,
             setOf(
                 NavigationRailCatalog.LIVE,
+                RAIL_KEY_LIVE_LEGACY,
                 NavigationRailCatalog.RECORDINGS,
+                RAIL_KEY_RECORDINGS_LEGACY,
                 NavigationRailCatalog.PARKING,
+                RAIL_KEY_PARKING_LEGACY,
             )
         ),
         RailSection(
@@ -1661,8 +1667,11 @@ open class MainActivity : AppCompatActivity() {
                 R.id.genAiFragment,
                 R.id.genAiLegacyFragment,
                 R.id.liveViewFragment,
+                R.id.liveViewLegacyFragment,
                 R.id.recordingsFragment,
+                R.id.recordingsLegacyFragment,
                 R.id.parkingFragment,
+                R.id.parkingLegacyFragment,
                 R.id.vehicleControlFragment,
                 R.id.seatPositionsFragment,
                 R.id.projectionFragment,
@@ -1718,16 +1727,22 @@ open class MainActivity : AppCompatActivity() {
             RailItem(RAIL_KEY_ASSISTANT_LEGACY, R.id.railDestAssistantLegacy,
                 R.id.genAiLegacyFragment, R.drawable.ic_smart_toy, R.string.rail_assistant_legacy),
             RailItem(NavigationRailCatalog.LIVE, R.id.railDestLive, R.id.liveViewFragment,
-                R.drawable.ic_live, R.string.rail_live),
+                R.drawable.ic_live, R.string.rail_live_native),
+            RailItem(RAIL_KEY_LIVE_LEGACY, R.id.railDestLiveLegacy, R.id.liveViewLegacyFragment,
+                R.drawable.ic_live, R.string.rail_live_legacy),
             RailItem(NavigationRailCatalog.RECORDINGS, R.id.railDestRecordings,
-                R.id.recordingsFragment, R.drawable.ic_recording, R.string.rail_recordings,
+                R.id.recordingsFragment, R.drawable.ic_recording, R.string.rail_recordings_native,
                 ownedDestinationIds = setOf(
                     R.id.videoPlayerFragment,
                     R.id.surveillanceSettingsWebFragment,
                     R.id.recordingSettingsWebFragment,
                 )),
+            RailItem(RAIL_KEY_RECORDINGS_LEGACY, R.id.railDestRecordingsLegacy,
+                R.id.recordingsLegacyFragment, R.drawable.ic_recording, R.string.rail_recordings_legacy),
             RailItem(NavigationRailCatalog.PARKING, R.id.railDestParking,
-                R.id.parkingFragment, R.drawable.ic_parking, R.string.rail_parking),
+                R.id.parkingFragment, R.drawable.ic_parking, R.string.rail_parking_native),
+            RailItem(RAIL_KEY_PARKING_LEGACY, R.id.railDestParkingLegacy,
+                R.id.parkingLegacyFragment, R.drawable.ic_parking, R.string.rail_parking_legacy),
             RailItem(NavigationRailCatalog.VEHICLE, R.id.railDestVehicle,
                 R.id.vehicleControlFragment,
                 R.drawable.ic_vehicle_control, R.string.rail_vehicle),

@@ -38,10 +38,17 @@
          WebCodecs to JMuxer on Chrome 58 / Android 7.1 head unit.
          page_path is /live-view (the camera UI moved out of index.html
          when the new Dashboard landing page took over /). -->
+    <!-- Live view: native vs legacy webview -->
     <fragment
         android:id="@+id/liveViewFragment"
+        android:name="com.overdrive.app.ui.fragment.LiveViewNativeFragment"
+        android:label="@string/rail_live_native"
+        tools:layout="@layout/fragment_live_view" />
+
+    <fragment
+        android:id="@+id/liveViewLegacyFragment"
         android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_live"
+        android:label="@string/rail_live_legacy"
         tools:layout="@layout/fragment_webview">
         <argument
             android:name="page_path"
@@ -49,18 +56,35 @@
             android:defaultValue="/live-view" />
     </fragment>
 
-    <!-- Recordings: native two-pane (library + player) with M3 segmented Dashcam/Surveillance -->
+    <!-- Recordings: native two-pane (library + player) vs legacy events webview -->
     <fragment
         android:id="@+id/recordingsFragment"
         android:name="com.overdrive.app.ui.fragment.RecordingsFragment"
-        android:label="@string/rail_recordings"
+        android:label="@string/rail_recordings_native"
         tools:layout="@layout/fragment_recordings" />
 
-    <!-- Parking Intelligence (web canonical): sessions, neighbour timeline, stills -->
+    <fragment
+        android:id="@+id/recordingsLegacyFragment"
+        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
+        android:label="@string/rail_recordings_legacy"
+        tools:layout="@layout/fragment_webview">
+        <argument
+            android:name="page_path"
+            app:argType="string"
+            android:defaultValue="/events" />
+    </fragment>
+
+    <!-- Parking Intelligence: native vs legacy webview -->
     <fragment
         android:id="@+id/parkingFragment"
+        android:name="com.overdrive.app.ui.fragment.ParkingNativeFragment"
+        android:label="@string/rail_parking_native"
+        tools:layout="@layout/fragment_parking" />
+
+    <fragment
+        android:id="@+id/parkingLegacyFragment"
         android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_parking"
+        android:label="@string/rail_parking_legacy"
         tools:layout="@layout/fragment_webview">
         <argument
             android:name="page_path"
