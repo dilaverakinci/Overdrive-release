@@ -1,9 +1,11 @@
 package com.overdrive.app.ui.fragment
 
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -64,17 +66,27 @@ class ParkingNativeFragment : Fragment() {
     private lateinit var layoutMainParkingContent: View
     private lateinit var layoutDetailContainer: View
 
-    // Top Header
-    private lateinit var tvParkingTitle: TextView
-    private lateinit var parkingStatusBadge: View
-    private lateinit var parkingStatusDot: View
-    private lateinit var tvParkingStatus: TextView
-
-    // Tabs
-    private lateinit var tabButtonSessions: TextView
-    private lateinit var tabButtonSettings: TextView
+    // Top Content Containers
     private lateinit var layoutSessionsContainer: View
     private lateinit var layoutSettingsContainer: View
+
+    // Settings Card Header
+    private lateinit var cardParkingSettings: MaterialCardView
+    private lateinit var layoutSettingsHeader: View
+    private lateinit var tvParkingSettingsCardTitle: TextView
+    private lateinit var tvSettingsBadgeStatus: TextView
+    private lateinit var ivSettingsChevron: ImageView
+    private lateinit var layoutSettingsBody: View
+    private var isSettingsCardExpanded = true
+
+    // Sticky Bottom Tab Bar
+    private lateinit var layoutBottomTabsBar: View
+    private lateinit var tabBottomSessions: LinearLayout
+    private lateinit var ivBottomTabSessions: ImageView
+    private lateinit var tvBottomTabSessions: TextView
+    private lateinit var tabBottomSettings: LinearLayout
+    private lateinit var ivBottomTabSettings: ImageView
+    private lateinit var tvBottomTabSettings: TextView
 
     // Hero Card
     private lateinit var cardParkedNowHero: MaterialCardView
@@ -155,6 +167,7 @@ class ParkingNativeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         bindViews(view)
         setupTabs()
+        setupSettingsCardHeader()
         setupFilters()
         setupRecyclerView()
         setupSettingsControls()
@@ -168,15 +181,23 @@ class ParkingNativeFragment : Fragment() {
         layoutMainParkingContent = view.findViewById(R.id.layoutMainParkingContent)
         layoutDetailContainer = view.findViewById(R.id.layoutDetailContainer)
 
-        tvParkingTitle = view.findViewById(R.id.tvParkingTitle)
-        parkingStatusBadge = view.findViewById(R.id.parkingStatusBadge)
-        parkingStatusDot = view.findViewById(R.id.parkingStatusDot)
-        tvParkingStatus = view.findViewById(R.id.tvParkingStatus)
-
-        tabButtonSessions = view.findViewById(R.id.tabButtonSessions)
-        tabButtonSettings = view.findViewById(R.id.tabButtonSettings)
         layoutSessionsContainer = view.findViewById(R.id.layoutSessionsContainer)
         layoutSettingsContainer = view.findViewById(R.id.layoutSettingsContainer)
+
+        cardParkingSettings = view.findViewById(R.id.cardParkingSettings)
+        layoutSettingsHeader = view.findViewById(R.id.layoutSettingsHeader)
+        tvParkingSettingsCardTitle = view.findViewById(R.id.tvParkingSettingsCardTitle)
+        tvSettingsBadgeStatus = view.findViewById(R.id.tvSettingsBadgeStatus)
+        ivSettingsChevron = view.findViewById(R.id.ivSettingsChevron)
+        layoutSettingsBody = view.findViewById(R.id.layoutSettingsBody)
+
+        layoutBottomTabsBar = view.findViewById(R.id.layoutBottomTabsBar)
+        tabBottomSessions = view.findViewById(R.id.tabBottomSessions)
+        ivBottomTabSessions = view.findViewById(R.id.ivBottomTabSessions)
+        tvBottomTabSessions = view.findViewById(R.id.tvBottomTabSessions)
+        tabBottomSettings = view.findViewById(R.id.tabBottomSettings)
+        ivBottomTabSettings = view.findViewById(R.id.ivBottomTabSettings)
+        tvBottomTabSettings = view.findViewById(R.id.tvBottomTabSettings)
 
         cardParkedNowHero = view.findViewById(R.id.cardParkedNowHero)
         tvHeroPlace = view.findViewById(R.id.tvHeroPlace)
@@ -236,26 +257,53 @@ class ParkingNativeFragment : Fragment() {
     }
 
     private fun setupTabs() {
-        tabButtonSessions.setOnClickListener { switchTab("sessions") }
-        tabButtonSettings.setOnClickListener { switchTab("settings") }
+        tabBottomSessions.setOnClickListener { switchTab("sessions") }
+        tabBottomSettings.setOnClickListener { switchTab("settings") }
+        switchTab("sessions")
     }
 
     private fun switchTab(tab: String) {
         currentActiveTab = tab
+        val ctx = context ?: return
+        val brandColor = ContextCompat.getColor(ctx, R.color.brand_primary)
+        val mutedColor = Color.parseColor("#64748B")
+
         if (tab == "sessions") {
-            tabButtonSessions.setBackgroundResource(R.drawable.bg_parking_tab_left_active)
-            tabButtonSessions.setTextColor(Color.parseColor("#0F172A"))
-            tabButtonSettings.setBackgroundColor(Color.TRANSPARENT)
-            tabButtonSettings.setTextColor(Color.parseColor("#64748B"))
+            tabBottomSessions.setBackgroundResource(R.drawable.bg_bottom_tab_active)
+            ivBottomTabSessions.imageTintList = ColorStateList.valueOf(brandColor)
+            tvBottomTabSessions.setTextColor(brandColor)
+            tvBottomTabSessions.setTypeface(null, Typeface.BOLD)
+
+            tabBottomSettings.setBackgroundColor(Color.TRANSPARENT)
+            ivBottomTabSettings.imageTintList = ColorStateList.valueOf(mutedColor)
+            tvBottomTabSettings.setTextColor(mutedColor)
+            tvBottomTabSettings.setTypeface(null, Typeface.NORMAL)
+
             layoutSessionsContainer.visibility = View.VISIBLE
             layoutSettingsContainer.visibility = View.GONE
         } else {
-            tabButtonSettings.setBackgroundResource(R.drawable.bg_parking_tab_right_active)
-            tabButtonSettings.setTextColor(Color.parseColor("#0F172A"))
-            tabButtonSessions.setBackgroundColor(Color.TRANSPARENT)
-            tabButtonSessions.setTextColor(Color.parseColor("#64748B"))
+            tabBottomSessions.setBackgroundColor(Color.TRANSPARENT)
+            ivBottomTabSessions.imageTintList = ColorStateList.valueOf(mutedColor)
+            tvBottomTabSessions.setTextColor(mutedColor)
+            tvBottomTabSessions.setTypeface(null, Typeface.NORMAL)
+
+            tabBottomSettings.setBackgroundResource(R.drawable.bg_bottom_tab_active)
+            ivBottomTabSettings.imageTintList = ColorStateList.valueOf(brandColor)
+            tvBottomTabSettings.setTextColor(brandColor)
+            tvBottomTabSettings.setTypeface(null, Typeface.BOLD)
+
             layoutSessionsContainer.visibility = View.GONE
             layoutSettingsContainer.visibility = View.VISIBLE
+        }
+    }
+
+    private fun setupSettingsCardHeader() {
+        layoutSettingsHeader.setOnClickListener {
+            isSettingsCardExpanded = !isSettingsCardExpanded
+            layoutSettingsBody.visibility = if (isSettingsCardExpanded) View.VISIBLE else View.GONE
+            ivSettingsChevron.setImageResource(
+                if (isSettingsCardExpanded) R.drawable.ic_chevron_up else R.drawable.ic_chevron_down
+            )
         }
     }
 
@@ -264,29 +312,30 @@ class ParkingNativeFragment : Fragment() {
         btnFilter30Days.setOnClickListener { applyFilter(30) }
         btnFilter90Days.setOnClickListener { applyFilter(90) }
         btnFilterAll.setOnClickListener { applyFilter(0) }
+        applyFilter(30)
     }
 
     private fun applyFilter(days: Int) {
         val normalBg = R.drawable.bg_parking_filter_normal
         val activeBg = R.drawable.bg_parking_filter_active
         val normalColor = Color.parseColor("#64748B")
-        val activeColor = Color.parseColor("#064E3B")
+        val activeColor = Color.parseColor("#0F172A")
 
         btnFilter7Days.setBackgroundResource(if (days == 7) activeBg else normalBg)
-        btnFilter7Days.text = if (days == 7) "✓ 7 Gün" else "7 Gün"
         btnFilter7Days.setTextColor(if (days == 7) activeColor else normalColor)
+        btnFilter7Days.setTypeface(null, if (days == 7) Typeface.BOLD else Typeface.NORMAL)
 
         btnFilter30Days.setBackgroundResource(if (days == 30) activeBg else normalBg)
-        btnFilter30Days.text = if (days == 30) "✓ 30 Gün" else "30 Gün"
         btnFilter30Days.setTextColor(if (days == 30) activeColor else normalColor)
+        btnFilter30Days.setTypeface(null, if (days == 30) Typeface.BOLD else Typeface.NORMAL)
 
         btnFilter90Days.setBackgroundResource(if (days == 90) activeBg else normalBg)
-        btnFilter90Days.text = if (days == 90) "✓ 90 Gün" else "90 Gün"
         btnFilter90Days.setTextColor(if (days == 90) activeColor else normalColor)
+        btnFilter90Days.setTypeface(null, if (days == 90) Typeface.BOLD else Typeface.NORMAL)
 
         btnFilterAll.setBackgroundResource(if (days == 0) activeBg else normalBg)
-        btnFilterAll.text = if (days == 0) "✓ Tümü" else "Tümü"
         btnFilterAll.setTextColor(if (days == 0) activeColor else normalColor)
+        btnFilterAll.setTypeface(null, if (days == 0) Typeface.BOLD else Typeface.NORMAL)
 
         viewModel.filterByDays(days)
     }
@@ -315,7 +364,11 @@ class ParkingNativeFragment : Fragment() {
 
     private fun setupSettingsControls() {
         // EndTrigger spinner options
-        val triggerLabels = arrayOf("Geri döndüğümde", "Araç çalıştığında", "Sürüşe başladığımda")
+        val triggerLabels = arrayOf(
+            getString(R.string.parking_trigger_return),
+            getString(R.string.parking_trigger_power_on),
+            getString(R.string.parking_trigger_drive_away)
+        )
         val triggerValues = arrayOf("return", "power_on", "drive_away")
         val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, triggerLabels)
         spinnerEndTrigger.adapter = spinnerAdapter
@@ -553,13 +606,13 @@ class ParkingNativeFragment : Fragment() {
     private fun updateStatusUI(status: ParkingStatus) {
         val context = requireContext()
         if (status.enabled) {
-            tvParkingStatus.text = if (status.running) "AÇIK" else "DURAKLATILDI"
-            tvParkingStatus.setTextColor(ContextCompat.getColor(context, R.color.brand_primary))
-            parkingStatusDot.backgroundTintList = ContextCompat.getColorStateList(context, R.color.status_success)
+            tvSettingsBadgeStatus.text = getString(R.string.parking_status_on)
+            tvSettingsBadgeStatus.setTextColor(ContextCompat.getColor(context, R.color.brand_primary))
+            tvSettingsBadgeStatus.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#CCE8DE"))
         } else {
-            tvParkingStatus.text = "KAPALI"
-            tvParkingStatus.setTextColor(ContextCompat.getColor(context, R.color.text_muted))
-            parkingStatusDot.backgroundTintList = ContextCompat.getColorStateList(context, R.color.status_stopped)
+            tvSettingsBadgeStatus.text = getString(R.string.parking_status_off)
+            tvSettingsBadgeStatus.setTextColor(Color.parseColor("#64748B"))
+            tvSettingsBadgeStatus.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#F1F5F9"))
         }
 
         // Hero Card
@@ -567,23 +620,23 @@ class ParkingNativeFragment : Fragment() {
         if (cur != null) {
             cardParkedNowHero.visibility = View.VISIBLE
             tvHeroPlace.text = if (!cur.signageLabel.isNullOrBlank()) "${cur.place} · ${cur.signageLabel}" else cur.place
-            val daySdf = SimpleDateFormat("EEEE", Locale("tr"))
+            val daySdf = SimpleDateFormat("EEEE", Locale.getDefault())
             val timeSdf = SimpleDateFormat("HH:mm", Locale.getDefault())
             val dayStr = daySdf.format(Date(cur.start)).replaceFirstChar { it.uppercase() }
             val timeStr = timeSdf.format(Date(cur.start))
             val gpsStr = when (cur.gpsQuality.uppercase()) {
-                "FRESH" -> "GPS güncel"
-                "RECENT" -> "GPS yakın"
-                "STALE" -> "GPS eski"
-                else -> "GPS yok"
+                "FRESH" -> "GPS fresh"
+                "RECENT" -> "GPS recent"
+                "STALE" -> "GPS stale"
+                else -> "No GPS"
             }
-            val sentryStr = if (cur.sentryState == "armed") "Nöbetçi devrede" else "Nöbetçi beklemede"
+            val sentryStr = if (cur.sentryState == "armed") "Sentry armed" else "Sentry standby"
             tvHeroSub.text = "$dayStr · $timeStr · $gpsStr · $sentryStr"
 
             val mins = cur.durationMs / 60000
             val hours = mins / 60
             val remMins = mins % 60
-            tvHeroDuration.text = if (hours > 0) "${hours}s ${remMins}dk" else "${remMins}dk"
+            tvHeroDuration.text = if (hours > 0) "${hours}h ${remMins}m" else "${remMins}m"
             tvHeroSentryEvents.text = cur.eventsCount.toString()
             tvHeroNeighbours.text = cur.neighboursCount.toString()
             tvHeroGpsStatus.text = gpsStr
@@ -643,17 +696,12 @@ class ParkingNativeFragment : Fragment() {
         }
         emptyStateParking.visibility = View.VISIBLE
         if (!isEnabled) {
-            tvEmptyTitle.text = "Park Zekası kapalı"
-            tvEmptyText.text = "Açıldığında, her stop ediş bir park oturumu açar: aracın nerede olduğu, uzaklaştığınızda 4 kamera fotoğrafı, nöbetçinin izlediği sırada yanınıza gelen veya ayrılan araçlar ve döndüğünüzde bir 'Araca dönüş' özeti."
+            tvEmptyTitle.text = getString(R.string.parking_disabled_title)
+            tvEmptyText.text = getString(R.string.parking_disabled_body)
             btnEnableFromEmpty.visibility = View.VISIBLE
         } else {
-            if (filterDays > 0) {
-                tvEmptyTitle.text = "Bu aralıkta park oturumu yok"
-                tvEmptyText.text = "Seçilen tarih aralığında kaydedilmiş park oturumu bulunamadı."
-            } else {
-                tvEmptyTitle.text = "Henüz park oturumu bulunmuyor"
-                tvEmptyText.text = "Araç stop edildiğinde ilk oturum otomatik başlatılır."
-            }
+            tvEmptyTitle.text = getString(R.string.parking_no_sessions_title)
+            tvEmptyText.text = getString(R.string.parking_no_sessions_body)
             btnEnableFromEmpty.visibility = View.GONE
         }
     }

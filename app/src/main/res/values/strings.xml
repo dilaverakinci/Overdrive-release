@@ -994,6 +994,45 @@
     <string name="rail_parking">Parking</string>
     <string name="rail_parking_native" translatable="false">Parking (Native)</string>
     <string name="rail_parking_legacy" translatable="false">Parking (Eski)</string>
+
+    <!-- Parking Screen Strings (1:1 with parking.html) -->
+    <string name="parking_tab_sessions">Sessions</string>
+    <string name="parking_tab_settings">Settings</string>
+    <string name="parking_filter_7_days">7 Days</string>
+    <string name="parking_filter_30_days">30 Days</string>
+    <string name="parking_filter_90_days">90 Days</string>
+    <string name="parking_filter_all">All</string>
+    <string name="parking_disabled_title">Parking Intelligence is off</string>
+    <string name="parking_disabled_body">When on, every switch-off opens a parking session: where the car is, a four-camera still after you walk away, which vehicles arrived or left next to you while sentry watched, and a \"Back at car\" summary when you return. Nothing runs while it is off.</string>
+    <string name="parking_enable_btn">Turn on Parking Intelligence</string>
+    <string name="parking_no_sessions_title">No parking sessions yet</string>
+    <string name="parking_no_sessions_body">The first one is created the next time the car is switched off.</string>
+    <string name="parking_settings_title">Parking Intelligence</string>
+    <string name="parking_status_off">OFF</string>
+    <string name="parking_status_on">ON</string>
+    <string name="parking_settings_enabled">Enable Parking Intelligence</string>
+    <string name="parking_settings_enabled_desc">Opens a session at every switch-off: location and GPS freshness, four-camera stills when you walk away and when you return, the vehicles that arrived or left next to you while sentry watched, and two notifications (\"Parked\", \"Back at car\"). Off = no threads, no store, no compute.</string>
+    <string name="parking_settings_end_trigger">Session ends</string>
+    <string name="parking_settings_end_trigger_desc">When a parking session closes. \"When I return\": first door open or unlock (or power-on). \"When the car powers on\": door and unlock only refresh the returned stills. \"When I drive away\": waits until the gear leaves P; without a usable gear reading it closes ~2 minutes after power-on.</string>
+    <string name="parking_trigger_return">When I return</string>
+    <string name="parking_trigger_power_on">When the car powers on</string>
+    <string name="parking_trigger_drive_away">When I drive away</string>
+    <string name="parking_settings_snapshots">Arrived / returned stills</string>
+    <string name="parking_settings_snapshots_desc">Four-camera stills ~90 s after switch-off and at the first door open or unlock. Also the image on the notifications.</string>
+    <string name="parking_settings_neighbours">Neighbour timeline</string>
+    <string name="parking_settings_neighbours_desc">Track vehicles that arrive or leave next to you from the sentry baseline and finalized events, and keep the sharpest frames of each. Needs sentry armed.</string>
+    <string name="parking_settings_signage">Read garage signage (v2)</string>
+    <string name="parking_settings_signage_desc">Read level / zone / bay text from the stills and the last minute of the approach clip with the bundled on-device OCR (PP-OCRv3, ~5.5 MB). Runs once right after the arrival stills so the Parked message carries the level; a read deferred by a recording sentry clip is retried later. Language-specific models can be side-loaded to Overdrive/models/.</string>
+    <string name="parking_settings_geocoding">Address lookup</string>
+    <string name="parking_settings_geocoding_desc">Turn the parking GPS fix into a district / street label for the Parked message and the session list. Until you set it here, parking follows your sentry or dashcam place-tagging choice.</string>
+    <string name="parking_settings_online">Online geocoding</string>
+    <string name="parking_settings_online_desc">Allow looking up places online via Nominatim / OSM when no offline matches are found.</string>
+    <string name="parking_settings_retention">Retention</string>
+    <string name="parking_settings_retention_desc">How many days of parking history and neighbour clips to keep before automatic prune.</string>
+    <string name="parking_settings_storage">Max storage cap</string>
+    <string name="parking_settings_storage_desc">Maximum megabytes used by parking stills and clips before older sessions are purged.</string>
+    <string name="parking_unit_days">days</string>
+    <string name="parking_unit_mb">MB</string>
     <string name="rail_charging">Charging</string>
     <string name="rail_automations">Automations</string>
     <string name="rail_key_mapping">Key Mapping</string>

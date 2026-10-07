@@ -623,6 +623,45 @@
     <string name="rail_projection">Yansıtma</string>
     <string name="rail_trips">Seyahatler</string>
     <string name="rail_parking">Park</string>
+
+    <!-- Parking Screen Strings (1:1 with parking.html) -->
+    <string name="parking_tab_sessions">Oturumlar</string>
+    <string name="parking_tab_settings">Ayarlar</string>
+    <string name="parking_filter_7_days">7 Gün</string>
+    <string name="parking_filter_30_days">30 Gün</string>
+    <string name="parking_filter_90_days">90 Gün</string>
+    <string name="parking_filter_all">Tümü</string>
+    <string name="parking_disabled_title">Park Zekası kapalı</string>
+    <string name="parking_disabled_body">Açıldığında, her stop ediş bir park oturumu açar: aracın nerede olduğu, uzaklaştığınızda 4 kamera fotoğrafı, nöbetçinin izlediği sırada yanınıza gelen veya ayrılan araçlar ve döndüğünüzde bir \'Araca dönüş\' özeti. Kapalıyken hiçbir şey çalışmaz.</string>
+    <string name="parking_enable_btn">Park Zekasını Aç</string>
+    <string name="parking_no_sessions_title">Henüz park oturumu bulunmuyor</string>
+    <string name="parking_no_sessions_body">Araç stop edildiğinde ilk oturum otomatik başlatılır.</string>
+    <string name="parking_settings_title">Park Zekası</string>
+    <string name="parking_status_off">KAPALI</string>
+    <string name="parking_status_on">AÇIK</string>
+    <string name="parking_settings_enabled">Park Zekasını Etkinleştir</string>
+    <string name="parking_settings_enabled_desc">Her araç stop edildiğinde otomatik oturum açar: konum ve GPS tazeliği, araçtan uzaklaştığınızda ve geri döndüğünüzde 4 kamera fotoğrafı, nöbetçinin izlediği sırada yanınıza gelen veya ayrılan araçlar ve 2 bildirim (\'Parked\', \'Back at car\'). Kapalı = iş parçacığı yok, depolama yok, hesaplama yok.</string>
+    <string name="parking_settings_end_trigger">Oturum sonu</string>
+    <string name="parking_settings_end_trigger_desc">Park oturumunun ne zaman kapanacağı. \'Geri döndüğümde\': ilk kapı açılması veya kilit açmada (veya kontak açmada). \'Araç çalıştığında\': kapı ve kilit sadece dönüş fotoğraflarını yeniler. \'Sürüşe başladığımda\': vites P\'den çıkana kadar bekler; vites bilgisi yoksa kontak açıldıktan ~2 dakika sonra kapanır.</string>
+    <string name="parking_trigger_return">Geri döndüğümde</string>
+    <string name="parking_trigger_power_on">Araç çalıştığında</string>
+    <string name="parking_trigger_drive_away">Sürüşe başladığımda</string>
+    <string name="parking_settings_snapshots">Varış ve Dönüş Fotoğrafları</string>
+    <string name="parking_settings_snapshots_desc">Stop edildikten ~90 sn sonra ve ilk kapı açılışı/kilit açılışında 4 kamera fotoğrafı. Ayrıca bildirimlerdeki görsel.</string>
+    <string name="parking_settings_neighbours">Komşu Araç Takibi</string>
+    <string name="parking_settings_neighbours_desc">Nöbetçi taban çizgisi ve sonlandırılmış olaylardan yanınıza gelen veya ayrılan araçları takip eder ve her birinin en net karelerini saklar. Nöbetçi devrede olmalıdır.</string>
+    <string name="parking_settings_signage">Otopark Tabelası OCR (v2)</string>
+    <string name="parking_settings_signage_desc">Cihaz içi OCR (PP-OCRv3, ~5.5 MB) ile fotoğraflardan ve yaklaşma klibinin son dakikasından kat / bölge / park yeri metnini okur. Varış fotoğraflarından hemen sonra bir kez çalışır, böylece Parked mesajı kat bilgisini taşır.</string>
+    <string name="parking_settings_geocoding">Adres Çözümleme</string>
+    <string name="parking_settings_geocoding_desc">Park GPS konumunu Parked bildirimi ve oturum listesi için ilçe / cadde etiketine dönüştürür.</string>
+    <string name="parking_settings_online">Çevrimiçi Coğrafi Kodlama</string>
+    <string name="parking_settings_online_desc">Çevrimdışı eşleşme bulunamadığında Nominatim / OSM üzerinden çevrimiçi adres aramasına izin ver.</string>
+    <string name="parking_settings_retention">Saklama Süresi</string>
+    <string name="parking_settings_retention_desc">Otomatik temizlemeden önce kaç günlük park geçmişi ve komşu klip saklanacağı.</string>
+    <string name="parking_settings_storage">Maksimum Depolama Sınırı</string>
+    <string name="parking_settings_storage_desc">Eski oturumlar temizlenmeden önce park fotoğrafları ve klipler için izin verilen maksimum megabayt.</string>
+    <string name="parking_unit_days">gün</string>
+    <string name="parking_unit_mb">MB</string>
     <string name="rail_integrations">Entegreler</string>
     <string name="rail_diagnostics">Teşhisler</string>
     <string name="rail_settings">Ayarlar</string>
