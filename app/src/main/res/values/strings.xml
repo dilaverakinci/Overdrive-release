@@ -989,6 +989,84 @@
     <string name="rail_recordings_native" translatable="false">Recordings (Native)</string>
     <string name="rail_recordings_legacy" translatable="false">Recordings (Eski)</string>
     <string name="rail_vehicle">Vehicle</string>
+    <string name="rail_vehicle_native" translatable="false">Vehicle (Native)</string>
+    <string name="rail_vehicle_legacy" translatable="false">Vehicle (Eski)</string>
+
+    <!-- Vehicle Screen Strings -->
+    <string name="vc_title">Vehicle</string>
+    <string name="vc_status_no_data">NO DATA</string>
+    <string name="vc_status_locked">LOCKED</string>
+    <string name="vc_status_unlocked">UNLOCKED</string>
+    <string name="vc_cloud_connected">Cloud connected</string>
+    <string name="vc_cloud_not_connected">BYD account not connected</string>
+    <string name="vc_mode_3d">3D</string>
+    <string name="vc_mode_2d">2D</string>
+    <string name="vc_door_open">Door open</string>
+    <string name="vc_doors_open">%d doors open</string>
+    <string name="vc_trunk_is_open">Trunk open</string>
+
+    <!-- TPMS -->
+    <string name="vc_tpms_front_left">Front left</string>
+    <string name="vc_tpms_front_right">Front right</string>
+    <string name="vc_tpms_rear_left">Rear left</string>
+    <string name="vc_tpms_rear_right">Rear right</string>
+    <string name="vc_tpms_unit_psi">PSI</string>
+    <string name="vc_tpms_unit_kpa">kPa</string>
+    <string name="vc_tpms_unit_c">°C</string>
+
+    <!-- 10 Tabs -->
+    <string name="vc_tab_security">Security</string>
+    <string name="vc_tab_trunk">Trunk</string>
+    <string name="vc_tab_climate">Climate</string>
+    <string name="vc_tab_seats">Seats</string>
+    <string name="vc_tab_windows">Windows</string>
+    <string name="vc_tab_lights">Lights</string>
+    <string name="vc_tab_adas">ADAS</string>
+    <string name="vc_tab_charging">Charging</string>
+    <string name="vc_tab_sound">Sound</string>
+    <string name="vc_tab_system">System</string>
+
+    <!-- Action Tiles -->
+    <string name="vc_action_lock">Lock</string>
+    <string name="vc_action_unlock">Unlock</string>
+    <string name="vc_action_flash">Flash</string>
+    <string name="vc_action_find_car">Find car</string>
+    <string name="vc_action_trunk_open">Open</string>
+    <string name="vc_action_trunk_close">Close</string>
+    <string name="vc_action_ac_on">AC On</string>
+    <string name="vc_action_ac_off">AC Off</string>
+    <string name="vc_action_battery_heat">Battery heat</string>
+    <string name="vc_action_target_temp">Cabin Temp</string>
+    <string name="vc_action_driver_seat">Driver Seat</string>
+    <string name="vc_action_passenger_seat">Passenger Seat</string>
+    <string name="vc_action_seat_heat">Heat</string>
+    <string name="vc_action_seat_cool">Vent</string>
+    <string name="vc_action_steering_heat">Steering Wheel Heat</string>
+    <string name="vc_action_vent_all">Vent All</string>
+    <string name="vc_action_close_all">Close All</string>
+    <string name="vc_action_open_all">Open All</string>
+    <string name="vc_action_daytime_lights">Daytime Lights</string>
+    <string name="vc_action_ambient_light">Ambient Light</string>
+    <string name="vc_action_speed_limit">Speed Limit Warning</string>
+    <string name="vc_action_child_presence">Child Presence Detection</string>
+    <string name="vc_action_start_charging">Start Charging</string>
+    <string name="vc_action_charge_cap">Charge Limit</string>
+    <string name="vc_action_ac_current_limit">AC Current Limit</string>
+    <string name="vc_action_avas_sound">AVAS Sound</string>
+    <string name="vc_action_engine_sound">Engine Sound</string>
+    <string name="vc_action_ivi_reboot">Reboot Head Unit</string>
+    <string name="vc_action_ivi_reboot_confirm">Reboot the head unit system now? (Only while parked)</string>
+    <string name="vc_action_reboot">Reboot</string>
+    <string name="vc_action_seat_off">Off</string>
+    <string name="vc_action_seat_level">Level %d</string>
+    <string name="vc_sound_tone_1">Tone 1</string>
+    <string name="vc_sound_tone_2">Tone 2</string>
+    <string name="vc_sound_stop">Stop</string>
+    <string name="vc_color_cyan">Cyan</string>
+    <string name="vc_color_blue">Blue</string>
+    <string name="vc_color_purple">Purple</string>
+    <string name="vc_cmd_sent">Command sent</string>
+    <string name="vc_cmd_failed">Command failed</string>
     <string name="rail_projection">Projection</string>
     <string name="rail_trips">Trips</string>
     <string name="rail_parking">Parking</string>

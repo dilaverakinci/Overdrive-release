@@ -116,11 +116,17 @@
             android:defaultValue="/recording" />
     </fragment>
 
-    <!-- Vehicle (web canonical) -->
+    <!-- Vehicle: native vs legacy webview -->
     <fragment
         android:id="@+id/vehicleControlFragment"
+        android:name="com.overdrive.app.ui.fragment.VehicleNativeFragment"
+        android:label="@string/rail_vehicle_native"
+        tools:layout="@layout/fragment_vehicle_native" />
+
+    <fragment
+        android:id="@+id/vehicleControlLegacyFragment"
         android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_vehicle"
+        android:label="@string/rail_vehicle_legacy"
         tools:layout="@layout/fragment_webview">
         <argument
             android:name="page_path"

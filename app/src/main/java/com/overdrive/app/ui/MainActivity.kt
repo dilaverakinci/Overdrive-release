@@ -102,6 +102,7 @@ open class MainActivity : AppCompatActivity() {
     private val RAIL_KEY_LIVE_LEGACY = "live_legacy"
     private val RAIL_KEY_RECORDINGS_LEGACY = "recordings_legacy"
     private val RAIL_KEY_PARKING_LEGACY = "parking_legacy"
+    private val RAIL_KEY_VEHICLE_LEGACY = "vehicle_legacy"
     private val RAIL_KEY_SETTINGS = "settings"
     private val RAIL_KEY_ABOUT = "about"
     private val KEY_RAIL_EXPANDED = "navigation_rail_expanded"
@@ -157,6 +158,7 @@ open class MainActivity : AppCompatActivity() {
             R.id.railSectionControls, R.string.rail_section_controls,
             setOf(
                 NavigationRailCatalog.VEHICLE,
+                RAIL_KEY_VEHICLE_LEGACY,
                 NavigationRailCatalog.SEAT_POSITIONS,
                 NavigationRailCatalog.PROJECTION,
                 NavigationRailCatalog.CHARGING,
@@ -1673,6 +1675,7 @@ open class MainActivity : AppCompatActivity() {
                 R.id.parkingFragment,
                 R.id.parkingLegacyFragment,
                 R.id.vehicleControlFragment,
+                R.id.vehicleControlLegacyFragment,
                 R.id.seatPositionsFragment,
                 R.id.projectionFragment,
                 R.id.tripsFragment,
@@ -1745,7 +1748,10 @@ open class MainActivity : AppCompatActivity() {
                 R.id.parkingLegacyFragment, R.drawable.ic_parking, R.string.rail_parking_legacy),
             RailItem(NavigationRailCatalog.VEHICLE, R.id.railDestVehicle,
                 R.id.vehicleControlFragment,
-                R.drawable.ic_vehicle_control, R.string.rail_vehicle),
+                R.drawable.ic_vehicle_control, R.string.rail_vehicle_native),
+            RailItem(RAIL_KEY_VEHICLE_LEGACY, R.id.railDestVehicleLegacy,
+                R.id.vehicleControlLegacyFragment,
+                R.drawable.ic_vehicle_control, R.string.rail_vehicle_legacy),
             RailItem(NavigationRailCatalog.SEAT_POSITIONS, R.id.railDestSeatPositions,
                 R.id.seatPositionsFragment,
                 R.drawable.ic_seat_positions, R.string.rail_seat_positions),

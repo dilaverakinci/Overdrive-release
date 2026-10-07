@@ -620,6 +620,84 @@
     <string name="rail_live">Canlı</string>
     <string name="rail_recordings">Kayıtlar</string>
     <string name="rail_vehicle">Araç</string>
+    <string name="rail_vehicle_native" translatable="false">Vehicle (Native)</string>
+    <string name="rail_vehicle_legacy" translatable="false">Vehicle (Eski)</string>
+
+    <!-- Vehicle Screen Strings -->
+    <string name="vc_title">Araç</string>
+    <string name="vc_status_no_data">VERİ YOK</string>
+    <string name="vc_status_locked">KİLİTLİ</string>
+    <string name="vc_status_unlocked">KİLİT AÇIK</string>
+    <string name="vc_cloud_connected">Bulut bağlı</string>
+    <string name="vc_cloud_not_connected">BYD hesabı bağlı değil</string>
+    <string name="vc_mode_3d">3D</string>
+    <string name="vc_mode_2d">2D</string>
+    <string name="vc_door_open">Kapı açık</string>
+    <string name="vc_doors_open">%d kapı açık</string>
+    <string name="vc_trunk_is_open">Bagaj açık</string>
+
+    <!-- TPMS -->
+    <string name="vc_tpms_front_left">Ön sol</string>
+    <string name="vc_tpms_front_right">Ön sağ</string>
+    <string name="vc_tpms_rear_left">Arka sol</string>
+    <string name="vc_tpms_rear_right">Arka sağ</string>
+    <string name="vc_tpms_unit_psi">PSI</string>
+    <string name="vc_tpms_unit_kpa">kPa</string>
+    <string name="vc_tpms_unit_c">°C</string>
+
+    <!-- 10 Tabs -->
+    <string name="vc_tab_security">Güvenlik</string>
+    <string name="vc_tab_trunk">Bagaj</string>
+    <string name="vc_tab_climate">Klima</string>
+    <string name="vc_tab_seats">Koltuklar</string>
+    <string name="vc_tab_windows">Camlar</string>
+    <string name="vc_tab_lights">Işıklar</string>
+    <string name="vc_tab_adas">ADAS</string>
+    <string name="vc_tab_charging">Şarj</string>
+    <string name="vc_tab_sound">Ses</string>
+    <string name="vc_tab_system">Sistem</string>
+
+    <!-- Action Tiles -->
+    <string name="vc_action_lock">Kilitle</string>
+    <string name="vc_action_unlock">Kilit Aç</string>
+    <string name="vc_action_flash">Flaşör</string>
+    <string name="vc_action_find_car">Araç Bul</string>
+    <string name="vc_action_trunk_open">Aç</string>
+    <string name="vc_action_trunk_close">Kapat</string>
+    <string name="vc_action_ac_on">Klima Aç</string>
+    <string name="vc_action_ac_off">Klima Kapat</string>
+    <string name="vc_action_battery_heat">Batarya Isıtma</string>
+    <string name="vc_action_target_temp">Kabin Sıcaklığı</string>
+    <string name="vc_action_driver_seat">Sürücü Koltuğu</string>
+    <string name="vc_action_passenger_seat">Yolcu Koltuğu</string>
+    <string name="vc_action_seat_heat">Isıtma</string>
+    <string name="vc_action_seat_cool">Havalandırma</string>
+    <string name="vc_action_steering_heat">Direksiyon Isıtma</string>
+    <string name="vc_action_vent_all">Tümünü Havalandır</string>
+    <string name="vc_action_close_all">Tümünü Kapat</string>
+    <string name="vc_action_open_all">Tümünü Aç</string>
+    <string name="vc_action_daytime_lights">Gündüz Farları</string>
+    <string name="vc_action_ambient_light">Ambiyans Aydınlatma</string>
+    <string name="vc_action_speed_limit">Hız Sınırı Uyarısı</string>
+    <string name="vc_action_child_presence">Çocuk Varlık Tespiti</string>
+    <string name="vc_action_start_charging">Şarjı Başlat</string>
+    <string name="vc_action_charge_cap">Şarj Limiti</string>
+    <string name="vc_action_ac_current_limit">AC Akım Limiti</string>
+    <string name="vc_action_avas_sound">AVAS Sesi</string>
+    <string name="vc_action_engine_sound">Motor Sesi</string>
+    <string name="vc_action_ivi_reboot">Sistemi Yeniden Başlat</string>
+    <string name="vc_action_ivi_reboot_confirm">Multimedya sistemi şimdi yeniden başlatılsın mı? (Yalnızca park halindeyken)</string>
+    <string name="vc_action_reboot">Yeniden Başlat</string>
+    <string name="vc_action_seat_off">Kapalı</string>
+    <string name="vc_action_seat_level">Seviye %d</string>
+    <string name="vc_sound_tone_1">Ton 1</string>
+    <string name="vc_sound_tone_2">Ton 2</string>
+    <string name="vc_sound_stop">Durdur</string>
+    <string name="vc_color_cyan">Camgöbeği</string>
+    <string name="vc_color_blue">Mavi</string>
+    <string name="vc_color_purple">Mor</string>
+    <string name="vc_cmd_sent">Komut gönderildi</string>
+    <string name="vc_cmd_failed">Komut gönderilemedi</string>
     <string name="rail_projection">Yansıtma</string>
     <string name="rail_trips">Seyahatler</string>
     <string name="rail_parking">Park</string>

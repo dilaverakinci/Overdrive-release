@@ -1,0 +1,1290 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutVehicleRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:paddingHorizontal="24dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="16dp">
+
+    <!-- ================= TOP STATUS BAR ================= -->
+    <LinearLayout
+        android:id="@+id/layoutTopBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Left Status Pill: Lock State -->
+        <LinearLayout
+            android:id="@+id/pillLockStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_parking_filter_normal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="14dp">
+
+            <View
+                android:id="@+id/dotLockStatus"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/ic_status_dot"
+                app:tint="?attr/colorOutline" />
+
+            <TextView
+                android:id="@+id/tvLockStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/vc_status_no_data"
+                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                android:textColor="?attr/colorOnSurface"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <!-- Center 2D / 3D Toggle Pill -->
+        <LinearLayout
+            android:id="@+id/pillModeToggle"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_parking_filter_normal"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:paddingHorizontal="16dp">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_marginEnd="6dp"
+                android:contentDescription="3D"
+                android:src="@drawable/ic_map_3d"
+                app:tint="?attr/colorOnSurface" />
+
+            <TextView
+                android:id="@+id/tvModeLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/vc_mode_3d"
+                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                android:textColor="?attr/colorOnSurface"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <!-- Right Status Pill: Cloud Account -->
+        <LinearLayout
+            android:id="@+id/pillCloudStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_parking_filter_normal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="14dp">
+
+            <View
+                android:id="@+id/dotCloudStatus"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/ic_status_dot"
+                app:tint="?attr/colorOutline" />
+
+            <TextView
+                android:id="@+id/tvCloudStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/vc_cloud_not_connected"
+                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                android:textColor="?attr/colorOnSurface"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ================= VEHICLE VIEWPORT ================= -->
+    <FrameLayout
+        android:id="@+id/layoutVehicleViewport"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginVertical="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/layoutTyresStrip"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/layoutTopBar">
+
+        <ImageView
+            android:id="@+id/ivVehicleArt"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            android:contentDescription="Vehicle Art"
+            android:scaleType="fitCenter"
+            android:src="@drawable/vehicle_seal" />
+
+        <!-- Overlay Alert Badge for Open Doors / Trunk -->
+        <TextView
+            android:id="@+id/tvDoorWarningBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|center_horizontal"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_parking_filter_active"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="4dp"
+            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+            android:textColor="@color/brand_primary"
+            android:textStyle="bold"
+            android:visibility="gone"
+            tools:text="Bagaj Açık" />
+    </FrameLayout>
+
+    <!-- ================= TPMS TYRE STRIP ================= -->
+    <LinearLayout
+        android:id="@+id/layoutTyresStrip"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/layoutExpandablePanel"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <!-- Front Left -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardTyreFL"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp"
+            app:strokeColor="?attr/colorOutlineVariant"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:id="@+id/dotTyreFL"
+                        android:layout_width="6dp"
+                        android:layout_height="6dp"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/ic_status_dot"
+                        app:tint="?attr/colorOutline" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/vc_tpms_front_left"
+                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                        android:textColor="?attr/colorOutline" />
+
+                    <TextView
+                        android:id="@+id/tvTyreStateFL"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="—"
+                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                        android:textColor="?attr/colorOutline" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvTyrePsiFL"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="monospace"
+                    android:text="— PSI"
+                    android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvTyreSubFL"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    android:text="— kPa · — °C"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                    android:textColor="?attr/colorOutline" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Front Right -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardTyreFR"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="3dp"
+            android:layout_weight="1"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp"
+            app:strokeColor="?attr/colorOutlineVariant"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:id="@+id/dotTyreFR"
+                        android:layout_width="6dp"
+                        android:layout_height="6dp"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/ic_status_dot"
+                        app:tint="?attr/colorOutline" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/vc_tpms_front_right"
+                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                        android:textColor="?attr/colorOutline" />
+
+                    <TextView
+                        android:id="@+id/tvTyreStateFR"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="—"
+                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                        android:textColor="?attr/colorOutline" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvTyrePsiFR"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="monospace"
+                    android:text="— PSI"
+                    android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvTyreSubFR"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    android:text="— kPa · — °C"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                    android:textColor="?attr/colorOutline" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Rear Left -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardTyreRL"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="3dp"
+            android:layout_weight="1"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp"
+            app:strokeColor="?attr/colorOutlineVariant"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:id="@+id/dotTyreRL"
+                        android:layout_width="6dp"
+                        android:layout_height="6dp"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/ic_status_dot"
+                        app:tint="?attr/colorOutline" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/vc_tpms_rear_left"
+                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                        android:textColor="?attr/colorOutline" />
+
+                    <TextView
+                        android:id="@+id/tvTyreStateRL"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="—"
+                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                        android:textColor="?attr/colorOutline" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvTyrePsiRL"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="monospace"
+                    android:text="— PSI"
+                    android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvTyreSubRL"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    android:text="— kPa · — °C"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                    android:textColor="?attr/colorOutline" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Rear Right -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardTyreRR"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp"
+            app:strokeColor="?attr/colorOutlineVariant"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:id="@+id/dotTyreRR"
+                        android:layout_width="6dp"
+                        android:layout_height="6dp"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/ic_status_dot"
+                        app:tint="?attr/colorOutline" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/vc_tpms_rear_right"
+                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                        android:textColor="?attr/colorOutline" />
+
+                    <TextView
+                        android:id="@+id/tvTyreStateRR"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="—"
+                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                        android:textColor="?attr/colorOutline" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvTyrePsiRR"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="monospace"
+                    android:text="— PSI"
+                    android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvTyreSubRR"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    android:text="— kPa · — °C"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                    android:textColor="?attr/colorOutline" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+
+    <!-- ================= EXPANDABLE ACTIONS PANEL ================= -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/layoutExpandablePanel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone"
+        app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="2dp"
+        app:layout_constraintBottom_toTopOf="@+id/layoutDockBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:strokeColor="?attr/colorOutlineVariant"
+        app:strokeWidth="1dp"
+        tools:visibility="visible">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp">
+
+            <!-- Panel: Security -->
+            <LinearLayout
+                android:id="@+id/panelSecurity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnLock"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:layout_marginEnd="12dp"
+                    android:text="@string/vc_action_lock"
+                    app:cornerRadius="14dp"
+                    app:icon="@drawable/ic_security_lock" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnUnlock"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:layout_marginEnd="12dp"
+                    android:text="@string/vc_action_unlock"
+                    app:cornerRadius="14dp"
+                    app:icon="@drawable/ic_vc_unlock" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFlash"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:layout_marginEnd="12dp"
+                    android:text="@string/vc_action_flash"
+                    app:cornerRadius="14dp"
+                    app:icon="@drawable/ic_vc_flash" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFindCar"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:text="@string/vc_action_find_car"
+                    app:cornerRadius="14dp"
+                    app:icon="@drawable/ic_horn_alert" />
+            </LinearLayout>
+
+            <!-- Panel: Trunk -->
+            <LinearLayout
+                android:id="@+id/panelTrunk"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTrunkOpen"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:layout_marginEnd="16dp"
+                    android:text="@string/vc_action_trunk_open"
+                    app:cornerRadius="14dp"
+                    app:icon="@drawable/ic_vc_trunk" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTrunkClose"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:text="@string/vc_action_trunk_close"
+                    app:cornerRadius="14dp"
+                    app:icon="@drawable/ic_vc_trunk" />
+            </LinearLayout>
+
+            <!-- Panel: Climate -->
+            <LinearLayout
+                android:id="@+id/panelClimate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAcOn"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:layout_marginEnd="8dp"
+                    android:text="@string/vc_action_ac_on"
+                    app:cornerRadius="14dp"
+                    app:icon="@drawable/ic_vc_climate" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAcOff"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:layout_marginEnd="16dp"
+                    android:text="@string/vc_action_ac_off"
+                    app:cornerRadius="14dp" />
+
+                <!-- Temp Stepper -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:layout_marginEnd="16dp"
+                    android:background="@drawable/bg_parking_filter_normal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="8dp">
+
+                    <ImageButton
+                        android:id="@+id/btnTempMinus"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Temp minus"
+                        android:src="@drawable/ic_minus"
+                        app:tint="?attr/colorOnSurface" />
+
+                    <TextView
+                        android:id="@+id/tvTargetTemp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="12dp"
+                        android:fontFamily="monospace"
+                        android:text="22.0°C"
+                        android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textStyle="bold" />
+
+                    <ImageButton
+                        android:id="@+id/btnTempPlus"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Temp plus"
+                        android:src="@drawable/ic_add"
+                        app:tint="?attr/colorOnSurface" />
+                </LinearLayout>
+
+                <!-- Battery Heat Toggle -->
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchBatteryHeat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/vc_action_battery_heat" />
+            </LinearLayout>
+
+            <!-- Panel: Seats -->
+            <LinearLayout
+                android:id="@+id/panelSeats"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDriverSeatHeat"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:layout_marginEnd="8dp"
+                    android:text="Sürücü Isıtma (Kapalı)"
+                    app:cornerRadius="14dp"
+                    app:icon="@drawable/ic_seat_positions" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDriverSeatCool"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:layout_marginEnd="16dp"
+                    android:text="Sürücü Havalandırma"
+                    app:cornerRadius="14dp" />
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchSteeringHeat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/vc_action_steering_heat" />
+            </LinearLayout>
+
+            <!-- Panel: Windows -->
+            <LinearLayout
+                android:id="@+id/panelWindows"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnVentAll"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:layout_marginEnd="12dp"
+                    android:text="@string/vc_action_vent_all"
+                    app:cornerRadius="14dp"
+                    app:icon="@drawable/ic_vc_windows" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCloseAll"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:layout_marginEnd="12dp"
+                    android:text="@string/vc_action_close_all"
+                    app:cornerRadius="14dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnOpenAll"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:text="@string/vc_action_open_all"
+                    app:cornerRadius="14dp" />
+            </LinearLayout>
+
+            <!-- Panel: Lights -->
+            <LinearLayout
+                android:id="@+id/panelLights"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchDaytimeLight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="24dp"
+                    android:text="@string/vc_action_daytime_lights" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="12dp"
+                    android:text="@string/vc_action_ambient_light"
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAmbientCyan"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:layout_marginEnd="6dp"
+                    android:text="@string/vc_color_cyan"
+                    app:cornerRadius="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAmbientBlue"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:layout_marginEnd="6dp"
+                    android:text="@string/vc_color_blue"
+                    app:cornerRadius="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAmbientPurple"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:text="@string/vc_color_purple"
+                    app:cornerRadius="12dp" />
+            </LinearLayout>
+
+            <!-- Panel: ADAS -->
+            <LinearLayout
+                android:id="@+id/panelAdas"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchSpeedLimitWarning"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="24dp"
+                    android:text="@string/vc_action_speed_limit" />
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchChildPresence"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/vc_action_child_presence" />
+            </LinearLayout>
+
+            <!-- Panel: Charging -->
+            <LinearLayout
+                android:id="@+id/panelCharging"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnStartCharging"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:layout_marginEnd="20dp"
+                    android:text="@string/vc_action_start_charging"
+                    app:cornerRadius="14dp"
+                    app:icon="@drawable/ic_charging" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="10dp"
+                    android:text="@string/vc_action_charge_cap"
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCap80"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:layout_marginEnd="6dp"
+                    android:text="80%"
+                    app:cornerRadius="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCap90"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:layout_marginEnd="6dp"
+                    android:text="90%"
+                    app:cornerRadius="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCap100"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:text="100%"
+                    app:cornerRadius="12dp" />
+            </LinearLayout>
+
+            <!-- Panel: Sound -->
+            <LinearLayout
+                android:id="@+id/panelSound"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="12dp"
+                    android:text="@string/vc_action_avas_sound"
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAvasTone1"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:layout_marginEnd="6dp"
+                    android:text="@string/vc_sound_tone_1"
+                    app:cornerRadius="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAvasTone2"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:layout_marginEnd="6dp"
+                    android:text="@string/vc_sound_tone_2"
+                    app:cornerRadius="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAvasStop"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:text="@string/vc_sound_stop"
+                    app:cornerRadius="12dp" />
+            </LinearLayout>
+
+            <!-- Panel: System -->
+            <LinearLayout
+                android:id="@+id/panelSystem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnIviReboot"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:text="@string/vc_action_ivi_reboot"
+                    app:cornerRadius="14dp"
+                    app:icon="@drawable/ic_update" />
+            </LinearLayout>
+        </FrameLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- ================= BOTTOM DOCK (10 TABS) ================= -->
+    <LinearLayout
+        android:id="@+id/layoutDockBar"
+        android:layout_width="0dp"
+        android:layout_height="68dp"
+        android:background="@drawable/bg_vc_dock"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <!-- 1. Security -->
+        <LinearLayout
+            android:id="@+id/tabSecurity"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <View
+                android:id="@+id/dotTabSecurity"
+                android:layout_width="5dp"
+                android:layout_height="5dp"
+                android:layout_marginBottom="2dp"
+                android:background="@drawable/ic_status_dot"
+                android:visibility="invisible"
+                app:tint="@color/brand_primary" />
+
+            <ImageView
+                android:id="@+id/ivTabSecurity"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="Security"
+                android:src="@drawable/ic_security_lock"
+                app:tint="?attr/colorOutline" />
+
+            <TextView
+                android:id="@+id/tvTabSecurity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/vc_tab_security"
+                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:textColor="?attr/colorOutline" />
+        </LinearLayout>
+
+        <!-- 2. Trunk -->
+        <LinearLayout
+            android:id="@+id/tabTrunk"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <View
+                android:id="@+id/dotTabTrunk"
+                android:layout_width="5dp"
+                android:layout_height="5dp"
+                android:layout_marginBottom="2dp"
+                android:background="@drawable/ic_status_dot"
+                android:visibility="invisible"
+                app:tint="@color/brand_primary" />
+
+            <ImageView
+                android:id="@+id/ivTabTrunk"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="Trunk"
+                android:src="@drawable/ic_vc_trunk"
+                app:tint="?attr/colorOutline" />
+
+            <TextView
+                android:id="@+id/tvTabTrunk"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/vc_tab_trunk"
+                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:textColor="?attr/colorOutline" />
+        </LinearLayout>
+
+        <!-- 3. Climate -->
+        <LinearLayout
+            android:id="@+id/tabClimate"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <View
+                android:id="@+id/dotTabClimate"
+                android:layout_width="5dp"
+                android:layout_height="5dp"
+                android:layout_marginBottom="2dp"
+                android:background="@drawable/ic_status_dot"
+                android:visibility="invisible"
+                app:tint="@color/brand_primary" />
+
+            <ImageView
+                android:id="@+id/ivTabClimate"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="Climate"
+                android:src="@drawable/ic_vc_climate"
+                app:tint="?attr/colorOutline" />
+
+            <TextView
+                android:id="@+id/tvTabClimate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/vc_tab_climate"
+                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:textColor="?attr/colorOutline" />
+        </LinearLayout>
+
+        <!-- 4. Seats -->
+        <LinearLayout
+            android:id="@+id/tabSeats"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <View
+                android:id="@+id/dotTabSeats"
+                android:layout_width="5dp"
+                android:layout_height="5dp"
+                android:layout_marginBottom="2dp"
+                android:background="@drawable/ic_status_dot"
+                android:visibility="invisible"
+                app:tint="@color/brand_primary" />
+
+            <ImageView
+                android:id="@+id/ivTabSeats"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="Seats"
+                android:src="@drawable/ic_seat_positions"
+                app:tint="?attr/colorOutline" />
+
+            <TextView
+                android:id="@+id/tvTabSeats"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/vc_tab_seats"
+                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:textColor="?attr/colorOutline" />
+        </LinearLayout>
+
+        <!-- 5. Windows -->
+        <LinearLayout
+            android:id="@+id/tabWindows"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <View
+                android:id="@+id/dotTabWindows"
+                android:layout_width="5dp"
+                android:layout_height="5dp"
+                android:layout_marginBottom="2dp"
+                android:background="@drawable/ic_status_dot"
+                android:visibility="invisible"
+                app:tint="@color/brand_primary" />
+
+            <ImageView
+                android:id="@+id/ivTabWindows"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="Windows"
+                android:src="@drawable/ic_vc_windows"
+                app:tint="?attr/colorOutline" />
+
+            <TextView
+                android:id="@+id/tvTabWindows"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/vc_tab_windows"
+                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:textColor="?attr/colorOutline" />
+        </LinearLayout>
+
+        <!-- 6. Lights -->
+        <LinearLayout
+            android:id="@+id/tabLights"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <View
+                android:id="@+id/dotTabLights"
+                android:layout_width="5dp"
+                android:layout_height="5dp"
+                android:layout_marginBottom="2dp"
+                android:background="@drawable/ic_status_dot"
+                android:visibility="invisible"
+                app:tint="@color/brand_primary" />
+
+            <ImageView
+                android:id="@+id/ivTabLights"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="Lights"
+                android:src="@drawable/ic_lightbulb_alert"
+                app:tint="?attr/colorOutline" />
+
+            <TextView
+                android:id="@+id/tvTabLights"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/vc_tab_lights"
+                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:textColor="?attr/colorOutline" />
+        </LinearLayout>
+
+        <!-- 7. ADAS -->
+        <LinearLayout
+            android:id="@+id/tabAdas"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <View
+                android:id="@+id/dotTabAdas"
+                android:layout_width="5dp"
+                android:layout_height="5dp"
+                android:layout_marginBottom="2dp"
+                android:background="@drawable/ic_status_dot"
+                android:visibility="invisible"
+                app:tint="@color/brand_primary" />
+
+            <ImageView
+                android:id="@+id/ivTabAdas"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="ADAS"
+                android:src="@drawable/ic_privacy_shield"
+                app:tint="?attr/colorOutline" />
+
+            <TextView
+                android:id="@+id/tvTabAdas"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/vc_tab_adas"
+                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:textColor="?attr/colorOutline" />
+        </LinearLayout>
+
+        <!-- 8. Charging -->
+        <LinearLayout
+            android:id="@+id/tabCharging"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <View
+                android:id="@+id/dotTabCharging"
+                android:layout_width="5dp"
+                android:layout_height="5dp"
+                android:layout_marginBottom="2dp"
+                android:background="@drawable/ic_status_dot"
+                android:visibility="invisible"
+                app:tint="@color/brand_primary" />
+
+            <ImageView
+                android:id="@+id/ivTabCharging"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="Charging"
+                android:src="@drawable/ic_charging"
+                app:tint="?attr/colorOutline" />
+
+            <TextView
+                android:id="@+id/tvTabCharging"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/vc_tab_charging"
+                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:textColor="?attr/colorOutline" />
+        </LinearLayout>
+
+        <!-- 9. Sound -->
+        <LinearLayout
+            android:id="@+id/tabSound"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <View
+                android:id="@+id/dotTabSound"
+                android:layout_width="5dp"
+                android:layout_height="5dp"
+                android:layout_marginBottom="2dp"
+                android:background="@drawable/ic_status_dot"
+                android:visibility="invisible"
+                app:tint="@color/brand_primary" />
+
+            <ImageView
+                android:id="@+id/ivTabSound"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="Sound"
+                android:src="@drawable/ic_volume_on"
+                app:tint="?attr/colorOutline" />
+
+            <TextView
+                android:id="@+id/tvTabSound"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/vc_tab_sound"
+                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:textColor="?attr/colorOutline" />
+        </LinearLayout>
+
+        <!-- 10. System -->
+        <LinearLayout
+            android:id="@+id/tabSystem"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <View
+                android:id="@+id/dotTabSystem"
+                android:layout_width="5dp"
+                android:layout_height="5dp"
+                android:layout_marginBottom="2dp"
+                android:background="@drawable/ic_status_dot"
+                android:visibility="invisible"
+                app:tint="@color/brand_primary" />
+
+            <ImageView
+                android:id="@+id/ivTabSystem"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="System"
+                android:src="@drawable/ic_update"
+                app:tint="?attr/colorOutline" />
+
+            <TextView
+                android:id="@+id/tvTabSystem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/vc_tab_system"
+                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:textColor="?attr/colorOutline" />
+        </LinearLayout>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
