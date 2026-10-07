@@ -7,8 +7,14 @@
 
     <fragment
         android:id="@+id/dashboardFragment"
+        android:name="com.overdrive.app.ui.fragment.DashboardNativeFragment"
+        android:label="@string/rail_dashboard_native"
+        tools:layout="@layout/fragment_dashboard" />
+
+    <fragment
+        android:id="@+id/dashboardLegacyFragment"
         android:name="com.overdrive.app.ui.fragment.DashboardFragment"
-        android:label="@string/rail_dashboard"
+        android:label="@string/rail_dashboard_legacy"
         tools:layout="@layout/fragment_dashboard" />
 
     <fragment

@@ -97,6 +97,7 @@ open class MainActivity : AppCompatActivity() {
     // The always-pinned rows. Every other key lives in NavigationRailCatalog,
     // which is the set the user can hide.
     private val RAIL_KEY_DASHBOARD = "dashboard"
+    private val RAIL_KEY_DASHBOARD_LEGACY = "dashboard_legacy"
     private val RAIL_KEY_SETTINGS = "settings"
     private val RAIL_KEY_ABOUT = "about"
     private val KEY_RAIL_EXPANDED = "navigation_rail_expanded"
@@ -1655,6 +1656,7 @@ open class MainActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.dashboardFragment,
+                R.id.dashboardLegacyFragment,
                 R.id.genAiFragment,
                 R.id.liveViewFragment,
                 R.id.recordingsFragment,
@@ -1706,7 +1708,9 @@ open class MainActivity : AppCompatActivity() {
         // where the category headers sit between these rows.
         val items = listOf(
             RailItem(RAIL_KEY_DASHBOARD, R.id.railDestDashboard, R.id.dashboardFragment,
-                R.drawable.ic_dashboard, R.string.rail_dashboard),
+                R.drawable.ic_dashboard, R.string.rail_dashboard_native),
+            RailItem(RAIL_KEY_DASHBOARD_LEGACY, R.id.railDestDashboardLegacy, R.id.dashboardLegacyFragment,
+                R.drawable.ic_dashboard, R.string.rail_dashboard_legacy),
             RailItem(NavigationRailCatalog.ASSISTANT, R.id.railDestAssistant,
                 R.id.genAiFragment, R.drawable.ic_smart_toy, R.string.rail_assistant),
             RailItem(NavigationRailCatalog.LIVE, R.id.railDestLive, R.id.liveViewFragment,

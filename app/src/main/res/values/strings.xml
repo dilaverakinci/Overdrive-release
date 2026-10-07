@@ -977,6 +977,8 @@
 
     <!-- Top-level destinations (navigation rail labels) -->
     <string name="rail_dashboard">Dashboard</string>
+    <string name="rail_dashboard_native">Dashboard (Native)</string>
+    <string name="rail_dashboard_legacy">Dashboard (Eski)</string>
     <string name="rail_assistant">Assistant</string>
     <string name="rail_live">Live</string>
     <string name="rail_recordings">Recordings</string>
