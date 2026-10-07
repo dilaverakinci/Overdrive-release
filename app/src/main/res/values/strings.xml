@@ -2294,4 +2294,50 @@
     <string name="trip_chart_speed_dist" translatable="false">Speed Distribution</string>
     <string name="trip_dialog_delete_title" translatable="false">Delete Trip</string>
     <string name="trip_dialog_delete_message" translatable="false">Are you sure you want to delete this trip and its telemetry?</string>
+
+    <!-- Automations Native Screen Strings -->
+    <string name="rail_automations_native" translatable="false">Automations (Native)</string>
+    <string name="rail_automations_legacy" translatable="false">Automations (Eski)</string>
+    <string name="automation_page_title" translatable="false">Automations</string>
+    <string name="automation_page_subtitle" translatable="false">Build event triggers, safety conditions, and custom car routines</string>
+    <string name="automation_tab_rules" translatable="false">Rules</string>
+    <string name="automation_tab_groups" translatable="false">Action Groups</string>
+    <string name="automation_tab_safety" translatable="false">Safety Guards</string>
+    <string name="automation_tab_settings" translatable="false">Settings</string>
+    <string name="automation_empty_title" translatable="false">No Automations Configured</string>
+    <string name="automation_empty_desc" translatable="false">Create custom rules to automate car settings, charging routines, or accessories</string>
+    <string name="automation_groups_empty_title" translatable="false">No Action Groups</string>
+    <string name="automation_groups_empty_desc" translatable="false">Define reusable sequences of car actions to trigger across multiple rules</string>
+    <string name="automation_safety_warning_desc" translatable="false">Safety guards prevent dangerous car actions while the vehicle is in motion (Gear != P or Speed &gt; 0 km/h).</string>
+    <string name="safety_guard_door_locks" translatable="false">Door Locks Guard</string>
+    <string name="safety_guard_door_locks_desc" translatable="false">Block door unlock automations when driving</string>
+    <string name="safety_guard_trunk" translatable="false">Trunk Guard</string>
+    <string name="safety_guard_trunk_desc" translatable="false">Block opening or closing trunk while vehicle is moving</string>
+    <string name="safety_guard_mirror_fold" translatable="false">Mirror Folding Guard</string>
+    <string name="safety_guard_mirror_fold_desc" translatable="false">Prevent folding side mirrors when moving</string>
+    <string name="safety_guard_positioning" translatable="false">Seat &amp; Mirror Position Guard</string>
+    <string name="safety_guard_positioning_desc" translatable="false">Block automatic seat and mirror position adjustments while in motion</string>
+    <string name="safety_guard_headlight_off" translatable="false">Headlights Off Guard</string>
+    <string name="safety_guard_headlight_off_desc" translatable="false">Block turning off headlights when speed &gt; 0 km/h</string>
+    <string name="safety_guard_display_brightness" translatable="false">Display Brightness Guard</string>
+    <string name="safety_guard_display_brightness_desc" translatable="false">Prevent dimming display brightness to zero while driving</string>
+    <string name="safety_guard_display_power" translatable="false">Display Power Guard</string>
+    <string name="safety_guard_display_power_desc" translatable="false">Prevent turning off center console display while driving</string>
+    <string name="safety_guard_screen_media" translatable="false">Screen Media Guard</string>
+    <string name="safety_guard_screen_media_desc" translatable="false">Guard media playback automation constraints</string>
+    <string name="automation_allow_shell" translatable="false">Allow Shell Commands</string>
+    <string name="automation_allow_shell_desc" translatable="false">Enable execution of raw shell scripts in automations. Exercise caution when enabling.</string>
+    <string name="automation_backup_title" translatable="false">Automations Storage &amp; Safety</string>
+    <string name="automation_backup_desc" translatable="false">Automations are stored locally on device. Rules are checked against safety guards before execution.</string>
+    <string name="automation_dialog_delete_title" translatable="false">Delete Automation</string>
+    <string name="automation_dialog_delete_msg" translatable="false">Are you sure you want to delete this automation rule?</string>
+    <string name="automation_mode_automatic" translatable="false">Automatic</string>
+    <string name="automation_mode_manual" translatable="false">Manual Only</string>
+    <string name="automation_mode_disabled" translatable="false">Disabled</string>
+    <string name="automation_label_when" translatable="false">WHEN</string>
+    <string name="automation_label_if" translatable="false">IF</string>
+    <string name="automation_label_then" translatable="false">THEN</string>
+    <string name="automation_label_else" translatable="false">ELSE</string>
+    <string name="automation_btn_test" translatable="false">Test</string>
+    <string name="automation_btn_run_group" translatable="false">Run</string>
 </resources>

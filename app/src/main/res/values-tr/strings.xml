@@ -1658,4 +1658,50 @@
     <string name="trip_chart_speed_dist" translatable="false">Hız Dağılımı</string>
     <string name="trip_dialog_delete_title" translatable="false">Yolculuğu Sil</string>
     <string name="trip_dialog_delete_message" translatable="false">Bu yolculuğu ve telemetri verisini silmek istediğinizden emin misiniz?</string>
+
+    <!-- Automations Native Screen Strings -->
+    <string name="rail_automations_native" translatable="false">Otomasyonlar (Native)</string>
+    <string name="rail_automations_legacy" translatable="false">Otomasyonlar (Eski)</string>
+    <string name="automation_page_title" translatable="false">Otomasyonlar</string>
+    <string name="automation_page_subtitle" translatable="false">Olay tetikleyicileri, güvenlik koşulları ve özel araç rutinleri oluşturun</string>
+    <string name="automation_tab_rules" translatable="false">Kurallar</string>
+    <string name="automation_tab_groups" translatable="false">Eylem Grupları</string>
+    <string name="automation_tab_safety" translatable="false">Güvenlik Korumaları</string>
+    <string name="automation_tab_settings" translatable="false">Ayarlar</string>
+    <string name="automation_empty_title" translatable="false">Yapılandırılmış Otomasyon Yok</string>
+    <string name="automation_empty_desc" translatable="false">Araç ayarlarını, şarj rutinlerini veya aksesuarları otomatikleştirmek için özel kurallar ekleyin</string>
+    <string name="automation_groups_empty_title" translatable="false">Eylem Grubu Yok</string>
+    <string name="automation_groups_empty_desc" translatable="false">Birden çok kuralda tetiklemek üzere yeniden kullanılabilir araç eylem dizileri tanımlayın</string>
+    <string name="automation_safety_warning_desc" translatable="false">Güvenlik korumaları araç hareket halindeyken (Vites != P veya Hız &gt; 0 km/s) tehlikeli eylemleri engeller.</string>
+    <string name="safety_guard_door_locks" translatable="false">Kapı Kilit Koruması</string>
+    <string name="safety_guard_door_locks_desc" translatable="false">Sürüş esnasında kapı kilidi açma otomasyonlarını engeller</string>
+    <string name="safety_guard_trunk" translatable="false">Bagaj Koruması</string>
+    <string name="safety_guard_trunk_desc" translatable="false">Araç hareket halindeyken bagaj açma/kapatmayı engeller</string>
+    <string name="safety_guard_mirror_fold" translatable="false">Ayna Katlama Koruması</string>
+    <string name="safety_guard_mirror_fold_desc" translatable="false">Hareket halindeyken yan aynaların katlanmasını engeller</string>
+    <string name="safety_guard_positioning" translatable="false">Koltuk &amp; Ayna Pozisyon Koruması</string>
+    <string name="safety_guard_positioning_desc" translatable="false">Sürüş esnasında koltuk ve ayna pozisyonu değişimlerini engeller</string>
+    <string name="safety_guard_headlight_off" translatable="false">Far Kapatma Koruması</string>
+    <string name="safety_guard_headlight_off_desc" translatable="false">Hız &gt; 0 km/s iken farların kapanmasını engeller</string>
+    <string name="safety_guard_display_brightness" translatable="false">Ekran Parlaklık Koruması</string>
+    <string name="safety_guard_display_brightness_desc" translatable="false">Sürüş esnasında ekran parlaklığının tamamen sıfırlanmasını engeller</string>
+    <string name="safety_guard_display_power" translatable="false">Ekran Güç Koruması</string>
+    <string name="safety_guard_display_power_desc" translatable="false">Sürüş esnasında ana konsol ekranının kapatılmasını engeller</string>
+    <string name="safety_guard_screen_media" translatable="false">Ekran Medya Koruması</string>
+    <string name="safety_guard_screen_media_desc" translatable="false">Medya oynatma otomasyon kısıtlamalarını denetler</string>
+    <string name="automation_allow_shell" translatable="false">Kabuk Komutlarına İzin Ver</string>
+    <string name="automation_allow_shell_desc" translatable="false">Otomasyonlarda ham kabuk komutlarının çalıştırılmasına izin verir. Dikkatle etkinleştirin.</string>
+    <string name="automation_backup_title" translatable="false">Otomasyon Depolama &amp; Güvenlik</string>
+    <string name="automation_backup_desc" translatable="false">Otomasyonlar cihazda yerel olarak saklanır. Kurallar çalıştırılmadan önce güvenlik korumaları kontrol edilir.</string>
+    <string name="automation_dialog_delete_title" translatable="false">Otomasyonu Sil</string>
+    <string name="automation_dialog_delete_msg" translatable="false">Bu otomasyon kuralını silmek istediğinizden emin misiniz?</string>
+    <string name="automation_mode_automatic" translatable="false">Otomatik</string>
+    <string name="automation_mode_manual" translatable="false">Yalnızca Manuel</string>
+    <string name="automation_mode_disabled" translatable="false">Devre Dışı</string>
+    <string name="automation_label_when" translatable="false">ŞU OLDUĞUNDA</string>
+    <string name="automation_label_if" translatable="false">EĞER</string>
+    <string name="automation_label_then" translatable="false">ÖYLEYSE</string>
+    <string name="automation_label_else" translatable="false">AKSİ HALDE</string>
+    <string name="automation_btn_test" translatable="false">Test Et</string>
+    <string name="automation_btn_run_group" translatable="false">Çalıştır</string>
 </resources>

@@ -213,6 +213,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
                     <include
+                        android:id="@+id/railDestAutomationsLegacy"
+                        layout="@layout/item_rail_destination"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                    <include
                         android:id="@+id/railDestKeyMapping"
                         layout="@layout/item_rail_destination"
                         android:layout_width="match_parent"

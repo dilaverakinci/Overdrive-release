@@ -179,11 +179,18 @@
             android:defaultValue="/charging" />
     </fragment>
 
-    <!-- Automations (web canonical) -->
+    <!-- Automations (Native) -->
     <fragment
         android:id="@+id/automationsFragment"
+        android:name="com.overdrive.app.ui.fragment.AutomationsNativeFragment"
+        android:label="@string/rail_automations_native"
+        tools:layout="@layout/fragment_automations_native" />
+
+    <!-- Automations (Legacy Web) -->
+    <fragment
+        android:id="@+id/automationsLegacyFragment"
         android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_automations"
+        android:label="@string/rail_automations_legacy"
         tools:layout="@layout/fragment_webview">
         <argument
             android:name="page_path"

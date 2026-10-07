@@ -106,6 +106,7 @@ open class MainActivity : AppCompatActivity() {
     private val RAIL_KEY_SEAT_POSITIONS_LEGACY = "seat_positions_legacy"
     private val RAIL_KEY_CHARGING_LEGACY = "charging_legacy"
     private val RAIL_KEY_TRIPS_LEGACY = "trips_legacy"
+    private val RAIL_KEY_AUTOMATIONS_LEGACY = "automations_legacy"
     private val RAIL_KEY_SETTINGS = "settings"
     private val RAIL_KEY_ABOUT = "about"
     private val KEY_RAIL_EXPANDED = "navigation_rail_expanded"
@@ -182,6 +183,7 @@ open class MainActivity : AppCompatActivity() {
             R.id.railSectionAutomation, R.string.rail_section_automation,
             setOf(
                 NavigationRailCatalog.AUTOMATIONS,
+                RAIL_KEY_AUTOMATIONS_LEGACY,
                 NavigationRailCatalog.KEY_MAPPING,
                 NavigationRailCatalog.INTEGRATIONS,
             )
@@ -1788,7 +1790,10 @@ open class MainActivity : AppCompatActivity() {
                 launchActivity = com.overdrive.app.navmap.RoadSenseMapActivity::class.java),
             RailItem(NavigationRailCatalog.AUTOMATIONS, R.id.railDestAutomations,
                 R.id.automationsFragment,
-                R.drawable.ic_automations, R.string.rail_automations),
+                R.drawable.ic_automations, R.string.rail_automations_native),
+            RailItem(RAIL_KEY_AUTOMATIONS_LEGACY, R.id.railDestAutomationsLegacy,
+                R.id.automationsLegacyFragment,
+                R.drawable.ic_automations, R.string.rail_automations_legacy),
             RailItem(NavigationRailCatalog.KEY_MAPPING, R.id.railDestKeyMapping,
                 R.id.keyMappingFragment,
                 R.drawable.ic_key_mapping, R.string.rail_key_mapping),
