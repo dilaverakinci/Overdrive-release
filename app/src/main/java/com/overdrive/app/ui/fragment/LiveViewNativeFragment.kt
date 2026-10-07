@@ -3,6 +3,7 @@ package com.overdrive.app.ui.fragment
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -16,8 +17,6 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.chip.Chip
-import com.google.android.material.chip.ChipGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.overdrive.app.R
 import com.overdrive.app.client.CameraDaemonClient
@@ -32,8 +31,8 @@ import java.net.URL
 
 /**
  * High-performance, pure native Live View fragment.
- * Completely eliminates Chromium WebView and WebGL/Three.js GPU & RAM overhead,
- * providing fluid 60 FPS UI on legacy Snapdragon 625/665 BYD head-units.
+ * Exactly replicates legacy Chromium WebView Live View appearance,
+ * completely eliminating WebGL/Three.js GPU & RAM overhead.
  */
 class LiveViewNativeFragment : Fragment() {
 
@@ -54,40 +53,46 @@ class LiveViewNativeFragment : Fragment() {
     private val cameraDaemonClient = CameraDaemonClient()
 
     // Views
-    private lateinit var tvLiveStatus: TextView
+    private var tvLiveStatus: TextView? = null
     private lateinit var liveStatusDot: View
     private lateinit var btnQualitySelector: MaterialButton
-    private lateinit var btnToggleFullscreen: MaterialButton
+    private var btnToggleFullscreen: MaterialButton? = null
     private lateinit var ivLiveVideoFrame: ImageView
     private lateinit var idleStateOverlay: LinearLayout
     private lateinit var tvIdleSubtext: TextView
     private lateinit var pbLiveLoading: ProgressBar
     private lateinit var cameraLabelOverlay: LinearLayout
     private lateinit var tvCurrentCameraLabel: TextView
-    private lateinit var btnDeterrentHorn: MaterialButton
-    private lateinit var btnDeterrentFlash: MaterialButton
+    private var btnDeterrentHorn: MaterialButton? = null
+    private var btnDeterrentFlash: MaterialButton? = null
     private lateinit var liveUtilityRail: View
 
-    // Hotspot Buttons
-    private lateinit var btnHotspotFront: MaterialButton
-    private lateinit var btnHotspotDvr: MaterialButton
-    private lateinit var btnHotspotRear: MaterialButton
-    private lateinit var btnHotspotLeft: MaterialButton
-    private lateinit var btnHotspotRight: MaterialButton
-    private lateinit var btnHotspotAll: MaterialButton
+    // Hotspot Views (Exact Match to Legacy Live View)
+    private lateinit var btnHotspotFront: View
+    private lateinit var ringHotspotFront: View
+    private lateinit var labelHotspotFront: TextView
 
-    // Quick Chips
-    private lateinit var chipGroupCameras: ChipGroup
-    private lateinit var chipCamAll: Chip
-    private lateinit var chipCamFront: Chip
-    private lateinit var chipCamRear: Chip
-    private lateinit var chipCamLeft: Chip
-    private lateinit var chipCamRight: Chip
-    private lateinit var chipCamDvr: Chip
+    private lateinit var btnHotspotLeft: View
+    private lateinit var ringHotspotLeft: View
+    private lateinit var labelHotspotLeft: TextView
+
+    private lateinit var btnHotspotRight: View
+    private lateinit var ringHotspotRight: View
+    private lateinit var labelHotspotRight: TextView
+
+    private lateinit var btnHotspotAll: View
+    private lateinit var ringHotspotAll: View
+    private lateinit var labelHotspotAll: TextView
+
+    private lateinit var btnHotspotRear: View
+    private lateinit var ringHotspotRear: View
+    private lateinit var labelHotspotRear: TextView
+
+    private var btnHotspotDvr: View? = null
 
     // Location Card
     private lateinit var tvLocationCoordinates: TextView
-    private lateinit var tvLocationSpeed: TextView
+    private var tvLocationSpeed: TextView? = null
     private lateinit var tvGpsFreshness: TextView
     private lateinit var gpsFreshnessDot: View
     private lateinit var btnOpenMap: MaterialButton
@@ -124,19 +129,26 @@ class LiveViewNativeFragment : Fragment() {
         liveUtilityRail = view.findViewById(R.id.liveUtilityRail)
 
         btnHotspotFront = view.findViewById(R.id.btnHotspotFront)
-        btnHotspotDvr = view.findViewById(R.id.btnHotspotDvr)
-        btnHotspotRear = view.findViewById(R.id.btnHotspotRear)
-        btnHotspotLeft = view.findViewById(R.id.btnHotspotLeft)
-        btnHotspotRight = view.findViewById(R.id.btnHotspotRight)
-        btnHotspotAll = view.findViewById(R.id.btnHotspotAll)
+        ringHotspotFront = view.findViewById(R.id.ringHotspotFront)
+        labelHotspotFront = view.findViewById(R.id.labelHotspotFront)
 
-        chipGroupCameras = view.findViewById(R.id.chipGroupCameras)
-        chipCamAll = view.findViewById(R.id.chipCamAll)
-        chipCamFront = view.findViewById(R.id.chipCamFront)
-        chipCamRear = view.findViewById(R.id.chipCamRear)
-        chipCamLeft = view.findViewById(R.id.chipCamLeft)
-        chipCamRight = view.findViewById(R.id.chipCamRight)
-        chipCamDvr = view.findViewById(R.id.chipCamDvr)
+        btnHotspotLeft = view.findViewById(R.id.btnHotspotLeft)
+        ringHotspotLeft = view.findViewById(R.id.ringHotspotLeft)
+        labelHotspotLeft = view.findViewById(R.id.labelHotspotLeft)
+
+        btnHotspotRight = view.findViewById(R.id.btnHotspotRight)
+        ringHotspotRight = view.findViewById(R.id.ringHotspotRight)
+        labelHotspotRight = view.findViewById(R.id.labelHotspotRight)
+
+        btnHotspotAll = view.findViewById(R.id.btnHotspotAll)
+        ringHotspotAll = view.findViewById(R.id.ringHotspotAll)
+        labelHotspotAll = view.findViewById(R.id.labelHotspotAll)
+
+        btnHotspotRear = view.findViewById(R.id.btnHotspotRear)
+        ringHotspotRear = view.findViewById(R.id.ringHotspotRear)
+        labelHotspotRear = view.findViewById(R.id.labelHotspotRear)
+
+        btnHotspotDvr = view.findViewById(R.id.btnHotspotDvr)
 
         tvLocationCoordinates = view.findViewById(R.id.tvLocationCoordinates)
         tvLocationSpeed = view.findViewById(R.id.tvLocationSpeed)
@@ -146,35 +158,23 @@ class LiveViewNativeFragment : Fragment() {
     }
 
     private fun setupListeners() {
-        // Hotspot button clicks
+        // Hotspot click listeners
         btnHotspotFront.setOnClickListener { selectCamera(CAM_FRONT) }
-        btnHotspotDvr.setOnClickListener { selectCamera(CAM_DVR) }
-        btnHotspotRear.setOnClickListener { selectCamera(CAM_REAR) }
         btnHotspotLeft.setOnClickListener { selectCamera(CAM_LEFT) }
         btnHotspotRight.setOnClickListener { selectCamera(CAM_RIGHT) }
         btnHotspotAll.setOnClickListener { selectCamera(CAM_ALL) }
-
-        // Chip group listener
-        chipGroupCameras.setOnCheckedStateChangeListener { _, checkedIds ->
-            when {
-                checkedIds.contains(R.id.chipCamAll) -> selectCamera(CAM_ALL, fromChip = true)
-                checkedIds.contains(R.id.chipCamFront) -> selectCamera(CAM_FRONT, fromChip = true)
-                checkedIds.contains(R.id.chipCamRear) -> selectCamera(CAM_REAR, fromChip = true)
-                checkedIds.contains(R.id.chipCamLeft) -> selectCamera(CAM_LEFT, fromChip = true)
-                checkedIds.contains(R.id.chipCamRight) -> selectCamera(CAM_RIGHT, fromChip = true)
-                checkedIds.contains(R.id.chipCamDvr) -> selectCamera(CAM_DVR, fromChip = true)
-            }
-        }
+        btnHotspotRear.setOnClickListener { selectCamera(CAM_REAR) }
+        btnHotspotDvr?.setOnClickListener { selectCamera(CAM_DVR) }
 
         // Quality menu
         btnQualitySelector.setOnClickListener { showQualityMenu() }
 
-        // Fullscreen toggle
-        btnToggleFullscreen.setOnClickListener { toggleFullscreen() }
+        // Fullscreen toggle (if visible)
+        btnToggleFullscreen?.setOnClickListener { toggleFullscreen() }
 
-        // Deterrent actions
-        btnDeterrentHorn.setOnClickListener { showHornConfirmationDialog() }
-        btnDeterrentFlash.setOnClickListener { showFlashConfirmationDialog() }
+        // Deterrent actions (if enabled)
+        btnDeterrentHorn?.setOnClickListener { showHornConfirmationDialog() }
+        btnDeterrentFlash?.setOnClickListener { showFlashConfirmationDialog() }
 
         // Map button
         btnOpenMap.setOnClickListener {
@@ -187,66 +187,60 @@ class LiveViewNativeFragment : Fragment() {
         }
     }
 
-    fun selectCamera(cameraId: Int, fromChip: Boolean = false) {
+    fun selectCamera(cameraId: Int) {
         selectedCameraId = cameraId
         updateCameraLabels(cameraId)
         updateHotspotHighlight(cameraId)
-
-        if (!fromChip) {
-            when (cameraId) {
-                CAM_ALL -> chipCamAll.isChecked = true
-                CAM_FRONT -> chipCamFront.isChecked = true
-                CAM_REAR -> chipCamRear.isChecked = true
-                CAM_LEFT -> chipCamLeft.isChecked = true
-                CAM_RIGHT -> chipCamRight.isChecked = true
-                CAM_DVR -> chipCamDvr.isChecked = true
-            }
-        }
-
         startLiveStream(cameraId)
     }
 
     private fun updateCameraLabels(cameraId: Int) {
         val label = when (cameraId) {
-            CAM_ALL -> "TÜMÜ (MOSAIC)"
-            CAM_FRONT -> "ÖN KAMERA (FRONT)"
-            CAM_REAR -> "ARKA KAMERA (REAR)"
-            CAM_LEFT -> "SOL KAMERA (LEFT)"
-            CAM_RIGHT -> "SAĞ KAMERA (RIGHT)"
-            CAM_DVR -> "DVR (OEM DASHCAM)"
-            else -> "KAMERA $cameraId"
+            CAM_ALL -> "All Cameras"
+            CAM_FRONT -> "Front Camera"
+            CAM_REAR -> "Rear Camera"
+            CAM_LEFT -> "Left Camera"
+            CAM_RIGHT -> "Right Camera"
+            CAM_DVR -> "Dashcam"
+            else -> "Camera $cameraId"
         }
         tvCurrentCameraLabel.text = label
-        tvLiveStatus.text = "CANLI ($label)"
+        cameraLabelOverlay.visibility = if (cameraId >= 0) View.VISIBLE else View.GONE
+        tvLiveStatus?.text = "CANLI ($label)"
     }
 
     private fun updateHotspotHighlight(cameraId: Int) {
-        val activeColor = requireContext().getColor(R.color.brand_primary)
-        val inactiveTint = null
+        val isFront = cameraId == CAM_FRONT
+        ringHotspotFront.setBackgroundResource(if (isFront) R.drawable.bg_hotspot_ring_active else R.drawable.bg_hotspot_ring)
+        labelHotspotFront.setBackgroundResource(if (isFront) R.drawable.bg_hotspot_label_active else R.drawable.bg_hotspot_label)
+        labelHotspotFront.setTextColor(if (isFront) Color.BLACK else Color.WHITE)
 
-        btnHotspotFront.strokeColor = if (cameraId == CAM_FRONT) android.content.res.ColorStateList.valueOf(activeColor) else null
-        btnHotspotFront.strokeWidth = if (cameraId == CAM_FRONT) 2 else 0
+        val isLeft = cameraId == CAM_LEFT
+        ringHotspotLeft.setBackgroundResource(if (isLeft) R.drawable.bg_hotspot_ring_active else R.drawable.bg_hotspot_ring)
+        labelHotspotLeft.setBackgroundResource(if (isLeft) R.drawable.bg_hotspot_label_active else R.drawable.bg_hotspot_label)
+        labelHotspotLeft.setTextColor(if (isLeft) Color.BLACK else Color.WHITE)
 
-        btnHotspotDvr.strokeColor = if (cameraId == CAM_DVR) android.content.res.ColorStateList.valueOf(activeColor) else null
-        btnHotspotDvr.strokeWidth = if (cameraId == CAM_DVR) 2 else 0
+        val isRight = cameraId == CAM_RIGHT
+        ringHotspotRight.setBackgroundResource(if (isRight) R.drawable.bg_hotspot_ring_active else R.drawable.bg_hotspot_ring)
+        labelHotspotRight.setBackgroundResource(if (isRight) R.drawable.bg_hotspot_label_active else R.drawable.bg_hotspot_label)
+        labelHotspotRight.setTextColor(if (isRight) Color.BLACK else Color.WHITE)
 
-        btnHotspotRear.strokeColor = if (cameraId == CAM_REAR) android.content.res.ColorStateList.valueOf(activeColor) else null
-        btnHotspotRear.strokeWidth = if (cameraId == CAM_REAR) 2 else 0
+        val isAll = cameraId == CAM_ALL
+        ringHotspotAll.setBackgroundResource(if (isAll) R.drawable.bg_hotspot_ring_active else R.drawable.bg_hotspot_ring)
+        labelHotspotAll.setBackgroundResource(if (isAll) R.drawable.bg_hotspot_label_active else R.drawable.bg_hotspot_label)
+        labelHotspotAll.setTextColor(if (isAll) Color.BLACK else Color.WHITE)
 
-        btnHotspotLeft.strokeColor = if (cameraId == CAM_LEFT) android.content.res.ColorStateList.valueOf(activeColor) else null
-        btnHotspotLeft.strokeWidth = if (cameraId == CAM_LEFT) 2 else 0
-
-        btnHotspotRight.strokeColor = if (cameraId == CAM_RIGHT) android.content.res.ColorStateList.valueOf(activeColor) else null
-        btnHotspotRight.strokeWidth = if (cameraId == CAM_RIGHT) 2 else 0
-
-        btnHotspotAll.strokeColor = if (cameraId == CAM_ALL) android.content.res.ColorStateList.valueOf(activeColor) else null
-        btnHotspotAll.strokeWidth = if (cameraId == CAM_ALL) 2 else 0
+        val isRear = cameraId == CAM_REAR
+        ringHotspotRear.setBackgroundResource(if (isRear) R.drawable.bg_hotspot_ring_active else R.drawable.bg_hotspot_ring)
+        labelHotspotRear.setBackgroundResource(if (isRear) R.drawable.bg_hotspot_label_active else R.drawable.bg_hotspot_label)
+        labelHotspotRear.setTextColor(if (isRear) Color.BLACK else Color.WHITE)
     }
 
     private fun startLiveStream(cameraId: Int) {
         framePollingJob?.cancel()
-        idleStateOverlay.visibility = View.GONE
+        idleStateOverlay.visibility = View.VISIBLE
         pbLiveLoading.visibility = View.VISIBLE
+        tvIdleSubtext.text = "Starting camera..."
 
         framePollingJob = viewLifecycleOwner.lifecycleScope.launch {
             // First notify stream handler to switch view
@@ -268,22 +262,22 @@ class LiveViewNativeFragment : Fragment() {
                     val bitmap = BitmapFactory.decodeByteArray(frameBytes, 0, frameBytes.size)
                     if (bitmap != null) {
                         ivLiveVideoFrame.setImageBitmap(bitmap)
-                        pbLiveLoading.visibility = View.GONE
+                        idleStateOverlay.visibility = View.GONE
                         liveStatusDot.setBackgroundResource(R.drawable.bg_circle_dot)
                         liveStatusDot.backgroundTintList = android.content.res.ColorStateList.valueOf(
                             requireContext().getColor(R.color.status_success)
                         )
                     }
                 } else {
-                    // Frame not available or daemon connecting
-                    pbLiveLoading.visibility = View.GONE
                     if (ivLiveVideoFrame.drawable == null) {
                         idleStateOverlay.visibility = View.VISIBLE
-                        tvIdleSubtext.text = "Akış bekleniyor..."
+                        tvIdleSubtext.text = "Starting camera..."
+                        liveStatusDot.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                            requireContext().getColor(R.color.status_stopped)
+                        )
                     }
                 }
 
-                // Poll delay: ~100ms for smooth 10 fps MJPEG/JPEG preview without straining Snapdragon 625/665
                 delay(100L)
             }
         }
@@ -304,7 +298,6 @@ class LiveViewNativeFragment : Fragment() {
     }
 
     private fun fetchFrameBytes(cameraId: Int): ByteArray? {
-        // Try CameraDaemonClient direct socket first (zero HTTP overhead)
         try {
             if (cameraDaemonClient.isConnected || cameraDaemonClient.connect()) {
                 val bytes = cameraDaemonClient.getFrame(cameraId)
@@ -314,7 +307,6 @@ class LiveViewNativeFragment : Fragment() {
             Log.v(TAG, "Daemon socket frame failed: ${e.message}")
         }
 
-        // Fallback to localhost HTTP snapshot endpoint
         try {
             val url = URL("http://127.0.0.1:8080/api/surveillance/snapshot/$cameraId")
             val conn = url.openConnection() as HttpURLConnection
@@ -376,10 +368,10 @@ class LiveViewNativeFragment : Fragment() {
         isFullscreen = !isFullscreen
         if (isFullscreen) {
             liveUtilityRail.visibility = View.GONE
-            btnToggleFullscreen.setIconResource(R.drawable.ic_fullscreen_exit)
+            btnToggleFullscreen?.setIconResource(R.drawable.ic_fullscreen_exit)
         } else {
             liveUtilityRail.visibility = View.VISIBLE
-            btnToggleFullscreen.setIconResource(R.drawable.ic_fullscreen)
+            btnToggleFullscreen?.setIconResource(R.drawable.ic_fullscreen)
         }
     }
 
@@ -440,17 +432,16 @@ class LiveViewNativeFragment : Fragment() {
                 val lat = String.format(java.util.Locale.US, "%.5f", location.latitude)
                 val lon = String.format(java.util.Locale.US, "%.5f", location.longitude)
                 tvLocationCoordinates.text = "$lat° N, $lon° E"
-                val alt = location.altitude.toInt()
-                tvLocationSpeed.text = "Hız: $speedKmh km/h · Rakım: $alt m"
-                tvGpsFreshness.text = "Güncel"
+                tvLocationSpeed?.text = "Hız: $speedKmh km/h"
+                tvGpsFreshness.text = "0s ago"
             } else {
-                tvLocationCoordinates.text = "GPS Konumu Bekleniyor..."
-                tvLocationSpeed.text = "Hız: $speedKmh km/h · Araç Park Halinde"
-                tvGpsFreshness.text = "Bekleniyor"
+                tvLocationCoordinates.text = "—"
+                tvLocationSpeed?.text = "Hız: $speedKmh km/h"
+                tvGpsFreshness.text = "0s ago"
             }
         } catch (e: Exception) {
-            tvLocationCoordinates.text = "Konum servisi hazır"
-            tvLocationSpeed.text = "Hız: 0 km/h"
+            tvLocationCoordinates.text = "—"
+            tvGpsFreshness.text = "0s ago"
         }
     }
 

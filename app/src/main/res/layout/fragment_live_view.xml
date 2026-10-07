@@ -17,73 +17,62 @@
         android:layout_weight="1"
         android:orientation="vertical">
 
-        <!-- Stage Top Bar: Connection status + Quality menu + Fullscreen -->
+        <!-- Stage Top Bar: Connection status dot + Quality selector -->
         <LinearLayout
             android:id="@+id/cameraTopBar"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="44dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingHorizontal="4dp"
             android:paddingBottom="8dp">
 
-            <!-- Live Status Pill -->
-            <LinearLayout
-                android:id="@+id/connectionStatusPill"
+            <!-- Live Status Dot (matches legacy conn-dot) -->
+            <View
+                android:id="@+id/liveStatusDot"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_circle_dot"
+                android:backgroundTint="@color/status_stopped" />
+
+            <!-- Hidden tvLiveStatus to preserve any bindings safely -->
+            <TextView
+                android:id="@+id/tvLiveStatus"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:background="@drawable/bg_pill_state"
-                android:backgroundTint="?attr/colorSurfaceContainerHigh"
-                android:gravity="center_vertical"
-                android:paddingHorizontal="12dp">
-
-                <View
-                    android:id="@+id/liveStatusDot"
-                    android:layout_width="8dp"
-                    android:layout_height="8dp"
-                    android:background="@drawable/bg_circle_dot"
-                    android:backgroundTint="@color/status_success" />
-
-                <TextView
-                    android:id="@+id/tvLiveStatus"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:text="CANLI (FRONT)"
-                    android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textStyle="bold" />
-            </LinearLayout>
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
 
             <View
                 android:layout_width="0dp"
                 android:layout_height="1dp"
                 android:layout_weight="1" />
 
-            <!-- Quality Selector Button -->
+            <!-- Quality Selector Button with Dropdown Chevron -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnQualitySelector"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
-                android:layout_marginEnd="8dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 android:text="Medium (1M)"
                 android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
-                app:icon="@drawable/ic_settings"
+                app:icon="@drawable/ic_expand"
                 app:iconGravity="textEnd"
-                app:iconSize="16dp" />
+                app:iconSize="20dp" />
 
-            <!-- Fullscreen Button -->
+            <!-- Fullscreen Button (hidden by default to match legacy) -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnToggleFullscreen"
                 style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
+                android:layout_marginStart="8dp"
                 android:contentDescription="Fullscreen"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
+                android:visibility="gone"
                 app:icon="@drawable/ic_fullscreen"
                 app:iconSize="20dp" />
         </LinearLayout>
@@ -113,43 +102,25 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:gravity="center"
-                android:orientation="vertical"
-                android:visibility="gone">
+                android:orientation="vertical">
 
-                <ImageView
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:contentDescription="Camera Idle"
-                    android:src="@drawable/ic_dashcam_all"
-                    app:tint="?attr/colorOutline" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="Araç şemasından bir kamera seçin"
-                    android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-                    android:textColor="?attr/colorOnSurface" />
+                <ProgressBar
+                    android:id="@+id/pbLiveLoading"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:indeterminate="true" />
 
                 <TextView
                     android:id="@+id/tvIdleSubtext"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Kamera seçildiğinde canlı akış görüntülenecektir"
-                    android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                    android:layout_marginTop="12dp"
+                    android:text="Starting camera..."
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                     android:textColor="?attr/colorOutline" />
-
-                <ProgressBar
-                    android:id="@+id/pbLiveLoading"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_marginTop="16dp"
-                    android:indeterminate="true"
-                    android:visibility="gone" />
             </LinearLayout>
 
-            <!-- Active Camera Badge (Top-Left overlay) -->
+            <!-- Active Camera Badge (Top-Left overlay, hidden by default) -->
             <LinearLayout
                 android:id="@+id/cameraLabelOverlay"
                 android:layout_width="wrap_content"
@@ -159,26 +130,28 @@
                 android:background="@drawable/bg_pill_state"
                 android:backgroundTint="#B3000000"
                 android:paddingHorizontal="10dp"
-                android:paddingVertical="4dp">
+                android:paddingVertical="4dp"
+                android:visibility="gone">
 
                 <TextView
                     android:id="@+id/tvCurrentCameraLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="FRONT CAMERA"
+                    android:text="Front Camera"
                     android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
                     android:textColor="#FFFFFF"
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- Deterrent Controls (Bottom-Left overlay) -->
+            <!-- Deterrent Controls (Hidden to match legacy live-view.html display:none) -->
             <LinearLayout
                 android:id="@+id/deterrentControls"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|start"
                 android:layout_margin="12dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:visibility="gone">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDeterrentHorn"
@@ -247,152 +220,211 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Kameralar"
+                        android:text="Cameras"
                         android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
                         android:textColor="?attr/colorOnSurface"
                         android:textStyle="bold" />
 
-                    <!-- Car Hotspot Container -->
+                    <!-- Car Hotspot Container (1:1 to legacy car-image-container) -->
                     <FrameLayout
                         android:id="@+id/carHotspotContainer"
                         android:layout_width="match_parent"
-                        android:layout_height="220dp"
+                        android:layout_height="250dp"
                         android:layout_marginTop="8dp">
 
+                        <!-- Car Top View Image -->
                         <ImageView
                             android:id="@+id/ivCarTopView"
-                            android:layout_width="160dp"
-                            android:layout_height="200dp"
+                            android:layout_width="112dp"
+                            android:layout_height="230dp"
                             android:layout_gravity="center"
                             android:contentDescription="Car Top View"
                             android:scaleType="fitCenter"
                             android:src="@drawable/car_top_view" />
 
-                        <!-- Hotspot FRONT -->
-                        <com.google.android.material.button.MaterialButton
+                        <!-- Hotspot FRONT (Centered at Top) -->
+                        <LinearLayout
                             android:id="@+id/btnHotspotFront"
-                            style="@style/Widget.Material3.Button.TonalButton"
                             android:layout_width="wrap_content"
-                            android:layout_height="32dp"
+                            android:layout_height="wrap_content"
                             android:layout_gravity="top|center_horizontal"
-                            android:insetTop="0dp"
-                            android:insetBottom="0dp"
-                            android:text="FRONT"
-                            android:textAppearance="@style/TextAppearance.Material3.LabelSmall" />
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center_horizontal"
+                            android:orientation="vertical"
+                            android:padding="4dp">
 
-                        <!-- Hotspot DVR (OEM Dashcam) -->
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnHotspotDvr"
-                            style="@style/Widget.Material3.Button.TonalButton"
+                            <TextView
+                                android:id="@+id/labelHotspotFront"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_hotspot_label"
+                                android:text="FRONT"
+                                android:textColor="#FFFFFF"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+
+                            <View
+                                android:id="@+id/ringHotspotFront"
+                                android:layout_width="26dp"
+                                android:layout_height="26dp"
+                                android:layout_marginTop="2dp"
+                                android:background="@drawable/bg_hotspot_ring" />
+                        </LinearLayout>
+
+                        <!-- Hotspot LEFT (Centered Vertically at Left side) -->
+                        <LinearLayout
+                            android:id="@+id/btnHotspotLeft"
                             android:layout_width="wrap_content"
-                            android:layout_height="28dp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical|start"
+                            android:layout_marginStart="10dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:padding="4dp">
+
+                            <TextView
+                                android:id="@+id/labelHotspotLeft"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_hotspot_label"
+                                android:text="LEFT"
+                                android:textColor="#FFFFFF"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+
+                            <View
+                                android:id="@+id/ringHotspotLeft"
+                                android:layout_width="26dp"
+                                android:layout_height="26dp"
+                                android:layout_marginStart="4dp"
+                                android:background="@drawable/bg_hotspot_ring" />
+                        </LinearLayout>
+
+                        <!-- Hotspot RIGHT (Centered Vertically at Right side) -->
+                        <LinearLayout
+                            android:id="@+id/btnHotspotRight"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical|end"
+                            android:layout_marginEnd="10dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:padding="4dp">
+
+                            <View
+                                android:id="@+id/ringHotspotRight"
+                                android:layout_width="26dp"
+                                android:layout_height="26dp"
+                                android:layout_marginEnd="4dp"
+                                android:background="@drawable/bg_hotspot_ring" />
+
+                            <TextView
+                                android:id="@+id/labelHotspotRight"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_hotspot_label"
+                                android:text="RIGHT"
+                                android:textColor="#FFFFFF"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <!-- Hotspot ALL (Centered on Glass Roof) -->
+                        <LinearLayout
+                            android:id="@+id/btnHotspotAll"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center_horizontal"
+                            android:orientation="vertical"
+                            android:padding="4dp">
+
+                            <View
+                                android:id="@+id/ringHotspotAll"
+                                android:layout_width="26dp"
+                                android:layout_height="26dp"
+                                android:background="@drawable/bg_hotspot_ring" />
+
+                            <TextView
+                                android:id="@+id/labelHotspotAll"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:background="@drawable/bg_hotspot_label"
+                                android:text="ALL"
+                                android:textColor="#FFFFFF"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <!-- Hotspot REAR (Centered at Bottom) -->
+                        <LinearLayout
+                            android:id="@+id/btnHotspotRear"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="bottom|center_horizontal"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center_horizontal"
+                            android:orientation="vertical"
+                            android:padding="4dp">
+
+                            <View
+                                android:id="@+id/ringHotspotRear"
+                                android:layout_width="26dp"
+                                android:layout_height="26dp"
+                                android:background="@drawable/bg_hotspot_ring" />
+
+                            <TextView
+                                android:id="@+id/labelHotspotRear"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:background="@drawable/bg_hotspot_label"
+                                android:text="REAR"
+                                android:textColor="#FFFFFF"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <!-- Optional Hotspot DVR (Hidden unless equipped) -->
+                        <LinearLayout
+                            android:id="@+id/btnHotspotDvr"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             android:layout_gravity="top|center_horizontal"
                             android:layout_marginTop="38dp"
-                            android:insetTop="0dp"
-                            android:insetBottom="0dp"
-                            android:text="DVR"
-                            android:textAppearance="@style/TextAppearance.Material3.LabelSmall" />
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center_horizontal"
+                            android:orientation="vertical"
+                            android:padding="2dp"
+                            android:visibility="gone">
 
-                        <!-- Hotspot REAR -->
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnHotspotRear"
-                            style="@style/Widget.Material3.Button.TonalButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="32dp"
-                            android:layout_gravity="bottom|center_horizontal"
-                            android:insetTop="0dp"
-                            android:insetBottom="0dp"
-                            android:text="REAR"
-                            android:textAppearance="@style/TextAppearance.Material3.LabelSmall" />
+                            <View
+                                android:id="@+id/ringHotspotDvr"
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:background="@drawable/bg_hotspot_ring" />
 
-                        <!-- Hotspot LEFT -->
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnHotspotLeft"
-                            style="@style/Widget.Material3.Button.TonalButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="32dp"
-                            android:layout_gravity="center_vertical|start"
-                            android:insetTop="0dp"
-                            android:insetBottom="0dp"
-                            android:text="LEFT"
-                            android:textAppearance="@style/TextAppearance.Material3.LabelSmall" />
-
-                        <!-- Hotspot RIGHT -->
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnHotspotRight"
-                            style="@style/Widget.Material3.Button.TonalButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="32dp"
-                            android:layout_gravity="center_vertical|end"
-                            android:insetTop="0dp"
-                            android:insetBottom="0dp"
-                            android:text="RIGHT"
-                            android:textAppearance="@style/TextAppearance.Material3.LabelSmall" />
-
-                        <!-- Hotspot ALL (Mosaic) -->
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnHotspotAll"
-                            style="@style/Widget.Material3.Button.TonalButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="32dp"
-                            android:layout_gravity="bottom|start"
-                            android:insetTop="0dp"
-                            android:insetBottom="0dp"
-                            android:text="ALL"
-                            android:textAppearance="@style/TextAppearance.Material3.LabelSmall" />
+                            <TextView
+                                android:id="@+id/labelHotspotDvr"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_hotspot_label"
+                                android:text="DVR"
+                                android:textColor="#FFFFFF"
+                                android:textSize="9sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
                     </FrameLayout>
-
-                    <!-- Quick Camera Selector Chips -->
-                    <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/chipGroupCameras"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        app:singleSelection="true">
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipCamAll"
-                            style="@style/Widget.Material3.Chip.Filter"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:checked="true"
-                            android:text="TÜMÜ (0)" />
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipCamFront"
-                            style="@style/Widget.Material3.Chip.Filter"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="ÖN (1)" />
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipCamRear"
-                            style="@style/Widget.Material3.Chip.Filter"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="ARKA (3)" />
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipCamLeft"
-                            style="@style/Widget.Material3.Chip.Filter"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="SOL (4)" />
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipCamRight"
-                            style="@style/Widget.Material3.Chip.Filter"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="SAĞ (2)" />
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipCamDvr"
-                            style="@style/Widget.Material3.Chip.Filter"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="DVR (6)" />
-                    </com.google.android.material.chip.ChipGroup>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -423,7 +455,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Araç Konumu"
+                            android:text="Vehicle location"
                             android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
                             android:textColor="?attr/colorOnSurface"
                             android:textStyle="bold" />
@@ -440,29 +472,70 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
-                            android:text="Güncel"
+                            android:text="0s ago"
                             android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
                             android:textColor="?attr/colorOutline" />
                     </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/tvLocationCoordinates"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:fontFamily="monospace"
-                        android:text="41.0082° N, 28.9784° E"
-                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-                        android:textColor="?attr/colorOnSurface" />
+                    <!-- Mini Map Preview Box (matches legacy live location card) -->
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/bg_card_rounded_border"
+                        android:clipChildren="true"
+                        android:clipToOutline="true">
 
-                    <TextView
-                        android:id="@+id/tvLocationSpeed"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Hız: 0 km/h · Rakım: 45 m"
-                        android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-                        android:textColor="?attr/colorOutline" />
+                        <!-- Subtle map placeholder background -->
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="#1F2428" />
+
+                        <!-- Mini Car icon in center -->
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="48dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="Car location"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/car_top_view" />
+
+                        <!-- Coordinate chip / Pin bottom left -->
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="24dp"
+                            android:layout_gravity="bottom|start"
+                            android:layout_margin="8dp"
+                            android:background="@drawable/bg_pill_state"
+                            android:backgroundTint="#D914171A"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="8dp">
+
+                            <ImageView
+                                android:layout_width="12dp"
+                                android:layout_height="12dp"
+                                android:contentDescription="Pin"
+                                android:src="@drawable/ic_location_pin"
+                                app:tint="?attr/colorOutline" />
+
+                            <TextView
+                                android:id="@+id/tvLocationCoordinates"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="4dp"
+                                android:text="—"
+                                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                android:textColor="?attr/colorOnSurface" />
+                        </LinearLayout>
+
+                        <!-- Hidden tvLocationSpeed to keep logic safe -->
+                        <TextView
+                            android:id="@+id/tvLocationSpeed"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:visibility="gone" />
+                    </FrameLayout>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnOpenMap"
@@ -472,9 +545,10 @@
                         android:layout_marginTop="12dp"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
-                        android:text="Haritada Göster"
+                        android:text="Expand map"
                         android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
-                        app:icon="@drawable/ic_location_pin"
+                        app:icon="@drawable/ic_fullscreen"
+                        app:iconGravity="textStart"
                         app:iconSize="16dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
