@@ -1538,4 +1538,81 @@
     <string name="seatpos_delete_failed" translatable="false">Konum silinemedi</string>
     <string name="common_cancel" translatable="false">İptal</string>
     <string name="common_more" translatable="false">Daha Fazla</string>
+    <string name="common_delete" translatable="false">Sil</string>
+    <string name="common_save" translatable="false">Kaydet</string>
+    <string name="common_apply_changes" translatable="false">Değişiklikleri Uygula</string>
+
+    <!-- Charging Native (TR) -->
+    <string name="rail_charging_native" translatable="false">Şarj (Native)</string>
+    <string name="rail_charging_legacy" translatable="false">Şarj (Eski)</string>
+    <string name="charge_page_title" translatable="false">Şarj</string>
+    <string name="charge_page_subtitle" translatable="false">Şarj oturumlarınızı ve enerji kullanımınızı takip edin</string>
+    <string name="charge_filter_7d" translatable="false">7 gün</string>
+    <string name="charge_filter_30d" translatable="false">30 gün</string>
+    <string name="charge_filter_all" translatable="false">Tüm zamanlar</string>
+    <string name="charge_tab_sessions" translatable="false">Oturumlar</string>
+    <string name="charge_tab_stats" translatable="false">İstatistikler</string>
+    <string name="charge_tab_settings" translatable="false">Ayarlar</string>
+    <string name="charge_state_charging" translatable="false">Şarj ediliyor</string>
+    <string name="charge_state_plugged" translatable="false">Kablo takılı</string>
+    <string name="charge_summary_sessions" translatable="false">Oturum</string>
+    <string name="charge_summary_energy" translatable="false">Enerji</string>
+    <string name="charge_summary_cost" translatable="false">Maliyet</string>
+    <string name="charge_summary_dc_ac" translatable="false">DC / AC</string>
+    <string name="charge_summary_range_gained" translatable="false">Eklenen Menzil</string>
+    <string name="charge_sessions_title" translatable="false">Şarj oturumları</string>
+    <string name="charge_no_sessions_yet" translatable="false">Henüz şarj oturumu yok</string>
+    <string name="charge_no_sessions_hint" translatable="false">Aracı şarja taktığınızda oturumlar otomatik olarak burada görünecektir</string>
+    <string name="charge_hero_avg_power" translatable="false">Ortalama güç</string>
+    <string name="charge_hero_cost" translatable="false">kWh başına maliyet</string>
+    <string name="charge_hero_soc" translatable="false">Şarj durumu</string>
+    <string name="charge_lifetime_stats_title" translatable="false">Toplam istatistikler</string>
+    <string name="charge_lifetime_energy" translatable="false">Toplam enerji</string>
+    <string name="charge_lifetime_sessions" translatable="false">Toplam oturum</string>
+    <string name="charge_lifetime_cost" translatable="false">Toplam maliyet</string>
+    <string name="charge_settings_title" translatable="false">Şarj Analitiği</string>
+    <string name="charge_settings_auto_record" translatable="false">Şarj oturumlarını otomatik kaydet</string>
+    <string name="charge_settings_auto_record_desc" translatable="false">Her şarjı güç, maliyet ve batarya verileriyle oturum olarak günlüğe kaydeder</string>
+    <string name="charge_settings_rate" translatable="false">Elektrik Tarifesi</string>
+    <string name="charge_settings_rate_desc" translatable="false">kWh başına ücret (Sürüşler ile paylaşılır)</string>
+    <string name="charge_settings_dc_rate" translatable="false">DC Hızlı Şarj Tarifesi (isteğe bağlı)</string>
+    <string name="charge_settings_dc_rate_desc" translatable="false">DC hızlı şarj için ayrı tarife; temel tarifeyi kullanmak için 0 bırakın</string>
+    <string name="charge_settings_data_title" translatable="false">Veri</string>
+    <string name="charge_settings_clear" translatable="false">Şarj geçmişini temizle</string>
+    <string name="charge_settings_clear_desc" translatable="false">Kayıtlı tüm şarj oturumlarını ve eğrilerini kalıcı olarak siler</string>
+    <string name="charge_settings_saved" translatable="false">Şarj ayarları kaydedildi</string>
+    <string name="charge_settings_save_failed" translatable="false">Şarj ayarları kaydedilemedi</string>
+    <string name="charge_clear_history_title" translatable="false">Şarj geçmişi temizlensin mi?</string>
+    <string name="charge_clear_history_confirm_msg" translatable="false">Bu işlem kaydedilen tüm şarj oturumlarını, güç eğrilerini ve sıcaklık günlüklerini kalıcı olarak siler. Bu işlem geri alınamaz.</string>
+    <string name="charge_clear_history_success" translatable="false">Şarj geçmişi temizlendi</string>
+    <string name="charge_clear_history_failed" translatable="false">Şarj geçmişi temizlenemedi</string>
+    <string name="charge_detail_back" translatable="false">Oturumlara dön</string>
+    <string name="charge_delete_session_title" translatable="false">Oturumu sil</string>
+    <string name="charge_delete_confirm_msg" translatable="false">Bu şarj oturumunu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</string>
+    <string name="charge_delete_success" translatable="false">Oturum silindi</string>
+    <string name="charge_delete_failed" translatable="false">Oturum silinemedi</string>
+    <string name="charge_detail_duration" translatable="false">Süre</string>
+    <string name="charge_detail_location" translatable="false">Konum</string>
+    <string name="charge_detail_metrics" translatable="false">Metrikler</string>
+    <string name="charge_detail_energy_added" translatable="false">Eklenen enerji</string>
+    <string name="charge_detail_avg_power" translatable="false">Ortalama güç</string>
+    <string name="charge_detail_peak_power" translatable="false">Zirve güç</string>
+    <string name="charge_detail_range_gained" translatable="false">Eklenen menzil</string>
+    <string name="charge_detail_cost" translatable="false">Maliyet</string>
+    <string name="charge_detail_temp" translatable="false">Batarya sıcaklığı</string>
+    <string name="charge_chart_power_title" translatable="false">Şarj gücü &amp; eğrisi</string>
+    <string name="charge_chart_power_sub" translatable="false">Zaman içinde Güç (kW) &amp; SoC (%)</string>
+    <string name="charge_chart_temp_title" translatable="false">Hücre sıcaklığı</string>
+    <string name="charge_chart_temp_sub" translatable="false">Zaman içinde hücre sıcaklıkları (Yüksek, Ort, Düşük)</string>
+    <string name="charge_type_dc" translatable="false">DC Hızlı</string>
+    <string name="charge_type_fast" translatable="false">AC Hızlı</string>
+    <string name="charge_type_slow" translatable="false">AC Yavaş</string>
+    <string name="charge_in_progress" translatable="false">Şarj ediliyor</string>
+    <string name="charge_rate_hint" translatable="false">0.00</string>
+    <string name="charge_dc_rate_hint" translatable="false">0.00</string>
+    <string name="charge_cost_hint" translatable="false">0.00</string>
+    <string name="charge_edit_cost_title" translatable="false">Oturum maliyetini düzenle</string>
+    <string name="charge_edit_cost_desc" translatable="false">Bu tamamlanan oturumun maliyetini güncelleyin veya sıfırlayın. Bir maliyet girin ya da yeniden hesaplanması için boş bırakın / -1 girin.</string>
+    <string name="charge_cost_saved" translatable="false">Oturum maliyeti güncellendi</string>
+    <string name="charge_cost_save_failed" translatable="false">Oturum maliyeti güncellenemedi</string>
 </resources>

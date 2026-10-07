@@ -2174,4 +2174,81 @@
     <string name="seatpos_delete_failed" translatable="false">Could not delete the position</string>
     <string name="common_cancel" translatable="false">Cancel</string>
     <string name="common_more" translatable="false">More</string>
+    <string name="common_delete" translatable="false">Delete</string>
+    <string name="common_save" translatable="false">Save</string>
+    <string name="common_apply_changes" translatable="false">Apply Changes</string>
+
+    <!-- Charging Native -->
+    <string name="rail_charging_native" translatable="false">Charging (Native)</string>
+    <string name="rail_charging_legacy" translatable="false">Charging (Eski)</string>
+    <string name="charge_page_title" translatable="false">Charging</string>
+    <string name="charge_page_subtitle" translatable="false">Monitor your charging sessions and energy usage</string>
+    <string name="charge_filter_7d" translatable="false">7 days</string>
+    <string name="charge_filter_30d" translatable="false">30 days</string>
+    <string name="charge_filter_all" translatable="false">All time</string>
+    <string name="charge_tab_sessions" translatable="false">Sessions</string>
+    <string name="charge_tab_stats" translatable="false">Stats</string>
+    <string name="charge_tab_settings" translatable="false">Settings</string>
+    <string name="charge_state_charging" translatable="false">Charging now</string>
+    <string name="charge_state_plugged" translatable="false">Plugged in</string>
+    <string name="charge_summary_sessions" translatable="false">Sessions</string>
+    <string name="charge_summary_energy" translatable="false">Energy</string>
+    <string name="charge_summary_cost" translatable="false">Cost</string>
+    <string name="charge_summary_dc_ac" translatable="false">DC / AC</string>
+    <string name="charge_summary_range_gained" translatable="false">Range added</string>
+    <string name="charge_sessions_title" translatable="false">Charging sessions</string>
+    <string name="charge_no_sessions_yet" translatable="false">No charging sessions yet</string>
+    <string name="charge_no_sessions_hint" translatable="false">Sessions appear automatically when you plug in to charge</string>
+    <string name="charge_hero_avg_power" translatable="false">Average power</string>
+    <string name="charge_hero_cost" translatable="false">Cost per kWh</string>
+    <string name="charge_hero_soc" translatable="false">State of charge</string>
+    <string name="charge_lifetime_stats_title" translatable="false">Lifetime stats</string>
+    <string name="charge_lifetime_energy" translatable="false">Total energy</string>
+    <string name="charge_lifetime_sessions" translatable="false">Total sessions</string>
+    <string name="charge_lifetime_cost" translatable="false">Total cost</string>
+    <string name="charge_settings_title" translatable="false">Charging Analytics</string>
+    <string name="charge_settings_auto_record" translatable="false">Automatically record charging sessions</string>
+    <string name="charge_settings_auto_record_desc" translatable="false">Logs each charge as a session with power, cost and battery data</string>
+    <string name="charge_settings_rate" translatable="false">Electricity Rate</string>
+    <string name="charge_settings_rate_desc" translatable="false">Cost per kWh, shared with Trips</string>
+    <string name="charge_settings_dc_rate" translatable="false">DC Fast Rate (optional)</string>
+    <string name="charge_settings_dc_rate_desc" translatable="false">Separate tariff for DC fast charging; leave 0 to use the base rate</string>
+    <string name="charge_settings_data_title" translatable="false">Data</string>
+    <string name="charge_settings_clear" translatable="false">Clear charging history</string>
+    <string name="charge_settings_clear_desc" translatable="false">Permanently delete all recorded charging sessions and curves</string>
+    <string name="charge_settings_saved" translatable="false">Charging settings saved</string>
+    <string name="charge_settings_save_failed" translatable="false">Could not save charging settings</string>
+    <string name="charge_clear_history_title" translatable="false">Clear charging history?</string>
+    <string name="charge_clear_history_confirm_msg" translatable="false">This permanently removes every recorded charging session, fine-grained power curve, and temperature log. This cannot be undone.</string>
+    <string name="charge_clear_history_success" translatable="false">Charging history cleared</string>
+    <string name="charge_clear_history_failed" translatable="false">Failed to clear charging history</string>
+    <string name="charge_detail_back" translatable="false">Back to sessions</string>
+    <string name="charge_delete_session_title" translatable="false">Delete session</string>
+    <string name="charge_delete_confirm_msg" translatable="false">Are you sure you want to delete this charging session? This cannot be undone.</string>
+    <string name="charge_delete_success" translatable="false">Session deleted</string>
+    <string name="charge_delete_failed" translatable="false">Could not delete session</string>
+    <string name="charge_detail_duration" translatable="false">Duration</string>
+    <string name="charge_detail_location" translatable="false">Location</string>
+    <string name="charge_detail_metrics" translatable="false">Metrics</string>
+    <string name="charge_detail_energy_added" translatable="false">Energy added</string>
+    <string name="charge_detail_avg_power" translatable="false">Average power</string>
+    <string name="charge_detail_peak_power" translatable="false">Peak power</string>
+    <string name="charge_detail_range_gained" translatable="false">Range gained</string>
+    <string name="charge_detail_cost" translatable="false">Cost</string>
+    <string name="charge_detail_temp" translatable="false">Battery temp</string>
+    <string name="charge_chart_power_title" translatable="false">Charge power &amp; curve</string>
+    <string name="charge_chart_power_sub" translatable="false">Power (kW) &amp; SoC (%) over time</string>
+    <string name="charge_chart_temp_title" translatable="false">Cell temperature</string>
+    <string name="charge_chart_temp_sub" translatable="false">Cell temperatures (High, Avg, Low) over time</string>
+    <string name="charge_type_dc" translatable="false">DC Fast</string>
+    <string name="charge_type_fast" translatable="false">AC Fast</string>
+    <string name="charge_type_slow" translatable="false">AC Slow</string>
+    <string name="charge_in_progress" translatable="false">Charging now</string>
+    <string name="charge_rate_hint" translatable="false">0.00</string>
+    <string name="charge_dc_rate_hint" translatable="false">0.00</string>
+    <string name="charge_cost_hint" translatable="false">0.00</string>
+    <string name="charge_edit_cost_title" translatable="false">Edit session cost</string>
+    <string name="charge_edit_cost_desc" translatable="false">Update or reset this completed session\'s cost. Enter a cost, or leave empty / enter -1 to recalculate.</string>
+    <string name="charge_cost_saved" translatable="false">Session cost updated</string>
+    <string name="charge_cost_save_failed" translatable="false">Could not update session cost</string>
 </resources>

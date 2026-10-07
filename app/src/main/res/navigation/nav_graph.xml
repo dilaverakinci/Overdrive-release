@@ -153,11 +153,18 @@
             android:defaultValue="/trips" />
     </fragment>
 
-    <!-- Charging (web canonical) -->
+    <!-- Charging (Native) -->
     <fragment
         android:id="@+id/chargingFragment"
+        android:name="com.overdrive.app.ui.fragment.ChargingNativeFragment"
+        android:label="@string/rail_charging_native"
+        tools:layout="@layout/fragment_charging_native" />
+
+    <!-- Charging (Legacy Web) -->
+    <fragment
+        android:id="@+id/chargingLegacyFragment"
         android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_charging"
+        android:label="@string/rail_charging_legacy"
         tools:layout="@layout/fragment_webview">
         <argument
             android:name="page_path"

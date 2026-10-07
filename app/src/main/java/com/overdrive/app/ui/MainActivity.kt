@@ -104,6 +104,7 @@ open class MainActivity : AppCompatActivity() {
     private val RAIL_KEY_PARKING_LEGACY = "parking_legacy"
     private val RAIL_KEY_VEHICLE_LEGACY = "vehicle_legacy"
     private val RAIL_KEY_SEAT_POSITIONS_LEGACY = "seat_positions_legacy"
+    private val RAIL_KEY_CHARGING_LEGACY = "charging_legacy"
     private val RAIL_KEY_SETTINGS = "settings"
     private val RAIL_KEY_ABOUT = "about"
     private val KEY_RAIL_EXPANDED = "navigation_rail_expanded"
@@ -164,6 +165,7 @@ open class MainActivity : AppCompatActivity() {
                 RAIL_KEY_SEAT_POSITIONS_LEGACY,
                 NavigationRailCatalog.PROJECTION,
                 NavigationRailCatalog.CHARGING,
+                RAIL_KEY_CHARGING_LEGACY,
             )
         ),
         RailSection(
@@ -1765,7 +1767,10 @@ open class MainActivity : AppCompatActivity() {
                 R.drawable.ic_projection, R.string.rail_projection),
             RailItem(NavigationRailCatalog.CHARGING, R.id.railDestCharging,
                 R.id.chargingFragment,
-                R.drawable.ic_charging, R.string.rail_charging),
+                R.drawable.ic_charging, R.string.rail_charging_native),
+            RailItem(RAIL_KEY_CHARGING_LEGACY, R.id.railDestChargingLegacy,
+                R.id.chargingLegacyFragment,
+                R.drawable.ic_charging, R.string.rail_charging_legacy),
             RailItem(NavigationRailCatalog.TRIPS, R.id.railDestTrips, R.id.tripsFragment,
                 R.drawable.ic_trips, R.string.rail_trips),
             RailItem(NavigationRailCatalog.ROAD_SENSE, R.id.railDestRoadSense,
