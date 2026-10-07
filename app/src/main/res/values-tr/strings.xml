@@ -1471,4 +1471,71 @@
     <string name="rail_section_automation">Otomasyon</string>
     <string name="rail_section_system">Sistem</string>
     <string name="rail_collapse_label">Daralt</string>
+
+    <!-- Seat Positions Native -->
+    <string name="rail_seat_positions_native" translatable="false">Koltuk Konumları (Native)</string>
+    <string name="rail_seat_positions_legacy" translatable="false">Koltuk Konumları (Eski)</string>
+    <string name="seatpos_current" translatable="false">Mevcut konum</string>
+    <string name="seatpos_current_unavailable" translatable="false">Koltuk konumu okunamadı</string>
+    <string name="seatpos_matches" translatable="false">%1$s ile eşleşiyor</string>
+    <string name="seatpos_not_saved" translatable="false">Mevcut konum (kaydedilmemiş)</string>
+    <string name="seatpos_save_as_new" translatable="false">Yeni olarak kaydet</string>
+    <string name="seatpos_my_positions" translatable="false">Konumlarım</string>
+    <string name="seatpos_empty_title" translatable="false">Henüz kayıtlı konum yok</string>
+    <string name="seatpos_empty" translatable="false">Araçta koltuk ve aynaları ayarlayın, ardından Yeni olarak kaydet\'e basın.</string>
+    <string name="seatpos_show_details" translatable="false">Detayları göster</string>
+    <string name="seatpos_hide_details" translatable="false">Detayları gizle</string>
+    <string name="seatpos_group_seat" translatable="false">Koltuk</string>
+    <string name="seatpos_group_mirrors" translatable="false">Aynalar</string>
+    <string name="seatpos_gate_acc_off" translatable="false">Araç kapalı olduğu için koltuk motorlarında güç yok. Aracı açana kadar uygulama ve kaydetme çalışmaz.</string>
+    <string name="seatpos_gate_moving" translatable="false">Vites P\'de değil — vites P\'ye alınana kadar uygulama kapalıdır. Kaydetme ve yeniden adlandırma çalışır.</string>
+    <string name="seatpos_gate_ready" translatable="false">Park halinde ve güç açık — konumlar uygulanabilir.</string>
+    <string name="seatpos_unconfirmed_note" translatable="false">Bu adresler BYD Seal üzerinde doğrulanmıştır. Okuma ve kaydetme güvenlidir; uygulama öncesi sorulur.</string>
+    <string name="seatpos_unconfirmed_title" translatable="false">Bu araç için doğrulanmadı</string>
+    <string name="seatpos_unconfirmed_body" translatable="false">Koltuk ve ayna konumları BYD Seal üzerinde doğrulanmış adreslerle okunmaktadır ve aracınız farklı adresler kullanıyor olabilir. Yine de uygulansın mı?</string>
+    <string name="seatpos_unconfirmed_confirm" translatable="false">Yine de uygula</string>
+    <string name="seatpos_applied" translatable="false">Uygulandı</string>
+    <string name="seatpos_apply" translatable="false">Uygula</string>
+    <string name="seatpos_applied_toast" translatable="false">%1$s uygulandı</string>
+    <string name="seatpos_apply_failed" translatable="false">Konum uygulanamadı</string>
+    <string name="seatpos_from_car_slot" translatable="false">Araçtan · hafıza %1$d</string>
+    <string name="seatpos_car_slot_label" translatable="false">Tuş %1$d</string>
+    <string name="seatpos_used_by_one" translatable="false">1 otomasyonda kullanılıyor</string>
+    <string name="seatpos_save_here" translatable="false">Mevcut ayarları buraya kaydet</string>
+    <string name="seatpos_change_colour" translatable="false">Rengi değiştir</string>
+    <string name="seatpos_rename" translatable="false">Yeniden adlandır</string>
+    <string name="seatpos_set_alias" translatable="false">Araç hafıza tuşuna ata</string>
+    <string name="seatpos_delete" translatable="false">Sil</string>
+    <string name="seatpos_save_new_title" translatable="false">Mevcut konumu kaydet</string>
+    <string name="seatpos_save_new_body" translatable="false">Aracın şu anki koltuk ve ayna geometrisini kaydeder.</string>
+    <string name="seatpos_name_hint" translatable="false">Konum adı</string>
+    <string name="seatpos_parts_all" translatable="false">Her şey</string>
+    <string name="seatpos_parts_all_hint" translatable="false">Koltuk, aynalar ve iç ortam aydınlatması</string>
+    <string name="seatpos_parts_geometry" translatable="false">Koltuk &amp; aynalar</string>
+    <string name="seatpos_parts_geometry_hint" translatable="false">Aracın şu an bulunduğu konum</string>
+    <string name="seatpos_parts_ambient" translatable="false">Ortam aydınlatması</string>
+    <string name="seatpos_parts_ambient_hint" translatable="false">Renk, parlaklık ve ışık modları</string>
+    <string name="seatpos_save" translatable="false">Kaydet</string>
+    <string name="seatpos_saved_toast" translatable="false">%1$s kaydedildi</string>
+    <string name="seatpos_save_failed" translatable="false">Konum kaydedilemedi</string>
+    <string name="seatpos_default_name" translatable="false">Konumum</string>
+    <string name="seatpos_overwrite_title" translatable="false">%1$s üzerine yazılsın mı?</string>
+    <string name="seatpos_overwrite_body" translatable="false">Mevcut koltuk ve ayna ayarları bu isim altında saklanan ayarların yerine geçecektir. Bu işlem geri alınamaz.</string>
+    <string name="seatpos_overwrite_used" translatable="false">Bu otomasyonlar yeni ayarları uygulamaya başlayacaktır.</string>
+    <string name="seatpos_rename_title" translatable="false">Konumu yeniden adlandır</string>
+    <string name="seatpos_rename_failed" translatable="false">Konum yeniden adlandırılamadı</string>
+    <string name="seatpos_alias_car_1" translatable="false">Araç tuşu 1</string>
+    <string name="seatpos_alias_car_2" translatable="false">Araç tuşu 2</string>
+    <string name="seatpos_alias_car_3" translatable="false">Araç tuşu 3</string>
+    <string name="seatpos_clear_alias" translatable="false">Tuş atamasını temizle</string>
+    <string name="seatpos_alias_failed" translatable="false">Tuş ataması güncellenemedi</string>
+    <string name="seatpos_colour_title" translatable="false">Rengi değiştir</string>
+    <string name="seatpos_colour_body" translatable="false">Bu konumda saklanan ortam ışığı rengini ayarlar. Konum uygulanana kadar araçtaki ışık değişmez.</string>
+    <string name="seatpos_colour_failed" translatable="false">Renk değiştirilemedi</string>
+    <string name="seatpos_delete_title" translatable="false">%1$s silinsin mi?</string>
+    <string name="seatpos_delete_used" translatable="false">Bu otomasyonlar çalışmayı durdurur.</string>
+    <string name="seatpos_delete_unused" translatable="false">Bu konumu kullanan otomasyon yok.</string>
+    <string name="seatpos_delete_failed" translatable="false">Konum silinemedi</string>
+    <string name="common_cancel" translatable="false">İptal</string>
+    <string name="common_more" translatable="false">Daha Fazla</string>
 </resources>

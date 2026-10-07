@@ -993,85 +993,85 @@
     <string name="rail_vehicle_legacy" translatable="false">Vehicle (Eski)</string>
 
     <!-- Vehicle Screen Strings -->
-    <string name="vc_title">Vehicle</string>
-    <string name="vc_status_no_data">NO DATA</string>
-    <string name="vc_status_locked">LOCKED</string>
-    <string name="vc_status_unlocked">UNLOCKED</string>
-    <string name="vc_cloud_connected">Cloud connected</string>
-    <string name="vc_cloud_not_connected">BYD account not connected</string>
-    <string name="vc_mode_3d">3D</string>
-    <string name="vc_mode_2d">2D</string>
-    <string name="vc_model_unselected">Select Model</string>
-    <string name="vc_model_select_title">Select Vehicle Model</string>
-    <string name="vc_model_none">No Model Selected (Silhouette)</string>
-    <string name="vc_model_cleared">Vehicle model selection cleared</string>
-    <string name="vc_model_selected_msg">Selected: %1$s</string>
-    <string name="vc_door_open">Door open</string>
-    <string name="vc_doors_open">%d doors open</string>
-    <string name="vc_trunk_is_open">Trunk open</string>
+    <string translatable="false" name="vc_title">Vehicle</string>
+    <string translatable="false" name="vc_status_no_data">NO DATA</string>
+    <string translatable="false" name="vc_status_locked">LOCKED</string>
+    <string translatable="false" name="vc_status_unlocked">UNLOCKED</string>
+    <string translatable="false" name="vc_cloud_connected">Cloud connected</string>
+    <string translatable="false" name="vc_cloud_not_connected">BYD account not connected</string>
+    <string translatable="false" name="vc_mode_3d">3D</string>
+    <string translatable="false" name="vc_mode_2d">2D</string>
+    <string translatable="false" name="vc_model_unselected">Select Model</string>
+    <string translatable="false" name="vc_model_select_title">Select Vehicle Model</string>
+    <string translatable="false" name="vc_model_none">No Model Selected (Silhouette)</string>
+    <string translatable="false" name="vc_model_cleared">Vehicle model selection cleared</string>
+    <string translatable="false" name="vc_model_selected_msg">Selected: %1$s</string>
+    <string translatable="false" name="vc_door_open">Door open</string>
+    <string translatable="false" name="vc_doors_open">%d doors open</string>
+    <string translatable="false" name="vc_trunk_is_open">Trunk open</string>
 
     <!-- TPMS -->
-    <string name="vc_tpms_front_left">Front left</string>
-    <string name="vc_tpms_front_right">Front right</string>
-    <string name="vc_tpms_rear_left">Rear left</string>
-    <string name="vc_tpms_rear_right">Rear right</string>
-    <string name="vc_tpms_unit_psi">PSI</string>
-    <string name="vc_tpms_unit_kpa">kPa</string>
-    <string name="vc_tpms_unit_c">°C</string>
+    <string translatable="false" name="vc_tpms_front_left">Front left</string>
+    <string translatable="false" name="vc_tpms_front_right">Front right</string>
+    <string translatable="false" name="vc_tpms_rear_left">Rear left</string>
+    <string translatable="false" name="vc_tpms_rear_right">Rear right</string>
+    <string translatable="false" name="vc_tpms_unit_psi">PSI</string>
+    <string translatable="false" name="vc_tpms_unit_kpa">kPa</string>
+    <string translatable="false" name="vc_tpms_unit_c">°C</string>
 
     <!-- 10 Tabs -->
-    <string name="vc_tab_security">Security</string>
-    <string name="vc_tab_trunk">Trunk</string>
-    <string name="vc_tab_climate">Climate</string>
-    <string name="vc_tab_seats">Seats</string>
-    <string name="vc_tab_windows">Windows</string>
-    <string name="vc_tab_lights">Lights</string>
-    <string name="vc_tab_adas">ADAS</string>
-    <string name="vc_tab_charging">Charging</string>
-    <string name="vc_tab_sound">Sound</string>
-    <string name="vc_tab_system">System</string>
+    <string translatable="false" name="vc_tab_security">Security</string>
+    <string translatable="false" name="vc_tab_trunk">Trunk</string>
+    <string translatable="false" name="vc_tab_climate">Climate</string>
+    <string translatable="false" name="vc_tab_seats">Seats</string>
+    <string translatable="false" name="vc_tab_windows">Windows</string>
+    <string translatable="false" name="vc_tab_lights">Lights</string>
+    <string translatable="false" name="vc_tab_adas">ADAS</string>
+    <string translatable="false" name="vc_tab_charging">Charging</string>
+    <string translatable="false" name="vc_tab_sound">Sound</string>
+    <string translatable="false" name="vc_tab_system">System</string>
 
     <!-- Action Tiles -->
-    <string name="vc_action_lock">Lock</string>
-    <string name="vc_action_unlock">Unlock</string>
-    <string name="vc_action_flash">Flash</string>
-    <string name="vc_action_find_car">Find car</string>
-    <string name="vc_action_trunk_open">Open</string>
-    <string name="vc_action_trunk_close">Close</string>
-    <string name="vc_action_ac_on">AC On</string>
-    <string name="vc_action_ac_off">AC Off</string>
-    <string name="vc_action_battery_heat">Battery heat</string>
-    <string name="vc_action_target_temp">Cabin Temp</string>
-    <string name="vc_action_driver_seat">Driver Seat</string>
-    <string name="vc_action_passenger_seat">Passenger Seat</string>
-    <string name="vc_action_seat_heat">Heat</string>
-    <string name="vc_action_seat_cool">Vent</string>
-    <string name="vc_action_steering_heat">Steering Wheel Heat</string>
-    <string name="vc_action_vent_all">Vent All</string>
-    <string name="vc_action_close_all">Close All</string>
-    <string name="vc_action_open_all">Open All</string>
-    <string name="vc_action_daytime_lights">Daytime Lights</string>
-    <string name="vc_action_ambient_light">Ambient Light</string>
-    <string name="vc_action_speed_limit">Speed Limit Warning</string>
-    <string name="vc_action_child_presence">Child Presence Detection</string>
-    <string name="vc_action_start_charging">Start Charging</string>
-    <string name="vc_action_charge_cap">Charge Limit</string>
-    <string name="vc_action_ac_current_limit">AC Current Limit</string>
-    <string name="vc_action_avas_sound">AVAS Sound</string>
-    <string name="vc_action_engine_sound">Engine Sound</string>
-    <string name="vc_action_ivi_reboot">Reboot Head Unit</string>
-    <string name="vc_action_ivi_reboot_confirm">Reboot the head unit system now? (Only while parked)</string>
-    <string name="vc_action_reboot">Reboot</string>
-    <string name="vc_action_seat_off">Off</string>
-    <string name="vc_action_seat_level">Level %d</string>
-    <string name="vc_sound_tone_1">Tone 1</string>
-    <string name="vc_sound_tone_2">Tone 2</string>
-    <string name="vc_sound_stop">Stop</string>
-    <string name="vc_color_cyan">Cyan</string>
-    <string name="vc_color_blue">Blue</string>
-    <string name="vc_color_purple">Purple</string>
-    <string name="vc_cmd_sent">Command sent</string>
-    <string name="vc_cmd_failed">Command failed</string>
+    <string translatable="false" name="vc_action_lock">Lock</string>
+    <string translatable="false" name="vc_action_unlock">Unlock</string>
+    <string translatable="false" name="vc_action_flash">Flash</string>
+    <string translatable="false" name="vc_action_find_car">Find car</string>
+    <string translatable="false" name="vc_action_trunk_open">Open</string>
+    <string translatable="false" name="vc_action_trunk_close">Close</string>
+    <string translatable="false" name="vc_action_ac_on">AC On</string>
+    <string translatable="false" name="vc_action_ac_off">AC Off</string>
+    <string translatable="false" name="vc_action_battery_heat">Battery heat</string>
+    <string translatable="false" name="vc_action_target_temp">Cabin Temp</string>
+    <string translatable="false" name="vc_action_driver_seat">Driver Seat</string>
+    <string translatable="false" name="vc_action_passenger_seat">Passenger Seat</string>
+    <string translatable="false" name="vc_action_seat_heat">Heat</string>
+    <string translatable="false" name="vc_action_seat_cool">Vent</string>
+    <string translatable="false" name="vc_action_steering_heat">Steering Wheel Heat</string>
+    <string translatable="false" name="vc_action_vent_all">Vent All</string>
+    <string translatable="false" name="vc_action_close_all">Close All</string>
+    <string translatable="false" name="vc_action_open_all">Open All</string>
+    <string translatable="false" name="vc_action_daytime_lights">Daytime Lights</string>
+    <string translatable="false" name="vc_action_ambient_light">Ambient Light</string>
+    <string translatable="false" name="vc_action_speed_limit">Speed Limit Warning</string>
+    <string translatable="false" name="vc_action_child_presence">Child Presence Detection</string>
+    <string translatable="false" name="vc_action_start_charging">Start Charging</string>
+    <string translatable="false" name="vc_action_charge_cap">Charge Limit</string>
+    <string translatable="false" name="vc_action_ac_current_limit">AC Current Limit</string>
+    <string translatable="false" name="vc_action_avas_sound">AVAS Sound</string>
+    <string translatable="false" name="vc_action_engine_sound">Engine Sound</string>
+    <string translatable="false" name="vc_action_ivi_reboot">Reboot Head Unit</string>
+    <string translatable="false" name="vc_action_ivi_reboot_confirm">Reboot the head unit system now? (Only while parked)</string>
+    <string translatable="false" name="vc_action_reboot">Reboot</string>
+    <string translatable="false" name="vc_action_seat_off">Off</string>
+    <string translatable="false" name="vc_action_seat_level">Level %d</string>
+    <string translatable="false" name="vc_sound_tone_1">Tone 1</string>
+    <string translatable="false" name="vc_sound_tone_2">Tone 2</string>
+    <string translatable="false" name="vc_sound_stop">Stop</string>
+    <string translatable="false" name="vc_color_cyan">Cyan</string>
+    <string translatable="false" name="vc_color_blue">Blue</string>
+    <string translatable="false" name="vc_color_purple">Purple</string>
+    <string translatable="false" name="vc_cmd_sent">Command sent</string>
+    <string translatable="false" name="vc_cmd_failed">Command failed</string>
     <string name="rail_projection">Projection</string>
     <string name="rail_trips">Trips</string>
     <string name="rail_parking">Parking</string>
@@ -1079,43 +1079,43 @@
     <string name="rail_parking_legacy" translatable="false">Parking (Eski)</string>
 
     <!-- Parking Screen Strings (1:1 with parking.html) -->
-    <string name="parking_tab_sessions">Sessions</string>
-    <string name="parking_tab_settings">Settings</string>
-    <string name="parking_filter_7_days">7 Days</string>
-    <string name="parking_filter_30_days">30 Days</string>
-    <string name="parking_filter_90_days">90 Days</string>
-    <string name="parking_filter_all">All</string>
-    <string name="parking_disabled_title">Parking Intelligence is off</string>
-    <string name="parking_disabled_body">When on, every switch-off opens a parking session: where the car is, a four-camera still after you walk away, which vehicles arrived or left next to you while sentry watched, and a \"Back at car\" summary when you return. Nothing runs while it is off.</string>
-    <string name="parking_enable_btn">Turn on Parking Intelligence</string>
-    <string name="parking_no_sessions_title">No parking sessions yet</string>
-    <string name="parking_no_sessions_body">The first one is created the next time the car is switched off.</string>
-    <string name="parking_settings_title">Parking Intelligence</string>
-    <string name="parking_status_off">OFF</string>
-    <string name="parking_status_on">ON</string>
-    <string name="parking_settings_enabled">Enable Parking Intelligence</string>
-    <string name="parking_settings_enabled_desc">Opens a session at every switch-off: location and GPS freshness, four-camera stills when you walk away and when you return, the vehicles that arrived or left next to you while sentry watched, and two notifications (\"Parked\", \"Back at car\"). Off = no threads, no store, no compute.</string>
-    <string name="parking_settings_end_trigger">Session ends</string>
-    <string name="parking_settings_end_trigger_desc">When a parking session closes. \"When I return\": first door open or unlock (or power-on). \"When the car powers on\": door and unlock only refresh the returned stills. \"When I drive away\": waits until the gear leaves P; without a usable gear reading it closes ~2 minutes after power-on.</string>
-    <string name="parking_trigger_return">When I return</string>
-    <string name="parking_trigger_power_on">When the car powers on</string>
-    <string name="parking_trigger_drive_away">When I drive away</string>
-    <string name="parking_settings_snapshots">Arrived / returned stills</string>
-    <string name="parking_settings_snapshots_desc">Four-camera stills ~90 s after switch-off and at the first door open or unlock. Also the image on the notifications.</string>
-    <string name="parking_settings_neighbours">Neighbour timeline</string>
-    <string name="parking_settings_neighbours_desc">Track vehicles that arrive or leave next to you from the sentry baseline and finalized events, and keep the sharpest frames of each. Needs sentry armed.</string>
-    <string name="parking_settings_signage">Read garage signage (v2)</string>
-    <string name="parking_settings_signage_desc">Read level / zone / bay text from the stills and the last minute of the approach clip with the bundled on-device OCR (PP-OCRv3, ~5.5 MB). Runs once right after the arrival stills so the Parked message carries the level; a read deferred by a recording sentry clip is retried later. Language-specific models can be side-loaded to Overdrive/models/.</string>
-    <string name="parking_settings_geocoding">Address lookup</string>
-    <string name="parking_settings_geocoding_desc">Turn the parking GPS fix into a district / street label for the Parked message and the session list. Until you set it here, parking follows your sentry or dashcam place-tagging choice.</string>
-    <string name="parking_settings_online">Online geocoding</string>
-    <string name="parking_settings_online_desc">Allow looking up places online via Nominatim / OSM when no offline matches are found.</string>
-    <string name="parking_settings_retention">Retention</string>
-    <string name="parking_settings_retention_desc">How many days of parking history and neighbour clips to keep before automatic prune.</string>
-    <string name="parking_settings_storage">Max storage cap</string>
-    <string name="parking_settings_storage_desc">Maximum megabytes used by parking stills and clips before older sessions are purged.</string>
-    <string name="parking_unit_days">days</string>
-    <string name="parking_unit_mb">MB</string>
+    <string translatable="false" name="parking_tab_sessions">Sessions</string>
+    <string translatable="false" name="parking_tab_settings">Settings</string>
+    <string translatable="false" name="parking_filter_7_days">7 Days</string>
+    <string translatable="false" name="parking_filter_30_days">30 Days</string>
+    <string translatable="false" name="parking_filter_90_days">90 Days</string>
+    <string translatable="false" name="parking_filter_all">All</string>
+    <string translatable="false" name="parking_disabled_title">Parking Intelligence is off</string>
+    <string translatable="false" name="parking_disabled_body">When on, every switch-off opens a parking session: where the car is, a four-camera still after you walk away, which vehicles arrived or left next to you while sentry watched, and a \"Back at car\" summary when you return. Nothing runs while it is off.</string>
+    <string translatable="false" name="parking_enable_btn">Turn on Parking Intelligence</string>
+    <string translatable="false" name="parking_no_sessions_title">No parking sessions yet</string>
+    <string translatable="false" name="parking_no_sessions_body">The first one is created the next time the car is switched off.</string>
+    <string translatable="false" name="parking_settings_title">Parking Intelligence</string>
+    <string translatable="false" name="parking_status_off">OFF</string>
+    <string translatable="false" name="parking_status_on">ON</string>
+    <string translatable="false" name="parking_settings_enabled">Enable Parking Intelligence</string>
+    <string translatable="false" name="parking_settings_enabled_desc">Opens a session at every switch-off: location and GPS freshness, four-camera stills when you walk away and when you return, the vehicles that arrived or left next to you while sentry watched, and two notifications (\"Parked\", \"Back at car\"). Off = no threads, no store, no compute.</string>
+    <string translatable="false" name="parking_settings_end_trigger">Session ends</string>
+    <string translatable="false" name="parking_settings_end_trigger_desc">When a parking session closes. \"When I return\": first door open or unlock (or power-on). \"When the car powers on\": door and unlock only refresh the returned stills. \"When I drive away\": waits until the gear leaves P; without a usable gear reading it closes ~2 minutes after power-on.</string>
+    <string translatable="false" name="parking_trigger_return">When I return</string>
+    <string translatable="false" name="parking_trigger_power_on">When the car powers on</string>
+    <string translatable="false" name="parking_trigger_drive_away">When I drive away</string>
+    <string translatable="false" name="parking_settings_snapshots">Arrived / returned stills</string>
+    <string translatable="false" name="parking_settings_snapshots_desc">Four-camera stills ~90 s after switch-off and at the first door open or unlock. Also the image on the notifications.</string>
+    <string translatable="false" name="parking_settings_neighbours">Neighbour timeline</string>
+    <string translatable="false" name="parking_settings_neighbours_desc">Track vehicles that arrive or leave next to you from the sentry baseline and finalized events, and keep the sharpest frames of each. Needs sentry armed.</string>
+    <string translatable="false" name="parking_settings_signage">Read garage signage (v2)</string>
+    <string translatable="false" name="parking_settings_signage_desc">Read level / zone / bay text from the stills and the last minute of the approach clip with the bundled on-device OCR (PP-OCRv3, ~5.5 MB). Runs once right after the arrival stills so the Parked message carries the level; a read deferred by a recording sentry clip is retried later. Language-specific models can be side-loaded to Overdrive/models/.</string>
+    <string translatable="false" name="parking_settings_geocoding">Address lookup</string>
+    <string translatable="false" name="parking_settings_geocoding_desc">Turn the parking GPS fix into a district / street label for the Parked message and the session list. Until you set it here, parking follows your sentry or dashcam place-tagging choice.</string>
+    <string translatable="false" name="parking_settings_online">Online geocoding</string>
+    <string translatable="false" name="parking_settings_online_desc">Allow looking up places online via Nominatim / OSM when no offline matches are found.</string>
+    <string translatable="false" name="parking_settings_retention">Retention</string>
+    <string translatable="false" name="parking_settings_retention_desc">How many days of parking history and neighbour clips to keep before automatic prune.</string>
+    <string translatable="false" name="parking_settings_storage">Max storage cap</string>
+    <string translatable="false" name="parking_settings_storage_desc">Maximum megabytes used by parking stills and clips before older sessions are purged.</string>
+    <string translatable="false" name="parking_unit_days">days</string>
+    <string translatable="false" name="parking_unit_mb">MB</string>
     <string name="rail_charging">Charging</string>
     <string name="rail_automations">Automations</string>
     <string name="rail_key_mapping">Key Mapping</string>
@@ -2107,4 +2107,71 @@
     <string name="assistant_clear_key" translatable="false">Disable and clear API key</string>
     <string name="assistant_send_message" translatable="false">Send</string>
     <string name="assistant_voice_action" translatable="false">Voice</string>
+
+    <!-- Seat Positions Native -->
+    <string name="rail_seat_positions_native" translatable="false">Seat Positions (Native)</string>
+    <string name="rail_seat_positions_legacy" translatable="false">Seat Positions (Eski)</string>
+    <string name="seatpos_current" translatable="false">Current position</string>
+    <string name="seatpos_current_unavailable" translatable="false">Could not read the seat</string>
+    <string name="seatpos_matches" translatable="false">Matches %1$s</string>
+    <string name="seatpos_not_saved" translatable="false">Current position (unsaved)</string>
+    <string name="seatpos_save_as_new" translatable="false">Save as new</string>
+    <string name="seatpos_my_positions" translatable="false">My positions</string>
+    <string name="seatpos_empty_title" translatable="false">No saved positions yet</string>
+    <string name="seatpos_empty" translatable="false">Adjust the seat and mirrors in the car, then press Save as new.</string>
+    <string name="seatpos_show_details" translatable="false">Show details</string>
+    <string name="seatpos_hide_details" translatable="false">Hide details</string>
+    <string name="seatpos_group_seat" translatable="false">Seat</string>
+    <string name="seatpos_group_mirrors" translatable="false">Mirrors</string>
+    <string name="seatpos_gate_acc_off" translatable="false">The car is off, so the seat motors have no power. Apply and save will do nothing until you turn it on.</string>
+    <string name="seatpos_gate_moving" translatable="false">Not in Park — apply is off until the gear is in P. Saving and renaming still work.</string>
+    <string name="seatpos_gate_ready" translatable="false">Parked and powered — positions can be applied.</string>
+    <string name="seatpos_unconfirmed_note" translatable="false">These addresses are confirmed on a BYD Seal. Reading and saving are safe; apply will ask first.</string>
+    <string name="seatpos_unconfirmed_title" translatable="false">Not confirmed for this car</string>
+    <string name="seatpos_unconfirmed_body" translatable="false">Seat and mirror positions are read using addresses confirmed on a BYD Seal, and your car may use different ones. Every value being sent was read back from this same car when the position was captured, and the car must be parked, so the likely worst case is that something other than the seat moves slightly. Worth checking the numbers first: capture a position, move the seat, capture another, and see whether the values follow the seat.</string>
+    <string name="seatpos_unconfirmed_confirm" translatable="false">Apply anyway</string>
+    <string name="seatpos_applied" translatable="false">Applied</string>
+    <string name="seatpos_apply" translatable="false">Apply</string>
+    <string name="seatpos_applied_toast" translatable="false">Applied %1$s</string>
+    <string name="seatpos_apply_failed" translatable="false">Could not apply the position</string>
+    <string name="seatpos_from_car_slot" translatable="false">From car · slot %1$d</string>
+    <string name="seatpos_car_slot_label" translatable="false">Button %1$d</string>
+    <string name="seatpos_used_by_one" translatable="false">Used by 1 automation</string>
+    <string name="seatpos_save_here" translatable="false">Save current settings here</string>
+    <string name="seatpos_change_colour" translatable="false">Change the colour</string>
+    <string name="seatpos_rename" translatable="false">Rename</string>
+    <string name="seatpos_set_alias" translatable="false">Assign to car memory button</string>
+    <string name="seatpos_delete" translatable="false">Delete</string>
+    <string name="seatpos_save_new_title" translatable="false">Save current position</string>
+    <string name="seatpos_save_new_body" translatable="false">Stores the seat and mirror geometry the car is in right now.</string>
+    <string name="seatpos_name_hint" translatable="false">Position name</string>
+    <string name="seatpos_parts_all" translatable="false">Everything</string>
+    <string name="seatpos_parts_all_hint" translatable="false">Seat, mirrors and the interior lighting</string>
+    <string name="seatpos_parts_geometry" translatable="false">Seat &amp; mirrors</string>
+    <string name="seatpos_parts_geometry_hint" translatable="false">The position the car is in right now</string>
+    <string name="seatpos_parts_ambient" translatable="false">Ambient light</string>
+    <string name="seatpos_parts_ambient_hint" translatable="false">Colour, brightness and the light modes</string>
+    <string name="seatpos_save" translatable="false">Save</string>
+    <string name="seatpos_saved_toast" translatable="false">Saved %1$s</string>
+    <string name="seatpos_save_failed" translatable="false">Could not save the position</string>
+    <string name="seatpos_default_name" translatable="false">My Position</string>
+    <string name="seatpos_overwrite_title" translatable="false">Overwrite %1$s?</string>
+    <string name="seatpos_overwrite_body" translatable="false">The current seat and mirror geometry replaces what is stored under this name. This cannot be undone.</string>
+    <string name="seatpos_overwrite_used" translatable="false">These automations will start applying the new geometry.</string>
+    <string name="seatpos_rename_title" translatable="false">Rename position</string>
+    <string name="seatpos_rename_failed" translatable="false">Could not rename the position</string>
+    <string name="seatpos_alias_car_1" translatable="false">Car button 1</string>
+    <string name="seatpos_alias_car_2" translatable="false">Car button 2</string>
+    <string name="seatpos_alias_car_3" translatable="false">Car button 3</string>
+    <string name="seatpos_clear_alias" translatable="false">Clear button assignment</string>
+    <string name="seatpos_alias_failed" translatable="false">Could not update button assignment</string>
+    <string name="seatpos_colour_title" translatable="false">Change the colour</string>
+    <string name="seatpos_colour_body" translatable="false">Sets the colour stored on this position. The car is not changed until the position is applied.</string>
+    <string name="seatpos_colour_failed" translatable="false">Could not change the colour</string>
+    <string name="seatpos_delete_title" translatable="false">Delete %1$s?</string>
+    <string name="seatpos_delete_used" translatable="false">These automations stop working.</string>
+    <string name="seatpos_delete_unused" translatable="false">Nothing references this position.</string>
+    <string name="seatpos_delete_failed" translatable="false">Could not delete the position</string>
+    <string name="common_cancel" translatable="false">Cancel</string>
+    <string name="common_more" translatable="false">More</string>
 </resources>

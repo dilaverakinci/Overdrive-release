@@ -177,11 +177,18 @@
             android:defaultValue="/automations" />
     </fragment>
 
-    <!-- Seat Positions (web canonical) -->
+    <!-- Seat Positions (native) -->
     <fragment
         android:id="@+id/seatPositionsFragment"
+        android:name="com.overdrive.app.ui.fragment.SeatPositionsNativeFragment"
+        android:label="@string/rail_seat_positions_native"
+        tools:layout="@layout/fragment_seat_positions_native" />
+
+    <!-- Seat Positions (legacy web) -->
+    <fragment
+        android:id="@+id/seatPositionsLegacyFragment"
         android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_seat_positions"
+        android:label="@string/rail_seat_positions_legacy"
         tools:layout="@layout/fragment_webview">
         <argument
             android:name="page_path"

@@ -103,6 +103,7 @@ open class MainActivity : AppCompatActivity() {
     private val RAIL_KEY_RECORDINGS_LEGACY = "recordings_legacy"
     private val RAIL_KEY_PARKING_LEGACY = "parking_legacy"
     private val RAIL_KEY_VEHICLE_LEGACY = "vehicle_legacy"
+    private val RAIL_KEY_SEAT_POSITIONS_LEGACY = "seat_positions_legacy"
     private val RAIL_KEY_SETTINGS = "settings"
     private val RAIL_KEY_ABOUT = "about"
     private val KEY_RAIL_EXPANDED = "navigation_rail_expanded"
@@ -160,6 +161,7 @@ open class MainActivity : AppCompatActivity() {
                 NavigationRailCatalog.VEHICLE,
                 RAIL_KEY_VEHICLE_LEGACY,
                 NavigationRailCatalog.SEAT_POSITIONS,
+                RAIL_KEY_SEAT_POSITIONS_LEGACY,
                 NavigationRailCatalog.PROJECTION,
                 NavigationRailCatalog.CHARGING,
             )
@@ -1754,7 +1756,10 @@ open class MainActivity : AppCompatActivity() {
                 R.drawable.ic_vehicle_control, R.string.rail_vehicle_legacy),
             RailItem(NavigationRailCatalog.SEAT_POSITIONS, R.id.railDestSeatPositions,
                 R.id.seatPositionsFragment,
-                R.drawable.ic_seat_positions, R.string.rail_seat_positions),
+                R.drawable.ic_seat_positions, R.string.rail_seat_positions_native),
+            RailItem(RAIL_KEY_SEAT_POSITIONS_LEGACY, R.id.railDestSeatPositionsLegacy,
+                R.id.seatPositionsLegacyFragment,
+                R.drawable.ic_seat_positions, R.string.rail_seat_positions_legacy),
             RailItem(NavigationRailCatalog.PROJECTION, R.id.railDestProjection,
                 R.id.projectionFragment,
                 R.drawable.ic_projection, R.string.rail_projection),
