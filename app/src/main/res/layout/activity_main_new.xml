@@ -99,6 +99,11 @@
                         layout="@layout/item_rail_destination"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
+                    <include
+                        android:id="@+id/railDestAssistantLegacy"
+                        layout="@layout/item_rail_destination"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
                     <!-- Category headers group the rows from here down. Each one
                          hides when every row under it is unpinned — see
                          MainActivity.applyNavigationRailVisibility. -->

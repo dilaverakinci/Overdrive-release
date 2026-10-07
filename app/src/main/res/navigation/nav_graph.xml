@@ -19,8 +19,14 @@
 
     <fragment
         android:id="@+id/genAiFragment"
+        android:name="com.overdrive.app.ui.fragment.AssistantNativeFragment"
+        android:label="@string/rail_assistant_native"
+        tools:layout="@layout/fragment_assistant" />
+
+    <fragment
+        android:id="@+id/genAiLegacyFragment"
         android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_assistant"
+        android:label="@string/rail_assistant_legacy"
         tools:layout="@layout/fragment_webview">
         <argument
             android:name="page_path"

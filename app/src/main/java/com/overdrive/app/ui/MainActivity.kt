@@ -98,6 +98,7 @@ open class MainActivity : AppCompatActivity() {
     // which is the set the user can hide.
     private val RAIL_KEY_DASHBOARD = "dashboard"
     private val RAIL_KEY_DASHBOARD_LEGACY = "dashboard_legacy"
+    private val RAIL_KEY_ASSISTANT_LEGACY = "assistant_legacy"
     private val RAIL_KEY_SETTINGS = "settings"
     private val RAIL_KEY_ABOUT = "about"
     private val KEY_RAIL_EXPANDED = "navigation_rail_expanded"
@@ -1658,6 +1659,7 @@ open class MainActivity : AppCompatActivity() {
                 R.id.dashboardFragment,
                 R.id.dashboardLegacyFragment,
                 R.id.genAiFragment,
+                R.id.genAiLegacyFragment,
                 R.id.liveViewFragment,
                 R.id.recordingsFragment,
                 R.id.parkingFragment,
@@ -1712,7 +1714,9 @@ open class MainActivity : AppCompatActivity() {
             RailItem(RAIL_KEY_DASHBOARD_LEGACY, R.id.railDestDashboardLegacy, R.id.dashboardLegacyFragment,
                 R.drawable.ic_dashboard, R.string.rail_dashboard_legacy),
             RailItem(NavigationRailCatalog.ASSISTANT, R.id.railDestAssistant,
-                R.id.genAiFragment, R.drawable.ic_smart_toy, R.string.rail_assistant),
+                R.id.genAiFragment, R.drawable.ic_smart_toy, R.string.rail_assistant_native),
+            RailItem(RAIL_KEY_ASSISTANT_LEGACY, R.id.railDestAssistantLegacy,
+                R.id.genAiLegacyFragment, R.drawable.ic_smart_toy, R.string.rail_assistant_legacy),
             RailItem(NavigationRailCatalog.LIVE, R.id.railDestLive, R.id.liveViewFragment,
                 R.drawable.ic_live, R.string.rail_live),
             RailItem(NavigationRailCatalog.RECORDINGS, R.id.railDestRecordings,
