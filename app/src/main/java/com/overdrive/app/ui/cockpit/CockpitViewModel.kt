@@ -20,8 +20,13 @@ import kotlinx.coroutines.launch
  */
 class CockpitViewModel(
     application: Application,
-    private val repository: CockpitVehicleRepository = CockpitVehicleRepository(application.applicationContext),
+    private val repository: CockpitVehicleRepository,
 ) : AndroidViewModel(application) {
+
+    constructor(application: Application) : this(
+        application,
+        CockpitVehicleRepository(application.applicationContext),
+    )
 
     private val _uiState = MutableStateFlow(DashboardUiState())
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
