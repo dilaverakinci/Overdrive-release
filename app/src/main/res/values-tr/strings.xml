@@ -632,6 +632,11 @@
     <string name="vc_cloud_not_connected">BYD hesabı bağlı değil</string>
     <string name="vc_mode_3d">3D</string>
     <string name="vc_mode_2d">2D</string>
+    <string name="vc_model_unselected">Model Seçin</string>
+    <string name="vc_model_select_title">Araç Modeli Seçin</string>
+    <string name="vc_model_none">Model Seçilmedi (Silüet)</string>
+    <string name="vc_model_cleared">Araç modeli seçimi temizlendi</string>
+    <string name="vc_model_selected_msg">Seçilen: %1$s</string>
     <string name="vc_door_open">Kapı açık</string>
     <string name="vc_doors_open">%d kapı açık</string>
     <string name="vc_trunk_is_open">Bagaj açık</string>

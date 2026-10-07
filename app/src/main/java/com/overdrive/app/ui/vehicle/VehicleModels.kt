@@ -43,7 +43,7 @@ data class ChargingData(
 
 data class VehicleState(
     val isDataAvailable: Boolean = false,
-    val modelId: String = "seal",
+    val modelId: String? = null,
     val overallLockState: Int = -1, // -1=unknown, 1=locked, 2=unlocked
     val cloudConnected: Boolean = false,
     val doorLockStates: Map<String, Int> = emptyMap(),

@@ -53,7 +53,44 @@
             android:layout_height="1dp"
             android:layout_weight="1" />
 
-        <!-- Center 2D / 3D Toggle Pill -->
+        <!-- Center Controls: Model Picker & 2D / 3D Toggle Pill -->
+        <LinearLayout
+            android:id="@+id/pillModelPicker"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/bg_parking_filter_normal"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="14dp">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginEnd="6dp"
+                android:contentDescription="Model"
+                android:src="@drawable/ic_vehicle_control"
+                app:tint="?attr/colorOnSurface" />
+
+            <TextView
+                android:id="@+id/tvModelName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/vc_model_unselected"
+                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                android:textColor="?attr/colorOnSurface"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:layout_marginStart="6dp"
+                android:contentDescription="Dropdown"
+                android:src="@drawable/ic_chevron_down"
+                app:tint="?attr/colorOutline" />
+        </LinearLayout>
+
         <LinearLayout
             android:id="@+id/pillModeToggle"
             android:layout_width="wrap_content"
@@ -132,9 +169,11 @@
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:adjustViewBounds="true"
+            android:clickable="true"
+            android:focusable="true"
             android:contentDescription="Vehicle Art"
             android:scaleType="fitCenter"
-            android:src="@drawable/vehicle_seal" />
+            android:src="@drawable/vehicle_fallback" />
 
         <!-- Overlay Alert Badge for Open Doors / Trunk -->
         <TextView

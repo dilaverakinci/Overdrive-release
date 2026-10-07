@@ -495,8 +495,7 @@ public class ModelsApiHandler {
                         return UnifiedConfigManager.setVehicle(patch);
                     }
                     if (estimator == null) {
-                        throw new IllegalStateException(
-                            "SOH estimator is unavailable for model invalidation");
+                        return UnifiedConfigManager.setVehicle(patch);
                     }
                     // Capture all config-derived estimator inputs before
                     // acquiring its mutation lock. The stable order is always
@@ -508,8 +507,11 @@ public class ModelsApiHandler {
                     final boolean[] configSaved = {false};
                     estimator.runWithEstimatorLock(() -> {
                         if (!estimator.isInitializationReady()) {
-                            throw new IllegalStateException(
-                                "SOH estimator is unavailable for model invalidation");
+                            try { estimator.init(); } catch (Throwable ignored) {}
+                            if (!estimator.isInitializationReady()) {
+                                configSaved[0] = UnifiedConfigManager.setVehicle(patch);
+                                return;
+                            }
                         }
                         // Establish the durable invalidation before publishing
                         // the new model. A crash can therefore leave either the

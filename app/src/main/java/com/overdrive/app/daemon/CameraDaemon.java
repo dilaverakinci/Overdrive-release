@@ -1094,12 +1094,13 @@ public class CameraDaemon {
         }
 
         // Initialize surveillance module (will use loaded settings)
-        initSurveillance();
-
-        // Apply persisted settings to GPU pipeline (for runtime changes)
-        // Note: Codec/bitrate are already applied during init, but this ensures
-        // the config object is in sync and handles any settings that need runtime application
-        applyPersistedSettings();
+        try {
+            initSurveillance();
+            // Apply persisted settings to GPU pipeline (for runtime changes)
+            applyPersistedSettings();
+        } catch (Throwable t) {
+            log("WARN: Surveillance init failed: " + t.getMessage());
+        }
 
         // The pending-ACC drain used to run HERE, as a ~100-line synchronous
         // block on the startup thread. Field evidence (SD-outage review): the

@@ -1,6 +1,7 @@
 package com.overdrive.app.ui.vehicle
 
 import android.util.Log
+import com.overdrive.app.util.DaemonHttpClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -12,32 +13,25 @@ open class VehicleRepository {
 
     companion object {
         private const val TAG = "VehicleRepository"
-        private const val BASE_URL = "http://127.0.0.1:8080/api/vehicle"
-        private const val MODELS_URL = "http://127.0.0.1:8080/api/models/selected"
     }
 
     open suspend fun getVehicleState(): Result<VehicleState> = withContext(Dispatchers.IO) {
         try {
             // 1. Fetch /api/vehicle/state
-            val stateUrl = URL("$BASE_URL/state")
-            val stateConn = stateUrl.openConnection() as HttpURLConnection
-            stateConn.connectTimeout = 2500
-            stateConn.readTimeout = 2500
-
             var stateJson: JSONObject? = null
-            if (stateConn.responseCode == 200) {
-                val body = stateConn.inputStream.bufferedReader().use { it.readText() }
-                stateJson = JSONObject(body)
-            }
-            stateConn.disconnect()
+            try {
+                val stateConn = DaemonHttpClient.open("/api/vehicle/state", "GET", 2500, 2500)
+                if (stateConn.responseCode == 200) {
+                    val body = stateConn.inputStream.bufferedReader().use { it.readText() }
+                    stateJson = JSONObject(body)
+                }
+                stateConn.disconnect()
+            } catch (_: Exception) {}
 
             // 2. Fetch /api/vehicle/cloud-status
             var cloudConnected = false
             try {
-                val cloudUrl = URL("$BASE_URL/cloud-status")
-                val cloudConn = cloudUrl.openConnection() as HttpURLConnection
-                cloudConn.connectTimeout = 2000
-                cloudConn.readTimeout = 2000
+                val cloudConn = DaemonHttpClient.open("/api/vehicle/cloud-status", "GET", 2000, 2000)
                 if (cloudConn.responseCode == 200) {
                     val body = cloudConn.inputStream.bufferedReader().use { it.readText() }
                     val cloudJson = JSONObject(body)
@@ -46,17 +40,24 @@ open class VehicleRepository {
                 cloudConn.disconnect()
             } catch (_: Exception) {}
 
-            // 3. Fetch modelId
-            var modelId = "seal"
+            // 3. Fetch modelId (only set when user/source has actually selected a vehicle model)
+            var modelId: String? = null
             try {
-                val mUrl = URL(MODELS_URL)
-                val mConn = mUrl.openConnection() as HttpURLConnection
-                mConn.connectTimeout = 2000
-                mConn.readTimeout = 2000
+                val mConn = DaemonHttpClient.open("/api/models/selected", "GET", 2000, 2000)
                 if (mConn.responseCode == 200) {
                     val body = mConn.inputStream.bufferedReader().use { it.readText() }
                     val mJson = JSONObject(body)
-                    modelId = mJson.optString("modelId", "seal")
+                    val m = when {
+                        mJson.has("selectedModelId") && !mJson.isNull("selectedModelId") ->
+                            mJson.optString("selectedModelId", "")
+                        mJson.has("modelSource") && mJson.optString("modelSource", "unset") == "unset" ->
+                            ""
+                        else ->
+                            mJson.optString("modelId", "")
+                    }
+                    if (m.isNotEmpty()) {
+                        modelId = m
+                    }
                 }
                 mConn.disconnect()
             } catch (_: Exception) {}
@@ -216,13 +217,72 @@ open class VehicleRepository {
         }
     }
 
+    open suspend fun selectModel(modelId: String?): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val conn = DaemonHttpClient.open("/api/models/selected", "POST", 3000, 5000)
+            conn.doOutput = true
+            conn.setRequestProperty("Content-Type", "application/json")
+            val payload = if (modelId.isNullOrEmpty()) {
+                JSONObject().put("clearModelSelection", true)
+            } else {
+                JSONObject().put("modelId", modelId)
+            }
+            conn.outputStream.use { it.write(payload.toString().toByteArray()) }
+            val code = conn.responseCode
+            conn.disconnect()
+            code in 200..299
+        } catch (e: Exception) {
+            Log.e(TAG, "Error selecting model: $modelId", e)
+            false
+        }
+    }
+
+    open suspend fun getAvailableModels(): List<Pair<String, String>> = withContext(Dispatchers.IO) {
+        try {
+            val conn = DaemonHttpClient.open("/api/models/manifest", "GET", 2000, 3000)
+            if (conn.responseCode == 200) {
+                val body = conn.inputStream.bufferedReader().use { it.readText() }
+                val json = JSONObject(body)
+                val arr = json.optJSONArray("models")
+                if (arr != null && arr.length() > 0) {
+                    val list = mutableListOf<Pair<String, String>>()
+                    for (i in 0 until arr.length()) {
+                        val m = arr.getJSONObject(i)
+                        val id = m.optString("id", "")
+                        val name = m.optString("name", id)
+                        if (id.isNotEmpty()) {
+                            list.add(id to name)
+                        }
+                    }
+                    return@withContext list
+                }
+            }
+            conn.disconnect()
+        } catch (_: Exception) {}
+        listOf(
+            "seal" to "BYD Seal",
+            "sealion7" to "BYD Sealion 7",
+            "shark" to "BYD Shark",
+            "seal-u" to "BYD Seal U",
+            "seal-u-dmi" to "BYD Seal U DM-i",
+            "dolphin" to "BYD Dolphin",
+            "atto3" to "BYD Atto 3",
+            "atto3-evo" to "BYD Atto 3 Evo",
+            "atto2" to "BYD Atto 2",
+            "han" to "BYD Han",
+            "tang" to "BYD Tang",
+            "m6" to "BYD M6",
+            "seagull" to "BYD Seagull",
+            "destroyer" to "BYD Destroyer 05"
+        )
+    }
+
     open suspend fun postCommand(path: String, payload: JSONObject? = null): Result<Boolean> = withContext(Dispatchers.IO) {
         try {
-            val url = URL(if (path.startsWith("http")) path else "http://127.0.0.1:8080$path")
-            val conn = url.openConnection() as HttpURLConnection
-            conn.requestMethod = "POST"
-            conn.connectTimeout = 4000
-            conn.readTimeout = 4000
+            val endpoint = if (path.startsWith("http")) {
+                URL(path).path
+            } else path
+            val conn = DaemonHttpClient.open(endpoint, "POST", 4000, 4000)
             conn.doOutput = true
 
             if (payload != null) {

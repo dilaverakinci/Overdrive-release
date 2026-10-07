@@ -44,6 +44,9 @@ class VehicleNativeFragment : Fragment() {
     private lateinit var dotLockStatus: View
     private lateinit var tvLockStatus: TextView
 
+    private lateinit var pillModelPicker: LinearLayout
+    private lateinit var tvModelName: TextView
+
     private lateinit var pillModeToggle: LinearLayout
     private lateinit var tvModeLabel: TextView
     private var is3DMode = false
@@ -219,6 +222,9 @@ class VehicleNativeFragment : Fragment() {
         dotLockStatus = root.findViewById(R.id.dotLockStatus)
         tvLockStatus = root.findViewById(R.id.tvLockStatus)
 
+        pillModelPicker = root.findViewById(R.id.pillModelPicker)
+        tvModelName = root.findViewById(R.id.tvModelName)
+
         pillModeToggle = root.findViewById(R.id.pillModeToggle)
         tvModeLabel = root.findViewById(R.id.tvModeLabel)
 
@@ -364,7 +370,9 @@ class VehicleNativeFragment : Fragment() {
     }
 
     private fun setupListeners() {
-        // Mode toggle
+        // Mode toggle & model picker
+        pillModelPicker.setOnClickListener { showModelSelectionDialog() }
+        ivVehicleArt.setOnClickListener { showModelSelectionDialog() }
         pillModeToggle.setOnClickListener {
             is3DMode = !is3DMode
             tvModeLabel.text = if (is3DMode) getString(R.string.vc_mode_3d) else getString(R.string.vc_mode_2d)
@@ -516,7 +524,28 @@ class VehicleNativeFragment : Fragment() {
             tvCloudStatus.text = getString(R.string.vc_cloud_not_connected)
         }
 
-        // 3. Vehicle Hero Art
+        // 2b. Selected Model Name
+        val modelDisplayName = when (state.modelId?.lowercase(Locale.US)?.filter(Char::isLetterOrDigit)) {
+            null, "" -> getString(R.string.vc_model_unselected)
+            "seal" -> "BYD Seal"
+            "sealion7" -> "BYD Sealion 7"
+            "shark" -> "BYD Shark"
+            "sealu", "seal-u" -> "BYD Seal U"
+            "sealudmi", "seal-u-dmi" -> "BYD Seal U DM-i"
+            "dolphin" -> "BYD Dolphin"
+            "atto3", "atto-3" -> "BYD Atto 3"
+            "atto3evo", "atto3-evo" -> "BYD Atto 3 Evo"
+            "atto2", "atto-2" -> "BYD Atto 2"
+            "han" -> "BYD Han"
+            "tang" -> "BYD Tang"
+            "m6" -> "BYD M6"
+            "seagull" -> "BYD Seagull"
+            "destroyer", "destroyer05" -> "BYD Destroyer 05"
+            else -> state.modelId.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.US) else it.toString() }
+        }
+        tvModelName.text = modelDisplayName
+
+        // 3. Vehicle Hero Art (shows vehicle_fallback silhouette when unset/null)
         ivVehicleArt.setImageResource(VehicleArt.drawableFor(state.modelId))
 
         // 4. Open Doors / Trunk Warning Badge
@@ -643,5 +672,44 @@ class VehicleNativeFragment : Fragment() {
         if (!isAdded) return
         val msg = if (success) getString(R.string.vc_cmd_sent) else getString(R.string.vc_cmd_failed)
         Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun showModelSelectionDialog() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val models = viewModel.getAvailableModels()
+            val options = mutableListOf<Pair<String?, String>>()
+            options.add(null to getString(R.string.vc_model_none))
+            for (m in models) {
+                options.add(m.first to m.second)
+            }
+
+            val titles = options.map { it.second }.toTypedArray()
+            val currentModelId = viewModel.state.value.modelId
+            var selectedIndex = options.indexOfFirst {
+                if (currentModelId.isNullOrEmpty()) it.first == null
+                else it.first?.equals(currentModelId, ignoreCase = true) == true
+            }
+            if (selectedIndex < 0) selectedIndex = 0
+
+            MaterialAlertDialogBuilder(requireContext(), R.style.Theme_Overdrive_M3_Dialog)
+                .setTitle(R.string.vc_model_select_title)
+                .setSingleChoiceItems(titles, selectedIndex) { dialog, which ->
+                    val chosen = options[which].first
+                    viewModel.selectModel(chosen) { success ->
+                        if (isAdded) {
+                            val msg = if (success) {
+                                if (chosen == null) getString(R.string.vc_model_cleared)
+                                else getString(R.string.vc_model_selected_msg, options[which].second)
+                            } else {
+                                getString(R.string.vc_cmd_failed)
+                            }
+                            Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    dialog.dismiss()
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
+        }
     }
 }

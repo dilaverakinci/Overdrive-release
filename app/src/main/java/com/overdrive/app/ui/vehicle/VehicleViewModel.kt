@@ -50,6 +50,23 @@ class VehicleViewModel(
         }
     }
 
+    fun selectModel(modelId: String?, onComplete: ((Boolean) -> Unit)? = null) {
+        viewModelScope.launch {
+            _isCommandPending.value = true
+            val success = repository.selectModel(modelId)
+            _isCommandPending.value = false
+            if (success) {
+                _state.value = _state.value.copy(modelId = modelId)
+                refresh()
+            }
+            onComplete?.invoke(success)
+        }
+    }
+
+    suspend fun getAvailableModels(): List<Pair<String, String>> {
+        return repository.getAvailableModels()
+    }
+
     fun toggleTab(tab: VehicleCategoryTab) {
         if (_selectedTab.value == tab) {
             _selectedTab.value = null // collapse
