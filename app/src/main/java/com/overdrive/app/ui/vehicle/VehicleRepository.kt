@@ -3,6 +3,8 @@ package com.overdrive.app.ui.vehicle
 import android.util.Log
 import com.overdrive.app.util.DaemonHttpClient
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.OutputStreamWriter
@@ -15,55 +17,68 @@ open class VehicleRepository {
         private const val TAG = "VehicleRepository"
     }
 
-    open suspend fun getVehicleState(): Result<VehicleState> = withContext(Dispatchers.IO) {
+    open suspend fun getSelectedModelId(): String? = withContext(Dispatchers.IO) {
         try {
-            // 1. Fetch /api/vehicle/state
-            var stateJson: JSONObject? = null
-            try {
-                val stateConn = DaemonHttpClient.open("/api/vehicle/state", "GET", 2500, 2500)
-                if (stateConn.responseCode == 200) {
-                    val body = stateConn.inputStream.bufferedReader().use { it.readText() }
-                    stateJson = JSONObject(body)
+            val mConn = DaemonHttpClient.open("/api/models/selected", "GET", 2000, 2000)
+            if (mConn.responseCode == 200) {
+                val body = mConn.inputStream.bufferedReader().use { it.readText() }
+                val mJson = JSONObject(body)
+                val m = when {
+                    mJson.has("selectedModelId") && !mJson.isNull("selectedModelId") ->
+                        mJson.optString("selectedModelId", "")
+                    mJson.has("modelSource") && mJson.optString("modelSource", "unset") == "unset" ->
+                        ""
+                    else ->
+                        mJson.optString("modelId", "")
                 }
-                stateConn.disconnect()
-            } catch (_: Exception) {}
+                if (m.isNotEmpty() && !m.equals("null", ignoreCase = true)) {
+                    return@withContext m
+                }
+            }
+            mConn.disconnect()
+        } catch (_: Exception) {}
+        null
+    }
 
-            // 2. Fetch /api/vehicle/cloud-status
-            var cloudConnected = false
-            try {
-                val cloudConn = DaemonHttpClient.open("/api/vehicle/cloud-status", "GET", 2000, 2000)
-                if (cloudConn.responseCode == 200) {
-                    val body = cloudConn.inputStream.bufferedReader().use { it.readText() }
-                    val cloudJson = JSONObject(body)
-                    cloudConnected = cloudJson.optBoolean("verified", false) && cloudJson.optBoolean("enabled", false)
-                }
-                cloudConn.disconnect()
-            } catch (_: Exception) {}
+    open suspend fun getVehicleState(): Result<VehicleState> = getVehicleState(getSelectedModelId())
 
-            // 3. Fetch modelId (only set when user/source has actually selected a vehicle model)
-            var modelId: String? = null
-            try {
-                val mConn = DaemonHttpClient.open("/api/models/selected", "GET", 2000, 2000)
-                if (mConn.responseCode == 200) {
-                    val body = mConn.inputStream.bufferedReader().use { it.readText() }
-                    val mJson = JSONObject(body)
-                    val m = when {
-                        mJson.has("selectedModelId") && !mJson.isNull("selectedModelId") ->
-                            mJson.optString("selectedModelId", "")
-                        mJson.has("modelSource") && mJson.optString("modelSource", "unset") == "unset" ->
-                            ""
-                        else ->
-                            mJson.optString("modelId", "")
-                    }
-                    if (m.isNotEmpty()) {
-                        modelId = m
-                    }
+    open suspend fun getVehicleState(modelId: String?): Result<VehicleState> = coroutineScope {
+        try {
+            // Fetch /api/vehicle/state and /api/vehicle/cloud-status concurrently
+            val stateDeferred = async(Dispatchers.IO) {
+                try {
+                    val stateConn = DaemonHttpClient.open("/api/vehicle/state", "GET", 2500, 2500)
+                    val body = if (stateConn.responseCode == 200) {
+                        stateConn.inputStream.bufferedReader().use { it.readText() }
+                    } else null
+                    stateConn.disconnect()
+                    if (body != null) JSONObject(body) else null
+                } catch (_: Exception) {
+                    null
                 }
-                mConn.disconnect()
-            } catch (_: Exception) {}
+            }
+
+            val cloudDeferred = async(Dispatchers.IO) {
+                try {
+                    val cloudConn = DaemonHttpClient.open("/api/vehicle/cloud-status", "GET", 2000, 2000)
+                    val body = if (cloudConn.responseCode == 200) {
+                        cloudConn.inputStream.bufferedReader().use { it.readText() }
+                    } else null
+                    cloudConn.disconnect()
+                    if (body != null) {
+                        val cloudJson = JSONObject(body)
+                        cloudJson.optBoolean("verified", false) && cloudJson.optBoolean("enabled", false)
+                    } else false
+                } catch (_: Exception) {
+                    false
+                }
+            }
+
+            val stateJson = stateDeferred.await()
+            val cloudConnected = cloudDeferred.await()
 
             if (stateJson == null || !stateJson.optBoolean("success", false)) {
-                return@withContext Result.success(
+                return@coroutineScope Result.success(
                     VehicleState(
                         isDataAvailable = false,
                         modelId = modelId,

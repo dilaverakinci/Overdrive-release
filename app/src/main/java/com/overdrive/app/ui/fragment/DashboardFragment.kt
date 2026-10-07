@@ -1528,6 +1528,7 @@ class DashboardFragment : Fragment() {
         val modelEntries = mutableListOf<ModelEntry>()
         var selectedModelId: String? = null
         var modelSelectionChanged = false
+        var initialModelId: String? = null
         modelDropdown.setOnItemClickListener { _, _, position, _ ->
             if (position in modelEntries.indices) {
                 val entry = modelEntries[position]
@@ -1550,7 +1551,6 @@ class DashboardFragment : Fragment() {
         executor.execute {
             var initialKwh = 0.0
             val modelIds = mutableListOf<ModelEntry>()
-            var initialModelId: String? = null
 
             // Full status fields for the summary section.
             var nominalKwh = 0.0
@@ -1791,9 +1791,10 @@ class DashboardFragment : Fragment() {
                 }
                 completionDeferred = true
                 setSaving(true)
+                val modelToSave = if (modelSelectionChanged) selectedModelId else initialModelId
                 postNominalAndModel(
                     kwh,
-                    selectedModelId.takeIf { modelSelectionChanged },
+                    modelToSave,
                 ) { error ->
                     if (error == null) {
                         finishOnce()
@@ -1925,24 +1926,28 @@ class DashboardFragment : Fragment() {
     }
 
     private fun modelDisplayName(modelId: String?): String {
-        return when (modelId?.lowercase()) {
-            null -> "—"
+        val normalized = modelId?.lowercase(java.util.Locale.US)?.filter(Char::isLetterOrDigit)
+        if (normalized.isNullOrEmpty() || normalized == "null") return "—"
+        return when (normalized) {
             "seal" -> "BYD Seal"
-            "atto3", "atto-3" -> "BYD Atto 3"
-            "atto3evo", "atto3-evo", "atto-3-evo" -> "BYD Atto 3 Evo"
-            "atto2", "atto-2" -> "BYD Atto 2"
-            "atto1", "atto-1" -> "BYD Atto 1"
+            "sealion7" -> "BYD Sealion 7"
+            "sealion6" -> "BYD Sealion 6"
+            "shark" -> "BYD Shark"
+            "sealu" -> "BYD Seal U"
+            "sealudmi" -> "BYD Seal U DM-i"
+            "dolphin" -> "BYD Dolphin"
+            "atto3" -> "BYD Atto 3"
+            "atto3evo" -> "BYD Atto 3 Evo"
+            "atto2" -> "BYD Atto 2"
+            "atto1" -> "BYD Atto 1"
             "han" -> "BYD Han"
             "tang" -> "BYD Tang"
             "song" -> "BYD Song"
             "qin" -> "BYD Qin"
-            "dolphin" -> "BYD Dolphin"
+            "m6" -> "BYD M6"
             "seagull" -> getString(R.string.vehicle_model_seagull)
-            "sealion6" -> "BYD Sealion 6"
-            "sealion7" -> "BYD Sealion 7"
-            "shark" -> "BYD Shark"
-            "sealu", "seal-u" -> "BYD Seal U"
-            else -> modelId.replaceFirstChar { it.uppercase() }
+            "destroyer", "destroyer05" -> "BYD Destroyer 05"
+            else -> modelId.replaceFirstChar { if (it.isLowerCase()) it.titlecase(java.util.Locale.US) else it.toString() }
         }
     }
 

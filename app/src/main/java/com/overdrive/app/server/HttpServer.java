@@ -199,6 +199,7 @@ public class HttpServer {
                 while (running && CameraDaemon.isRunning() && !serverSocket.isClosed()) {
                     try {
                         Socket client = serverSocket.accept();
+                        client.setSoTimeout(15000);
                         // (Removed per-accept "HTTP client:" log — it fired for
                         // EVERY request including the blind-spot overlay's 250ms
                         // /api/stream/turn poll, flooding the daemon log. The

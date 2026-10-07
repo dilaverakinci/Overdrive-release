@@ -8220,18 +8220,32 @@ public class BydDataCollector {
     }
 
     private boolean computeIsPhev() {
-        // The cache check and the establishment write are one transaction. Without this lock, two
-        // startup callers can both pass the UNKNOWN check, perform the same sentinel-only probe,
-        // and let the second caller mistake the first caller's provisional BEV write for an
-        // independent confirmation. Keep this off the collector monitor: engine callbacks can
-        // probe while holding chargingEdgePublishLock, whereas collectAll takes the collector
-        // monitor before that lock.
+        long now = System.currentTimeMillis();
         synchronized (drivetrainProbeLock) {
-            return computeIsPhevLocked();
+            if (cachedDrivetrain != DRIVETRAIN_UNKNOWN
+                    && (now - lastDrivetrainProbeMs) < DRIVETRAIN_REPROBE_MS) {
+                if (cachedDrivetrain == DRIVETRAIN_PHEV) {
+                    establishedDrivetrain = DRIVETRAIN_PHEV;
+                }
+                return cachedDrivetrain == DRIVETRAIN_PHEV;
+            }
+        }
+
+        // Pre-probe: Read nominal capacity from SohEstimator OUTSIDE drivetrainProbeLock
+        // to prevent lock-inversion deadlock with SohEstimator.seedInitialEstimate().
+        double knownNominal = 0;
+        try {
+            com.overdrive.app.abrp.SohEstimator sohEst =
+                com.overdrive.app.monitor.SocHistoryDatabase.getInstance().getSohEstimator();
+            if (sohEst != null) knownNominal = sohEst.getNominalCapacityKwh();
+        } catch (Exception ignored) {}
+
+        synchronized (drivetrainProbeLock) {
+            return computeIsPhevLocked(knownNominal);
         }
     }
 
-    private boolean computeIsPhevLocked() {
+    private boolean computeIsPhevLocked(double knownNominal) {
         long now = System.currentTimeMillis();
         if (cachedDrivetrain != DRIVETRAIN_UNKNOWN
                 && (now - lastDrivetrainProbeMs) < DRIVETRAIN_REPROBE_MS) {
@@ -8245,23 +8259,7 @@ public class BydDataCollector {
         // If the daemon has already locked in a known small (<30 kWh) nominal
         // pack — typically because the user picked a Sealion 6 / Song / Tang
         // DM-i in the model selector — that signal is far stronger than the
-        // live fuel HAL probes. The fuel HAL on these PHEVs goes through a
-        // warm-up period where getFuelPercentageValue / getFuelDrivingRangeValue
-        // can BOTH return BMS sentinels (255/2046/etc), which the
-        // sentinel-AND-sentinel branch below would incorrectly latch as BEV
-        // for 60s. That regression dropped fuel-percent display on PHEVs in
-        // v17. Restoring the v12-era capacity-first behaviour: small known
-        // nominal → PHEV verdict, full TTL.
-        //
-        // Inverse risk (BEV with <30 kWh nominal) is ~zero — the smallest BYD
-        // BEV is the Atto 3 at 49.9 kWh. Capacity sub-30 kWh uniquely names a
-        // PHEV pack across the catalog.
-        double knownNominal = 0;
-        try {
-            com.overdrive.app.abrp.SohEstimator sohEst =
-                com.overdrive.app.monitor.SocHistoryDatabase.getInstance().getSohEstimator();
-            if (sohEst != null) knownNominal = sohEst.getNominalCapacityKwh();
-        } catch (Exception ignored) {}
+        // live fuel HAL probes.
         if (knownNominal > 0 && knownNominal < 30.0) {
             cachedDrivetrain = DRIVETRAIN_PHEV;
             establishedDrivetrain = DRIVETRAIN_PHEV;

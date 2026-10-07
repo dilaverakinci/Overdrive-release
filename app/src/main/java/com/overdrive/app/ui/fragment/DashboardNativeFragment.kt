@@ -1046,7 +1046,7 @@ class DashboardNativeFragment : Fragment() {
                         json.has("modelSource") && json.optString("modelSource", "unset") == "unset" -> ""
                         else -> json.optString("modelId", "")
                     }
-                    if (m.isNotEmpty()) modelId = m
+                    if (m.isNotEmpty() && !m.equals("null", ignoreCase = true)) modelId = m
                 }
                 conn.disconnect()
             } catch (_: Throwable) {}
@@ -1069,24 +1069,28 @@ class DashboardNativeFragment : Fragment() {
     }
 
     private fun modelDisplayName(modelId: String?): String {
-        return when (modelId?.lowercase()) {
-            null -> "—"
+        val normalized = modelId?.lowercase(java.util.Locale.US)?.filter(Char::isLetterOrDigit)
+        if (normalized.isNullOrEmpty() || normalized == "null") return "—"
+        return when (normalized) {
             "seal" -> "BYD Seal"
-            "atto3", "atto-3" -> "BYD Atto 3"
-            "atto3evo", "atto3-evo", "atto-3-evo" -> "BYD Atto 3 Evo"
-            "atto2", "atto-2" -> "BYD Atto 2"
-            "atto1", "atto-1" -> "BYD Atto 1"
+            "sealion7" -> "BYD Sealion 7"
+            "sealion6" -> "BYD Sealion 6"
+            "shark" -> "BYD Shark"
+            "sealu" -> "BYD Seal U"
+            "sealudmi" -> "BYD Seal U DM-i"
+            "dolphin" -> "BYD Dolphin"
+            "atto3" -> "BYD Atto 3"
+            "atto3evo" -> "BYD Atto 3 Evo"
+            "atto2" -> "BYD Atto 2"
+            "atto1" -> "BYD Atto 1"
             "han" -> "BYD Han"
             "tang" -> "BYD Tang"
             "song" -> "BYD Song"
             "qin" -> "BYD Qin"
-            "dolphin" -> "BYD Dolphin"
+            "m6" -> "BYD M6"
             "seagull" -> getString(R.string.vehicle_model_seagull)
-            "sealion6" -> "BYD Sealion 6"
-            "sealion7" -> "BYD Sealion 7"
-            "shark" -> "BYD Shark"
-            "sealu", "seal-u" -> "BYD Seal U"
-            else -> modelId.replaceFirstChar { it.uppercase() }
+            "destroyer", "destroyer05" -> "BYD Destroyer 05"
+            else -> modelId.replaceFirstChar { if (it.isLowerCase()) it.titlecase(java.util.Locale.US) else it.toString() }
         }
     }
 
@@ -1123,6 +1127,7 @@ class DashboardNativeFragment : Fragment() {
         val modelEntries = mutableListOf<ModelEntry>()
         var selectedModelId: String? = null
         var modelSelectionChanged = false
+        var initialModelId: String? = null
         modelDropdown.setOnItemClickListener { _, _, position, _ ->
             if (position in modelEntries.indices) {
                 val entry = modelEntries[position]
@@ -1137,9 +1142,10 @@ class DashboardNativeFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             var initialKwh = 0.0
             val loadedModelEntries = mutableListOf<ModelEntry>()
-            var initialModelId: String? = null
             var nominalKwh = 0.0
+            var nominalSource = "unset"
             var displaySoh = -1.0
+            var displaySource = "unavailable"
             var statusModelId: String? = null
 
             try {
@@ -1158,9 +1164,14 @@ class DashboardNativeFragment : Fragment() {
                     val body = conn.inputStream.bufferedReader().use { it.readText() }
                     val json = JSONObject(body)
                     nominalKwh = json.optDouble("nominalCapacityKwh", 0.0)
+                    nominalSource = json.optString("nominalSource", "unset")
                     displaySoh = json.optDouble("displaySoh", -1.0)
+                    displaySource = json.optString("displaySource", "unavailable")
                     if (!json.isNull("modelId")) {
-                        statusModelId = json.optString("modelId", "").ifEmpty { null }
+                        val mid = json.optString("modelId", "").ifEmpty { null }
+                        if (mid != null && !mid.equals("null", ignoreCase = true)) {
+                            statusModelId = mid
+                        }
                     }
                 }
                 conn.disconnect()
@@ -1176,7 +1187,16 @@ class DashboardNativeFragment : Fragment() {
                         for (i in 0 until models.length()) {
                             val m = models.optJSONObject(i) ?: continue
                             val id = m.optString("id", "")
-                            val title = m.optString("title", id)
+                            val canonicalTitle = when {
+                                m.optString("name", "").isNotEmpty() -> m.optString("name")
+                                m.optString("title", "").isNotEmpty() -> m.optString("title")
+                                else -> id
+                            }
+                            val title = if (id.equals("seagull", ignoreCase = true)) {
+                                ctx.getString(R.string.vehicle_model_seagull)
+                            } else {
+                                canonicalTitle
+                            }
                             val kwh = m.optDouble("nominalKwh", 0.0)
                             if (id.isNotEmpty()) loadedModelEntries.add(ModelEntry(id, title, kwh))
                         }
@@ -1190,8 +1210,13 @@ class DashboardNativeFragment : Fragment() {
                 if (conn.responseCode == 200) {
                     val body = conn.inputStream.bufferedReader().use { it.readText() }
                     val json = JSONObject(body)
-                    val m = json.optString("selectedModelId", "")
-                    if (m.isNotEmpty()) initialModelId = m
+                    val m = when {
+                        json.has("selectedModelId") && !json.isNull("selectedModelId") ->
+                            json.optString("selectedModelId", "")
+                        json.has("modelSource") && json.optString("modelSource", "unset") == "unset" -> ""
+                        else -> json.optString("modelId", "")
+                    }
+                    if (m.isNotEmpty() && !m.equals("null", ignoreCase = true)) initialModelId = m
                 }
                 conn.disconnect()
             } catch (_: Throwable) {}
@@ -1201,12 +1226,16 @@ class DashboardNativeFragment : Fragment() {
                 modelEntries.clear()
                 modelEntries.addAll(loadedModelEntries)
                 val titles = modelEntries.map { it.title }.toTypedArray()
-                val adapter = android.widget.ArrayAdapter(ctx, android.R.layout.simple_dropdown_item_1line, titles)
+                val adapter = android.widget.ArrayAdapter(
+                    ctx,
+                    com.google.android.material.R.layout.m3_auto_complete_simple_item,
+                    titles
+                )
                 modelDropdown.setAdapter(adapter)
 
                 val activeModelId = initialModelId ?: statusModelId
                 if (activeModelId != null) {
-                    val activeEntry = modelEntries.firstOrNull { it.id == activeModelId }
+                    val activeEntry = modelEntries.firstOrNull { it.id.equals(activeModelId, ignoreCase = true) }
                     if (activeEntry != null) {
                         modelDropdown.setText(activeEntry.title, false)
                         selectedModelId = activeEntry.id
@@ -1215,12 +1244,25 @@ class DashboardNativeFragment : Fragment() {
 
                 if (initialKwh > 0) {
                     capInput.setText(String.format("%.1f", initialKwh))
-                    resetEligible = true
-                    resetButton.isEnabled = !saveInFlight
                 }
-                summaryCapacity.text = if (nominalKwh > 0) String.format("%.1f kWh", nominalKwh) else "—"
-                summarySoh.text = if (displaySoh > 0) String.format("%.1f%%", displaySoh) else "—"
-                summaryModel.text = modelDisplayName(activeModelId)
+
+                val manual = nominalSource == "user" || initialModelId != null || initialKwh > 0
+                summaryDetection.text = getString(
+                    R.string.vehicle_dialog_detection,
+                    getString(
+                        if (manual) {
+                            R.string.vehicle_dialog_detection_manual
+                        } else {
+                            R.string.vehicle_dialog_detection_auto
+                        }
+                    )
+                )
+                resetEligible = manual
+                resetButton.isEnabled = manual && !saveInFlight
+
+                summaryCapacity.text = if (nominalKwh > 0) String.format("%.1f kWh", nominalKwh) else getString(R.string.soh_dialog_capacity_not_detected)
+                summarySoh.text = if (displaySoh > 0) String.format("%.1f%%", displaySoh) else getString(R.string.vehicle_dialog_soh_unavailable).replaceFirstChar { it.uppercase() }
+                summaryModel.text = if (activeModelId != null) modelDisplayName(activeModelId) else getString(R.string.soh_dialog_model_not_selected)
             }
         }
 
@@ -1236,6 +1278,7 @@ class DashboardNativeFragment : Fragment() {
                 postNominal(null, clearModelSelection = true)
                 withContext(Dispatchers.Main) {
                     refreshVehicleTile()
+                    cockpitViewModel.refreshVehicleStatus(showLoading = false)
                     dialog.dismiss()
                 }
             }
@@ -1261,7 +1304,8 @@ class DashboardNativeFragment : Fragment() {
                 }
                 setSaving(true)
                 viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-                    val error = postNominalAndModel(kwh, selectedModelId.takeIf { modelSelectionChanged })
+                    val modelToSave = if (modelSelectionChanged) selectedModelId else initialModelId
+                    val error = postNominalAndModel(kwh, modelToSave)
                     withContext(Dispatchers.Main) {
                         if (error == null) {
                             refreshVehicleTile()

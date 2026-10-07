@@ -25,12 +25,13 @@ class VehicleViewModel(
     val isCommandPending: StateFlow<Boolean> = _isCommandPending.asStateFlow()
 
     private var pollingJob: Job? = null
+    private var refreshJob: Job? = null
 
     fun startPolling() {
         if (pollingJob?.isActive == true) return
         pollingJob = viewModelScope.launch {
             while (isActive) {
-                refresh()
+                doRefresh()
                 delay(2500)
             }
         }
@@ -42,11 +43,20 @@ class VehicleViewModel(
     }
 
     fun refresh() {
-        viewModelScope.launch {
-            val result = repository.getVehicleState()
-            result.onSuccess { newState ->
-                _state.value = newState
-            }
+        if (refreshJob?.isActive == true) return
+        refreshJob = viewModelScope.launch {
+            doRefresh()
+        }
+    }
+
+    private suspend fun doRefresh() {
+        val model = repository.getSelectedModelId()
+        if (model != _state.value.modelId) {
+            _state.value = _state.value.copy(modelId = model)
+        }
+        val result = repository.getVehicleState(model)
+        result.onSuccess { newState ->
+            _state.value = newState
         }
     }
 
@@ -57,7 +67,7 @@ class VehicleViewModel(
             _isCommandPending.value = false
             if (success) {
                 _state.value = _state.value.copy(modelId = modelId)
-                refresh()
+                doRefresh()
             }
             onComplete?.invoke(success)
         }
