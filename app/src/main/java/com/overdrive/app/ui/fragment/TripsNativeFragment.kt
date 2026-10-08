@@ -3,10 +3,12 @@ package com.overdrive.app.ui.fragment
 import android.app.DatePickerDialog
 import android.content.res.ColorStateList
 import android.content.res.Configuration
-import android.graphics.Color
+import android.graphics.*
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.widget.*
 import androidx.activity.OnBackPressedCallback
@@ -20,13 +22,32 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.textfield.TextInputEditText
 import com.overdrive.app.R
+import com.overdrive.app.navmap.nav.MapNetworking
 import com.overdrive.app.ui.trips.*
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.maplibre.android.MapLibre
+import org.maplibre.android.camera.CameraUpdateFactory
+import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.geometry.LatLngBounds
+import org.maplibre.android.maps.MapLibreMap
+import org.maplibre.android.maps.MapView
+import org.maplibre.android.maps.Style
+import org.maplibre.android.style.expressions.Expression
+import org.maplibre.android.style.layers.LineLayer
+import org.maplibre.android.style.layers.Property
+import org.maplibre.android.style.layers.PropertyFactory
+import org.maplibre.android.style.layers.SymbolLayer
+import org.maplibre.android.style.sources.GeoJsonSource
+import org.maplibre.geojson.Feature
+import org.maplibre.geojson.FeatureCollection
+import org.maplibre.geojson.LineString
+import org.maplibre.geojson.Point
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -149,8 +170,84 @@ class TripsNativeFragment : Fragment() {
     private lateinit var chartTimeline: TripTimelineChartView
     private lateinit var histogramSpeed: SpeedHistogramView
 
+    // Timeline Scrubber Card Views
+    private lateinit var cardTimelineSlider: MaterialCardView
+    private lateinit var tvSliderSpeed: TextView
+    private lateinit var tvSliderSpeedUnit: TextView
+    private lateinit var tvSliderAccel: TextView
+    private lateinit var tvSliderBrake: TextView
+    private lateinit var tvSliderSoc: TextView
+    private lateinit var sbTimeline: SeekBar
+    private lateinit var tvSliderStartTime: TextView
+    private lateinit var tvSliderCurrentTime: TextView
+    private lateinit var tvSliderEndTime: TextView
+
+    // Route Map Views
+    private lateinit var cardRouteMap: MaterialCardView
+    private lateinit var mapViewTripRoute: MapView
+    private lateinit var btnMapFitRoute: MaterialCardView
+    private lateinit var btnMapFocusVehicle: MaterialCardView
+    private lateinit var btnMapZoomIn: MaterialCardView
+    private lateinit var btnMapZoomOut: MaterialCardView
+    private var tripMap: MapLibreMap? = null
+
+    // Pedal breakdown row
+    private lateinit var tvTlAccelPct: TextView
+    private lateinit var tvTlCoastPct: TextView
+    private lateinit var tvTlBrakePct: TextView
+
+    // Driving DNA Breakdown Card Views
+    private lateinit var cardDnaBreakdown: MaterialCardView
+    private lateinit var rowDnaAnticipation: View
+    private lateinit var pbDetailAnticipation: ProgressBar
+    private lateinit var tvDetailScoreAnticipation: TextView
+    private lateinit var layoutAnticipationCoaching: View
+
+    private lateinit var rowDnaSmoothness: View
+    private lateinit var pbDetailSmoothness: ProgressBar
+    private lateinit var tvDetailScoreSmoothness: TextView
+    private lateinit var layoutSmoothnessCoaching: View
+
+    private lateinit var rowDnaSpeedDisc: View
+    private lateinit var pbDetailSpeedDisc: ProgressBar
+    private lateinit var tvDetailScoreSpeedDisc: TextView
+    private lateinit var layoutSpeedDiscCoaching: View
+
+    private lateinit var rowDnaEfficiency: View
+    private lateinit var pbDetailEfficiency: ProgressBar
+    private lateinit var tvDetailScoreEfficiency: TextView
+    private lateinit var layoutEfficiencyCoaching: View
+
+    private lateinit var rowDnaConsistency: View
+    private lateinit var pbDetailConsistency: ProgressBar
+    private lateinit var tvDetailScoreConsistency: TextView
+    private lateinit var layoutConsistencyCoaching: View
+
+    private var activeTrip: TripRecordItem? = null
+    private var activeSamples: List<TelemetrySampleItem> = emptyList()
+
     private val supportedCurrencies = listOf("₺", "$", "€", "£", "₹", "¥")
     private var isProgrammaticChange = false
+
+    companion object {
+        private const val ROUTE_SOURCE_ID = "trip_route_source"
+        private const val ROUTE_CASING_LAYER_ID = "trip_route_casing"
+        private const val ROUTE_LAYER_ID = "trip_route_layer"
+        private const val MARKER_SOURCE_ID = "trip_marker_source"
+        private const val MARKER_LAYER_ID = "trip_marker_layer"
+        private const val CAR_SOURCE_ID = "trip_car_source"
+        private const val CAR_LAYER_ID = "trip_car_layer"
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        try {
+            MapLibre.getInstance(requireContext())
+            MapNetworking.installMapLibreHttpClient()
+        } catch (e: Exception) {
+            android.util.Log.e("TripsNativeFragment", "Failed to init MapLibre runtime", e)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -163,20 +260,49 @@ class TripsNativeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initViews(view)
+        setupMap(savedInstanceState)
         setupListeners()
         setupAdapter()
         setupBackPressHandling()
         observeState()
     }
 
+    override fun onStart() {
+        super.onStart()
+        mapViewTripRoute.onStart()
+    }
+
     override fun onResume() {
         super.onResume()
+        mapViewTripRoute.onResume()
         viewModel.startPolling()
     }
 
     override fun onPause() {
         super.onPause()
+        mapViewTripRoute.onPause()
         viewModel.stopPolling()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        mapViewTripRoute.onStop()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        mapViewTripRoute.onSaveInstanceState(outState)
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        mapViewTripRoute.onLowMemory()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        tripMap = null
+        mapViewTripRoute.onDestroy()
     }
 
     private fun initViews(v: View) {
@@ -230,6 +356,7 @@ class TripsNativeFragment : Fragment() {
         recyclerTrips = v.findViewById(R.id.recyclerTrips)
         layoutEmptyState = v.findViewById(R.id.layoutEmptyState)
 
+        // Stats tab
         gaugeDriverScore = v.findViewById(R.id.gaugeDriverScore)
         tvDriverScoreRating = v.findViewById(R.id.tvDriverScoreRating)
         tvPersonalizedRangeKm = v.findViewById(R.id.tvPersonalizedRangeKm)
@@ -248,6 +375,7 @@ class TripsNativeFragment : Fragment() {
         progressConsistency = v.findViewById(R.id.progressConsistency)
         tvScoreConsistency = v.findViewById(R.id.tvScoreConsistency)
 
+        // Storage tab
         switchTripAnalytics = v.findViewById(R.id.switchTripAnalytics)
         spinnerTripCurrency = v.findViewById(R.id.spinnerTripCurrency)
         etTripElectricityRate = v.findViewById(R.id.etTripElectricityRate)
@@ -264,6 +392,7 @@ class TripsNativeFragment : Fragment() {
         btnRecoverTrips = v.findViewById(R.id.btnRecoverTrips)
         tvRecoveryStatus = v.findViewById(R.id.tvRecoveryStatus)
 
+        // Detail Drill-in Views
         btnBackToTrips = v.findViewById(R.id.btnBackToTrips)
         btnRescoreTrip = v.findViewById(R.id.btnRescoreTrip)
         btnDeleteDetailTrip = v.findViewById(R.id.btnDeleteDetailTrip)
@@ -284,9 +413,190 @@ class TripsNativeFragment : Fragment() {
         chartTimeline = v.findViewById(R.id.chartTimeline)
         histogramSpeed = v.findViewById(R.id.histogramSpeed)
 
+        // Timeline Scrubber
+        cardTimelineSlider = v.findViewById(R.id.cardTimelineSlider)
+        tvSliderSpeed = v.findViewById(R.id.tvSliderSpeed)
+        tvSliderSpeedUnit = v.findViewById(R.id.tvSliderSpeedUnit)
+        tvSliderAccel = v.findViewById(R.id.tvSliderAccel)
+        tvSliderBrake = v.findViewById(R.id.tvSliderBrake)
+        tvSliderSoc = v.findViewById(R.id.tvSliderSoc)
+        sbTimeline = v.findViewById(R.id.sbTimeline)
+        tvSliderStartTime = v.findViewById(R.id.tvSliderStartTime)
+        tvSliderCurrentTime = v.findViewById(R.id.tvSliderCurrentTime)
+        tvSliderEndTime = v.findViewById(R.id.tvSliderEndTime)
+
+        // Route Map
+        cardRouteMap = v.findViewById(R.id.cardRouteMap)
+        mapViewTripRoute = v.findViewById(R.id.mapViewTripRoute)
+        btnMapFitRoute = v.findViewById(R.id.btnMapFitRoute)
+        btnMapFocusVehicle = v.findViewById(R.id.btnMapFocusVehicle)
+        btnMapZoomIn = v.findViewById(R.id.btnMapZoomIn)
+        btnMapZoomOut = v.findViewById(R.id.btnMapZoomOut)
+
+        // Pedal breakdown
+        tvTlAccelPct = v.findViewById(R.id.tvTlAccelPct)
+        tvTlCoastPct = v.findViewById(R.id.tvTlCoastPct)
+        tvTlBrakePct = v.findViewById(R.id.tvTlBrakePct)
+
+        // Driving DNA Breakdown Card
+        cardDnaBreakdown = v.findViewById(R.id.cardDnaBreakdown)
+        rowDnaAnticipation = v.findViewById(R.id.rowDnaAnticipation)
+        pbDetailAnticipation = v.findViewById(R.id.pbDetailAnticipation)
+        tvDetailScoreAnticipation = v.findViewById(R.id.tvDetailScoreAnticipation)
+        layoutAnticipationCoaching = v.findViewById(R.id.layoutAnticipationCoaching)
+
+        rowDnaSmoothness = v.findViewById(R.id.rowDnaSmoothness)
+        pbDetailSmoothness = v.findViewById(R.id.pbDetailSmoothness)
+        tvDetailScoreSmoothness = v.findViewById(R.id.tvDetailScoreSmoothness)
+        layoutSmoothnessCoaching = v.findViewById(R.id.layoutSmoothnessCoaching)
+
+        rowDnaSpeedDisc = v.findViewById(R.id.rowDnaSpeedDisc)
+        pbDetailSpeedDisc = v.findViewById(R.id.pbDetailSpeedDisc)
+        tvDetailScoreSpeedDisc = v.findViewById(R.id.tvDetailScoreSpeedDisc)
+        layoutSpeedDiscCoaching = v.findViewById(R.id.layoutSpeedDiscCoaching)
+
+        rowDnaEfficiency = v.findViewById(R.id.rowDnaEfficiency)
+        pbDetailEfficiency = v.findViewById(R.id.pbDetailEfficiency)
+        tvDetailScoreEfficiency = v.findViewById(R.id.tvDetailScoreEfficiency)
+        layoutEfficiencyCoaching = v.findViewById(R.id.layoutEfficiencyCoaching)
+
+        rowDnaConsistency = v.findViewById(R.id.rowDnaConsistency)
+        pbDetailConsistency = v.findViewById(R.id.pbDetailConsistency)
+        tvDetailScoreConsistency = v.findViewById(R.id.tvDetailScoreConsistency)
+        layoutConsistencyCoaching = v.findViewById(R.id.layoutConsistencyCoaching)
+
         // Setup currency spinner
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, supportedCurrencies)
         spinnerTripCurrency.adapter = adapter
+    }
+
+    private fun setupMap(savedInstanceState: Bundle?) {
+        mapViewTripRoute.onCreate(savedInstanceState)
+        var startX = 0f
+        var startY = 0f
+        val touchSlop = ViewConfiguration.get(requireContext()).scaledTouchSlop
+        mapViewTripRoute.setOnTouchListener { v, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    startX = event.x
+                    startY = event.y
+                    v.parent.requestDisallowInterceptTouchEvent(true)
+                }
+                MotionEvent.ACTION_POINTER_DOWN -> {
+                    v.parent.requestDisallowInterceptTouchEvent(true)
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    if (event.pointerCount > 1) {
+                        v.parent.requestDisallowInterceptTouchEvent(true)
+                    } else {
+                        val dx = Math.abs(event.x - startX)
+                        val dy = Math.abs(event.y - startY)
+                        if (dy > touchSlop && dy > dx * 1.2f) {
+                            v.parent.requestDisallowInterceptTouchEvent(false)
+                        } else if (dx > touchSlop) {
+                            v.parent.requestDisallowInterceptTouchEvent(true)
+                        }
+                    }
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    v.parent.requestDisallowInterceptTouchEvent(false)
+                }
+            }
+            false
+        }
+
+        mapViewTripRoute.getMapAsync { map ->
+            tripMap = map
+            map.uiSettings.isAttributionEnabled = false
+            map.uiSettings.isLogoEnabled = false
+            loadMapStyle { style ->
+                setupMapLayers(style)
+                plotTripRoute()
+            }
+        }
+    }
+
+    private fun loadMapStyle(onStyleLoaded: (Style) -> Unit) {
+        val mlMap = tripMap ?: return
+        val isNight = isNightMode()
+        val assetPath = if (isNight) "maps/dark_style.json" else "maps/liberty_style.json"
+        val json = try {
+            requireContext().assets.open(assetPath).bufferedReader(Charsets.UTF_8).use { it.readText() }
+                .takeIf { it.isNotBlank() }
+        } catch (t: Throwable) {
+            null
+        }
+
+        val builder = if (json != null) {
+            Style.Builder().fromJson(json)
+        } else {
+            val url = if (isNight) "https://tiles.openfreemap.org/styles/dark" else "https://tiles.openfreemap.org/styles/liberty"
+            Style.Builder().fromUri(url)
+        }
+
+        mlMap.setStyle(builder) { style ->
+            onStyleLoaded(style)
+        }
+    }
+
+    private fun setupMapLayers(style: Style) {
+        // Register marker icons
+        style.addImage("marker_start", createCircleMarkerBitmap(Color.parseColor("#22C55E"), "S"))
+        style.addImage("marker_end", createCircleMarkerBitmap(Color.parseColor("#EF4444"), "E"))
+        style.addImage("marker_car", createCarMarkerBitmap())
+
+        // 1. Route line sources and layers
+        if (style.getSource(ROUTE_SOURCE_ID) == null) {
+            style.addSource(GeoJsonSource(ROUTE_SOURCE_ID))
+
+            // Casing layer
+            style.addLayer(
+                LineLayer(ROUTE_CASING_LAYER_ID, ROUTE_SOURCE_ID).withProperties(
+                    PropertyFactory.lineColor(Color.parseColor("#4D000000")),
+                    PropertyFactory.lineWidth(8f),
+                    PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
+                    PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND)
+                )
+            )
+
+            // Main speed-colored layer
+            style.addLayer(
+                LineLayer(ROUTE_LAYER_ID, ROUTE_SOURCE_ID).withProperties(
+                    PropertyFactory.lineColor(Expression.toColor(Expression.get("color"))),
+                    PropertyFactory.lineWidth(5.5f),
+                    PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
+                    PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND)
+                )
+            )
+        }
+
+        // 2. Start & End Markers
+        if (style.getSource(MARKER_SOURCE_ID) == null) {
+            style.addSource(GeoJsonSource(MARKER_SOURCE_ID))
+            style.addLayer(
+                SymbolLayer(MARKER_LAYER_ID, MARKER_SOURCE_ID).withProperties(
+                    PropertyFactory.iconImage(Expression.get("icon")),
+                    PropertyFactory.iconAnchor(Property.ICON_ANCHOR_CENTER),
+                    PropertyFactory.iconAllowOverlap(true),
+                    PropertyFactory.iconIgnorePlacement(true)
+                )
+            )
+        }
+
+        // 3. Vehicle Position / Heading Marker
+        if (style.getSource(CAR_SOURCE_ID) == null) {
+            style.addSource(GeoJsonSource(CAR_SOURCE_ID))
+            style.addLayer(
+                SymbolLayer(CAR_LAYER_ID, CAR_SOURCE_ID).withProperties(
+                    PropertyFactory.iconImage("marker_car"),
+                    PropertyFactory.iconRotate(Expression.toNumber(Expression.get("heading"))),
+                    PropertyFactory.iconRotationAlignment(Property.ICON_ROTATION_ALIGNMENT_MAP),
+                    PropertyFactory.iconAnchor(Property.ICON_ANCHOR_CENTER),
+                    PropertyFactory.iconAllowOverlap(true),
+                    PropertyFactory.iconIgnorePlacement(true)
+                )
+            )
+        }
     }
 
     private fun setupListeners() {
@@ -370,6 +680,45 @@ class TripsNativeFragment : Fragment() {
                 showDeleteConfirmDialog(it)
             }
         }
+
+        // Timeline SeekBar scrubbing
+        sbTimeline.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                updateScrubPosition(progress)
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        // Chart timeline direct scrubbing
+        chartTimeline.onScrubListener = { idx ->
+            sbTimeline.progress = idx
+        }
+
+        // DNA Coaching rows toggle
+        rowDnaAnticipation.setOnClickListener { toggleCoaching(layoutAnticipationCoaching) }
+        rowDnaSmoothness.setOnClickListener { toggleCoaching(layoutSmoothnessCoaching) }
+        rowDnaSpeedDisc.setOnClickListener { toggleCoaching(layoutSpeedDiscCoaching) }
+        rowDnaEfficiency.setOnClickListener { toggleCoaching(layoutEfficiencyCoaching) }
+        rowDnaConsistency.setOnClickListener { toggleCoaching(layoutConsistencyCoaching) }
+
+        // Floating Map Controls
+        btnMapFitRoute.setOnClickListener {
+            fitRouteBounds(animate = true)
+        }
+        btnMapFocusVehicle.setOnClickListener {
+            focusVehicleMarker(animate = true)
+        }
+        btnMapZoomIn.setOnClickListener {
+            tripMap?.animateCamera(CameraUpdateFactory.zoomIn())
+        }
+        btnMapZoomOut.setOnClickListener {
+            tripMap?.animateCamera(CameraUpdateFactory.zoomOut())
+        }
+    }
+
+    private fun toggleCoaching(v: View) {
+        v.visibility = if (v.visibility == View.VISIBLE) View.GONE else View.VISIBLE
     }
 
     private fun setupAdapter() {
@@ -741,6 +1090,9 @@ class TripsNativeFragment : Fragment() {
     }
 
     private fun renderDetail(trip: TripRecordItem, samples: List<TelemetrySampleItem>) {
+        activeTrip = trip
+        activeSamples = samples
+
         val dateFormat = SimpleDateFormat("EEEE, dd MMM • HH:mm", Locale.getDefault())
         val dateStr = if (trip.startTime > 0) dateFormat.format(Date(trip.startTime)) else "--"
         tvDetailTitle.text = String.format(Locale.US, "Trip Details • %.1f km", trip.distanceKm)
@@ -779,10 +1131,34 @@ class TripsNativeFragment : Fragment() {
         if (trip.gradientProfile.isNotEmpty()) profileParts.add(trip.gradientProfile)
         tvDetailProfile.text = if (profileParts.isNotEmpty()) profileParts.joinToString(" • ") else "STANDARD"
 
-        // Set samples to charts
-        chartTimeline.setSamples(samples)
+        // 1. Set samples to chart
+        chartTimeline.setSamples(samples, trip.socStart, trip.socEnd)
 
-        // Compute speed distribution
+        // 2. Compute pedal breakdown percentages
+        if (samples.isNotEmpty()) {
+            var accelCount = 0
+            var brakeCount = 0
+            var coastCount = 0
+            for (s in samples) {
+                if (s.brakePedalPercent > 0) brakeCount++
+                else if (s.accelPedalPercent > 0) accelCount++
+                else coastCount++
+            }
+            val total = accelCount + brakeCount + coastCount
+            val accelPct = if (total > 0) Math.round((accelCount.toFloat() / total) * 100) else 0
+            val coastPct = if (total > 0) Math.round((coastCount.toFloat() / total) * 100) else 0
+            val brakePct = if (total > 0) Math.round((brakeCount.toFloat() / total) * 100) else 0
+
+            tvTlAccelPct.text = "$accelPct%"
+            tvTlCoastPct.text = "$coastPct%"
+            tvTlBrakePct.text = "$brakePct%"
+        } else {
+            tvTlAccelPct.text = "--%"
+            tvTlCoastPct.text = "--%"
+            tvTlBrakePct.text = "--%"
+        }
+
+        // 3. Compute speed distribution
         if (samples.isNotEmpty()) {
             val lowCount = samples.count { it.speedKmh < 40 }
             val normalCount = samples.count { it.speedKmh in 40..80 }
@@ -791,6 +1167,374 @@ class TripsNativeFragment : Fragment() {
         } else {
             histogramSpeed.setDistribution(0f, 0f, 0f)
         }
+
+        // 4. Driving DNA Breakdown Card
+        val hasDna = trip.overallScore > 0 || trip.anticipationScore > 0 ||
+            trip.smoothnessScore > 0 || trip.speedDisciplineScore > 0 ||
+            trip.efficiencyScore > 0 || trip.consistencyScore > 0
+
+        if (hasDna) {
+            cardDnaBreakdown.visibility = View.VISIBLE
+            pbDetailAnticipation.progress = trip.anticipationScore
+            tvDetailScoreAnticipation.text = if (trip.anticipationScore > 0) trip.anticipationScore.toString() else "--"
+
+            pbDetailSmoothness.progress = trip.smoothnessScore
+            tvDetailScoreSmoothness.text = if (trip.smoothnessScore > 0) trip.smoothnessScore.toString() else "--"
+
+            pbDetailSpeedDisc.progress = trip.speedDisciplineScore
+            tvDetailScoreSpeedDisc.text = if (trip.speedDisciplineScore > 0) trip.speedDisciplineScore.toString() else "--"
+
+            pbDetailEfficiency.progress = trip.efficiencyScore
+            tvDetailScoreEfficiency.text = if (trip.efficiencyScore > 0) trip.efficiencyScore.toString() else "--"
+
+            pbDetailConsistency.progress = trip.consistencyScore
+            tvDetailScoreConsistency.text = if (trip.consistencyScore > 0) trip.consistencyScore.toString() else "--"
+        } else {
+            cardDnaBreakdown.visibility = View.GONE
+        }
+
+        // 5. Timeline Scrubber
+        if (samples.size >= 2) {
+            cardTimelineSlider.visibility = View.VISIBLE
+            sbTimeline.max = samples.size - 1
+            sbTimeline.progress = 0
+            tvSliderStartTime.text = "0:00"
+
+            val durationSec = ((samples.last().timestampMs - samples.first().timestampMs) / 1000).coerceAtLeast(0L)
+            val mins = durationSec / 60
+            val secs = durationSec % 60
+            tvSliderEndTime.text = String.format(Locale.US, "%d:%02d", mins, secs)
+
+            updateScrubPosition(0)
+        } else {
+            cardTimelineSlider.visibility = View.GONE
+        }
+
+        // 6. Plot Route on Map
+        plotTripRoute()
+    }
+
+    private fun updateScrubPosition(idx: Int) {
+        if (activeSamples.isEmpty() || idx !in activeSamples.indices) return
+        val s = activeSamples[idx]
+
+        // 1. Text HUD stats
+        val isMiles = (viewModel.uiState.value.config?.distanceUnit == "mi")
+        val displaySpeed = if (isMiles) (s.speedKmh * 0.621371).toInt() else s.speedKmh
+        tvSliderSpeed.text = displaySpeed.toString()
+        tvSliderSpeedUnit.text = if (isMiles) "mph" else "km/h"
+        tvSliderAccel.text = "${s.accelPedalPercent}%"
+        tvSliderBrake.text = "${s.brakePedalPercent}%"
+
+        // SoC interpolation
+        val trip = activeTrip
+        if (trip != null && trip.socStart > 0 && trip.socEnd > 0) {
+            val total = (activeSamples.size - 1).coerceAtLeast(1)
+            val soc = trip.socStart + (trip.socEnd - trip.socStart) * (idx.toDouble() / total)
+            tvSliderSoc.text = String.format(Locale.US, "%.1f%%", soc)
+        } else {
+            tvSliderSoc.text = "--%"
+        }
+
+        // Elapsed time
+        val startMs = activeSamples.first().timestampMs
+        val elapsedSec = ((s.timestampMs - startMs) / 1000).coerceAtLeast(0L)
+        val mins = elapsedSec / 60
+        val secs = elapsedSec % 60
+        tvSliderCurrentTime.text = String.format(Locale.US, "%d:%02d", mins, secs)
+
+        // 2. Chart timeline scrubber
+        chartTimeline.setScrubberIndex(idx)
+
+        // 3. Move vehicle marker on Map
+        val ptSample = if (s.lat != 0.0 && s.lon != 0.0 && s.lat.isFinite() && s.lon.isFinite()) {
+            s
+        } else {
+            activeSamples.minByOrNull { sample ->
+                if (sample.lat != 0.0 && sample.lon != 0.0 && sample.lat.isFinite() && sample.lon.isFinite()) {
+                    Math.abs(sample.timestampMs - s.timestampMs)
+                } else {
+                    Long.MAX_VALUE
+                }
+            }
+        }
+        if (ptSample != null && ptSample.lat != 0.0 && ptSample.lon != 0.0) {
+            val carPt = Point.fromLngLat(ptSample.lon, ptSample.lat)
+            val heading = computeSmoothedHeading(activeSamples, idx) ?: 0f
+            val carFeature = Feature.fromGeometry(carPt).apply {
+                addNumberProperty("heading", heading)
+            }
+            tripMap?.style?.getSourceAs<GeoJsonSource>(CAR_SOURCE_ID)?.setGeoJson(
+                FeatureCollection.fromFeatures(listOf(carFeature))
+            )
+        }
+    }
+
+    private fun plotTripRoute() {
+        val map = tripMap ?: return
+        val style = map.style ?: return
+        val samples = activeSamples
+        val gpsPoints = samples.filter { it.lat != 0.0 && it.lon != 0.0 && it.lat.isFinite() && it.lon.isFinite() }
+
+        val routeSource = style.getSourceAs<GeoJsonSource>(ROUTE_SOURCE_ID)
+        val markerSource = style.getSourceAs<GeoJsonSource>(MARKER_SOURCE_ID)
+        val carSource = style.getSourceAs<GeoJsonSource>(CAR_SOURCE_ID)
+
+        if (gpsPoints.size < 2) {
+            routeSource?.setGeoJson(FeatureCollection.fromFeatures(emptyList()))
+            markerSource?.setGeoJson(FeatureCollection.fromFeatures(emptyList()))
+            carSource?.setGeoJson(FeatureCollection.fromFeatures(emptyList()))
+            return
+        }
+
+        // 1. Build speed-banded route LineStrings
+        val features = mutableListOf<Feature>()
+        var runStart = 0
+        var runColor = getSpeedColor(gpsPoints[0].speedKmh)
+
+        for (i in 1..gpsPoints.size) {
+            val segColor = if (i < gpsPoints.size) getSpeedColor(gpsPoints[i].speedKmh) else null
+            if (i == gpsPoints.size || segColor != runColor) {
+                val segmentPoints = gpsPoints.subList(runStart, i).map {
+                    Point.fromLngLat(it.lon, it.lat)
+                }
+                if (segmentPoints.size >= 2) {
+                    val line = LineString.fromLngLats(segmentPoints)
+                    val feat = Feature.fromGeometry(line).apply {
+                        addStringProperty("color", runColor)
+                    }
+                    features.add(feat)
+                }
+                runStart = (i - 1).coerceAtLeast(0)
+                if (segColor != null) runColor = segColor
+            }
+        }
+        routeSource?.setGeoJson(FeatureCollection.fromFeatures(features))
+
+        // 2. Start & End Markers
+        val markerFeatures = mutableListOf<Feature>()
+        val startPt = Point.fromLngLat(gpsPoints.first().lon, gpsPoints.first().lat)
+        val endPt = Point.fromLngLat(gpsPoints.last().lon, gpsPoints.last().lat)
+        markerFeatures.add(Feature.fromGeometry(startPt).apply { addStringProperty("icon", "marker_start") })
+        markerFeatures.add(Feature.fromGeometry(endPt).apply { addStringProperty("icon", "marker_end") })
+        markerSource?.setGeoJson(FeatureCollection.fromFeatures(markerFeatures))
+
+        // 3. Initial Car Marker at start
+        val heading = computeSmoothedHeading(gpsPoints, 0) ?: 0f
+        val carFeature = Feature.fromGeometry(startPt).apply {
+            addNumberProperty("heading", heading)
+        }
+        carSource?.setGeoJson(FeatureCollection.fromFeatures(listOf(carFeature)))
+
+        // 4. Fit Camera Bounds
+        fitRouteBounds(animate = false)
+    }
+
+    private fun fitRouteBounds(animate: Boolean) {
+        val map = tripMap ?: return
+        val gpsPoints = activeSamples.filter { it.lat != 0.0 && it.lon != 0.0 && it.lat.isFinite() && it.lon.isFinite() }
+        if (gpsPoints.isEmpty()) return
+
+        val boundsBuilder = LatLngBounds.Builder()
+        for (pt in gpsPoints) {
+            boundsBuilder.include(LatLng(pt.lat, pt.lon))
+        }
+        val bounds = boundsBuilder.build()
+        val update = if (bounds.latitudeSpan > 0.0001 || bounds.longitudeSpan > 0.0001) {
+            CameraUpdateFactory.newLatLngBounds(bounds, 60)
+        } else {
+            CameraUpdateFactory.newLatLngZoom(LatLng(gpsPoints[0].lat, gpsPoints[0].lon), 15.0)
+        }
+
+        if (animate) {
+            map.animateCamera(update, 600, null)
+        } else {
+            map.easeCamera(update, 500)
+        }
+    }
+
+    private fun focusVehicleMarker(animate: Boolean) {
+        val map = tripMap ?: return
+        if (activeSamples.isEmpty()) return
+        val idx = sbTimeline.progress.coerceIn(activeSamples.indices)
+        val s = activeSamples[idx]
+
+        val validSample = if (s.lat != 0.0 && s.lon != 0.0 && s.lat.isFinite() && s.lon.isFinite()) {
+            s
+        } else {
+            activeSamples.minByOrNull { sample ->
+                if (sample.lat != 0.0 && sample.lon != 0.0 && sample.lat.isFinite() && sample.lon.isFinite()) {
+                    Math.abs(sample.timestampMs - s.timestampMs)
+                } else {
+                    Long.MAX_VALUE
+                }
+            }
+        } ?: return
+
+        val target = LatLng(validSample.lat, validSample.lon)
+        val currentZoom = map.cameraPosition.zoom
+        val targetZoom = if (currentZoom < 16.0) 16.5 else currentZoom
+        val update = CameraUpdateFactory.newLatLngZoom(target, targetZoom)
+
+        if (animate) {
+            map.animateCamera(update, 600, null)
+        } else {
+            map.easeCamera(update, 500)
+        }
+    }
+
+    private fun getSpeedColor(speed: Int): String {
+        return when {
+            speed < 40 -> "#22C55E" // green
+            speed <= 80 -> "#EAB308" // yellow
+            else -> "#EF4444" // red
+        }
+    }
+
+    private fun computeSmoothedHeading(samples: List<TelemetrySampleItem>, idx: Int): Float? {
+        if (samples.size < 2 || idx !in samples.indices) return null
+        var sumSin = 0.0
+        var sumCos = 0.0
+        var pairs = 0
+        val minDelta = 3e-5
+        val window = 5
+        val lo = (idx - window).coerceAtLeast(0)
+        val hi = (idx + window).coerceAtMost(samples.size - 1)
+        for (i in lo until hi) {
+            val a = samples[i]
+            val b = samples[i + 1]
+            if (a.lat == 0.0 || a.lon == 0.0 || b.lat == 0.0 || b.lon == 0.0) continue
+            if (Math.abs(b.lat - a.lat) < minDelta && Math.abs(b.lon - a.lon) < minDelta) continue
+            val dLon = Math.toRadians(b.lon - a.lon)
+            val lat1 = Math.toRadians(a.lat)
+            val lat2 = Math.toRadians(b.lat)
+            val y = Math.sin(dLon) * Math.cos(lat2)
+            val x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon)
+            val bearingRad = Math.atan2(y, x)
+            sumSin += Math.sin(bearingRad)
+            sumCos += Math.cos(bearingRad)
+            pairs++
+        }
+        if (pairs == 0) {
+            if (idx < samples.size - 1) {
+                val a = samples[idx]
+                val b = samples[idx + 1]
+                val dLon = Math.toRadians(b.lon - a.lon)
+                val lat1 = Math.toRadians(a.lat)
+                val lat2 = Math.toRadians(b.lat)
+                val y = Math.sin(dLon) * Math.cos(lat2)
+                val x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon)
+                return Math.toDegrees(Math.atan2(y, x)).toFloat()
+            }
+            return null
+        }
+        return Math.toDegrees(Math.atan2(sumSin / pairs, sumCos / pairs)).toFloat()
+    }
+
+    private fun createCircleMarkerBitmap(color: Int, text: String): Bitmap {
+        val size = 56
+        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = color
+            style = Paint.Style.FILL
+        }
+        val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = Color.WHITE
+            style = Paint.Style.STROKE
+            strokeWidth = 4f
+        }
+        canvas.drawCircle(size / 2f, size / 2f, size / 2f - 4f, paint)
+        canvas.drawCircle(size / 2f, size / 2f, size / 2f - 4f, strokePaint)
+
+        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = Color.WHITE
+            textSize = 24f
+            typeface = Typeface.DEFAULT_BOLD
+            textAlign = Paint.Align.CENTER
+        }
+        val yOffset = (textPaint.descent() + textPaint.ascent()) / 2f
+        canvas.drawText(text, size / 2f, size / 2f - yOffset, textPaint)
+        return bitmap
+    }
+
+    private fun createCarMarkerBitmap(): Bitmap {
+        val src = try {
+            BitmapFactory.decodeResource(resources, R.drawable.car_top_view)
+                ?: BitmapFactory.decodeResource(resources, R.drawable.car_icon_map)
+        } catch (e: Exception) {
+            null
+        } ?: return createFallbackCarMarkerBitmap()
+
+        val density = resources.displayMetrics.density
+        val targetW = (28 * density).toInt().coerceIn(24, 72)
+        val targetH = (targetW * (src.height.toFloat() / src.width.toFloat())).toInt()
+
+        val padding = (4 * density).toInt()
+        val totalW = targetW + padding * 2
+        val totalH = targetH + padding * 2
+
+        val result = Bitmap.createBitmap(totalW, totalH, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(result)
+
+        // Drop shadow matching the Trips (Eski) web style
+        val shadowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.argb(120, 0, 0, 0)
+            maskFilter = BlurMaskFilter(padding.toFloat(), BlurMaskFilter.Blur.NORMAL)
+        }
+        val carRect = RectF(
+            padding.toFloat(),
+            padding.toFloat(),
+            (padding + targetW).toFloat(),
+            (padding + targetH).toFloat()
+        )
+        canvas.drawRoundRect(carRect, targetW * 0.2f, targetW * 0.2f, shadowPaint)
+
+        // Draw car icon
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+        val srcRect = Rect(0, 0, src.width, src.height)
+        canvas.drawBitmap(src, srcRect, carRect, paint)
+
+        return result
+    }
+
+    private fun createFallbackCarMarkerBitmap(): Bitmap {
+        val w = 40
+        val h = 64
+        val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#00D4AA")
+            style = Paint.Style.FILL
+        }
+        val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            style = Paint.Style.STROKE
+            strokeWidth = 3f
+        }
+        val path = Path().apply {
+            moveTo(w / 2f, 2f)
+            lineTo(w - 4f, 18f)
+            lineTo(w - 4f, h - 6f)
+            quadTo(w / 2f, h - 2f, 4f, h - 6f)
+            lineTo(4f, 18f)
+            close()
+        }
+        canvas.drawPath(path, paint)
+        canvas.drawPath(path, strokePaint)
+
+        val glassPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#80FFFFFF")
+            style = Paint.Style.FILL
+        }
+        val glassPath = Path().apply {
+            moveTo(w / 2f, 10f)
+            lineTo(w - 10f, 22f)
+            lineTo(10f, 22f)
+            close()
+        }
+        canvas.drawPath(glassPath, glassPaint)
+        return bitmap
     }
 
     private fun showDeleteConfirmDialog(trip: TripRecordItem) {

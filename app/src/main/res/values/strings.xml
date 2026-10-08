@@ -2326,6 +2326,39 @@
     <string name="trip_range_apply" translatable="false">Apply</string>
     <string name="trip_no_trips_yet" translatable="false">No trips recorded yet</string>
     <string name="trip_no_trips_hint" translatable="false">Enable trip analytics and start driving to see your trips here</string>
+    <string name="trip_timeline_title" translatable="false">Trip Timeline</string>
+    <string name="trip_timeline_speed" translatable="false">Speed</string>
+    <string name="trip_timeline_accel" translatable="false">Accel</string>
+    <string name="trip_timeline_brake" translatable="false">Brake</string>
+    <string name="trip_timeline_soc" translatable="false">SoC</string>
+    <string name="trip_route_title" translatable="false">Route</string>
+    <string name="trip_map_fit_route" translatable="false">Fit Route</string>
+    <string name="trip_map_focus_car" translatable="false">Focus Vehicle</string>
+    <string name="trip_map_zoom_in" translatable="false">Zoom In</string>
+    <string name="trip_map_zoom_out" translatable="false">Zoom Out</string>
+    <string name="trip_route_speed_low" translatable="false">&lt;40 km/h</string>
+    <string name="trip_route_speed_mid" translatable="false">40–80 km/h</string>
+    <string name="trip_route_speed_high" translatable="false">&gt;80 km/h</string>
+    <string name="trip_timeline_accelerating" translatable="false">Accelerating</string>
+    <string name="trip_timeline_coasting" translatable="false">Coasting</string>
+    <string name="trip_timeline_braking" translatable="false">Braking</string>
+    <string name="trip_dna_breakdown_title" translatable="false">Driving DNA Breakdown</string>
+    <string name="trip_dna_coaching_hint" translatable="false">Tap rows for coaching 💡</string>
+    <string name="trip_dna_anticipation_title" translatable="false">Anticipation</string>
+    <string name="trip_dna_anticipation_desc" translatable="false">Measures how well you read traffic ahead and lift off the accelerator early before braking. Higher scores mean less energy wasted on sudden stops.</string>
+    <string name="trip_dna_anticipation_tip" translatable="false">💡 Tip: Coast more before red lights and slow traffic. Lift off the pedal 3–5 seconds earlier than usual.</string>
+    <string name="trip_dna_smoothness_title" translatable="false">Smoothness</string>
+    <string name="trip_dna_smoothness_desc" translatable="false">Tracks how gradually you apply and release the accelerator and brake pedals. Jerky inputs waste energy and reduce comfort.</string>
+    <string name="trip_dna_smoothness_tip" translatable="false">💡 Tip: Pretend there\'s a glass of water on the dashboard. Smooth pedal transitions keep it from spilling.</string>
+    <string name="trip_dna_speed_disc_title" translatable="false">Speed Discipline</string>
+    <string name="trip_dna_speed_disc_desc" translatable="false">Evaluates how consistently you maintain appropriate speeds. Frequent speeding and large speed variations reduce this score.</string>
+    <string name="trip_dna_speed_disc_tip" translatable="false">💡 Tip: Use cruise control on highways. Keeping within 5 km/h of the limit saves significant energy.</string>
+    <string name="trip_dna_efficiency_title" translatable="false">Efficiency</string>
+    <string name="trip_dna_efficiency_desc" translatable="false">Compares your energy consumption per km against the optimal baseline for your vehicle, route, and conditions.</string>
+    <string name="trip_dna_efficiency_tip" translatable="false">💡 Tip: Pre-condition the cabin while plugged in. Avoid full-throttle launches from stops.</string>
+    <string name="trip_dna_consistency_title" translatable="false">Consistency</string>
+    <string name="trip_dna_consistency_desc" translatable="false">Measures how uniform your driving style is throughout the trip. Erratic behavior (alternating aggressive and calm) lowers this score.</string>
+    <string name="trip_dna_consistency_tip" translatable="false">💡 Tip: Pick a driving style and stick with it. Consistent habits build muscle memory for efficiency.</string>
 
     <!-- Automations Native Screen Strings -->
     <string name="rail_automations_native" translatable="false">Automations (Native)</string>

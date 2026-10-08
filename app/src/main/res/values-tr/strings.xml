@@ -1690,6 +1690,10 @@
     <string name="trip_range_apply" translatable="false">Uygula</string>
     <string name="trip_no_trips_yet" translatable="false">Henüz kayıtlı sürüş yok</string>
     <string name="trip_no_trips_hint" translatable="false">Sürüş analizini etkinleştirin ve sürüşlerinizi burada görmek için aracı kullanın</string>
+    <string name="trip_map_fit_route" translatable="false">Rotayı Sığdır</string>
+    <string name="trip_map_focus_car" translatable="false">Araca Odaklan</string>
+    <string name="trip_map_zoom_in" translatable="false">Yakınlaştır</string>
+    <string name="trip_map_zoom_out" translatable="false">Uzaklaştır</string>
 
     <!-- Automations Native Screen Strings -->
     <string name="rail_automations_native" translatable="false">Otomasyonlar (Native)</string>
