@@ -1,6 +1,7 @@
 package com.overdrive.app.ui.keymapping
 
 import android.content.Context
+import com.overdrive.app.config.UnifiedConfigManager
 import com.overdrive.app.logging.DaemonLogger
 import com.overdrive.app.util.DaemonHttpClient
 import kotlinx.coroutines.Dispatchers
@@ -71,6 +72,17 @@ open class KeyMappingRepository(private val context: Context? = null) {
             logger.error("Error testing action fire: ${e.message}", e)
             Result.failure(e)
         }
+    }
+
+    open fun getClusterSizeProfile(): Int {
+        val bs = UnifiedConfigManager.getBlindSpot()
+        val profile = bs.optInt("clusterSizeProfile", 31)
+        return if (profile in listOf(29, 30, 31)) profile else 31
+    }
+
+    open fun setClusterSizeProfile(profile: Int): Boolean {
+        if (profile !in listOf(29, 30, 31)) return false
+        return UnifiedConfigManager.setBlindSpotValues(mapOf("clusterSizeProfile" to profile))
     }
 
     private fun executeHttp(path: String, method: String, body: String? = null): String? {

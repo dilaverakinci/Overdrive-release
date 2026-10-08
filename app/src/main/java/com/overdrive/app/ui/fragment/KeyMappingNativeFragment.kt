@@ -1,6 +1,9 @@
 package com.overdrive.app.ui.fragment
 
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
 import android.provider.Settings
 import android.view.LayoutInflater
@@ -10,11 +13,13 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -43,10 +48,23 @@ class KeyMappingNativeFragment : Fragment() {
 
     private val viewModel: KeyMappingViewModel by viewModels()
 
-    // Header & Tabs
+    // Header & Bottom Tabs
     private lateinit var tvMasterStatusBadge: TextView
-    private lateinit var tabBtnBindings: MaterialButton
-    private lateinit var tabBtnAdd: MaterialButton
+    private lateinit var tabBottomBindings: LinearLayout
+    private lateinit var ivBottomTabBindings: ImageView
+    private lateinit var tvBottomTabBindings: TextView
+    private lateinit var tabBottomAdd: LinearLayout
+    private lateinit var ivBottomTabAdd: ImageView
+    private lateinit var tvBottomTabAdd: TextView
+
+    // Cluster Size
+    private lateinit var spinnerClusterSize: Spinner
+    data class ClusterOption(val profile: Int, val labelRes: Int)
+    private val clusterOptions = listOf(
+        ClusterOption(31, R.string.keymap_cluster_1025),
+        ClusterOption(30, R.string.keymap_cluster_123),
+        ClusterOption(29, R.string.keymap_cluster_88)
+    )
 
     // Tab Layouts
     private lateinit var layoutBindingsTab: NestedScrollView
@@ -116,8 +134,13 @@ class KeyMappingNativeFragment : Fragment() {
 
     private fun initViews(v: View) {
         tvMasterStatusBadge = v.findViewById(R.id.tvMasterStatusBadge)
-        tabBtnBindings = v.findViewById(R.id.tabBtnBindings)
-        tabBtnAdd = v.findViewById(R.id.tabBtnAdd)
+        tabBottomBindings = v.findViewById(R.id.tabBottomBindings)
+        ivBottomTabBindings = v.findViewById(R.id.ivBottomTabBindings)
+        tvBottomTabBindings = v.findViewById(R.id.tvBottomTabBindings)
+        tabBottomAdd = v.findViewById(R.id.tabBottomAdd)
+        ivBottomTabAdd = v.findViewById(R.id.ivBottomTabAdd)
+        tvBottomTabAdd = v.findViewById(R.id.tvBottomTabAdd)
+        spinnerClusterSize = v.findViewById(R.id.spinnerClusterSize)
 
         layoutBindingsTab = v.findViewById(R.id.layoutBindingsTab)
         layoutAddTab = v.findViewById(R.id.layoutAddTab)
@@ -158,6 +181,8 @@ class KeyMappingNativeFragment : Fragment() {
         btnSaveBinding = v.findViewById(R.id.btnSaveBinding)
 
         progressBarLoading = v.findViewById(R.id.progressBarLoading)
+
+        setupClusterSizeSpinner()
 
         // Accessibility Settings Button
         btnOpenA11y.setOnClickListener {
@@ -200,24 +225,63 @@ class KeyMappingNativeFragment : Fragment() {
         }
     }
 
+    private fun setupClusterSizeSpinner() {
+        val clusterAdapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            clusterOptions.map { getString(it.labelRes) }
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+        spinnerClusterSize.adapter = clusterAdapter
+        spinnerClusterSize.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                if (!isProgrammaticUpdate && position in clusterOptions.indices) {
+                    viewModel.updateClusterSizeProfile(clusterOptions[position].profile)
+                }
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+    }
+
     private fun setupTabs() {
-        tabBtnBindings.setOnClickListener {
+        tabBottomBindings.setOnClickListener {
             viewModel.selectTab(KeyMappingTab.BINDINGS)
         }
-        tabBtnAdd.setOnClickListener {
+        tabBottomAdd.setOnClickListener {
             viewModel.selectTab(KeyMappingTab.ADD)
         }
     }
 
     private fun updateTabSelection(tab: KeyMappingTab) {
+        val ctx = context ?: return
+        val brandColor = ContextCompat.getColor(ctx, R.color.brand_primary)
+        val mutedColor = Color.parseColor("#94A3B8")
+
         if (tab == KeyMappingTab.BINDINGS) {
-            tabBtnBindings.setBackgroundResource(R.drawable.bg_pill_state)
-            tabBtnAdd.background = null
+            tabBottomBindings.setBackgroundResource(R.drawable.bg_bottom_tab_active)
+            ivBottomTabBindings.imageTintList = ColorStateList.valueOf(brandColor)
+            tvBottomTabBindings.setTextColor(brandColor)
+            tvBottomTabBindings.setTypeface(null, Typeface.BOLD)
+
+            tabBottomAdd.setBackgroundColor(Color.TRANSPARENT)
+            ivBottomTabAdd.imageTintList = ColorStateList.valueOf(mutedColor)
+            tvBottomTabAdd.setTextColor(mutedColor)
+            tvBottomTabAdd.setTypeface(null, Typeface.NORMAL)
+
             layoutBindingsTab.visibility = View.VISIBLE
             layoutAddTab.visibility = View.GONE
         } else {
-            tabBtnBindings.background = null
-            tabBtnAdd.setBackgroundResource(R.drawable.bg_pill_state)
+            tabBottomBindings.setBackgroundColor(Color.TRANSPARENT)
+            ivBottomTabBindings.imageTintList = ColorStateList.valueOf(mutedColor)
+            tvBottomTabBindings.setTextColor(mutedColor)
+            tvBottomTabBindings.setTypeface(null, Typeface.NORMAL)
+
+            tabBottomAdd.setBackgroundResource(R.drawable.bg_bottom_tab_active)
+            ivBottomTabAdd.imageTintList = ColorStateList.valueOf(brandColor)
+            tvBottomTabAdd.setTextColor(brandColor)
+            tvBottomTabAdd.setTypeface(null, Typeface.BOLD)
+
             layoutBindingsTab.visibility = View.GONE
             layoutAddTab.visibility = View.VISIBLE
         }
@@ -505,6 +569,17 @@ class KeyMappingNativeFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.isLoading.collectLatest { loading ->
                 progressBarLoading.visibility = if (loading) View.VISIBLE else View.GONE
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.clusterSizeProfile.collectLatest { profile ->
+                val index = clusterOptions.indexOfFirst { it.profile == profile }
+                if (index >= 0 && spinnerClusterSize.selectedItemPosition != index) {
+                    isProgrammaticUpdate = true
+                    spinnerClusterSize.setSelection(index)
+                    isProgrammaticUpdate = false
+                }
             }
         }
 

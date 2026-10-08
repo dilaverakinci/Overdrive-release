@@ -41,6 +41,9 @@ open class KeyMappingViewModel @JvmOverloads constructor(
     private val _capturedKeycode = MutableStateFlow<Int?>(null)
     val capturedKeycode: StateFlow<Int?> = _capturedKeycode.asStateFlow()
 
+    private val _clusterSizeProfile = MutableStateFlow(31)
+    val clusterSizeProfile: StateFlow<Int> = _clusterSizeProfile.asStateFlow()
+
     init {
         loadConfig()
         loadApps()
@@ -54,6 +57,7 @@ open class KeyMappingViewModel @JvmOverloads constructor(
         viewModelScope.launch {
             _isLoading.value = true
             _errorMessage.value = null
+            _clusterSizeProfile.value = repository.getClusterSizeProfile()
             repository.getConfig().fold(
                 onSuccess = {
                     _config.value = it
@@ -64,6 +68,14 @@ open class KeyMappingViewModel @JvmOverloads constructor(
                     _isLoading.value = false
                 }
             )
+        }
+    }
+
+    fun updateClusterSizeProfile(profile: Int) {
+        if (profile !in listOf(29, 30, 31)) return
+        _clusterSizeProfile.value = profile
+        viewModelScope.launch {
+            repository.setClusterSizeProfile(profile)
         }
     }
 

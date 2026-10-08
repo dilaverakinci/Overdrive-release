@@ -556,6 +556,8 @@ open class MainActivity : AppCompatActivity() {
             "vehicle" -> R.id.vehicleControlFragment
             "dashboard" -> R.id.dashboardFragment
             "assistant" -> R.id.genAiFragment
+            "keymapping" -> R.id.keyMappingFragment
+            "keymapping_legacy" -> R.id.keyMappingLegacyFragment
             else -> return
         }
         // navigateToRailDestination self-defers via pendingRailDestination when

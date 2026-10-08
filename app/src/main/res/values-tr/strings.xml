@@ -1747,6 +1747,14 @@
     <string name="keymap_delete_confirm_title" translatable="false">Tuş Atamasını Sil</string>
     <string name="keymap_delete_confirm_msg" translatable="false">%s tuş atamasını silmek istediğinizden emin misiniz?</string>
     <string name="keymap_test_action" translatable="false">Test Et</string>
+    <string name="keymap_tab_add_short" translatable="false">Ekle</string>
+    <string name="keymap_cluster_size" translatable="false">Gösterge paneli boyutu</string>
+    <string name="keymap_cluster_size_desc" translatable="false">Bunu gösterge panelinizle eşleştirin. Kör nokta gösterge görünümüyle paylaşılır. Görüntü gerilmiş veya kırpılmış görünüyorsa başka bir seçenek deneyin.</string>
+    <string name="keymap_cluster_1025" translatable="false">10.25\" gösterge paneli</string>
+    <string name="keymap_cluster_123" translatable="false">12.3\" gösterge paneli</string>
+    <string name="keymap_cluster_88" translatable="false">8.8\" gösterge paneli</string>
+    <string name="keymap_list_title" translatable="false">Atamalarınız</string>
+    <string name="keymap_btn_add_binding" translatable="false">Atama ekle</string>
 
     <!-- Integrations Native Screen Strings -->
     <string name="rail_integrations_native" translatable="false">Entegrasyonlar (Native)</string>

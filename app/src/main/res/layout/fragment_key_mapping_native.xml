@@ -6,101 +6,76 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="?attr/colorSurface"
-    android:padding="20dp">
+    android:background="?attr/colorSurface">
 
-    <!-- Header Section -->
+    <!-- Top Content Area (weight=1) -->
     <LinearLayout
-        android:id="@+id/layoutKeymapHeader"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:id="@+id/tvKeymapTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/keymap_page_title"
-                    android:textSize="26sp"
-                    android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface" />
-
-                <TextView
-                    android:id="@+id/tvMasterStatusBadge"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="3dp"
-                    android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface"
-                    android:background="@drawable/bg_status_badge_active"
-                    tools:text="ACTIVE" />
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/tvKeymapSubtitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="@string/keymap_page_subtitle"
-                android:textSize="13sp"
-                android:textColor="?attr/colorOnSurfaceVariant" />
-        </LinearLayout>
-
-        <!-- Material 3 Tab Pills -->
-        <LinearLayout
-            android:id="@+id/layoutKeymapTabs"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:background="@drawable/bg_pill_state"
-            android:backgroundTint="?attr/colorSurfaceContainerHigh"
-            android:padding="4dp">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/tabBtnBindings"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="wrap_content"
-                android:layout_height="38dp"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="0dp"
-                android:text="@string/keymap_tab_bindings"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/tabBtnAdd"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="38dp"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="0dp"
-                android:text="@string/keymap_tab_add"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="16dp">
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="20dp">
+
+        <!-- Header Section -->
+        <LinearLayout
+            android:id="@+id/layoutKeymapHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/tvKeymapTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/keymap_page_title"
+                        android:textSize="26sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorOnSurface" />
+
+                    <TextView
+                        android:id="@+id/tvMasterStatusBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorOnSurface"
+                        android:background="@drawable/bg_status_badge_active"
+                        tools:text="ACTIVE" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvKeymapSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/keymap_page_subtitle"
+                    android:textSize="13sp"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="16dp">
 
         <!-- TAB 1: BINDINGS TAB -->
         <androidx.core.widget.NestedScrollView
@@ -236,71 +211,7 @@
                             android:layout_marginVertical="12dp"
                             android:background="?attr/colorOutlineVariant" />
 
-                        <!-- Double-tap speed slider -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-
-                            <LinearLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical">
-
-                                <LinearLayout
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:orientation="horizontal"
-                                    android:gravity="center_vertical">
-
-                                    <TextView
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:text="@string/keymap_double_tap_speed"
-                                        android:textSize="15sp"
-                                        android:textStyle="bold"
-                                        android:textColor="?attr/colorOnSurface" />
-
-                                    <TextView
-                                        android:id="@+id/tvDoubleTapValue"
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:layout_marginStart="8dp"
-                                        android:fontFamily="monospace"
-                                        android:textSize="13sp"
-                                        android:textStyle="bold"
-                                        android:textColor="?attr/colorPrimary"
-                                        tools:text="0.45s" />
-                                </LinearLayout>
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="2dp"
-                                    android:text="@string/keymap_double_tap_desc"
-                                    android:textSize="12sp"
-                                    android:textColor="?attr/colorOnSurfaceVariant" />
-                            </LinearLayout>
-
-                            <com.google.android.material.slider.Slider
-                                android:id="@+id/sliderDoubleTap"
-                                android:layout_width="220dp"
-                                android:layout_height="wrap_content"
-                                android:valueFrom="250"
-                                android:valueTo="1500"
-                                android:stepSize="50"
-                                android:value="450" />
-                        </LinearLayout>
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:layout_marginVertical="12dp"
-                            android:background="?attr/colorOutlineVariant" />
-
-                        <!-- Advanced (Shell) switch -->
+                        <!-- 2. Advanced (Shell) switch -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -337,90 +248,235 @@
                                 android:contentDescription="@string/keymap_allow_advanced" />
                         </LinearLayout>
 
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginVertical="12dp"
+                            android:background="?attr/colorOutlineVariant" />
+
+                        <!-- 3. Double-tap speed slider -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/keymap_double_tap_speed"
+                                        android:textSize="15sp"
+                                        android:textStyle="bold"
+                                        android:textColor="?attr/colorOnSurface" />
+
+                                    <TextView
+                                        android:id="@+id/tvDoubleTapValue"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="8dp"
+                                        android:fontFamily="monospace"
+                                        android:textSize="13sp"
+                                        android:textStyle="bold"
+                                        android:textColor="?attr/colorPrimary"
+                                        tools:text="0.50s" />
+                                </LinearLayout>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="@string/keymap_double_tap_desc"
+                                    android:textSize="12sp"
+                                    android:textColor="?attr/colorOnSurfaceVariant" />
+                            </LinearLayout>
+
+                            <com.google.android.material.slider.Slider
+                                android:id="@+id/sliderDoubleTap"
+                                android:layout_width="220dp"
+                                android:layout_height="wrap_content"
+                                android:valueFrom="250"
+                                android:valueTo="1500"
+                                android:stepSize="50"
+                                android:value="500" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginVertical="12dp"
+                            android:background="?attr/colorOutlineVariant" />
+
+                        <!-- 4. Cluster size spinner -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/keymap_cluster_size"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold"
+                                    android:textColor="?attr/colorOnSurface" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="@string/keymap_cluster_size_desc"
+                                    android:textSize="12sp"
+                                    android:textColor="?attr/colorOnSurfaceVariant" />
+                            </LinearLayout>
+
+                            <Spinner
+                                android:id="@+id/spinnerClusterSize"
+                                android:layout_width="220dp"
+                                android:layout_height="48dp"
+                                android:background="@drawable/bg_keymap_pill"
+                                android:paddingHorizontal="12dp" />
+                        </LinearLayout>
+
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Subheader: Count + Add Button -->
-                <LinearLayout
+                <!-- Your Bindings Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardBindingsList"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/colorOutlineVariant"
+                    app:cardBackgroundColor="?attr/colorSurfaceContainer">
 
-                    <TextView
-                        android:id="@+id/tvBindingsCount"
-                        android:layout_width="0dp"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        tools:text="0 Key Bindings configured" />
+                        android:orientation="vertical"
+                        android:padding="16dp">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnAddBindingTop"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="38dp"
-                        android:text="@string/keymap_tab_add"
-                        app:icon="@drawable/ic_add"
-                        app:iconSize="16dp"
-                        android:textSize="12sp" />
-                </LinearLayout>
+                        <!-- Card Header -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="12dp">
 
-                <!-- Empty State -->
-                <LinearLayout
-                    android:id="@+id/layoutEmptyState"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="48dp"
-                    android:visibility="gone"
-                    tools:visibility="visible">
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@drawable/ic_key_mapping"
+                                app:tint="?attr/colorPrimary" />
 
-                    <ImageView
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
-                        android:src="@drawable/ic_key_mapping"
-                        app:tint="?attr/colorOutline" />
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="10dp"
+                                android:text="@string/keymap_list_title"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="?attr/colorOnSurface"
-                        android:text="@string/keymap_empty_title" />
+                            <TextView
+                                android:id="@+id/tvBindingsCount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="12sp"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                tools:text="0 bindings" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:textSize="13sp"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:gravity="center"
-                        android:text="@string/keymap_empty_hint" />
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnAddBindingTop"
+                                style="@style/Widget.Material3.Button.TonalButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="36dp"
+                                android:layout_marginStart="10dp"
+                                android:text="@string/keymap_tab_add_short"
+                                app:icon="@drawable/ic_add"
+                                app:iconSize="14dp"
+                                android:textSize="11sp" />
+                        </LinearLayout>
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnEmptyAdd"
-                        style="@style/Widget.Material3.Button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:text="@string/keymap_tab_add"
-                        app:icon="@drawable/ic_add" />
-                </LinearLayout>
+                        <!-- Empty State -->
+                        <LinearLayout
+                            android:id="@+id/layoutEmptyState"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="36dp"
+                            android:visibility="gone"
+                            tools:visibility="visible">
 
-                <!-- Bindings Recycler -->
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvBindings"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false"
-                    tools:listitem="@layout/item_key_binding" />
+                            <ImageView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:src="@drawable/ic_key_mapping"
+                                android:alpha="0.4"
+                                app:tint="?attr/colorOutline" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="16dp"
+                                android:textSize="15sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface"
+                                android:text="@string/keymap_empty_title" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:textSize="13sp"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:gravity="center"
+                                android:text="@string/keymap_empty_hint" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnEmptyAdd"
+                                style="@style/Widget.Material3.Button"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="16dp"
+                                android:text="@string/keymap_btn_add_binding"
+                                app:icon="@drawable/ic_add" />
+                        </LinearLayout>
+
+                        <!-- Bindings Recycler -->
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvBindings"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:nestedScrollingEnabled="false"
+                            tools:listitem="@layout/item_key_binding" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
@@ -818,6 +874,92 @@
             android:layout_gravity="center"
             android:visibility="gone"
             tools:visibility="gone" />
-
     </FrameLayout>
+    </LinearLayout>
+
+    <!-- Sticky Bottom Tab Bar (Matching Legacy Bottom Tabs) -->
+    <LinearLayout
+        android:id="@+id/layoutBottomTabsBar"
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <!-- 1dp Border Line -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?attr/colorOutlineVariant" />
+
+        <!-- Tabs Container -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="6dp">
+
+            <!-- Bindings Tab -->
+            <LinearLayout
+                android:id="@+id/tabBottomBindings"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/bg_bottom_tab_active"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/ivBottomTabBindings"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:contentDescription="Bindings"
+                    android:src="@drawable/ic_key_mapping"
+                    app:tint="@color/brand_primary" />
+
+                <TextView
+                    android:id="@+id/tvBottomTabBindings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/keymap_tab_bindings"
+                    android:textSize="11sp"
+                    android:textColor="?attr/colorPrimary"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Add Tab -->
+            <LinearLayout
+                android:id="@+id/tabBottomAdd"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/ivBottomTabAdd"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:contentDescription="Add"
+                    android:src="@drawable/ic_add"
+                    app:tint="?attr/colorOutline" />
+
+                <TextView
+                    android:id="@+id/tvBottomTabAdd"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/keymap_tab_add_short"
+                    android:textSize="11sp"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
 </LinearLayout>
