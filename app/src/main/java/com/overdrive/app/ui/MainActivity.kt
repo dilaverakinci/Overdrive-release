@@ -109,6 +109,7 @@ open class MainActivity : AppCompatActivity() {
     private val RAIL_KEY_AUTOMATIONS_LEGACY = "automations_legacy"
     private val RAIL_KEY_KEY_MAPPING_LEGACY = "key_mapping_legacy"
     private val RAIL_KEY_INTEGRATIONS_LEGACY = "integrations_legacy"
+    private val RAIL_KEY_ROADSENSE_LEGACY = "roadsense_legacy"
     private val RAIL_KEY_SETTINGS = "settings"
     private val RAIL_KEY_ABOUT = "about"
     private val KEY_RAIL_EXPANDED = "navigation_rail_expanded"
@@ -178,6 +179,7 @@ open class MainActivity : AppCompatActivity() {
                 NavigationRailCatalog.TRIPS,
                 RAIL_KEY_TRIPS_LEGACY,
                 NavigationRailCatalog.ROAD_SENSE,
+                RAIL_KEY_ROADSENSE_LEGACY,
                 NavigationRailCatalog.MAP,
             )
         ),
@@ -550,6 +552,7 @@ open class MainActivity : AppCompatActivity() {
             "trips" -> R.id.tripsFragment
             "charging" -> R.id.chargingFragment
             "roadsense" -> R.id.roadSenseFragment
+            "roadsense_legacy" -> R.id.roadSenseLegacyFragment
             "recordings" -> R.id.recordingsFragment
             "parking" -> R.id.parkingFragment
             "live" -> R.id.liveViewFragment
@@ -1703,6 +1706,7 @@ open class MainActivity : AppCompatActivity() {
                 R.id.integrationsFragment,
                 R.id.integrationsLegacyFragment,
                 R.id.roadSenseFragment,
+                R.id.roadSenseLegacyFragment,
                 R.id.networkFragment,
                 R.id.diagnosticsFragment,
                 R.id.settingsFragment,
@@ -1793,7 +1797,10 @@ open class MainActivity : AppCompatActivity() {
                 R.drawable.ic_trips, R.string.rail_trips_legacy),
             RailItem(NavigationRailCatalog.ROAD_SENSE, R.id.railDestRoadSense,
                 R.id.roadSenseFragment,
-                R.drawable.ic_roadsense, R.string.rail_roadsense),
+                R.drawable.ic_roadsense, R.string.rail_roadsense_native),
+            RailItem(RAIL_KEY_ROADSENSE_LEGACY, R.id.railDestRoadSenseLegacy,
+                R.id.roadSenseLegacyFragment,
+                R.drawable.ic_roadsense, R.string.rail_roadsense_legacy),
             // Hazard Map is a standalone Activity, not a nav-graph fragment,
             // so it launches via startActivity (destinationId = 0).
             RailItem(NavigationRailCatalog.MAP, R.id.railDestMap, 0,

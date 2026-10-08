@@ -1915,4 +1915,133 @@
     <string name="integrations_subtab_add" translatable="false">Ekle</string>
     <string name="integrations_subtab_account" translatable="false">Hesap</string>
     <string name="integrations_subtab_advanced" translatable="false">Gelişmiş</string>
+
+    <!-- RoadSense Native Strings (TR) -->
+    <string name="rail_roadsense_native" translatable="false">RoadSense (Native)</string>
+    <string name="rail_roadsense_legacy" translatable="false">RoadSense (Eski)</string>
+    <string name="roadsense_native_title" translatable="false">RoadSense</string>
+    <string name="roadsense_native_subtitle" translatable="false">Yol tehlikesi algılama, harita projeksiyonu, uyarılar ve kör nokta</string>
+    <string name="roadsense_tab_general" translatable="false">Genel</string>
+    <string name="roadsense_tab_map" translatable="false">Harita</string>
+    <string name="roadsense_tab_warnings" translatable="false">Uyarılar</string>
+    <string name="roadsense_tab_data" translatable="false">Veri</string>
+    <string name="roadsense_tab_blindspot" translatable="false">Kör Nokta</string>
+
+    <string name="roadsense_master_title" translatable="false">RoadSense</string>
+    <string name="roadsense_master_enable" translatable="false">RoadSense\'i Etkinleştir</string>
+    <string name="roadsense_master_desc" translatable="false">Hareket ve GPS verilerinden yol tehlikelerini (tümsek, çukur, kasis) algılar ve bilinen tehlikeler öncesinde uyarır.</string>
+    <string name="roadsense_detect_title" translatable="false">Algılama Hassasiyeti</string>
+    <string name="roadsense_detect_desc" translatable="false">Tümsek ve çukurların ne kadar kolay algılanacağını belirler. %50 varsayılandır.</string>
+    <string name="roadsense_detect_min" translatable="false">Daha Az</string>
+    <string name="roadsense_detect_max" translatable="false">Daha Fazla</string>
+    <string name="roadsense_calib_title" translatable="false">Kalibrasyon Modu</string>
+    <string name="roadsense_calib_enable" translatable="false">Algılamaları ekranda onayla</string>
+    <string name="roadsense_calib_desc" translatable="false">Algılanan her tehlikeyi ekranda onayla/düzelt butonlarıyla göstererek RoadSense\'i eğitmenizi sağlar.</string>
+    <string name="roadsense_overlay_title" translatable="false">Ekran Yer Paylaşımı</string>
+    <string name="roadsense_overlay_enable" translatable="false">Ekranda yüzen paneli göster</string>
+    <string name="roadsense_overlay_desc" translatable="false">Ekranda yüzen RoadSense hapını ve tehlike kartını gösterir. Gizlendiğinde sesli uyarılar ve arka plan algılama aktif kalır.</string>
+
+    <string name="roadsense_map_open_title" translatable="false">Tehlike Haritası</string>
+    <string name="roadsense_map_open_desc" translatable="false">Güzergah aramak, navigasyon başlatmak ve yol tehlikelerini görmek için tam ekran haritayı açın.</string>
+    <string name="roadsense_map_open_btn" translatable="false">Haritayı Aç</string>
+    <string name="roadsense_routing_title" translatable="false">Adım Adım Yönlendirme (BYOK)</string>
+    <string name="roadsense_routing_desc" translatable="false">Temel harita ücretsizdir. Adım adım yönlendirme için kişisel Valhalla / Stadia Maps anahtarınızı girebilirsiniz. Cihazda şifreli saklanır.</string>
+    <string name="roadsense_routing_endpoint" translatable="false">Yönlendirme Uç Noktası</string>
+    <string name="roadsense_routing_key" translatable="false">Yönlendirme API Anahtarı</string>
+    <string name="roadsense_routing_key_hint" translatable="false">API anahtarınızı yapıştırın</string>
+    <string name="roadsense_routing_save" translatable="false">Anahtarı Kaydet</string>
+    <string name="roadsense_routing_clear" translatable="false">Anahtarı Temizle</string>
+    <string name="roadsense_routing_configured" translatable="false">Anahtar Ayarlandı</string>
+    <string name="roadsense_routing_not_configured" translatable="false">Anahtar Ayarlanmadı</string>
+    <string name="roadsense_cluster_proj_title" translatable="false">Gösterge Paneli Projeksiyonu</string>
+    <string name="roadsense_cluster_project" translatable="false">Haritayı gösterge paneline yansıt</string>
+    <string name="roadsense_cluster_project_desc" translatable="false">Tam haritayı direksiyon arkasındaki gösterge paneli ekranına yansıtır.</string>
+    <string name="roadsense_cluster_auto" translatable="false">ACC açıldığında otomatik yansıt</string>
+    <string name="roadsense_cluster_auto_desc" translatable="false">Araç her çalıştığında haritayı otomatik olarak göstergeye yansıtır.</string>
+    <string name="roadsense_cluster_layout" translatable="false">Gösterge Ekran Boyutu</string>
+    <string name="roadsense_cluster_1025" translatable="false">10.25\" Gösterge (Varsayılan)</string>
+    <string name="roadsense_cluster_123" translatable="false">12.3\" Gösterge</string>
+    <string name="roadsense_cluster_88" translatable="false">8.8\" Gösterge</string>
+
+    <string name="roadsense_warn_ahead_title" translatable="false">Tehlike Uyarıları</string>
+    <string name="roadsense_warn_ahead_enable" translatable="false">Bilinen tehlikeleri önceden bildir</string>
+    <string name="roadsense_warn_ahead_desc" translatable="false">Güzergahınızda RoadSense\'in önceden bildiği bir tehlikeye yaklaşırken sizi uyarır.</string>
+    <string name="roadsense_warn_style_title" translatable="false">Uyarı Tarzı</string>
+    <string name="roadsense_warn_style_visual" translatable="false">Görsel</string>
+    <string name="roadsense_warn_style_audio" translatable="false">Sesli</string>
+    <string name="roadsense_warn_style_both" translatable="false">Her İkisi</string>
+    <string name="roadsense_sound_channel_title" translatable="false">Ses Kanalı</string>
+    <string name="roadsense_sound_channel_desc" translatable="false">Navigasyon kanalı müzik sesini kısarak uyarının net duyulmasını sağlar.</string>
+    <string name="roadsense_chime_volume_title" translatable="false">Zil Sesi Seviyesi</string>
+    <string name="roadsense_test_chime" translatable="false">Zil Sesini Test Et</string>
+    <string name="roadsense_warn_lead_title" translatable="false">Öncü Uyarı Süresi</string>
+    <string name="roadsense_warn_lead_desc" translatable="false">Uyarının tehlikeden kaç saniye önce verileceğini belirler.</string>
+    <string name="roadsense_warn_conf_title" translatable="false">Minimum Güven Eşiği</string>
+    <string name="roadsense_warn_conf_desc" translatable="false">Yalnızca bu güven eşiğinin üzerindeki tehlikeler için uyarı verilir.</string>
+    <string name="roadsense_sev_title" translatable="false">Şiddete Göre Uyarılar</string>
+
+    <string name="roadsense_crowd_title" translatable="false">Topluluk Paylaşımı</string>
+    <string name="roadsense_crowd_note" translatable="false">Varsayılan olarak tüm algılamalar cihazda kalır. Yükleme ve indirme birbirinden bağımsızdır.</string>
+    <string name="roadsense_crowd_upload" translatable="false">Algılamalarımı yükle</string>
+    <string name="roadsense_crowd_upload_desc" translatable="false">Algılanan tehlikeleri anonim olarak paylaşılan harita ağına gönderir.</string>
+    <string name="roadsense_crowd_download" translatable="false">Paylaşılan tehlikeleri indir</string>
+    <string name="roadsense_crowd_download_desc" translatable="false">Diğer sürücülerden gelen tehlikeleri indirerek daha önce geçmediğiniz yollarda da uyarılmanızı sağlar.</string>
+    <string name="roadsense_sync_worker" translatable="false">Senkronizasyon Sunucusu URL</string>
+    <string name="roadsense_calib_data_title" translatable="false">Kalibrasyon Verileri</string>
+    <string name="roadsense_delete_local_title" translatable="false">Yerel kalibrasyonları sil</string>
+    <string name="roadsense_delete_local_desc" translatable="false">Cihazda depolanan tüm tehlike algılamalarını ve kalibrasyon etiketlerini siler. Geri alınamaz.</string>
+    <string name="roadsense_delete_local_btn" translatable="false">Yerel Verileri Sil</string>
+    <string name="roadsense_delete_cloud_title" translatable="false">Bulut kalibrasyonlarını sil</string>
+    <string name="roadsense_delete_cloud_desc" translatable="false">Yüklediğiniz tehlike verilerini paylaşılan bulut veritabanından kaldırır. Geri alınamaz.</string>
+    <string name="roadsense_delete_cloud_btn" translatable="false">Bulut Verilerini Sil</string>
+    <string name="roadsense_confirm_delete_local" translatable="false">Tüm yerel kalibrasyonları ve tehlike verilerini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</string>
+    <string name="roadsense_confirm_delete_cloud" translatable="false">Buluta yüklediğiniz algılamaları silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</string>
+
+    <string name="roadsense_bs_title" translatable="false">Kör Nokta</string>
+    <string name="roadsense_bs_enable" translatable="false">Kör Nokta Görünümünü Etkinleştir</string>
+    <string name="roadsense_bs_enable_desc" translatable="false">Sinyal verildiğinde ilgili kör nokta kamera görüntüsünü ekranda gösterir.</string>
+    <string name="roadsense_bs_cameras_title" translatable="false">Gösterilen Kameralar</string>
+    <string name="roadsense_bs_merge_both" translatable="false">Arka + Yan</string>
+    <string name="roadsense_bs_merge_side" translatable="false">Yalnızca Yan</string>
+    <string name="roadsense_bs_merge_rear" translatable="false">Yalnızca Arka</string>
+    <string name="roadsense_bs_rotation_left" translatable="false">Döndürme — Sol</string>
+    <string name="roadsense_bs_rotation_right" translatable="false">Döndürme — Sağ</string>
+    <string name="roadsense_bs_rectify_title" translatable="false">Balıkgözü Düzeltme</string>
+    <string name="roadsense_bs_rectify_desc" translatable="false">Tek kamera görünümleri için lens eğriliğini düzleştirir.</string>
+    <string name="roadsense_bs_when_title" translatable="false">Görünme Koşulları</string>
+    <string name="roadsense_bs_speed_range" translatable="false">Hız Aralığı (km/h)</string>
+    <string name="roadsense_bs_speed_range_desc" translatable="false">Kör noktayı yalnızca belirtilen hız aralığında göster. Her hız için 0 - 0 bırakın.</string>
+    <string name="roadsense_bs_apply_speed" translatable="false">Hız Aralığını Uygula</string>
+    <string name="roadsense_bs_hide_reverse" translatable="false">Geri Viteste Gizle</string>
+    <string name="roadsense_bs_hide_reverse_desc" translatable="false">Geri vitese takıldığında geri görüş kamerasını kapatmaması için kör noktayı gizler.</string>
+    <string name="roadsense_bs_layout_title" translatable="false">Görüntüleme ve Konum</string>
+    <string name="roadsense_bs_target" translatable="false">Görüntüleme Ekranı</string>
+    <string name="roadsense_bs_target_headunit" translatable="false">Bilgi-Eğlence Ekranı</string>
+    <string name="roadsense_bs_target_cluster" translatable="false">Gösterge Ekranı</string>
+    <string name="roadsense_bs_size" translatable="false">Pencere Boyutu</string>
+    <string name="roadsense_bs_pos_left" translatable="false">Konum — Sol</string>
+    <string name="roadsense_bs_pos_right" translatable="false">Konum — Sağ</string>
+    <string name="roadsense_bs_corner_tl" translatable="false">Sol-Üst</string>
+    <string name="roadsense_bs_corner_tr" translatable="false">Sağ-Üst</string>
+    <string name="roadsense_bs_corner_bl" translatable="false">Sol-Alt</string>
+    <string name="roadsense_bs_corner_br" translatable="false">Sağ-Alt</string>
+    <string name="roadsense_bs_corner_center" translatable="false">Orta</string>
+    <string name="roadsense_bs_apply_display" translatable="false">Değişiklikleri Uygula</string>
+    <string name="roadsense_bs_align_title" translatable="false">Canlı Hizalama Ayarları</string>
+    <string name="roadsense_bs_preview_left" translatable="false">Sol Görünümü Aç</string>
+    <string name="roadsense_bs_preview_right" translatable="false">Sağ Görünümü Aç</string>
+    <string name="roadsense_bs_preview_hide" translatable="false">Önizlemeyi Gizle</string>
+    <string name="roadsense_bs_rear_fov" translatable="false">Genişlik A (Arka FOV)</string>
+    <string name="roadsense_bs_side_fov" translatable="false">Genişlik B (Yan FOV)</string>
+    <string name="roadsense_bs_yaw" translatable="false">Birleşme Noktası</string>
+    <string name="roadsense_bs_roll" translatable="false">Eğim</string>
+    <string name="roadsense_bs_pitch" translatable="false">Yükseklik</string>
+    <string name="roadsense_bs_feather" translatable="false">Yumuşatma</string>
+    <string name="roadsense_bs_proj_exp" translatable="false">Yan Yayılma</string>
+    <string name="roadsense_bs_rear_roll" translatable="false">Arka Seviye</string>
+    <string name="roadsense_bs_rear_pitch" translatable="false">Arka Eğim</string>
+    <string name="roadsense_bs_save_align" translatable="false">Hizalamayı Kaydet</string>
+    <string name="roadsense_bs_reset_align" translatable="false">Varsayılana Sıfırla</string>
+    <string name="status_on">AÇIK</string>
+    <string name="status_off">KAPALI</string>
 </resources>

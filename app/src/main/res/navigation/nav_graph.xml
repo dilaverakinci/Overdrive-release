@@ -299,13 +299,18 @@
             android:defaultValue="/byd-cloud" />
     </fragment>
 
-    <!-- RoadSense: hazard / road-surface sensing surface (web). Hosts the
-         /road-sense page via WebViewFragment, mirroring the other web
-         destinations on a single renderer. -->
+    <!-- RoadSense Native: pure Kotlin/Material 3 hazard sensing, map projection, warnings, blindspot -->
     <fragment
         android:id="@+id/roadSenseFragment"
+        android:name="com.overdrive.app.ui.fragment.RoadSenseNativeFragment"
+        android:label="@string/rail_roadsense_native"
+        tools:layout="@layout/fragment_roadsense_native" />
+
+    <!-- RoadSense Legacy: WebView wrapper for /road-sense -->
+    <fragment
+        android:id="@+id/roadSenseLegacyFragment"
         android:name="com.overdrive.app.ui.fragment.RoadSenseFragment"
-        android:label="@string/rail_roadsense" />
+        android:label="@string/rail_roadsense_legacy" />
 
     <!-- Network & Hotspot: SIM-data sharing, clients, data limit, proxy.
          Its own top-level destination (not a Daemons entry) because it owns
