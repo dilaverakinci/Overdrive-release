@@ -1377,7 +1377,7 @@
                                 </LinearLayout>
                             </LinearLayout>
 
-                            <com.overdrive.app.ui.charging.ChargingCurveView
+                            <com.overdrive.app.ui.charging.SocHistoryChartView
                                 android:id="@+id/viewStatsSocCurve"
                                 android:layout_width="match_parent"
                                 android:layout_height="180dp"

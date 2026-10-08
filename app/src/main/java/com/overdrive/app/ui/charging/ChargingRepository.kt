@@ -49,7 +49,10 @@ open class ChargingRepository {
                 val summaryObj = bootstrap.optJSONObject("summary")?.optJSONObject("summary") ?: JSONObject()
                 val sessionsArr = bootstrap.optJSONObject("sessions")?.optJSONArray("sessions") ?: JSONArray()
                 val configObj = bootstrap.optJSONObject("config")?.optJSONObject("config") ?: JSONObject()
-                val socArr = bootstrap.optJSONObject("soc")?.optJSONArray("points") ?: JSONArray()
+                val socObj = bootstrap.optJSONObject("soc")
+                val socArr = socObj?.optJSONArray("soc")
+                    ?: socObj?.optJSONArray("points")
+                    ?: JSONArray()
 
                 val summary = parseSummary(summaryObj)
                 val sessions = parseSessions(sessionsArr)
@@ -107,7 +110,9 @@ open class ChargingRepository {
                 val body = conn.inputStream.bufferedReader().use { it.readText() }
                 conn.disconnect()
                 val json = JSONObject(body)
-                val pointsArr = json.optJSONArray("points") ?: JSONArray()
+                val pointsArr = json.optJSONArray("soc")
+                    ?: json.optJSONArray("points")
+                    ?: JSONArray()
                 Result.success(parseSocPoints(pointsArr))
             } else {
                 conn.disconnect()
@@ -351,7 +356,11 @@ open class ChargingRepository {
             val obj = arr.optJSONObject(i) ?: continue
             val t = obj.optLong("t", 0L)
             val soc = obj.optDouble("soc", 0.0)
-            list.add(SocHistoryPoint(t, soc))
+            val isCharging = obj.optInt("charging", 0) > 0 || obj.optBoolean("charging", false)
+            val range = if (obj.has("range") && !obj.isNull("range")) obj.optDouble("range") else null
+            val soh = if (obj.has("soh") && !obj.isNull("soh")) obj.optDouble("soh") else null
+            val powerKw = if (obj.has("power") && !obj.isNull("power")) obj.optDouble("power") else null
+            list.add(SocHistoryPoint(t, soc, isCharging, range, soh, powerKw))
         }
         return list
     }

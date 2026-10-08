@@ -228,6 +228,38 @@ open class ChargingViewModel @JvmOverloads constructor(
         }
     }
 
+    fun loadSocHistory(hours: Int) {
+        viewModelScope.launch {
+            val result = repository.getSocHistory(hours)
+            result.onSuccess { points ->
+                _uiState.update { it.copy(socHistory = points, socHours = hours) }
+            }.onFailure { err ->
+                Log.w(TAG, "Failed to load SoC history for $hours hours: ${err.message}")
+            }
+        }
+    }
+
+    fun getLatestBatterySnapshot(): Triple<Double?, Double?, Double?> {
+        var soc: Double? = null
+        var range: Double? = null
+        var soh: Double? = null
+        val history = _uiState.value.socHistory
+        for (i in history.indices.reversed()) {
+            val item = history[i]
+            if (soc == null && item.soc in 0.0..100.0) {
+                soc = item.soc
+            }
+            if (range == null && item.range != null && item.range >= 0.0) {
+                range = item.range
+            }
+            if (soh == null && item.soh != null && item.soh in 1.0..100.0) {
+                soh = item.soh
+            }
+            if (soc != null && range != null && soh != null) break
+        }
+        return Triple(soc, range, soh)
+    }
+
     override fun onCleared() {
         super.onCleared()
         stopPolling()

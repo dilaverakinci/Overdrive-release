@@ -111,7 +111,11 @@ data class ChargingConfigData(
 
 data class SocHistoryPoint(
     val timestamp: Long,
-    val soc: Double
+    val soc: Double,
+    val charging: Boolean = false,
+    val range: Double? = null,
+    val soh: Double? = null,
+    val powerKw: Double? = null
 )
 
 enum class PeriodFilter(val days: Int) {
@@ -134,6 +138,7 @@ data class ChargingUiState(
     val selectedSession: ChargingSession? = null,
     val selectedSessionSamples: List<ChargingSample> = emptyList(),
     val socHistory: List<SocHistoryPoint> = emptyList(),
+    val socHours: Int = 168,
     val config: ChargingConfigData = ChargingConfigData(),
     val isLoading: Boolean = false,
     val isDetailLoading: Boolean = false,

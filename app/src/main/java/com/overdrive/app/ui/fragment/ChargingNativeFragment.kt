@@ -40,6 +40,7 @@ import com.overdrive.app.ui.charging.ChargingUiState
 import com.overdrive.app.ui.charging.ChargingViewModel
 import com.overdrive.app.ui.charging.PeriodFilter
 import com.overdrive.app.ui.charging.SocGaugeView
+import com.overdrive.app.ui.charging.SocHistoryChartView
 import com.overdrive.app.ui.charging.TemperatureCurveView
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -136,7 +137,7 @@ class ChargingNativeFragment : Fragment() {
     private lateinit var btnSoc24h: MaterialButton
     private lateinit var btnSoc7d: MaterialButton
     private lateinit var btnSoc30d: MaterialButton
-    private lateinit var viewStatsSocCurve: ChargingCurveView
+    private lateinit var viewStatsSocCurve: SocHistoryChartView
     private lateinit var tvLifetimeEnergy: TextView
     private lateinit var tvLifetimeSessions: TextView
     private lateinit var tvLifetimeCost: TextView
@@ -414,9 +415,18 @@ class ChargingNativeFragment : Fragment() {
         btnStatsAll.setOnClickListener { viewModel.setPeriodFilter(PeriodFilter.ALL_TIME) }
 
         // Stats Tab: SoC history range
-        btnSoc24h.setOnClickListener { setSocPeriodButtons(24) }
-        btnSoc7d.setOnClickListener { setSocPeriodButtons(168) }
-        btnSoc30d.setOnClickListener { setSocPeriodButtons(720) }
+        btnSoc24h.setOnClickListener {
+            setSocPeriodButtons(24)
+            viewModel.loadSocHistory(24)
+        }
+        btnSoc7d.setOnClickListener {
+            setSocPeriodButtons(168)
+            viewModel.loadSocHistory(168)
+        }
+        btnSoc30d.setOnClickListener {
+            setSocPeriodButtons(720)
+            viewModel.loadSocHistory(720)
+        }
 
         // Settings actions
         btnApplySettings.setOnClickListener { applySettings() }
@@ -676,14 +686,20 @@ class ChargingNativeFragment : Fragment() {
         val summary = state.summary
         val live = summary.live
 
-        // Gauge & SoC info
-        val currentSoc = if (live.socPercent > 0) live.socPercent else 0.0
+        // Sync SoC period pills
+        setSocPeriodButtons(state.socHours)
+
+        // Gauge & SoC info (fallback to latest snapshot if vehicle is sleeping/unplugged)
+        val (snapSoc, snapRange, snapSoh) = viewModel.getLatestBatterySnapshot()
+        val currentSoc = if (live.socPercent > 0) live.socPercent else snapSoc
         socGaugeView.setSoc(currentSoc)
 
-        val rangeText = if (live.rangeKm > 0) "${Math.round(live.rangeKm)} km" else "--"
+        val effectiveRange = if (live.rangeKm > 0) live.rangeKm else snapRange
+        val rangeText = if (effectiveRange != null && effectiveRange > 0) "${Math.round(effectiveRange)} km" else "--"
         tvStatsRange.text = rangeText
 
-        val sohText = if (live.sohPercent > 0) "SOH ${Math.round(live.sohPercent)}%" else "SOH --"
+        val effectiveSoh = if (live.sohPercent > 0) live.sohPercent else snapSoh
+        val sohText = if (effectiveSoh != null && effectiveSoh > 0) "SOH ${Math.round(effectiveSoh)}%" else "SOH --"
         tvStatsSoh.text = sohText
 
         // Average Power Hero Card
@@ -810,10 +826,7 @@ class ChargingNativeFragment : Fragment() {
         statsEmptyState.visibility = if (summary.lifetimeSessions == 0 && state.sessions.isEmpty()) View.VISIBLE else View.GONE
 
         // SoC History curve
-        val samples = state.socHistory.map {
-            ChargingSample(t = it.timestamp, powerKw = null, soc = it.soc, temp = null, tempHigh = null, tempLow = null)
-        }
-        viewStatsSocCurve.setSamples(samples)
+        viewStatsSocCurve.setPoints(state.socHistory, state.socHours)
     }
 
     private fun renderSettings(state: ChargingUiState) {
