@@ -1,13 +1,15 @@
 package com.overdrive.app.ui.fragment
 
+import android.app.DatePickerDialog
 import android.content.res.ColorStateList
+import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
@@ -30,9 +32,11 @@ import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.textfield.TextInputEditText
 import com.overdrive.app.R
 import com.overdrive.app.ui.charging.ChargingCurveView
+import com.overdrive.app.ui.charging.ChargingSample
 import com.overdrive.app.ui.charging.ChargingSession
 import com.overdrive.app.ui.charging.ChargingSessionAdapter
 import com.overdrive.app.ui.charging.ChargingTab
+import com.overdrive.app.ui.charging.ChargingUiState
 import com.overdrive.app.ui.charging.ChargingViewModel
 import com.overdrive.app.ui.charging.PeriodFilter
 import com.overdrive.app.ui.charging.SocGaugeView
@@ -40,6 +44,7 @@ import com.overdrive.app.ui.charging.TemperatureCurveView
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -47,17 +52,35 @@ class ChargingNativeFragment : Fragment() {
 
     private val viewModel: ChargingViewModel by viewModels()
 
-    // Header & Filter views
-    private lateinit var layoutPeriodFilters: LinearLayout
+    // Global loading & scroll
+    private lateinit var progressLoading: ProgressBar
+    private lateinit var scrollViewContent: NestedScrollView
+
+    // Bottom Tabs
+    private lateinit var layoutBottomTabsBar: LinearLayout
+    private lateinit var tabBottomSessions: LinearLayout
+    private lateinit var ivBottomTabSessions: ImageView
+    private lateinit var tvBottomTabSessions: TextView
+    private lateinit var tabBottomStats: LinearLayout
+    private lateinit var ivBottomTabStats: ImageView
+    private lateinit var tvBottomTabStats: TextView
+    private lateinit var tabBottomSettings: LinearLayout
+    private lateinit var ivBottomTabSettings: ImageView
+    private lateinit var tvBottomTabSettings: TextView
+
+    // Top Segmented Period Controls (Sessions Tab)
     private lateinit var btnFilter7d: MaterialButton
     private lateinit var btnFilter30d: MaterialButton
     private lateinit var btnFilterAll: MaterialButton
+    private lateinit var btnFilterCustom: MaterialButton
 
-    private lateinit var tabBtnSessions: MaterialButton
-    private lateinit var tabBtnStats: MaterialButton
-    private lateinit var tabBtnSettings: MaterialButton
-    private lateinit var progressLoading: ProgressBar
-    private lateinit var scrollViewContent: NestedScrollView
+    // Collapsible Custom Date Range Picker
+    private lateinit var layoutCustomRangeRow: LinearLayout
+    private lateinit var btnChargeFrom: MaterialButton
+    private lateinit var btnChargeTo: MaterialButton
+    private lateinit var btnApplyCustomRange: MaterialButton
+    private val fromCalendar: Calendar = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -7) }
+    private val toCalendar: Calendar = Calendar.getInstance()
 
     // Containers
     private lateinit var containerSessions: LinearLayout
@@ -65,31 +88,43 @@ class ChargingNativeFragment : Fragment() {
     private lateinit var containerSettings: LinearLayout
     private lateinit var containerDetail: LinearLayout
 
-    // Sessions Tab Views
-    private lateinit var cardLiveHero: MaterialCardView
-    private lateinit var tvLiveStatus: TextView
-    private lateinit var tvLiveSoC: TextView
-    private lateinit var tvLiveDetails: TextView
-
+    // Sessions Tab: Summary Cards
     private lateinit var tvSummarySessions: TextView
     private lateinit var tvSummaryEnergy: TextView
     private lateinit var tvSummaryCost: TextView
     private lateinit var tvSummaryDcAc: TextView
     private lateinit var tvSummaryRangeGained: TextView
 
+    // Sessions Tab: Live Hero Card
+    private lateinit var cardLiveHero: MaterialCardView
+    private lateinit var tvLiveStatus: TextView
+    private lateinit var tvLiveSoC: TextView
+    private lateinit var tvLiveDetails: TextView
+
+    // Sessions Tab: Session List & Sorting
+    private lateinit var spinnerSortSessions: Spinner
     private lateinit var rvChargingSessions: RecyclerView
     private lateinit var cardEmptySessions: MaterialCardView
     private lateinit var sessionAdapter: ChargingSessionAdapter
+    private var isSortOldestFirst = false
 
     // Stats Tab Views
+    private lateinit var btnStats7d: MaterialButton
+    private lateinit var btnStats30d: MaterialButton
+    private lateinit var btnStatsAll: MaterialButton
     private lateinit var socGaugeView: SocGaugeView
     private lateinit var tvStatsRange: TextView
     private lateinit var tvStatsSoh: TextView
     private lateinit var tvStatsAvgPower: TextView
     private lateinit var tvStatsCostPerKwh: TextView
+    private lateinit var btnSoc24h: MaterialButton
+    private lateinit var btnSoc7d: MaterialButton
+    private lateinit var btnSoc30d: MaterialButton
+    private lateinit var viewStatsSocCurve: ChargingCurveView
     private lateinit var tvLifetimeEnergy: TextView
     private lateinit var tvLifetimeSessions: TextView
     private lateinit var tvLifetimeCost: TextView
+    private lateinit var statsEmptyState: MaterialCardView
 
     // Settings Tab Views
     private lateinit var switchAutoRecord: MaterialSwitch
@@ -97,6 +132,7 @@ class ChargingNativeFragment : Fragment() {
     private lateinit var etElectricityRate: TextInputEditText
     private lateinit var etDcRate: TextInputEditText
     private lateinit var btnApplySettings: MaterialButton
+    private lateinit var btnTariffAdd: MaterialButton
     private lateinit var btnClearHistory: MaterialButton
 
     // Detail Panel Views
@@ -118,6 +154,7 @@ class ChargingNativeFragment : Fragment() {
 
     private val currencies = listOf("₺", "$", "€", "£", "¥", "CHF", "AUD", "CAD")
     private val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+    private val shortDateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
 
     private var backCallback: OnBackPressedCallback? = null
 
@@ -139,52 +176,86 @@ class ChargingNativeFragment : Fragment() {
     }
 
     private fun initViews(v: View) {
-        layoutPeriodFilters = v.findViewById(R.id.layoutPeriodFilters)
-        btnFilter7d = v.findViewById(R.id.btnFilter7d)
-        btnFilter30d = v.findViewById(R.id.btnFilter30d)
-        btnFilterAll = v.findViewById(R.id.btnFilterAll)
-
-        tabBtnSessions = v.findViewById(R.id.tabBtnSessions)
-        tabBtnStats = v.findViewById(R.id.tabBtnStats)
-        tabBtnSettings = v.findViewById(R.id.tabBtnSettings)
         progressLoading = v.findViewById(R.id.progressLoading)
         scrollViewContent = v.findViewById(R.id.scrollViewContent)
 
+        // Bottom tabs
+        layoutBottomTabsBar = v.findViewById(R.id.layoutBottomTabsBar)
+        tabBottomSessions = v.findViewById(R.id.tabBottomSessions)
+        ivBottomTabSessions = v.findViewById(R.id.ivBottomTabSessions)
+        tvBottomTabSessions = v.findViewById(R.id.tvBottomTabSessions)
+        tabBottomStats = v.findViewById(R.id.tabBottomStats)
+        ivBottomTabStats = v.findViewById(R.id.ivBottomTabStats)
+        tvBottomTabStats = v.findViewById(R.id.tvBottomTabStats)
+        tabBottomSettings = v.findViewById(R.id.tabBottomSettings)
+        ivBottomTabSettings = v.findViewById(R.id.ivBottomTabSettings)
+        tvBottomTabSettings = v.findViewById(R.id.tvBottomTabSettings)
+
+        // Segmented filter buttons
+        btnFilter7d = v.findViewById(R.id.btnFilter7d)
+        btnFilter30d = v.findViewById(R.id.btnFilter30d)
+        btnFilterAll = v.findViewById(R.id.btnFilterAll)
+        btnFilterCustom = v.findViewById(R.id.btnFilterCustom)
+
+        // Custom date range
+        layoutCustomRangeRow = v.findViewById(R.id.layoutCustomRangeRow)
+        btnChargeFrom = v.findViewById(R.id.btnChargeFrom)
+        btnChargeTo = v.findViewById(R.id.btnChargeTo)
+        btnApplyCustomRange = v.findViewById(R.id.btnApplyCustomRange)
+        updateDateButtonsText()
+
+        // Containers
         containerSessions = v.findViewById(R.id.containerSessions)
         containerStats = v.findViewById(R.id.containerStats)
         containerSettings = v.findViewById(R.id.containerSettings)
         containerDetail = v.findViewById(R.id.containerDetail)
 
-        cardLiveHero = v.findViewById(R.id.cardLiveHero)
-        tvLiveStatus = v.findViewById(R.id.tvLiveStatus)
-        tvLiveSoC = v.findViewById(R.id.tvLiveSoC)
-        tvLiveDetails = v.findViewById(R.id.tvLiveDetails)
-
+        // Sessions Tab: Summary Cards
         tvSummarySessions = v.findViewById(R.id.tvSummarySessions)
         tvSummaryEnergy = v.findViewById(R.id.tvSummaryEnergy)
         tvSummaryCost = v.findViewById(R.id.tvSummaryCost)
         tvSummaryDcAc = v.findViewById(R.id.tvSummaryDcAc)
         tvSummaryRangeGained = v.findViewById(R.id.tvSummaryRangeGained)
 
+        // Live Hero Card
+        cardLiveHero = v.findViewById(R.id.cardLiveHero)
+        tvLiveStatus = v.findViewById(R.id.tvLiveStatus)
+        tvLiveSoC = v.findViewById(R.id.tvLiveSoC)
+        tvLiveDetails = v.findViewById(R.id.tvLiveDetails)
+
+        // Session list & sort
+        spinnerSortSessions = v.findViewById(R.id.spinnerSortSessions)
         rvChargingSessions = v.findViewById(R.id.rvChargingSessions)
         cardEmptySessions = v.findViewById(R.id.cardEmptySessions)
 
+        // Stats Tab Views
+        btnStats7d = v.findViewById(R.id.btnStats7d)
+        btnStats30d = v.findViewById(R.id.btnStats30d)
+        btnStatsAll = v.findViewById(R.id.btnStatsAll)
         socGaugeView = v.findViewById(R.id.socGaugeView)
         tvStatsRange = v.findViewById(R.id.tvStatsRange)
         tvStatsSoh = v.findViewById(R.id.tvStatsSoh)
         tvStatsAvgPower = v.findViewById(R.id.tvStatsAvgPower)
         tvStatsCostPerKwh = v.findViewById(R.id.tvStatsCostPerKwh)
+        btnSoc24h = v.findViewById(R.id.btnSoc24h)
+        btnSoc7d = v.findViewById(R.id.btnSoc7d)
+        btnSoc30d = v.findViewById(R.id.btnSoc30d)
+        viewStatsSocCurve = v.findViewById(R.id.viewStatsSocCurve)
         tvLifetimeEnergy = v.findViewById(R.id.tvLifetimeEnergy)
         tvLifetimeSessions = v.findViewById(R.id.tvLifetimeSessions)
         tvLifetimeCost = v.findViewById(R.id.tvLifetimeCost)
+        statsEmptyState = v.findViewById(R.id.statsEmptyState)
 
+        // Settings Tab Views
         switchAutoRecord = v.findViewById(R.id.switchAutoRecord)
         spinnerCurrency = v.findViewById(R.id.spinnerCurrency)
         etElectricityRate = v.findViewById(R.id.etElectricityRate)
         etDcRate = v.findViewById(R.id.etDcRate)
         btnApplySettings = v.findViewById(R.id.btnApplySettings)
+        btnTariffAdd = v.findViewById(R.id.btnTariffAdd)
         btnClearHistory = v.findViewById(R.id.btnClearHistory)
 
+        // Detail Panel Views
         btnBackFromDetail = v.findViewById(R.id.btnBackFromDetail)
         tvDetailTitle = v.findViewById(R.id.tvDetailTitle)
         btnDeleteCurrentSession = v.findViewById(R.id.btnDeleteCurrentSession)
@@ -201,9 +272,19 @@ class ChargingNativeFragment : Fragment() {
         viewPowerCurve = v.findViewById(R.id.viewPowerCurve)
         viewTempCurve = v.findViewById(R.id.viewTempCurve)
 
+        // Populate currency spinner
         val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, currencies)
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerCurrency.adapter = spinnerAdapter
+
+        // Populate sort spinner
+        val sortOptions = listOf(
+            getString(R.string.charge_sort_recent),
+            getString(R.string.charge_sort_oldest)
+        )
+        val sortAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, sortOptions)
+        sortAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerSortSessions.adapter = sortAdapter
     }
 
     private fun setupRecyclerView() {
@@ -221,34 +302,96 @@ class ChargingNativeFragment : Fragment() {
     }
 
     private fun setupListeners() {
-        btnFilter7d.setOnClickListener { viewModel.setPeriodFilter(PeriodFilter.DAYS_7) }
-        btnFilter30d.setOnClickListener { viewModel.setPeriodFilter(PeriodFilter.DAYS_30) }
-        btnFilterAll.setOnClickListener { viewModel.setPeriodFilter(PeriodFilter.ALL_TIME) }
+        // Sticky bottom navigation tabs
+        tabBottomSessions.setOnClickListener {
+            viewModel.selectTab(ChargingTab.SESSIONS)
+        }
+        tabBottomStats.setOnClickListener {
+            viewModel.selectTab(ChargingTab.STATS)
+        }
+        tabBottomSettings.setOnClickListener {
+            viewModel.selectTab(ChargingTab.SETTINGS)
+        }
 
-        tabBtnSessions.setOnClickListener { viewModel.selectTab(ChargingTab.SESSIONS) }
-        tabBtnStats.setOnClickListener { viewModel.selectTab(ChargingTab.STATS) }
-        tabBtnSettings.setOnClickListener { viewModel.selectTab(ChargingTab.SETTINGS) }
+        // Sessions Tab: Top segmented period filters
+        btnFilter7d.setOnClickListener {
+            layoutCustomRangeRow.visibility = View.GONE
+            viewModel.setPeriodFilter(PeriodFilter.DAYS_7)
+        }
+        btnFilter30d.setOnClickListener {
+            layoutCustomRangeRow.visibility = View.GONE
+            viewModel.setPeriodFilter(PeriodFilter.DAYS_30)
+        }
+        btnFilterAll.setOnClickListener {
+            layoutCustomRangeRow.visibility = View.GONE
+            viewModel.setPeriodFilter(PeriodFilter.ALL_TIME)
+        }
+        btnFilterCustom.setOnClickListener {
+            val isCurrentlyVisible = layoutCustomRangeRow.visibility == View.VISIBLE
+            layoutCustomRangeRow.visibility = if (isCurrentlyVisible) View.GONE else View.VISIBLE
+            if (!isCurrentlyVisible) {
+                setSegmentedButtonStyle(btnFilter7d, false)
+                setSegmentedButtonStyle(btnFilter30d, false)
+                setSegmentedButtonStyle(btnFilterAll, false)
+                setSegmentedButtonStyle(btnFilterCustom, true)
+            }
+        }
 
+        // Custom date range pickers
+        btnChargeFrom.setOnClickListener {
+            showDatePicker(fromCalendar) {
+                updateDateButtonsText()
+            }
+        }
+        btnChargeTo.setOnClickListener {
+            showDatePicker(toCalendar) {
+                updateDateButtonsText()
+            }
+        }
+        btnApplyCustomRange.setOnClickListener {
+            applyCustomDateFilter()
+        }
+
+        // Sort spinner
+        spinnerSortSessions.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val shouldBeOldest = (position == 1)
+                if (isSortOldestFirst != shouldBeOldest) {
+                    isSortOldestFirst = shouldBeOldest
+                    applySortToSessions(viewModel.uiState.value.sessions)
+                }
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        // Stats Tab: Period Pills
+        btnStats7d.setOnClickListener { viewModel.setPeriodFilter(PeriodFilter.DAYS_7) }
+        btnStats30d.setOnClickListener { viewModel.setPeriodFilter(PeriodFilter.DAYS_30) }
+        btnStatsAll.setOnClickListener { viewModel.setPeriodFilter(PeriodFilter.ALL_TIME) }
+
+        // Stats Tab: SoC history range
+        btnSoc24h.setOnClickListener { setSocPeriodButtons(24) }
+        btnSoc7d.setOnClickListener { setSocPeriodButtons(168) }
+        btnSoc30d.setOnClickListener { setSocPeriodButtons(720) }
+
+        // Settings actions
+        btnApplySettings.setOnClickListener { applySettings() }
+        btnClearHistory.setOnClickListener { showClearHistoryDialog() }
+        btnTariffAdd.setOnClickListener {
+            Toast.makeText(requireContext(), R.string.charge_tariff_add_here, Toast.LENGTH_SHORT).show()
+        }
+
+        // Detail panel actions
         btnBackFromDetail.setOnClickListener { viewModel.closeSessionDetail() }
-
         btnDeleteCurrentSession.setOnClickListener {
             viewModel.uiState.value.selectedSession?.let { session ->
                 showDeleteConfirmDialog(session.id)
             }
         }
-
         layoutEditCost.setOnClickListener {
             viewModel.uiState.value.selectedSession?.let { session ->
                 showEditCostDialog(session)
             }
-        }
-
-        btnClearHistory.setOnClickListener {
-            showClearHistoryDialog()
-        }
-
-        btnApplySettings.setOnClickListener {
-            applySettings()
         }
     }
 
@@ -276,23 +419,22 @@ class ChargingNativeFragment : Fragment() {
         }
     }
 
-    private fun renderUi(state: com.overdrive.app.ui.charging.ChargingUiState) {
+    private fun renderUi(state: ChargingUiState) {
         progressLoading.visibility = if (state.isLoading || state.isDetailLoading) View.VISIBLE else View.GONE
         backCallback?.isEnabled = state.isDetailOpen
 
-        // Navigation visibility
         if (state.isDetailOpen) {
-            layoutPeriodFilters.visibility = View.GONE
+            layoutBottomTabsBar.visibility = View.GONE
             containerSessions.visibility = View.GONE
             containerStats.visibility = View.GONE
             containerSettings.visibility = View.GONE
             containerDetail.visibility = View.VISIBLE
             renderDetail(state)
         } else {
+            layoutBottomTabsBar.visibility = View.VISIBLE
             containerDetail.visibility = View.GONE
-            layoutPeriodFilters.visibility = if (state.currentTab == ChargingTab.SETTINGS) View.GONE else View.VISIBLE
 
-            updateTabButtons(state.currentTab)
+            updateBottomTabsBar(state.currentTab)
             updatePeriodButtons(state.periodFilter)
 
             containerSessions.visibility = if (state.currentTab == ChargingTab.SESSIONS) View.VISIBLE else View.GONE
@@ -307,29 +449,116 @@ class ChargingNativeFragment : Fragment() {
         }
     }
 
-    private fun updateTabButtons(currentTab: ChargingTab) {
-        setButtonStyle(tabBtnSessions, currentTab == ChargingTab.SESSIONS)
-        setButtonStyle(tabBtnStats, currentTab == ChargingTab.STATS)
-        setButtonStyle(tabBtnSettings, currentTab == ChargingTab.SETTINGS)
+    private fun isNightMode(): Boolean {
+        return (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+    }
+
+    private fun updateBottomTabsBar(currentTab: ChargingTab) {
+        val isNight = isNightMode()
+        val activeBg = R.drawable.bg_bottom_tab_active
+        val activeColor = if (isNight) Color.parseColor("#00D4AA") else Color.parseColor("#004D40")
+        val inactiveColor = if (isNight) Color.parseColor("#8AFFFFFF") else Color.parseColor("#757575")
+
+        // Sessions Tab
+        val isSessions = (currentTab == ChargingTab.SESSIONS)
+        tabBottomSessions.setBackgroundResource(if (isSessions) activeBg else android.R.color.transparent)
+        ivBottomTabSessions.imageTintList = ColorStateList.valueOf(if (isSessions) activeColor else inactiveColor)
+        tvBottomTabSessions.setTextColor(if (isSessions) activeColor else inactiveColor)
+        tvBottomTabSessions.paint.isFakeBoldText = isSessions
+
+        // Stats Tab
+        val isStats = (currentTab == ChargingTab.STATS)
+        tabBottomStats.setBackgroundResource(if (isStats) activeBg else android.R.color.transparent)
+        ivBottomTabStats.imageTintList = ColorStateList.valueOf(if (isStats) activeColor else inactiveColor)
+        tvBottomTabStats.setTextColor(if (isStats) activeColor else inactiveColor)
+        tvBottomTabStats.paint.isFakeBoldText = isStats
+
+        // Settings Tab
+        val isSettings = (currentTab == ChargingTab.SETTINGS)
+        tabBottomSettings.setBackgroundResource(if (isSettings) activeBg else android.R.color.transparent)
+        ivBottomTabSettings.imageTintList = ColorStateList.valueOf(if (isSettings) activeColor else inactiveColor)
+        tvBottomTabSettings.setTextColor(if (isSettings) activeColor else inactiveColor)
+        tvBottomTabSettings.paint.isFakeBoldText = isSettings
     }
 
     private fun updatePeriodButtons(currentFilter: PeriodFilter) {
-        setButtonStyle(btnFilter7d, currentFilter == PeriodFilter.DAYS_7)
-        setButtonStyle(btnFilter30d, currentFilter == PeriodFilter.DAYS_30)
-        setButtonStyle(btnFilterAll, currentFilter == PeriodFilter.ALL_TIME)
+        val isCustomOpen = layoutCustomRangeRow.visibility == View.VISIBLE
+        setSegmentedButtonStyle(btnFilter7d, currentFilter == PeriodFilter.DAYS_7 && !isCustomOpen)
+        setSegmentedButtonStyle(btnFilter30d, currentFilter == PeriodFilter.DAYS_30 && !isCustomOpen)
+        setSegmentedButtonStyle(btnFilterAll, currentFilter == PeriodFilter.ALL_TIME && !isCustomOpen)
+        setSegmentedButtonStyle(btnFilterCustom, isCustomOpen)
+
+        // Also update stats period pills
+        setSegmentedButtonStyle(btnStats7d, currentFilter == PeriodFilter.DAYS_7)
+        setSegmentedButtonStyle(btnStats30d, currentFilter == PeriodFilter.DAYS_30)
+        setSegmentedButtonStyle(btnStatsAll, currentFilter == PeriodFilter.ALL_TIME)
     }
 
-    private fun setButtonStyle(button: MaterialButton, active: Boolean) {
+    private fun setSegmentedButtonStyle(button: MaterialButton, active: Boolean) {
+        val isNight = isNightMode()
         if (active) {
-            button.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#3000D4AA"))
-            button.setTextColor(Color.parseColor("#00D4AA"))
+            val bgTint = if (isNight) Color.parseColor("#2600D4AA") else Color.parseColor("#1F007A62")
+            val primaryColor = if (isNight) Color.parseColor("#00D4AA") else Color.parseColor("#007A62")
+            button.backgroundTintList = ColorStateList.valueOf(bgTint)
+            button.strokeColor = ColorStateList.valueOf(primaryColor)
+            button.strokeWidth = 2
+            button.setTextColor(primaryColor)
+            button.iconTint = ColorStateList.valueOf(primaryColor)
+            button.paint.isFakeBoldText = true
         } else {
+            val textCol = if (isNight) Color.parseColor("#8AFFFFFF") else Color.parseColor("#616161")
             button.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
-            button.setTextColor(Color.parseColor("#8AFFFFFF"))
+            button.strokeColor = ColorStateList.valueOf(Color.TRANSPARENT)
+            button.strokeWidth = 0
+            button.setTextColor(textCol)
+            button.iconTint = ColorStateList.valueOf(textCol)
+            button.paint.isFakeBoldText = false
         }
     }
 
-    private fun renderSessions(state: com.overdrive.app.ui.charging.ChargingUiState) {
+    private fun setSocPeriodButtons(hours: Int) {
+        setSegmentedButtonStyle(btnSoc24h, hours == 24)
+        setSegmentedButtonStyle(btnSoc7d, hours == 168)
+        setSegmentedButtonStyle(btnSoc30d, hours == 720)
+    }
+
+    private fun updateDateButtonsText() {
+        btnChargeFrom.text = "${getString(R.string.charge_range_from)}: ${shortDateFormat.format(fromCalendar.time)}"
+        btnChargeTo.text = "${getString(R.string.charge_range_to)}: ${shortDateFormat.format(toCalendar.time)}"
+    }
+
+    private fun showDatePicker(calendar: Calendar, onDateSet: () -> Unit) {
+        DatePickerDialog(
+            requireContext(),
+            { _, year, month, dayOfMonth ->
+                calendar.set(Calendar.YEAR, year)
+                calendar.set(Calendar.MONTH, month)
+                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                onDateSet()
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
+
+    private fun applyCustomDateFilter() {
+        val diffMs = toCalendar.timeInMillis - fromCalendar.timeInMillis
+        val diffDays = (diffMs / (1000 * 60 * 60 * 24)).coerceAtLeast(1).toInt()
+        val filter = when {
+            diffDays <= 7 -> PeriodFilter.DAYS_7
+            diffDays <= 30 -> PeriodFilter.DAYS_30
+            else -> PeriodFilter.ALL_TIME
+        }
+        viewModel.setPeriodFilter(filter)
+        Toast.makeText(
+            requireContext(),
+            "${shortDateFormat.format(fromCalendar.time)} → ${shortDateFormat.format(toCalendar.time)} ($diffDays d)",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    private fun renderSessions(state: ChargingUiState) {
         val summary = state.summary
         val live = summary.live
 
@@ -362,13 +591,22 @@ class ChargingNativeFragment : Fragment() {
         tvSummaryDcAc.text = "${summary.periodDcCount} / ${summary.periodAcCount}"
         tvSummaryRangeGained.text = "+${summary.periodRangeGained} km"
 
-        // Sessions List
-        sessionAdapter.submitList(state.sessions)
-        cardEmptySessions.visibility = if (state.sessions.isEmpty()) View.VISIBLE else View.GONE
-        rvChargingSessions.visibility = if (state.sessions.isEmpty()) View.GONE else View.VISIBLE
+        // Sessions List with sorting
+        applySortToSessions(state.sessions)
     }
 
-    private fun renderStats(state: com.overdrive.app.ui.charging.ChargingUiState) {
+    private fun applySortToSessions(sessions: List<ChargingSession>) {
+        val sortedList = if (isSortOldestFirst) {
+            sessions.sortedBy { it.startTime }
+        } else {
+            sessions.sortedByDescending { it.startTime }
+        }
+        sessionAdapter.submitList(sortedList)
+        cardEmptySessions.visibility = if (sortedList.isEmpty()) View.VISIBLE else View.GONE
+        rvChargingSessions.visibility = if (sortedList.isEmpty()) View.GONE else View.VISIBLE
+    }
+
+    private fun renderStats(state: ChargingUiState) {
         val summary = state.summary
         val live = summary.live
 
@@ -376,10 +614,10 @@ class ChargingNativeFragment : Fragment() {
         val currentSoc = if (live.socPercent > 0) live.socPercent else 0.0
         socGaugeView.setSoc(currentSoc)
 
-        val rangeText = if (live.rangeKm > 0) "Range: ${Math.round(live.rangeKm)} km" else "Range: --"
+        val rangeText = if (live.rangeKm > 0) "${Math.round(live.rangeKm)} km" else "--"
         tvStatsRange.text = rangeText
 
-        val sohText = if (live.sohPercent > 0) "SOH: ${Math.round(live.sohPercent)}%" else "SOH: --"
+        val sohText = if (live.sohPercent > 0) "SOH ${Math.round(live.sohPercent)}%" else "SOH --"
         tvStatsSoh.text = sohText
 
         // Average power & cost per kWh
@@ -398,9 +636,18 @@ class ChargingNativeFragment : Fragment() {
         tvLifetimeEnergy.text = "${String.format(Locale.US, "%.1f", summary.lifetimeEnergyKwh)} kWh"
         tvLifetimeSessions.text = summary.lifetimeSessions.toString()
         tvLifetimeCost.text = "${String.format(Locale.US, "%.2f", summary.lifetimeCost)} $curr".trim()
+
+        // Empty state vs chart
+        statsEmptyState.visibility = if (summary.lifetimeSessions == 0 && state.sessions.isEmpty()) View.VISIBLE else View.GONE
+
+        // SoC History curve
+        val samples = state.socHistory.map {
+            ChargingSample(t = it.timestamp, powerKw = null, soc = it.soc, temp = null, tempHigh = null, tempLow = null)
+        }
+        viewStatsSocCurve.setSamples(samples)
     }
 
-    private fun renderSettings(state: com.overdrive.app.ui.charging.ChargingUiState) {
+    private fun renderSettings(state: ChargingUiState) {
         val cfg = state.config
         switchAutoRecord.isChecked = cfg.enabled
 
@@ -417,7 +664,7 @@ class ChargingNativeFragment : Fragment() {
         }
     }
 
-    private fun renderDetail(state: com.overdrive.app.ui.charging.ChargingUiState) {
+    private fun renderDetail(state: ChargingUiState) {
         val session = state.selectedSession ?: return
 
         tvDetailTitle.text = if (session.startTime > 0) dateFormat.format(Date(session.startTime)) else "--"

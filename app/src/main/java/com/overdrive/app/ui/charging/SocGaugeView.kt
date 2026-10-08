@@ -1,6 +1,7 @@
 package com.overdrive.app.ui.charging
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -10,6 +11,7 @@ import android.view.View
 
 /**
  * Circular arc gauge view for State of Charge (SoC).
+ * Automatically adapts track and text colors to light/dark themes.
  */
 class SocGaugeView @JvmOverloads constructor(
     context: Context,
@@ -20,7 +22,6 @@ class SocGaugeView @JvmOverloads constructor(
     private var soc: Double = 0.0
 
     private val trackPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#1FFFFFFF")
         strokeWidth = 14f
         style = Paint.Style.STROKE
         strokeCap = Paint.Cap.ROUND
@@ -34,23 +35,50 @@ class SocGaugeView @JvmOverloads constructor(
     }
 
     private val textValuePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
-        textSize = 34f
+        textSize = 48f
         textAlign = Paint.Align.CENTER
         isFakeBoldText = true
     }
 
     private val textLabelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#90FFFFFF")
-        textSize = 15f
+        textSize = 20f
         textAlign = Paint.Align.CENTER
-        letterSpacing = 0.05f
+        letterSpacing = 0.08f
+        isFakeBoldText = true
     }
 
     private val arcBounds = RectF()
 
+    init {
+        updateColors()
+    }
+
+    private fun isNightMode(): Boolean {
+        val nightModeFlags = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        return nightModeFlags == Configuration.UI_MODE_NIGHT_YES
+    }
+
+    private fun updateColors() {
+        val night = isNightMode()
+        if (night) {
+            trackPaint.color = Color.parseColor("#2E3036")
+            textValuePaint.color = Color.WHITE
+            textLabelPaint.color = Color.parseColor("#9E9E9E")
+        } else {
+            trackPaint.color = Color.parseColor("#E0E2EC")
+            textValuePaint.color = Color.parseColor("#1A1C1E")
+            textLabelPaint.color = Color.parseColor("#74777F")
+        }
+    }
+
     fun setSoc(percent: Double) {
         soc = percent.coerceIn(0.0, 100.0)
+        invalidate()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration?) {
+        super.onConfigurationChanged(newConfig)
+        updateColors()
         invalidate()
     }
 
@@ -59,6 +87,8 @@ class SocGaugeView @JvmOverloads constructor(
         val w = width.toFloat()
         val h = height.toFloat()
         if (w <= 0 || h <= 0) return
+
+        updateColors()
 
         val size = Math.min(w, h)
         val stroke = 14f
@@ -88,7 +118,7 @@ class SocGaugeView @JvmOverloads constructor(
         val cx = w / 2f
         val cy = h / 2f
         val socText = if (soc > 0) "${Math.round(soc)}%" else "--"
-        canvas.drawText(socText, cx, cy + 4f, textValuePaint)
-        canvas.drawText("SoC", cx, cy + 30f, textLabelPaint)
+        canvas.drawText(socText, cx, cy + 6f, textValuePaint)
+        canvas.drawText("STATE OF CHARGE", cx, cy + 34f, textLabelPaint)
     }
 }

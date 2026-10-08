@@ -2186,19 +2186,33 @@
     <string name="charge_filter_7d" translatable="false">7 days</string>
     <string name="charge_filter_30d" translatable="false">30 days</string>
     <string name="charge_filter_all" translatable="false">All time</string>
+    <string name="charge_filter_custom" translatable="false">Custom</string>
+    <string name="charge_range_from" translatable="false">From</string>
+    <string name="charge_range_to" translatable="false">To</string>
+    <string name="charge_range_apply" translatable="false">Apply</string>
     <string name="charge_tab_sessions" translatable="false">Sessions</string>
     <string name="charge_tab_stats" translatable="false">Stats</string>
     <string name="charge_tab_settings" translatable="false">Settings</string>
     <string name="charge_state_charging" translatable="false">Charging now</string>
     <string name="charge_state_plugged" translatable="false">Plugged in</string>
     <string name="charge_summary_sessions" translatable="false">Sessions</string>
+    <string name="charge_summary_sessions_desc" translatable="false">Total charging sessions</string>
     <string name="charge_summary_energy" translatable="false">Energy</string>
+    <string name="charge_summary_energy_desc" translatable="false">Total energy delivered</string>
     <string name="charge_summary_cost" translatable="false">Cost</string>
+    <string name="charge_summary_cost_desc" translatable="false">Total charging cost</string>
     <string name="charge_summary_dc_ac" translatable="false">DC / AC</string>
+    <string name="charge_summary_dc_ac_desc" translatable="false">DC / AC sessions</string>
     <string name="charge_summary_range_gained" translatable="false">Range added</string>
+    <string name="charge_summary_range_desc" translatable="false">Total range added</string>
     <string name="charge_sessions_title" translatable="false">Charging sessions</string>
     <string name="charge_no_sessions_yet" translatable="false">No charging sessions yet</string>
     <string name="charge_no_sessions_hint" translatable="false">Sessions appear automatically when you plug in to charge</string>
+    <string name="charge_stats_intro" translatable="false">Charging insights and usage trends</string>
+    <string name="charge_chart_soc_title" translatable="false">State of charge over time</string>
+    <string name="charge_period_24h" translatable="false">24h</string>
+    <string name="charge_period_7d" translatable="false">7d</string>
+    <string name="charge_period_30d" translatable="false">30d</string>
     <string name="charge_hero_avg_power" translatable="false">Average power</string>
     <string name="charge_hero_cost" translatable="false">Cost per kWh</string>
     <string name="charge_hero_soc" translatable="false">State of charge</string>
@@ -2213,6 +2227,14 @@
     <string name="charge_settings_rate_desc" translatable="false">Cost per kWh, shared with Trips</string>
     <string name="charge_settings_dc_rate" translatable="false">DC Fast Rate (optional)</string>
     <string name="charge_settings_dc_rate_desc" translatable="false">Separate tariff for DC fast charging; leave 0 to use the base rate</string>
+    <string name="charge_baking_note" translatable="false">Detailed metrics fill in as you complete new charges</string>
+    <string name="charge_tariffs_title" translatable="false">Tariffs by Location</string>
+    <string name="charge_tariffs_desc" translatable="false">Save a rate for a place; charges near it are priced with it automatically.</string>
+    <string name="charge_tariffs_empty" translatable="false">No location tariffs yet</string>
+    <string name="charge_tariffs_empty_hint" translatable="false">Add one while parked where you charge.</string>
+    <string name="charge_tariff_add_here" translatable="false">Add tariff for this location</string>
+    <string name="charge_sort_recent" translatable="false">Most recent</string>
+    <string name="charge_sort_oldest" translatable="false">Oldest first</string>
     <string name="charge_settings_data_title" translatable="false">Data</string>
     <string name="charge_settings_clear" translatable="false">Clear charging history</string>
     <string name="charge_settings_clear_desc" translatable="false">Permanently delete all recorded charging sessions and curves</string>

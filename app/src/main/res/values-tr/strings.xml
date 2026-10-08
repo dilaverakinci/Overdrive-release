@@ -1550,19 +1550,33 @@
     <string name="charge_filter_7d" translatable="false">7 gün</string>
     <string name="charge_filter_30d" translatable="false">30 gün</string>
     <string name="charge_filter_all" translatable="false">Tüm zamanlar</string>
+    <string name="charge_filter_custom" translatable="false">Özel</string>
+    <string name="charge_range_from" translatable="false">Başlangıç</string>
+    <string name="charge_range_to" translatable="false">Bitiş</string>
+    <string name="charge_range_apply" translatable="false">Uygula</string>
     <string name="charge_tab_sessions" translatable="false">Oturumlar</string>
     <string name="charge_tab_stats" translatable="false">İstatistikler</string>
     <string name="charge_tab_settings" translatable="false">Ayarlar</string>
     <string name="charge_state_charging" translatable="false">Şarj ediliyor</string>
     <string name="charge_state_plugged" translatable="false">Kablo takılı</string>
     <string name="charge_summary_sessions" translatable="false">Oturum</string>
+    <string name="charge_summary_sessions_desc" translatable="false">Toplam şarj oturumu</string>
     <string name="charge_summary_energy" translatable="false">Enerji</string>
+    <string name="charge_summary_energy_desc" translatable="false">Toplam aktarılan enerji</string>
     <string name="charge_summary_cost" translatable="false">Maliyet</string>
+    <string name="charge_summary_cost_desc" translatable="false">Toplam şarj maliyeti</string>
     <string name="charge_summary_dc_ac" translatable="false">DC / AC</string>
+    <string name="charge_summary_dc_ac_desc" translatable="false">DC / AC oturumları</string>
     <string name="charge_summary_range_gained" translatable="false">Eklenen Menzil</string>
+    <string name="charge_summary_range_desc" translatable="false">Toplam eklenen menzil</string>
     <string name="charge_sessions_title" translatable="false">Şarj oturumları</string>
     <string name="charge_no_sessions_yet" translatable="false">Henüz şarj oturumu yok</string>
     <string name="charge_no_sessions_hint" translatable="false">Aracı şarja taktığınızda oturumlar otomatik olarak burada görünecektir</string>
+    <string name="charge_stats_intro" translatable="false">Şarj içgörüleri ve kullanım trendleri</string>
+    <string name="charge_chart_soc_title" translatable="false">Zaman içinde şarj durumu</string>
+    <string name="charge_period_24h" translatable="false">24s</string>
+    <string name="charge_period_7d" translatable="false">7g</string>
+    <string name="charge_period_30d" translatable="false">30g</string>
     <string name="charge_hero_avg_power" translatable="false">Ortalama güç</string>
     <string name="charge_hero_cost" translatable="false">kWh başına maliyet</string>
     <string name="charge_hero_soc" translatable="false">Şarj durumu</string>
@@ -1577,6 +1591,14 @@
     <string name="charge_settings_rate_desc" translatable="false">kWh başına ücret (Sürüşler ile paylaşılır)</string>
     <string name="charge_settings_dc_rate" translatable="false">DC Hızlı Şarj Tarifesi (isteğe bağlı)</string>
     <string name="charge_settings_dc_rate_desc" translatable="false">DC hızlı şarj için ayrı tarife; temel tarifeyi kullanmak için 0 bırakın</string>
+    <string name="charge_baking_note" translatable="false">Ayrıntılı metrikler yeni şarjlar tamamlandıkça doldurulur</string>
+    <string name="charge_tariffs_title" translatable="false">Konuma Göre Tarifeler</string>
+    <string name="charge_tariffs_desc" translatable="false">Bir konum için ücret kaydedin; yakınındaki şarjlar otomatik olarak bu ücretle fiyatlandırılır.</string>
+    <string name="charge_tariffs_empty" translatable="false">Henüz konuma göre tarife yok</string>
+    <string name="charge_tariffs_empty_hint" translatable="false">Şarj ettiğiniz yere park halindeyken bir tane ekleyin.</string>
+    <string name="charge_tariff_add_here" translatable="false">Bu konum için tarife ekle</string>
+    <string name="charge_sort_recent" translatable="false">En yeniden eskiye</string>
+    <string name="charge_sort_oldest" translatable="false">En eskiden yeniye</string>
     <string name="charge_settings_data_title" translatable="false">Veri</string>
     <string name="charge_settings_clear" translatable="false">Şarj geçmişini temizle</string>
     <string name="charge_settings_clear_desc" translatable="false">Kayıtlı tüm şarj oturumlarını ve eğrilerini kalıcı olarak siler</string>

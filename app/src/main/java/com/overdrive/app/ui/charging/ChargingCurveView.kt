@@ -76,6 +76,10 @@ class ChargingCurveView @JvmOverloads constructor(
         val plotH = h - paddingTop - paddingBottom
         if (plotW <= 0 || plotH <= 0) return
 
+        val night = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+        gridPaint.color = if (night) Color.parseColor("#1FFFFFFF") else Color.parseColor("#1F000000")
+        textPaint.color = if (night) Color.parseColor("#80FFFFFF") else Color.parseColor("#757575")
+
         // Draw horizontal grid lines (4 lines: 0%, 33%, 66%, 100%)
         for (i in 0..3) {
             val y = paddingTop + plotH * (i / 3f)
