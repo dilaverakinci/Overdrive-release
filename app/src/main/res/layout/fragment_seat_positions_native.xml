@@ -41,20 +41,27 @@
                     android:padding="20dp">
 
                     <!-- Seat Glyph Art -->
-                    <FrameLayout
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/layoutCurrentGlyph"
+                        style="@style/Widget.Material3.CardView.Filled"
                         android:layout_width="64dp"
                         android:layout_height="64dp"
-                        android:background="@drawable/bg_pill_state"
-                        android:backgroundTint="?attr/colorSurfaceContainerHigh">
+                        android:visibility="gone"
+                        app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="?attr/colorOutlineVariant"
+                        app:strokeWidth="1dp"
+                        tools:visibility="visible">
 
                         <ImageView
                             android:id="@+id/ivCurrentGlyph"
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_seat_positions"
                             app:tint="?attr/colorOnSurfaceVariant" />
-                    </FrameLayout>
+                    </com.google.android.material.card.MaterialCardView>
 
                     <!-- Center details -->
                     <LinearLayout
@@ -94,10 +101,12 @@
                             android:text="@string/seatpos_show_details"
                             android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
                             android:textColor="?attr/colorOnSurfaceVariant"
+                            android:visibility="gone"
                             app:icon="@drawable/ic_chevron_down"
                             app:iconGravity="textEnd"
                             app:iconSize="16dp"
-                            app:iconTint="?attr/colorOnSurfaceVariant" />
+                            app:iconTint="?attr/colorOnSurfaceVariant"
+                            tools:visibility="visible" />
 
                         <!-- Expandable Axes View -->
                         <LinearLayout
@@ -157,14 +166,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="48dp"
                         android:backgroundTint="?attr/colorPrimary"
-                        android:paddingHorizontal="20dp"
+                        android:paddingHorizontal="24dp"
                         android:text="@string/seatpos_save_as_new"
                         android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
                         android:textColor="?attr/colorOnPrimary"
                         android:textStyle="bold"
-                        app:cornerRadius="24dp"
-                        app:icon="@drawable/ic_add"
-                        app:iconTint="?attr/colorOnPrimary" />
+                        app:cornerRadius="24dp" />
 
                 </LinearLayout>
 
@@ -240,19 +247,23 @@
                 android:orientation="vertical"
                 android:padding="40dp">
 
-                <FrameLayout
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Material3.CardView.Filled"
                     android:layout_width="64dp"
                     android:layout_height="64dp"
-                    android:background="@drawable/bg_pill_state"
-                    android:backgroundTint="?attr/colorSurfaceContainerHigh">
+                    app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="?attr/colorOutlineVariant"
+                    app:strokeWidth="1dp">
 
                     <ImageView
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
                         android:layout_gravity="center"
                         android:src="@drawable/ic_seat_positions"
                         app:tint="?attr/colorOnSurfaceVariant" />
-                </FrameLayout>
+                </com.google.android.material.card.MaterialCardView>
 
                 <TextView
                     android:layout_width="wrap_content"

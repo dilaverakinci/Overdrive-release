@@ -1,6 +1,7 @@
 package com.overdrive.app.ui.fragment
 
 import android.content.res.ColorStateList
+import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -21,7 +22,9 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.materialswitch.MaterialSwitch
+import com.google.android.material.slider.Slider
 import com.overdrive.app.R
+import com.overdrive.app.byd.light.LightConstants
 import com.overdrive.app.ui.vehicle.TyreData
 import com.overdrive.app.ui.vehicle.VehicleArt
 import com.overdrive.app.ui.vehicle.VehicleCategoryTab
@@ -97,47 +100,77 @@ class VehicleNativeFragment : Fragment() {
     private lateinit var panelSound: LinearLayout
     private lateinit var panelSystem: LinearLayout
 
-    // Panel Action Controls
+    // Panel Action Controls: Security
     private lateinit var btnLock: MaterialButton
     private lateinit var btnUnlock: MaterialButton
     private lateinit var btnFlash: MaterialButton
     private lateinit var btnFindCar: MaterialButton
 
+    // Panel Action Controls: Trunk
     private lateinit var btnTrunkOpen: MaterialButton
     private lateinit var btnTrunkClose: MaterialButton
 
+    // Panel Action Controls: Climate
     private lateinit var btnAcOn: MaterialButton
     private lateinit var btnAcOff: MaterialButton
     private lateinit var btnTempMinus: ImageButton
     private lateinit var tvTargetTemp: TextView
     private lateinit var btnTempPlus: ImageButton
+    private lateinit var btnFanMinus: ImageButton
+    private lateinit var tvFanSpeed: TextView
+    private lateinit var btnFanPlus: ImageButton
     private lateinit var switchBatteryHeat: MaterialSwitch
 
+    // Panel Action Controls: Seats
     private lateinit var btnDriverSeatHeat: MaterialButton
     private lateinit var btnDriverSeatCool: MaterialButton
+    private lateinit var btnPassengerSeatHeat: MaterialButton
+    private lateinit var btnPassengerSeatCool: MaterialButton
     private lateinit var switchSteeringHeat: MaterialSwitch
+    private lateinit var btnSeatMemory1: MaterialButton
+    private lateinit var btnSeatMemory2: MaterialButton
 
-    private lateinit var btnVentAll: MaterialButton
+    // Panel Action Controls: Windows
+    private lateinit var btnWinAllVent: MaterialButton
     private lateinit var btnCloseAll: MaterialButton
     private lateinit var btnOpenAll: MaterialButton
+    private val windowRows = mutableListOf<WindowRow>()
 
+    // Panel Action Controls: Lights
     private lateinit var switchDaytimeLight: MaterialSwitch
-    private lateinit var btnAmbientCyan: MaterialButton
-    private lateinit var btnAmbientBlue: MaterialButton
-    private lateinit var btnAmbientPurple: MaterialButton
+    private lateinit var viewAmbientPreview: View
+    private lateinit var tvAmbientColorValue: TextView
+    private lateinit var sliderAmbientColor: Slider
+    private var isDraggingAmbient = false
 
+    // Panel Action Controls: ADAS
     private lateinit var switchSpeedLimitWarning: MaterialSwitch
     private lateinit var switchChildPresence: MaterialSwitch
 
+    // Panel Action Controls: Charging
     private lateinit var btnStartCharging: MaterialButton
     private lateinit var btnCap80: MaterialButton
     private lateinit var btnCap90: MaterialButton
     private lateinit var btnCap100: MaterialButton
+    private lateinit var btnCurrent6A: MaterialButton
+    private lateinit var btnCurrent8A: MaterialButton
+    private lateinit var btnCurrent10A: MaterialButton
+    private lateinit var btnCurrent16A: MaterialButton
+    private lateinit var btnCurrentMax: MaterialButton
 
-    private lateinit var btnAvasTone1: MaterialButton
-    private lateinit var btnAvasTone2: MaterialButton
+    // Panel Action Controls: Sound
+    private lateinit var btnAvasDingDong: MaterialButton
+    private lateinit var btnAvasTripleBeep: MaterialButton
+    private lateinit var btnAvasChime: MaterialButton
+    private lateinit var btnAvasAlarm: MaterialButton
     private lateinit var btnAvasStop: MaterialButton
+    private lateinit var switchEngineSound: MaterialSwitch
+    private lateinit var btnEngineMinus: ImageButton
+    private lateinit var tvEnginePreset: TextView
+    private lateinit var btnEnginePlus: ImageButton
+    private var currentEnginePreset = 1
 
+    // Panel Action Controls: System
     private lateinit var btnIviReboot: MaterialButton
 
     // Bottom Dock (10 tabs)
@@ -190,6 +223,22 @@ class VehicleNativeFragment : Fragment() {
     private lateinit var dotTabSystem: View
     private lateinit var ivTabSystem: ImageView
     private lateinit var tvTabSystem: TextView
+
+    private class WindowRow(
+        val areaNum: Int,
+        val areaKey: String,
+        val nameResId: Int,
+        container: View
+    ) {
+        val tvName: TextView = container.findViewById(R.id.tvWindowName)
+        val tvPercent: TextView = container.findViewById(R.id.tvWindowPercent)
+        val btn0: MaterialButton = container.findViewById(R.id.btnPreset0)
+        val btn25: MaterialButton = container.findViewById(R.id.btnPreset25)
+        val btn50: MaterialButton = container.findViewById(R.id.btnPreset50)
+        val btn75: MaterialButton = container.findViewById(R.id.btnPreset75)
+        val btn100: MaterialButton = container.findViewById(R.id.btnPreset100)
+        val buttons = listOf(0 to btn0, 25 to btn25, 50 to btn50, 75 to btn75, 100 to btn100)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -274,47 +323,82 @@ class VehicleNativeFragment : Fragment() {
         panelSound = root.findViewById(R.id.panelSound)
         panelSystem = root.findViewById(R.id.panelSystem)
 
-        // Panel Actions
+        // Panel Actions: Security
         btnLock = root.findViewById(R.id.btnLock)
         btnUnlock = root.findViewById(R.id.btnUnlock)
         btnFlash = root.findViewById(R.id.btnFlash)
         btnFindCar = root.findViewById(R.id.btnFindCar)
 
+        // Panel Actions: Trunk
         btnTrunkOpen = root.findViewById(R.id.btnTrunkOpen)
         btnTrunkClose = root.findViewById(R.id.btnTrunkClose)
 
+        // Panel Actions: Climate
         btnAcOn = root.findViewById(R.id.btnAcOn)
         btnAcOff = root.findViewById(R.id.btnAcOff)
         btnTempMinus = root.findViewById(R.id.btnTempMinus)
         tvTargetTemp = root.findViewById(R.id.tvTargetTemp)
         btnTempPlus = root.findViewById(R.id.btnTempPlus)
+        btnFanMinus = root.findViewById(R.id.btnFanMinus)
+        tvFanSpeed = root.findViewById(R.id.tvFanSpeed)
+        btnFanPlus = root.findViewById(R.id.btnFanPlus)
         switchBatteryHeat = root.findViewById(R.id.switchBatteryHeat)
 
+        // Panel Actions: Seats
         btnDriverSeatHeat = root.findViewById(R.id.btnDriverSeatHeat)
         btnDriverSeatCool = root.findViewById(R.id.btnDriverSeatCool)
+        btnPassengerSeatHeat = root.findViewById(R.id.btnPassengerSeatHeat)
+        btnPassengerSeatCool = root.findViewById(R.id.btnPassengerSeatCool)
         switchSteeringHeat = root.findViewById(R.id.switchSteeringHeat)
+        btnSeatMemory1 = root.findViewById(R.id.btnSeatMemory1)
+        btnSeatMemory2 = root.findViewById(R.id.btnSeatMemory2)
 
-        btnVentAll = root.findViewById(R.id.btnVentAll)
+        // Panel Actions: Windows
+        btnWinAllVent = root.findViewById(R.id.btnWinAllVent)
         btnCloseAll = root.findViewById(R.id.btnCloseAll)
         btnOpenAll = root.findViewById(R.id.btnOpenAll)
 
-        switchDaytimeLight = root.findViewById(R.id.switchDaytimeLight)
-        btnAmbientCyan = root.findViewById(R.id.btnAmbientCyan)
-        btnAmbientBlue = root.findViewById(R.id.btnAmbientBlue)
-        btnAmbientPurple = root.findViewById(R.id.btnAmbientPurple)
+        windowRows.clear()
+        windowRows.add(WindowRow(1, "lf", R.string.vc_tpms_front_left, root.findViewById(R.id.rowWinLF)))
+        windowRows.add(WindowRow(2, "rf", R.string.vc_tpms_front_right, root.findViewById(R.id.rowWinFR)))
+        windowRows.add(WindowRow(3, "lr", R.string.vc_tpms_rear_left, root.findViewById(R.id.rowWinLR)))
+        windowRows.add(WindowRow(4, "rr", R.string.vc_tpms_rear_right, root.findViewById(R.id.rowWinRR)))
+        windowRows.add(WindowRow(5, "sunroof", R.string.vc_sunroof, root.findViewById(R.id.rowWinSunroof)))
+        windowRows.add(WindowRow(6, "sunshade", R.string.vc_sunshade, root.findViewById(R.id.rowWinSunshade)))
 
+        // Panel Actions: Lights
+        switchDaytimeLight = root.findViewById(R.id.switchDaytimeLight)
+        viewAmbientPreview = root.findViewById(R.id.viewAmbientPreview)
+        tvAmbientColorValue = root.findViewById(R.id.tvAmbientColorValue)
+        sliderAmbientColor = root.findViewById(R.id.sliderAmbientColor)
+
+        // Panel Actions: ADAS
         switchSpeedLimitWarning = root.findViewById(R.id.switchSpeedLimitWarning)
         switchChildPresence = root.findViewById(R.id.switchChildPresence)
 
+        // Panel Actions: Charging
         btnStartCharging = root.findViewById(R.id.btnStartCharging)
         btnCap80 = root.findViewById(R.id.btnCap80)
         btnCap90 = root.findViewById(R.id.btnCap90)
         btnCap100 = root.findViewById(R.id.btnCap100)
+        btnCurrent6A = root.findViewById(R.id.btnCurrent6A)
+        btnCurrent8A = root.findViewById(R.id.btnCurrent8A)
+        btnCurrent10A = root.findViewById(R.id.btnCurrent10A)
+        btnCurrent16A = root.findViewById(R.id.btnCurrent16A)
+        btnCurrentMax = root.findViewById(R.id.btnCurrentMax)
 
-        btnAvasTone1 = root.findViewById(R.id.btnAvasTone1)
-        btnAvasTone2 = root.findViewById(R.id.btnAvasTone2)
+        // Panel Actions: Sound
+        btnAvasDingDong = root.findViewById(R.id.btnAvasDingDong)
+        btnAvasTripleBeep = root.findViewById(R.id.btnAvasTripleBeep)
+        btnAvasChime = root.findViewById(R.id.btnAvasChime)
+        btnAvasAlarm = root.findViewById(R.id.btnAvasAlarm)
         btnAvasStop = root.findViewById(R.id.btnAvasStop)
+        switchEngineSound = root.findViewById(R.id.switchEngineSound)
+        btnEngineMinus = root.findViewById(R.id.btnEngineMinus)
+        tvEnginePreset = root.findViewById(R.id.tvEnginePreset)
+        btnEnginePlus = root.findViewById(R.id.btnEnginePlus)
 
+        // Panel Actions: System
         btnIviReboot = root.findViewById(R.id.btnIviReboot)
 
         // Bottom Dock (10 tabs)
@@ -405,6 +489,8 @@ class VehicleNativeFragment : Fragment() {
         btnAcOff.setOnClickListener { viewModel.setAc(false) { showToast(it) } }
         btnTempMinus.setOnClickListener { viewModel.adjustTargetTemp(-0.5) { showToast(it) } }
         btnTempPlus.setOnClickListener { viewModel.adjustTargetTemp(0.5) { showToast(it) } }
+        btnFanMinus.setOnClickListener { viewModel.adjustFanSpeed(-1) { showToast(it) } }
+        btnFanPlus.setOnClickListener { viewModel.adjustFanSpeed(1) { showToast(it) } }
         switchBatteryHeat.setOnCheckedChangeListener { _, isChecked ->
             if (switchBatteryHeat.isPressed) {
                 viewModel.setBatteryHeat(isChecked) { showToast(it) }
@@ -422,16 +508,69 @@ class VehicleNativeFragment : Fragment() {
             val next = (cur + 1) % 4
             viewModel.setDriverSeatCool(next) { showToast(it) }
         }
+        btnPassengerSeatHeat.setOnClickListener {
+            val cur = viewModel.state.value.seats.passengerHeat
+            val next = (cur + 1) % 4
+            viewModel.setPassengerSeatHeat(next) { showToast(it) }
+        }
+        btnPassengerSeatCool.setOnClickListener {
+            val cur = viewModel.state.value.seats.passengerCool
+            val next = (cur + 1) % 4
+            viewModel.setPassengerSeatCool(next) { showToast(it) }
+        }
         switchSteeringHeat.setOnCheckedChangeListener { _, isChecked ->
             if (switchSteeringHeat.isPressed) {
                 viewModel.setSteeringHeat(isChecked) { showToast(it) }
             }
         }
+        btnSeatMemory1.setOnClickListener {
+            viewModel.recallSeatPosition(1) { success ->
+                if (isAdded) {
+                    val msg = if (success) getString(R.string.vc_seat_pos_recalled, 1) else getString(R.string.vc_cmd_failed)
+                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        btnSeatMemory1.setOnLongClickListener {
+            viewModel.saveSeatPosition(1) { success ->
+                if (isAdded) {
+                    val msg = if (success) getString(R.string.vc_seat_pos_saved, 1) else getString(R.string.vc_cmd_failed)
+                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+                }
+            }
+            true
+        }
+        btnSeatMemory2.setOnClickListener {
+            viewModel.recallSeatPosition(2) { success ->
+                if (isAdded) {
+                    val msg = if (success) getString(R.string.vc_seat_pos_recalled, 2) else getString(R.string.vc_cmd_failed)
+                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        btnSeatMemory2.setOnLongClickListener {
+            viewModel.saveSeatPosition(2) { success ->
+                if (isAdded) {
+                    val msg = if (success) getString(R.string.vc_seat_pos_saved, 2) else getString(R.string.vc_cmd_failed)
+                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+                }
+            }
+            true
+        }
 
         // Action Buttons: Windows
-        btnVentAll.setOnClickListener { viewModel.ventAllWindows { showToast(it) } }
+        btnWinAllVent.setOnClickListener { viewModel.ventAllWindows { showToast(it) } }
         btnCloseAll.setOnClickListener { viewModel.closeAllWindows { showToast(it) } }
         btnOpenAll.setOnClickListener { viewModel.openAllWindows { showToast(it) } }
+
+        for (row in windowRows) {
+            row.tvName.text = getString(row.nameResId)
+            for ((pct, btn) in row.buttons) {
+                btn.setOnClickListener {
+                    viewModel.setWindowPosition(row.areaNum, pct) { showToast(it) }
+                }
+            }
+        }
 
         // Action Buttons: Lights
         switchDaytimeLight.setOnCheckedChangeListener { _, isChecked ->
@@ -439,9 +578,23 @@ class VehicleNativeFragment : Fragment() {
                 viewModel.setDaytimeLights(isChecked) { showToast(it) }
             }
         }
-        btnAmbientCyan.setOnClickListener { viewModel.setAmbientLights(0) { showToast(it) } }
-        btnAmbientBlue.setOnClickListener { viewModel.setAmbientLights(1) { showToast(it) } }
-        btnAmbientPurple.setOnClickListener { viewModel.setAmbientLights(2) { showToast(it) } }
+        sliderAmbientColor.addOnChangeListener { _, value, fromUser ->
+            val idx = value.toInt().coerceIn(1, 31)
+            val hex = LightConstants.AMBIENT_COLOURS.getOrNull(idx - 1) ?: "#00AAFF"
+            viewAmbientPreview.backgroundTintList = ColorStateList.valueOf(Color.parseColor(hex))
+            tvAmbientColorValue.text = "Color $idx"
+        }
+        sliderAmbientColor.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
+            override fun onStartTrackingTouch(slider: Slider) {
+                isDraggingAmbient = true
+            }
+
+            override fun onStopTrackingTouch(slider: Slider) {
+                isDraggingAmbient = false
+                val idx = slider.value.toInt().coerceIn(1, 31)
+                viewModel.setAmbientLights(idx) { showToast(it) }
+            }
+        })
 
         // Action Buttons: ADAS
         switchSpeedLimitWarning.setOnCheckedChangeListener { _, isChecked ->
@@ -461,10 +614,43 @@ class VehicleNativeFragment : Fragment() {
         btnCap90.setOnClickListener { viewModel.setChargeCap(90) { showToast(it) } }
         btnCap100.setOnClickListener { viewModel.setChargeCap(100) { showToast(it) } }
 
+        btnCurrent6A.setOnClickListener { viewModel.setAcCurrentLimit(1) { showToast(it) } }
+        btnCurrent8A.setOnClickListener { viewModel.setAcCurrentLimit(2) { showToast(it) } }
+        btnCurrent10A.setOnClickListener { viewModel.setAcCurrentLimit(3) { showToast(it) } }
+        btnCurrent16A.setOnClickListener { viewModel.setAcCurrentLimit(4) { showToast(it) } }
+        btnCurrentMax.setOnClickListener { viewModel.setAcCurrentLimit(5) { showToast(it) } }
+
         // Action Buttons: Sound
-        btnAvasTone1.setOnClickListener { viewModel.setAvasTone(1) { showToast(it) } }
-        btnAvasTone2.setOnClickListener { viewModel.setAvasTone(2) { showToast(it) } }
+        btnAvasDingDong.setOnClickListener { viewModel.setAvasTone(0) { showToast(it) } }
+        btnAvasTripleBeep.setOnClickListener { viewModel.setAvasTone(2) { showToast(it) } }
+        btnAvasChime.setOnClickListener { viewModel.setAvasTone(4) { showToast(it) } }
+        btnAvasAlarm.setOnClickListener { viewModel.setAvasTone(6) { showToast(it) } }
         btnAvasStop.setOnClickListener { viewModel.stopAvasTone { showToast(it) } }
+
+        tvEnginePreset.text = "$currentEnginePreset"
+        btnEngineMinus.setOnClickListener {
+            if (currentEnginePreset > 1) {
+                currentEnginePreset--
+                tvEnginePreset.text = "$currentEnginePreset"
+                if (switchEngineSound.isChecked) {
+                    viewModel.setEngineSound(true, currentEnginePreset) { showToast(it) }
+                }
+            }
+        }
+        btnEnginePlus.setOnClickListener {
+            if (currentEnginePreset < 5) {
+                currentEnginePreset++
+                tvEnginePreset.text = "$currentEnginePreset"
+                if (switchEngineSound.isChecked) {
+                    viewModel.setEngineSound(true, currentEnginePreset) { showToast(it) }
+                }
+            }
+        }
+        switchEngineSound.setOnCheckedChangeListener { _, isChecked ->
+            if (switchEngineSound.isPressed) {
+                viewModel.setEngineSound(isChecked, currentEnginePreset) { showToast(it) }
+            }
+        }
 
         // Action Buttons: System
         btnIviReboot.setOnClickListener {
@@ -572,29 +758,95 @@ class VehicleNativeFragment : Fragment() {
 
         // 6. Climate State
         tvTargetTemp.text = String.format(Locale.US, "%.1f°C", state.climate.targetTempC)
+        tvFanSpeed.text = "${getString(R.string.vc_fan_label)} ${state.climate.fanSpeed}"
         switchBatteryHeat.isChecked = state.climate.batteryHeat
 
         // 7. Seats State
-        val heatLabel = when (state.seats.driverHeat) {
-            0 -> getString(R.string.vc_action_seat_off)
-            else -> getString(R.string.vc_action_seat_level, state.seats.driverHeat)
-        }
-        btnDriverSeatHeat.text = "${getString(R.string.vc_action_driver_seat)} ${getString(R.string.vc_action_seat_heat)}: $heatLabel"
-
-        val coolLabel = when (state.seats.driverCool) {
-            0 -> getString(R.string.vc_action_seat_off)
-            else -> getString(R.string.vc_action_seat_level, state.seats.driverCool)
-        }
-        btnDriverSeatCool.text = "${getString(R.string.vc_action_driver_seat)} ${getString(R.string.vc_action_seat_cool)}: $coolLabel"
-
+        renderSeatButton(btnDriverSeatHeat, getString(R.string.vc_action_driver_seat), getString(R.string.vc_action_seat_heat), state.seats.driverHeat, isHeat = true)
+        renderSeatButton(btnDriverSeatCool, getString(R.string.vc_action_driver_seat), getString(R.string.vc_action_seat_cool), state.seats.driverCool, isHeat = false)
+        renderSeatButton(btnPassengerSeatHeat, getString(R.string.vc_action_passenger_seat), getString(R.string.vc_action_seat_heat), state.seats.passengerHeat, isHeat = true)
+        renderSeatButton(btnPassengerSeatCool, getString(R.string.vc_action_passenger_seat), getString(R.string.vc_action_seat_cool), state.seats.passengerCool, isHeat = false)
         switchSteeringHeat.isChecked = state.seats.steeringHeat
 
-        // 8. Lights State
-        switchDaytimeLight.isChecked = state.lights.daytimeLight
+        // 8. Windows State
+        for (row in windowRows) {
+            val currentPct = state.windowPercent[row.areaKey]
+            if (currentPct != null && currentPct >= 0) {
+                row.tvPercent.text = "$currentPct%"
+                for ((pct, btn) in row.buttons) {
+                    setButtonSelected(btn, currentPct == pct)
+                }
+            } else {
+                row.tvPercent.text = "—%"
+                for ((_, btn) in row.buttons) {
+                    setButtonSelected(btn, false)
+                }
+            }
+        }
 
-        // 9. ADAS State
+        // 9. Lights State
+        switchDaytimeLight.isChecked = state.lights.daytimeLight
+        val colorIdx = state.lights.ambientColour.coerceIn(1, 31)
+        if (!isDraggingAmbient) {
+            sliderAmbientColor.value = colorIdx.toFloat()
+            val hex = LightConstants.AMBIENT_COLOURS.getOrNull(colorIdx - 1) ?: "#00AAFF"
+            viewAmbientPreview.backgroundTintList = ColorStateList.valueOf(Color.parseColor(hex))
+            tvAmbientColorValue.text = "Color $colorIdx"
+        }
+
+        // 10. ADAS State
         switchSpeedLimitWarning.isChecked = state.adas.speedLimitWarning
         switchChildPresence.isChecked = state.adas.childPresenceDetection
+
+        // 11. Charging State
+        setButtonSelected(btnCap80, state.charging.chargeCapPercent == 80)
+        setButtonSelected(btnCap90, state.charging.chargeCapPercent == 90)
+        setButtonSelected(btnCap100, state.charging.chargeCapPercent == 100)
+
+        setButtonSelected(btnCurrent6A, state.charging.acCurrentLimitState == 1)
+        setButtonSelected(btnCurrent8A, state.charging.acCurrentLimitState == 2)
+        setButtonSelected(btnCurrent10A, state.charging.acCurrentLimitState == 3)
+        setButtonSelected(btnCurrent16A, state.charging.acCurrentLimitState == 4)
+        setButtonSelected(btnCurrentMax, state.charging.acCurrentLimitState == 5)
+    }
+
+    private fun renderSeatButton(
+        btn: MaterialButton,
+        seatLabel: String,
+        actionLabel: String,
+        level: Int,
+        isHeat: Boolean
+    ) {
+        val context = context ?: return
+        val statusText = when (level) {
+            0 -> getString(R.string.vc_action_seat_off)
+            else -> getString(R.string.vc_action_seat_level, level)
+        }
+        btn.text = "$seatLabel $actionLabel: $statusText"
+
+        if (level > 0) {
+            val colorRes = if (isHeat) R.color.status_warning else R.color.status_info
+            btn.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(context, colorRes))
+            btn.setTextColor(ContextCompat.getColor(context, R.color.white))
+            btn.iconTint = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.white))
+        } else {
+            btn.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.bg_elevated))
+            btn.setTextColor(ContextCompat.getColor(context, R.color.text_primary))
+            btn.iconTint = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.text_primary))
+        }
+    }
+
+    private fun setButtonSelected(btn: MaterialButton, selected: Boolean) {
+        val context = btn.context
+        if (selected) {
+            btn.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.brand_primary))
+            btn.setTextColor(ContextCompat.getColor(context, R.color.white))
+            btn.strokeColor = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.brand_primary))
+        } else {
+            btn.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
+            btn.setTextColor(ContextCompat.getColor(context, R.color.text_primary))
+            btn.strokeColor = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.border_default))
+        }
     }
 
     private fun renderTyre(

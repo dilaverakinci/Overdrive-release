@@ -509,427 +509,786 @@
         app:strokeWidth="1dp"
         tools:visibility="visible">
 
-        <FrameLayout
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="12dp">
+            android:maxHeight="300dp"
+            android:fillViewport="true">
 
-            <!-- Panel: Security -->
-            <LinearLayout
-                android:id="@+id/panelSecurity"
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:visibility="gone">
+                android:padding="12dp">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnLock"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="52dp"
-                    android:layout_marginEnd="12dp"
-                    android:text="@string/vc_action_lock"
-                    app:cornerRadius="14dp"
-                    app:icon="@drawable/ic_security_lock" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnUnlock"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="52dp"
-                    android:layout_marginEnd="12dp"
-                    android:text="@string/vc_action_unlock"
-                    app:cornerRadius="14dp"
-                    app:icon="@drawable/ic_vc_unlock" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnFlash"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="52dp"
-                    android:layout_marginEnd="12dp"
-                    android:text="@string/vc_action_flash"
-                    app:cornerRadius="14dp"
-                    app:icon="@drawable/ic_vc_flash" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnFindCar"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="52dp"
-                    android:text="@string/vc_action_find_car"
-                    app:cornerRadius="14dp"
-                    app:icon="@drawable/ic_horn_alert" />
-            </LinearLayout>
-
-            <!-- Panel: Trunk -->
-            <LinearLayout
-                android:id="@+id/panelTrunk"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:visibility="gone">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnTrunkOpen"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="52dp"
-                    android:layout_marginEnd="16dp"
-                    android:text="@string/vc_action_trunk_open"
-                    app:cornerRadius="14dp"
-                    app:icon="@drawable/ic_vc_trunk" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnTrunkClose"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="52dp"
-                    android:text="@string/vc_action_trunk_close"
-                    app:cornerRadius="14dp"
-                    app:icon="@drawable/ic_vc_trunk" />
-            </LinearLayout>
-
-            <!-- Panel: Climate -->
-            <LinearLayout
-                android:id="@+id/panelClimate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:visibility="gone">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnAcOn"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="52dp"
-                    android:layout_marginEnd="8dp"
-                    android:text="@string/vc_action_ac_on"
-                    app:cornerRadius="14dp"
-                    app:icon="@drawable/ic_vc_climate" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnAcOff"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="52dp"
-                    android:layout_marginEnd="16dp"
-                    android:text="@string/vc_action_ac_off"
-                    app:cornerRadius="14dp" />
-
-                <!-- Temp Stepper -->
+                <!-- Panel: Security -->
                 <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="52dp"
-                    android:layout_marginEnd="16dp"
-                    android:background="@drawable/bg_parking_filter_normal"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="8dp">
+                    android:id="@+id/panelSecurity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
 
-                    <ImageButton
-                        android:id="@+id/btnTempMinus"
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="Temp minus"
-                        android:src="@drawable/ic_minus"
-                        app:tint="?attr/colorOnSurface" />
-
-                    <TextView
-                        android:id="@+id/tvTargetTemp"
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnLock"
+                        style="@style/Widget.Material3.Button.TonalButton"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="12dp"
-                        android:fontFamily="monospace"
-                        android:text="22.0°C"
-                        android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
-                        android:textColor="?attr/colorOnSurface"
-                        android:textStyle="bold" />
+                        android:layout_height="52dp"
+                        android:layout_marginEnd="12dp"
+                        android:text="@string/vc_action_lock"
+                        app:cornerRadius="14dp"
+                        app:icon="@drawable/ic_security_lock" />
 
-                    <ImageButton
-                        android:id="@+id/btnTempPlus"
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="Temp plus"
-                        android:src="@drawable/ic_add"
-                        app:tint="?attr/colorOnSurface" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnUnlock"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="52dp"
+                        android:layout_marginEnd="12dp"
+                        android:text="@string/vc_action_unlock"
+                        app:cornerRadius="14dp"
+                        app:icon="@drawable/ic_vc_unlock" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFlash"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="52dp"
+                        android:layout_marginEnd="12dp"
+                        android:text="@string/vc_action_flash"
+                        app:cornerRadius="14dp"
+                        app:icon="@drawable/ic_vc_flash" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFindCar"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="52dp"
+                        android:text="@string/vc_action_find_car"
+                        app:cornerRadius="14dp"
+                        app:icon="@drawable/ic_horn_alert" />
                 </LinearLayout>
 
-                <!-- Battery Heat Toggle -->
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/switchBatteryHeat"
-                    android:layout_width="wrap_content"
+                <!-- Panel: Trunk -->
+                <LinearLayout
+                    android:id="@+id/panelTrunk"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/vc_action_battery_heat" />
-            </LinearLayout>
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
 
-            <!-- Panel: Seats -->
-            <LinearLayout
-                android:id="@+id/panelSeats"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:visibility="gone">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTrunkOpen"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="52dp"
+                        android:layout_marginEnd="16dp"
+                        android:text="@string/vc_action_trunk_open"
+                        app:cornerRadius="14dp"
+                        app:icon="@drawable/ic_vc_trunk" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnDriverSeatHeat"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="52dp"
-                    android:layout_marginEnd="8dp"
-                    android:text="Sürücü Isıtma (Kapalı)"
-                    app:cornerRadius="14dp"
-                    app:icon="@drawable/ic_seat_positions" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTrunkClose"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="52dp"
+                        android:text="@string/vc_action_trunk_close"
+                        app:cornerRadius="14dp"
+                        app:icon="@drawable/ic_vc_trunk" />
+                </LinearLayout>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnDriverSeatCool"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="52dp"
-                    android:layout_marginEnd="16dp"
-                    android:text="Sürücü Havalandırma"
-                    app:cornerRadius="14dp" />
-
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/switchSteeringHeat"
-                    android:layout_width="wrap_content"
+                <!-- Panel: Climate -->
+                <LinearLayout
+                    android:id="@+id/panelClimate"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/vc_action_steering_heat" />
-            </LinearLayout>
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
 
-            <!-- Panel: Windows -->
-            <LinearLayout
-                android:id="@+id/panelWindows"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:visibility="gone">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAcOn"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="52dp"
+                        android:layout_marginEnd="8dp"
+                        android:text="@string/vc_action_ac_on"
+                        app:cornerRadius="14dp"
+                        app:icon="@drawable/ic_vc_climate" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnVentAll"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="52dp"
-                    android:layout_marginEnd="12dp"
-                    android:text="@string/vc_action_vent_all"
-                    app:cornerRadius="14dp"
-                    app:icon="@drawable/ic_vc_windows" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAcOff"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="52dp"
+                        android:layout_marginEnd="16dp"
+                        android:text="@string/vc_action_ac_off"
+                        app:cornerRadius="14dp" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnCloseAll"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="52dp"
-                    android:layout_marginEnd="12dp"
-                    android:text="@string/vc_action_close_all"
-                    app:cornerRadius="14dp" />
+                    <!-- Temp Stepper -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="52dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/bg_parking_filter_normal"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="8dp">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnOpenAll"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="52dp"
-                    android:text="@string/vc_action_open_all"
-                    app:cornerRadius="14dp" />
-            </LinearLayout>
+                        <ImageButton
+                            android:id="@+id/btnTempMinus"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="Temp minus"
+                            android:src="@drawable/ic_minus"
+                            app:tint="?attr/colorOnSurface" />
 
-            <!-- Panel: Lights -->
-            <LinearLayout
-                android:id="@+id/panelLights"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:visibility="gone">
+                        <TextView
+                            android:id="@+id/tvTargetTemp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="10dp"
+                            android:fontFamily="monospace"
+                            android:text="22.0°C"
+                            android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textStyle="bold" />
 
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/switchDaytimeLight"
-                    android:layout_width="wrap_content"
+                        <ImageButton
+                            android:id="@+id/btnTempPlus"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="Temp plus"
+                            android:src="@drawable/ic_add"
+                            app:tint="?attr/colorOnSurface" />
+                    </LinearLayout>
+
+                    <!-- Fan Stepper -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="52dp"
+                        android:layout_marginEnd="16dp"
+                        android:background="@drawable/bg_parking_filter_normal"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="8dp">
+
+                        <ImageButton
+                            android:id="@+id/btnFanMinus"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="Fan minus"
+                            android:src="@drawable/ic_minus"
+                            app:tint="?attr/colorOnSurface" />
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_marginStart="4dp"
+                            android:contentDescription="Fan"
+                            android:src="@drawable/ic_fan"
+                            app:tint="?attr/colorOnSurfaceVariant" />
+
+                        <TextView
+                            android:id="@+id/tvFanSpeed"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="10dp"
+                            android:fontFamily="monospace"
+                            android:text="Fan 3"
+                            android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textStyle="bold" />
+
+                        <ImageButton
+                            android:id="@+id/btnFanPlus"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="Fan plus"
+                            android:src="@drawable/ic_add"
+                            app:tint="?attr/colorOnSurface" />
+                    </LinearLayout>
+
+                    <!-- Battery Heat Toggle -->
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switchBatteryHeat"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/vc_action_battery_heat" />
+                </LinearLayout>
+
+                <!-- Panel: Seats -->
+                <LinearLayout
+                    android:id="@+id/panelSeats"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="24dp"
-                    android:text="@string/vc_action_daytime_lights" />
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                    <!-- Row 1: Driver & Passenger Seats -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <!-- Driver seat -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnDriverSeatHeat"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="48dp"
+                            android:layout_marginEnd="8dp"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:text="Driver Heat: Off"
+                            app:cornerRadius="12dp"
+                            app:icon="@drawable/ic_seat_heat"
+                            app:iconPadding="6dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnDriverSeatCool"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="48dp"
+                            android:layout_marginEnd="16dp"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:text="Driver Vent: Off"
+                            app:cornerRadius="12dp"
+                            app:icon="@drawable/ic_seat_cool"
+                            app:iconPadding="6dp" />
+
+                        <!-- Passenger seat -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnPassengerSeatHeat"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="48dp"
+                            android:layout_marginEnd="8dp"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:text="Passenger Heat: Off"
+                            app:cornerRadius="12dp"
+                            app:icon="@drawable/ic_seat_heat"
+                            app:iconPadding="6dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnPassengerSeatCool"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="48dp"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:text="Passenger Vent: Off"
+                            app:cornerRadius="12dp"
+                            app:icon="@drawable/ic_seat_cool"
+                            app:iconPadding="6dp" />
+                    </LinearLayout>
+
+                    <!-- Row 2: Steering Wheel & Seat Memory -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switchSteeringHeat"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="20dp"
+                            android:text="Steering wheel heater" />
+
+                        <View
+                            android:layout_width="1dp"
+                            android:layout_height="32dp"
+                            android:layout_marginEnd="20dp"
+                            android:background="?attr/colorOutlineVariant" />
+
+                        <!-- Pos 1 / Pos 2 Memory Buttons -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnSeatMemory1"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="48dp"
+                            android:layout_marginEnd="8dp"
+                            android:text="@string/vc_seat_pos_1"
+                            app:cornerRadius="12dp"
+                            app:icon="@drawable/ic_seat_memory" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnSeatMemory2"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="48dp"
+                            android:text="@string/vc_seat_pos_2"
+                            app:cornerRadius="12dp"
+                            app:icon="@drawable/ic_seat_memory" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Panel: Windows -->
+                <LinearLayout
+                    android:id="@+id/panelWindows"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="12dp"
-                    android:text="@string/vc_action_ambient_light"
-                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-                    android:textColor="?attr/colorOnSurface" />
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnAmbientCyan"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="44dp"
-                    android:layout_marginEnd="6dp"
-                    android:text="@string/vc_color_cyan"
-                    app:cornerRadius="12dp" />
+                    <!-- All Windows quick bar -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingBottom="10dp">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnAmbientBlue"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="44dp"
-                    android:layout_marginEnd="6dp"
-                    android:text="@string/vc_color_blue"
-                    app:cornerRadius="12dp" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="16dp"
+                            android:text="@string/vc_all_windows"
+                            android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textStyle="bold" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnAmbientPurple"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="44dp"
-                    android:text="@string/vc_color_purple"
-                    app:cornerRadius="12dp" />
-            </LinearLayout>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnWinAllVent"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="44dp"
+                            android:layout_marginEnd="8dp"
+                            android:text="@string/vc_vent"
+                            app:cornerRadius="12dp"
+                            app:icon="@drawable/ic_vc_windows" />
 
-            <!-- Panel: ADAS -->
-            <LinearLayout
-                android:id="@+id/panelAdas"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:visibility="gone">
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCloseAll"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="44dp"
+                            android:layout_marginEnd="8dp"
+                            android:text="0%"
+                            app:cornerRadius="12dp" />
 
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/switchSpeedLimitWarning"
-                    android:layout_width="wrap_content"
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnOpenAll"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="44dp"
+                            android:text="100%"
+                            app:cornerRadius="12dp" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginBottom="10dp"
+                        android:background="?attr/colorOutlineVariant" />
+
+                    <!-- Two columns of apertures -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <!-- Left Column: Front Left, Rear Left, Sunroof -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <!-- Front Left -->
+                            <include
+                                android:id="@+id/rowWinLF"
+                                layout="@layout/item_vehicle_window_row" />
+
+                            <!-- Rear Left -->
+                            <include
+                                android:id="@+id/rowWinLR"
+                                layout="@layout/item_vehicle_window_row" />
+
+                            <!-- Sunroof -->
+                            <include
+                                android:id="@+id/rowWinSunroof"
+                                layout="@layout/item_vehicle_window_row" />
+                        </LinearLayout>
+
+                        <!-- Right Column: Front Right, Rear Right, Sunshade -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <!-- Front Right -->
+                            <include
+                                android:id="@+id/rowWinFR"
+                                layout="@layout/item_vehicle_window_row" />
+
+                            <!-- Rear Right -->
+                            <include
+                                android:id="@+id/rowWinRR"
+                                layout="@layout/item_vehicle_window_row" />
+
+                            <!-- Sunshade -->
+                            <include
+                                android:id="@+id/rowWinSunshade"
+                                layout="@layout/item_vehicle_window_row" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Panel: Lights -->
+                <LinearLayout
+                    android:id="@+id/panelLights"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="24dp"
-                    android:text="@string/vc_action_speed_limit" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
 
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/switchChildPresence"
-                    android:layout_width="wrap_content"
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switchDaytimeLight"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="20dp"
+                        android:text="@string/vc_action_daytime_lights" />
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="36dp"
+                        android:layout_marginEnd="20dp"
+                        android:background="?attr/colorOutlineVariant" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="12dp"
+                        android:text="@string/vc_action_ambient_light"
+                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                        android:textColor="?attr/colorOnSurface" />
+
+                    <View
+                        android:id="@+id/viewAmbientPreview"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/bg_pill_state"
+                        android:backgroundTint="#00AAFF" />
+
+                    <TextView
+                        android:id="@+id/tvAmbientColorValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="12dp"
+                        android:fontFamily="monospace"
+                        android:text="Color 1"
+                        android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/sliderAmbientColor"
+                        android:layout_width="260dp"
+                        android:layout_height="wrap_content"
+                        android:stepSize="1.0"
+                        android:value="1.0"
+                        android:valueFrom="1.0"
+                        android:valueTo="31.0" />
+                </LinearLayout>
+
+                <!-- Panel: ADAS -->
+                <LinearLayout
+                    android:id="@+id/panelAdas"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/vc_action_child_presence" />
-            </LinearLayout>
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
 
-            <!-- Panel: Charging -->
-            <LinearLayout
-                android:id="@+id/panelCharging"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:visibility="gone">
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switchSpeedLimitWarning"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="24dp"
+                        android:text="@string/vc_action_speed_limit" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnStartCharging"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="52dp"
-                    android:layout_marginEnd="20dp"
-                    android:text="@string/vc_action_start_charging"
-                    app:cornerRadius="14dp"
-                    app:icon="@drawable/ic_charging" />
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switchChildPresence"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/vc_action_child_presence" />
+                </LinearLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <!-- Panel: Charging -->
+                <LinearLayout
+                    android:id="@+id/panelCharging"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="10dp"
-                    android:text="@string/vc_action_charge_cap"
-                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-                    android:textColor="?attr/colorOnSurface" />
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnCap80"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="44dp"
-                    android:layout_marginEnd="6dp"
-                    android:text="80%"
-                    app:cornerRadius="12dp" />
+                    <!-- Row 1: Start Charging & Charge Limit -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnCap90"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="44dp"
-                    android:layout_marginEnd="6dp"
-                    android:text="90%"
-                    app:cornerRadius="12dp" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnStartCharging"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="48dp"
+                            android:layout_marginEnd="16dp"
+                            android:text="@string/vc_action_start_charging"
+                            app:cornerRadius="12dp"
+                            app:icon="@drawable/ic_charging" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnCap100"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="44dp"
-                    android:text="100%"
-                    app:cornerRadius="12dp" />
-            </LinearLayout>
+                        <View
+                            android:layout_width="1dp"
+                            android:layout_height="32dp"
+                            android:layout_marginEnd="16dp"
+                            android:background="?attr/colorOutlineVariant" />
 
-            <!-- Panel: Sound -->
-            <LinearLayout
-                android:id="@+id/panelSound"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:visibility="gone">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="12dp"
+                            android:text="@string/vc_action_charge_cap"
+                            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                            android:textColor="?attr/colorOnSurface" />
 
-                <TextView
-                    android:layout_width="wrap_content"
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCap80"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="44dp"
+                            android:layout_marginEnd="6dp"
+                            android:text="80%"
+                            app:cornerRadius="10dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCap90"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="44dp"
+                            android:layout_marginEnd="6dp"
+                            android:text="90%"
+                            app:cornerRadius="10dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCap100"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="44dp"
+                            android:text="100%"
+                            app:cornerRadius="10dp" />
+                    </LinearLayout>
+
+                    <!-- Row 2: AC Current Limits -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="12dp"
+                            android:text="@string/vc_action_ac_current_limit"
+                            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                            android:textColor="?attr/colorOnSurface" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCurrent6A"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="44dp"
+                            android:layout_marginEnd="6dp"
+                            android:text="6 A"
+                            app:cornerRadius="10dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCurrent8A"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="44dp"
+                            android:layout_marginEnd="6dp"
+                            android:text="8 A"
+                            app:cornerRadius="10dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCurrent10A"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="44dp"
+                            android:layout_marginEnd="6dp"
+                            android:text="10 A"
+                            app:cornerRadius="10dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCurrent16A"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="44dp"
+                            android:layout_marginEnd="6dp"
+                            android:text="16 A"
+                            app:cornerRadius="10dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCurrentMax"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="44dp"
+                            android:text="@string/vc_ac_max"
+                            app:cornerRadius="10dp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Panel: Sound -->
+                <LinearLayout
+                    android:id="@+id/panelSound"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="12dp"
-                    android:text="@string/vc_action_avas_sound"
-                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-                    android:textColor="?attr/colorOnSurface" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnAvasTone1"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="44dp"
-                    android:layout_marginEnd="6dp"
-                    android:text="@string/vc_sound_tone_1"
-                    app:cornerRadius="12dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="10dp"
+                        android:text="@string/vc_action_avas_sound"
+                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                        android:textColor="?attr/colorOnSurface" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnAvasTone2"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="44dp"
-                    android:layout_marginEnd="6dp"
-                    android:text="@string/vc_sound_tone_2"
-                    app:cornerRadius="12dp" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAvasDingDong"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="44dp"
+                        android:layout_marginEnd="6dp"
+                        android:text="@string/vc_avas_ding_dong"
+                        app:cornerRadius="12dp" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnAvasStop"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="44dp"
-                    android:text="@string/vc_sound_stop"
-                    app:cornerRadius="12dp" />
-            </LinearLayout>
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAvasTripleBeep"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="44dp"
+                        android:layout_marginEnd="6dp"
+                        android:text="@string/vc_avas_triple_beep"
+                        app:cornerRadius="12dp" />
 
-            <!-- Panel: System -->
-            <LinearLayout
-                android:id="@+id/panelSystem"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:visibility="gone">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAvasChime"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="44dp"
+                        android:layout_marginEnd="6dp"
+                        android:text="@string/vc_avas_chime"
+                        app:cornerRadius="12dp" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnIviReboot"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="52dp"
-                    android:text="@string/vc_action_ivi_reboot"
-                    app:cornerRadius="14dp"
-                    app:icon="@drawable/ic_update" />
-            </LinearLayout>
-        </FrameLayout>
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAvasAlarm"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="44dp"
+                        android:layout_marginEnd="6dp"
+                        android:text="@string/vc_avas_alarm"
+                        app:cornerRadius="12dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAvasStop"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="44dp"
+                        android:layout_marginEnd="16dp"
+                        android:text="@string/vc_sound_stop"
+                        app:cornerRadius="12dp" />
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="36dp"
+                        android:layout_marginEnd="16dp"
+                        android:background="?attr/colorOutlineVariant" />
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switchEngineSound"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:text="@string/vc_action_engine_sound" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="44dp"
+                        android:background="@drawable/bg_parking_filter_normal"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="6dp">
+
+                        <ImageButton
+                            android:id="@+id/btnEngineMinus"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="Engine minus"
+                            android:src="@drawable/ic_minus"
+                            app:tint="?attr/colorOnSurface" />
+
+                        <TextView
+                            android:id="@+id/tvEnginePreset"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="8dp"
+                            android:fontFamily="monospace"
+                            android:text="1"
+                            android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textStyle="bold" />
+
+                        <ImageButton
+                            android:id="@+id/btnEnginePlus"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="Engine plus"
+                            android:src="@drawable/ic_add"
+                            app:tint="?attr/colorOnSurface" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Panel: System -->
+                <LinearLayout
+                    android:id="@+id/panelSystem"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnIviReboot"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="52dp"
+                        android:text="@string/vc_action_ivi_reboot"
+                        app:cornerRadius="14dp"
+                        app:icon="@drawable/ic_update" />
+                </LinearLayout>
+            </FrameLayout>
+        </androidx.core.widget.NestedScrollView>
     </com.google.android.material.card.MaterialCardView>
 
     <!-- ================= BOTTOM DOCK (10 TABS) ================= -->

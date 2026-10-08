@@ -42,6 +42,7 @@ class SeatPositionsNativeFragment : Fragment() {
     private lateinit var adapter: SeatPositionAdapter
 
     // Views
+    private var layoutCurrentGlyph: View? = null
     private var ivCurrentGlyph: ImageView? = null
     private var tvCurrentMatch: TextView? = null
     private var btnToggleDetails: MaterialButton? = null
@@ -75,6 +76,7 @@ class SeatPositionsNativeFragment : Fragment() {
     }
 
     private fun bindViews(view: View) {
+        layoutCurrentGlyph = view.findViewById(R.id.layoutCurrentGlyph)
         ivCurrentGlyph = view.findViewById(R.id.ivCurrentGlyph)
         tvCurrentMatch = view.findViewById(R.id.tvCurrentMatch)
         btnToggleDetails = view.findViewById(R.id.btnToggleDetails)
@@ -148,16 +150,24 @@ class SeatPositionsNativeFragment : Fragment() {
     private fun renderState(state: com.overdrive.app.ui.seatpositions.SeatPositionsState) {
         val ctx = context ?: return
 
-        // 1. Current Match / Eyebrow Title
+        // 1. Current Match / Eyebrow Title & Glyph & Details visibility
         if (state.currentAxes == null) {
+            layoutCurrentGlyph?.visibility = View.GONE
+            btnToggleDetails?.visibility = View.GONE
+            layoutAxesDetails?.visibility = View.GONE
             tvCurrentMatch?.text = getString(R.string.seatpos_current_unavailable)
             tvCurrentMatch?.setTextColor(ContextCompat.getColor(ctx, R.color.text_muted))
-        } else if (state.matchedPosition != null) {
-            tvCurrentMatch?.text = getString(R.string.seatpos_matches, state.matchedPosition.displayName)
-            tvCurrentMatch?.setTextColor(ContextCompat.getColor(ctx, R.color.brand_primary))
         } else {
-            tvCurrentMatch?.text = getString(R.string.seatpos_not_saved)
-            tvCurrentMatch?.setTextColor(ContextCompat.getColor(ctx, R.color.text_primary))
+            layoutCurrentGlyph?.visibility = View.VISIBLE
+            btnToggleDetails?.visibility = View.VISIBLE
+            layoutAxesDetails?.visibility = if (detailsExpanded) View.VISIBLE else View.GONE
+            if (state.matchedPosition != null) {
+                tvCurrentMatch?.text = getString(R.string.seatpos_matches, state.matchedPosition.displayName)
+                tvCurrentMatch?.setTextColor(ContextCompat.getColor(ctx, R.color.brand_primary))
+            } else {
+                tvCurrentMatch?.text = getString(R.string.seatpos_not_saved)
+                tvCurrentMatch?.setTextColor(ContextCompat.getColor(ctx, R.color.text_primary))
+            }
         }
 
         // 2. Axes Details Readout

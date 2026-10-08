@@ -1042,8 +1042,8 @@
     <string translatable="false" name="vc_action_ac_off">AC Off</string>
     <string translatable="false" name="vc_action_battery_heat">Battery heat</string>
     <string translatable="false" name="vc_action_target_temp">Cabin Temp</string>
-    <string translatable="false" name="vc_action_driver_seat">Driver Seat</string>
-    <string translatable="false" name="vc_action_passenger_seat">Passenger Seat</string>
+    <string translatable="false" name="vc_action_driver_seat">Driver</string>
+    <string translatable="false" name="vc_action_passenger_seat">Passenger</string>
     <string translatable="false" name="vc_action_seat_heat">Heat</string>
     <string translatable="false" name="vc_action_seat_cool">Vent</string>
     <string translatable="false" name="vc_action_steering_heat">Steering Wheel Heat</string>
@@ -1072,6 +1072,25 @@
     <string translatable="false" name="vc_color_purple">Purple</string>
     <string translatable="false" name="vc_cmd_sent">Command sent</string>
     <string translatable="false" name="vc_cmd_failed">Command failed</string>
+    <string translatable="false" name="vc_seat_pos_1">Pos 1</string>
+    <string translatable="false" name="vc_seat_pos_2">Pos 2</string>
+    <string translatable="false" name="vc_seat_pos_saved">Position %d saved</string>
+    <string translatable="false" name="vc_seat_pos_recalled">Position %d recalled</string>
+    <string translatable="false" name="vc_fan_label">Fan</string>
+    <string translatable="false" name="vc_avas_ding_dong">Ding-dong</string>
+    <string translatable="false" name="vc_avas_triple_beep">Triple beep</string>
+    <string translatable="false" name="vc_avas_chime">Chime</string>
+    <string translatable="false" name="vc_avas_alarm">Alarm</string>
+    <string translatable="false" name="vc_sunroof">Sunroof</string>
+    <string translatable="false" name="vc_sunshade">Sunshade</string>
+    <string translatable="false" name="vc_all_windows">All Windows</string>
+    <string translatable="false" name="vc_vent">Vent</string>
+    <string translatable="false" name="vc_ac_max">Max</string>
+    <string translatable="false" name="vc_preset_0">0%</string>
+    <string translatable="false" name="vc_preset_25">25%</string>
+    <string translatable="false" name="vc_preset_50">50%</string>
+    <string translatable="false" name="vc_preset_75">75%</string>
+    <string translatable="false" name="vc_preset_100">100%</string>
     <string name="rail_projection">Projection</string>
     <string name="rail_trips">Trips</string>
     <string name="rail_parking">Parking</string>
