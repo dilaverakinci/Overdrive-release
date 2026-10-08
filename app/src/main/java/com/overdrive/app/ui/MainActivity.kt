@@ -558,6 +558,10 @@ open class MainActivity : AppCompatActivity() {
             "assistant" -> R.id.genAiFragment
             "keymapping" -> R.id.keyMappingFragment
             "keymapping_legacy" -> R.id.keyMappingLegacyFragment
+            "automations" -> R.id.automationsFragment
+            "automations_legacy" -> R.id.automationsLegacyFragment
+            "integrations" -> R.id.integrationsFragment
+            "integrations_legacy" -> R.id.integrationsLegacyFragment
             else -> return
         }
         // navigateToRailDestination self-defers via pendingRailDestination when
