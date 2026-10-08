@@ -1813,4 +1813,42 @@
     <string name="byd_cloud_test_lights" translatable="false">Işıkları Yak/Söndür</string>
     <string name="byd_cloud_test_horn" translatable="false">Kornayı Çal</string>
     <string name="byd_cloud_clear_button" translatable="false">Bilgileri Temizle</string>
+    <string name="automation_tab_automations" translatable="false">Otomasyonlar</string>
+    <string name="automation_tab_add" translatable="false">Ekle</string>
+    <string name="automation_tab_groups_short" translatable="false">Gruplar</string>
+    <string name="automation_tab_safety_short" translatable="false">Güvenlik</string>
+    <string name="automation_tab_community" translatable="false">Topluluk</string>
+    <string name="automation_list_title" translatable="false">Otomasyonlarınız</string>
+    <string name="automation_btn_add" translatable="false">Otomasyon Ekle</string>
+    <string name="automation_empty_p" translatable="false">Yapılandırılmış otomasyon yok. Bir otomasyon ekleyin.</string>
+    <string name="automation_empty_hint" translatable="false">Bir araç olayı koşullarınızla eşleştiğinde eylem tetiklemek için bir tane oluşturun.</string>
+    <string name="automation_allow_shell_full" translatable="false">Kabuk (Shell) eylemlerine izin ver</string>
+    <string name="automation_allow_shell_full_desc" translatable="false">Koşullar eşleştiğinde otomasyonların arka planda doğrudan kabuk komutu çalıştırmasına izin verir. Otomasyonlarınızdan emin değilseniz kapalı bırakın.</string>
+    <string name="automation_cluster_size" translatable="false">Gösterge paneli boyutu</string>
+    <string name="automation_cluster_size_desc" translatable="false">Bunu gösterge panelinizle eşleştirin. Kör nokta gösterge görünümüyle paylaşılır.</string>
+    <string name="automation_backup_restore_title" translatable="false">Yedekleme ve Geri Yükleme</string>
+    <string name="automation_backup_export_import" translatable="false">Dışa Aktar / İçe Aktar</string>
+    <string name="automation_backup_export_import_desc" translatable="false">Tüm otomasyonlarınızı bir dosyaya kaydedin veya bir yedekten geri yükleyin.</string>
+    <string name="automation_btn_export" translatable="false">Dışa Aktar</string>
+    <string name="automation_btn_import" translatable="false">İçe Aktar</string>
+    <string name="automation_audio_library_title" translatable="false">Ses Kütüphanesi</string>
+    <string name="automation_audio_uploaded" translatable="false">Yüklenen sesler</string>
+    <string name="automation_audio_uploaded_desc" translatable="false">MP3, WAV veya MP4 sesleri yükleyin (maks 48 MB). Ses Çal eylemi ve tuş eşleme buradaki herhangi bir sesi çalabilir.</string>
+    <string name="automation_btn_upload" translatable="false">Yükle</string>
+    <string name="automation_audio_empty" translatable="false">Henüz ses yüklenmedi.</string>
+    <string name="automation_form_add_title" translatable="false">Otomasyon Ekle</string>
+    <string name="automation_form_exec_mode" translatable="false">Yürütme modu</string>
+    <string name="automation_form_name_hint" translatable="false">örn. Gece nöbet modunu devreye al</string>
+    <string name="automation_form_on_change" translatable="false">Değiştiğinde</string>
+    <string name="automation_form_on_change_desc" translatable="false">Bu otomasyonu tetiklerken izlenecek olaylar.</string>
+    <string name="automation_form_save" translatable="false">Otomasyonu Kaydet</string>
+    <string name="automation_groups_title" translatable="false">Eylem grupları</string>
+    <string name="automation_groups_new" translatable="false">Yeni grup</string>
+    <string name="automation_groups_empty_hint" translatable="false">Bir kez eylem grubu oluşturun, ardından "Eylem grubunu çalıştır" ile herhangi bir otomasyondan çağırın.</string>
+    <string name="automation_safety_title" translatable="false">Sürüş güvenlik korumaları</string>
+    <string name="automation_safety_warning" translatable="false">Bu korumalar OverDrive\'ın Otomasyonları, Eylem Grupları, Tuş Eşleme ve Araç Kontrolleri üzerinden başlatılan eylemler için geçerlidir.</string>
+    <string name="automation_community_title" translatable="false">Topluluk otomasyonları</string>
+    <string name="automation_community_empty" translatable="false">Henüz topluluk otomasyonu yok. İlkini siz yayınlayın.</string>
+    <string name="automation_community_empty_hint" translatable="false">Paylaşmak için Otomasyonlar sekmesinden bir otomasyonunuzu yayınlayın.</string>
+    <string name="automation_search_hint" translatable="false">Otomasyonlarda ara</string>
 </resources>

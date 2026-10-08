@@ -139,6 +139,40 @@ open class AutomationsRepository(private val context: Context) {
         }
     }
 
+    open fun getClusterSizeProfile(): Int {
+        val bs = com.overdrive.app.config.UnifiedConfigManager.getBlindSpot()
+        val profile = bs.optInt("clusterSizeProfile", 31)
+        return if (profile in listOf(29, 30, 31)) profile else 31
+    }
+
+    open fun setClusterSizeProfile(profile: Int): Boolean {
+        if (profile !in listOf(29, 30, 31)) return false
+        return com.overdrive.app.config.UnifiedConfigManager.setBlindSpotValues(mapOf("clusterSizeProfile" to profile))
+    }
+
+    open suspend fun saveAutomation(name: String, mode: String, trigger: String, action: String): Result<Boolean> = withContext(Dispatchers.IO) {
+        try {
+            val autoObj = JSONObject().apply {
+                put("name", name)
+                put("mode", mode)
+                put("triggers", JSONArray().apply {
+                    if (trigger.isNotBlank()) put(trigger)
+                })
+                put("actions", JSONArray().apply {
+                    if (action.isNotBlank()) put(JSONObject().apply {
+                        put("type", "vehicle")
+                        put("action", action)
+                    })
+                })
+            }
+            val response = executeHttp("/api/automations/automation", "POST", autoObj.toString())
+            Result.success(response != null)
+        } catch (e: Exception) {
+            logger.error("Error saving automation: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
     open suspend fun updateAllowShell(enabled: Boolean): Result<Boolean> = withContext(Dispatchers.IO) {
         try {
             val payload = JSONObject().apply {

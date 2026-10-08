@@ -2304,6 +2304,44 @@
     <string name="automation_tab_groups" translatable="false">Action Groups</string>
     <string name="automation_tab_safety" translatable="false">Safety Guards</string>
     <string name="automation_tab_settings" translatable="false">Settings</string>
+    <string name="automation_tab_automations" translatable="false">Automations</string>
+    <string name="automation_tab_add" translatable="false">Add</string>
+    <string name="automation_tab_groups_short" translatable="false">Groups</string>
+    <string name="automation_tab_safety_short" translatable="false">Safety</string>
+    <string name="automation_tab_community" translatable="false">Community</string>
+    <string name="automation_list_title" translatable="false">Your automations</string>
+    <string name="automation_btn_add" translatable="false">Add Automation</string>
+    <string name="automation_empty_p" translatable="false">No Automations configured. Add an automation.</string>
+    <string name="automation_empty_hint" translatable="false">Create one to trigger an action when a vehicle event matches your conditions.</string>
+    <string name="automation_allow_shell_full" translatable="false">Allow shell actions</string>
+    <string name="automation_allow_shell_full_desc" translatable="false">Let automations run a raw shell command automatically when their conditions match. This runs unattended in the background — leave off unless you are certain what your automations do.</string>
+    <string name="automation_cluster_size" translatable="false">Cluster size</string>
+    <string name="automation_cluster_size_desc" translatable="false">Match this to your instrument cluster. Shared with the blind-spot cluster view. If the projection looks stretched or cropped, try another option.</string>
+    <string name="automation_backup_restore_title" translatable="false">Backup &amp; Restore</string>
+    <string name="automation_backup_export_import" translatable="false">Export / Import</string>
+    <string name="automation_backup_export_import_desc" translatable="false">Save all your automations to a file, or restore them from a backup. Importing merges into your current automations (existing ones with the same id are replaced).</string>
+    <string name="automation_btn_export" translatable="false">Export</string>
+    <string name="automation_btn_import" translatable="false">Import</string>
+    <string name="automation_audio_library_title" translatable="false">Audio Library</string>
+    <string name="automation_audio_uploaded" translatable="false">Uploaded sounds</string>
+    <string name="automation_audio_uploaded_desc" translatable="false">Upload MP3, WAV or MP4 sounds (max 48 MB). The Play Audio action and key mapping can play any sound here.</string>
+    <string name="automation_btn_upload" translatable="false">Upload</string>
+    <string name="automation_audio_empty" translatable="false">No sounds uploaded yet.</string>
+    <string name="automation_form_add_title" translatable="false">Add Automation</string>
+    <string name="automation_form_exec_mode" translatable="false">Execution mode</string>
+    <string name="automation_form_name_hint" translatable="false">e.g. Arm sentry at night</string>
+    <string name="automation_form_on_change" translatable="false">On Change</string>
+    <string name="automation_form_on_change_desc" translatable="false">What events to watch for when triggering this Automation. When any of these values change, this automation will be checked against the conditions.</string>
+    <string name="automation_form_save" translatable="false">Save Automation</string>
+    <string name="automation_groups_title" translatable="false">Action groups</string>
+    <string name="automation_groups_new" translatable="false">New group</string>
+    <string name="automation_groups_empty_hint" translatable="false">Create a group of actions once, then run it from any automation or key binding with \"Run action group\".</string>
+    <string name="automation_safety_title" translatable="false">Driving safety guards</string>
+    <string name="automation_safety_warning" translatable="false">These guards apply to matching vehicle actions started through OverDrive\'s Automations, Action Groups, Key Mapping, Quick Controls, MQTT, Vehicle Controls, and saved seat positions. Turning one off lets OverDrive attempt that action while the car is moving or its state is unknown. Advanced raw shell, CAN, and diagnostic actions are outside these guards.</string>
+    <string name="automation_community_title" translatable="false">Community automations</string>
+    <string name="automation_community_empty" translatable="false">No community automations yet. Be the first to publish one.</string>
+    <string name="automation_community_empty_hint" translatable="false">Publish one of your automations from the Automations tab to share it.</string>
+    <string name="automation_search_hint" translatable="false">Search automations</string>
     <string name="automation_empty_title" translatable="false">No Automations Configured</string>
     <string name="automation_empty_desc" translatable="false">Create custom rules to automate car settings, charging routines, or accessories</string>
     <string name="automation_groups_empty_title" translatable="false">No Action Groups</string>

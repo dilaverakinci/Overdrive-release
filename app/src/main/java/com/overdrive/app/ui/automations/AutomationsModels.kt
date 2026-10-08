@@ -5,10 +5,16 @@ import org.json.JSONObject
 import java.util.Locale
 
 enum class AutomationsTab {
-    RULES,
+    AUTOMATIONS,
+    ADD,
     GROUPS,
     SAFETY,
-    SETTINGS
+    COMMUNITY;
+
+    companion object {
+        val RULES get() = AUTOMATIONS
+        val SETTINGS get() = AUTOMATIONS
+    }
 }
 
 enum class AutomationSortMode(val label: String) {
@@ -234,7 +240,7 @@ data class AutomationSettingsItem(
 
 data class AutomationsUiState(
     val isLoading: Boolean = false,
-    val activeTab: AutomationsTab = AutomationsTab.RULES,
+    val activeTab: AutomationsTab = AutomationsTab.AUTOMATIONS,
     val sortMode: AutomationSortMode = AutomationSortMode.DEFAULT,
     val automations: List<AutomationItem> = emptyList(),
     val actionGroups: List<ActionGroupItem> = emptyList(),

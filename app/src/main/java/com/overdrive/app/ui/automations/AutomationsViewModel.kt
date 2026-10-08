@@ -22,6 +22,9 @@ class AutomationsViewModel @JvmOverloads constructor(
     private val _uiState = MutableStateFlow(AutomationsUiState(isLoading = true))
     val uiState: StateFlow<AutomationsUiState> = _uiState.asStateFlow()
 
+    private val _clusterSizeProfile = MutableStateFlow(31)
+    val clusterSizeProfile: StateFlow<Int> = _clusterSizeProfile.asStateFlow()
+
     private var pollingJob: Job? = null
 
     init {
@@ -47,6 +50,25 @@ class AutomationsViewModel @JvmOverloads constructor(
         _uiState.update { it.copy(activeTab = tab) }
     }
 
+    fun updateClusterSizeProfile(profile: Int) {
+        if (profile in listOf(29, 30, 31)) {
+            _clusterSizeProfile.value = profile
+            repository.setClusterSizeProfile(profile)
+        }
+    }
+
+    fun saveAutomation(name: String, mode: String, trigger: String, action: String, onComplete: ((Boolean) -> Unit)? = null) {
+        viewModelScope.launch {
+            val res = repository.saveAutomation(name, mode, trigger, action)
+            if (res.isSuccess) {
+                loadAllData()
+                onComplete?.invoke(true)
+            } else {
+                onComplete?.invoke(false)
+            }
+        }
+    }
+
     fun setSortMode(mode: AutomationSortMode) {
         _uiState.update { state ->
             val sorted = sortAutomations(state.automations, mode)
@@ -55,6 +77,7 @@ class AutomationsViewModel @JvmOverloads constructor(
     }
 
     fun loadAllData() {
+        _clusterSizeProfile.value = repository.getClusterSizeProfile()
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             val autoResult = repository.getAutomations()
