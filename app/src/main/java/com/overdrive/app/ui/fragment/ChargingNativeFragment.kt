@@ -94,6 +94,10 @@ class ChargingNativeFragment : Fragment() {
     private lateinit var tvSummaryCost: TextView
     private lateinit var tvSummaryDcAc: TextView
     private lateinit var tvSummaryRangeGained: TextView
+    private lateinit var cardSummaryEstimateDisclosure: MaterialCardView
+    private lateinit var layoutSummaryEstimateHeader: LinearLayout
+    private lateinit var tvSummaryEstimateToggle: TextView
+    private lateinit var tvSummaryEstimateDesc: TextView
 
     // Sessions Tab: Live Hero Card
     private lateinit var cardLiveHero: MaterialCardView
@@ -115,8 +119,20 @@ class ChargingNativeFragment : Fragment() {
     private lateinit var socGaugeView: SocGaugeView
     private lateinit var tvStatsRange: TextView
     private lateinit var tvStatsSoh: TextView
+    private lateinit var tvStatsAvgPowerLabel: TextView
     private lateinit var tvStatsAvgPower: TextView
+    private lateinit var tvStatsAvgPowerUnit: TextView
+    private lateinit var tvStatsAvgPowerSub: TextView
+    private lateinit var tvStatsCostLabel: TextView
     private lateinit var tvStatsCostPerKwh: TextView
+    private lateinit var tvStatsCostSub: TextView
+    private lateinit var cardCompletionHero: MaterialCardView
+    private lateinit var tvCompletionValue: TextView
+    private lateinit var tvCompletionSub: TextView
+    private lateinit var cardStatsEstimateDisclosure: MaterialCardView
+    private lateinit var layoutStatsEstimateHeader: LinearLayout
+    private lateinit var tvStatsEstimateToggle: TextView
+    private lateinit var tvStatsEstimateDesc: TextView
     private lateinit var btnSoc24h: MaterialButton
     private lateinit var btnSoc7d: MaterialButton
     private lateinit var btnSoc30d: MaterialButton
@@ -154,7 +170,7 @@ class ChargingNativeFragment : Fragment() {
 
     private val currencies = listOf("₺", "$", "€", "£", "¥", "CHF", "AUD", "CAD")
     private val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
-    private val shortDateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+    private val shortDateFormat = SimpleDateFormat("MMM d, yyyy", Locale.getDefault())
 
     private var backCallback: OnBackPressedCallback? = null
 
@@ -216,6 +232,10 @@ class ChargingNativeFragment : Fragment() {
         tvSummaryCost = v.findViewById(R.id.tvSummaryCost)
         tvSummaryDcAc = v.findViewById(R.id.tvSummaryDcAc)
         tvSummaryRangeGained = v.findViewById(R.id.tvSummaryRangeGained)
+        cardSummaryEstimateDisclosure = v.findViewById(R.id.cardSummaryEstimateDisclosure)
+        layoutSummaryEstimateHeader = v.findViewById(R.id.layoutSummaryEstimateHeader)
+        tvSummaryEstimateToggle = v.findViewById(R.id.tvSummaryEstimateToggle)
+        tvSummaryEstimateDesc = v.findViewById(R.id.tvSummaryEstimateDesc)
 
         // Live Hero Card
         cardLiveHero = v.findViewById(R.id.cardLiveHero)
@@ -235,8 +255,20 @@ class ChargingNativeFragment : Fragment() {
         socGaugeView = v.findViewById(R.id.socGaugeView)
         tvStatsRange = v.findViewById(R.id.tvStatsRange)
         tvStatsSoh = v.findViewById(R.id.tvStatsSoh)
+        tvStatsAvgPowerLabel = v.findViewById(R.id.tvStatsAvgPowerLabel)
         tvStatsAvgPower = v.findViewById(R.id.tvStatsAvgPower)
+        tvStatsAvgPowerUnit = v.findViewById(R.id.tvStatsAvgPowerUnit)
+        tvStatsAvgPowerSub = v.findViewById(R.id.tvStatsAvgPowerSub)
+        tvStatsCostLabel = v.findViewById(R.id.tvStatsCostLabel)
         tvStatsCostPerKwh = v.findViewById(R.id.tvStatsCostPerKwh)
+        tvStatsCostSub = v.findViewById(R.id.tvStatsCostSub)
+        cardCompletionHero = v.findViewById(R.id.cardCompletionHero)
+        tvCompletionValue = v.findViewById(R.id.tvCompletionValue)
+        tvCompletionSub = v.findViewById(R.id.tvCompletionSub)
+        cardStatsEstimateDisclosure = v.findViewById(R.id.cardStatsEstimateDisclosure)
+        layoutStatsEstimateHeader = v.findViewById(R.id.layoutStatsEstimateHeader)
+        tvStatsEstimateToggle = v.findViewById(R.id.tvStatsEstimateToggle)
+        tvStatsEstimateDesc = v.findViewById(R.id.tvStatsEstimateDesc)
         btnSoc24h = v.findViewById(R.id.btnSoc24h)
         btnSoc7d = v.findViewById(R.id.btnSoc7d)
         btnSoc30d = v.findViewById(R.id.btnSoc30d)
@@ -350,6 +382,18 @@ class ChargingNativeFragment : Fragment() {
         }
         btnApplyCustomRange.setOnClickListener {
             applyCustomDateFilter()
+        }
+
+        // Estimate disclosures expand/collapse
+        layoutSummaryEstimateHeader.setOnClickListener {
+            val isExpanded = tvSummaryEstimateDesc.visibility == View.VISIBLE
+            tvSummaryEstimateDesc.visibility = if (isExpanded) View.GONE else View.VISIBLE
+            tvSummaryEstimateToggle.text = if (isExpanded) "+" else "−"
+        }
+        layoutStatsEstimateHeader.setOnClickListener {
+            val isExpanded = tvStatsEstimateDesc.visibility == View.VISIBLE
+            tvStatsEstimateDesc.visibility = if (isExpanded) View.GONE else View.VISIBLE
+            tvStatsEstimateToggle.text = if (isExpanded) "+" else "−"
         }
 
         // Sort spinner
@@ -581,15 +625,37 @@ class ChargingNativeFragment : Fragment() {
             cardLiveHero.visibility = View.GONE
         }
 
-        // Summary Cards
-        tvSummarySessions.text = summary.periodSessions.toString()
-        val prefix = if (summary.periodEstimatedSessions > 0) "~" else ""
-        tvSummaryEnergy.text = "$prefix${String.format(Locale.US, "%.1f", summary.periodEnergyKwh)} kWh"
+        // Summary Cards - display '--' if 0 or empty, matching charging.js
+        tvSummarySessions.text = if (summary.periodSessions > 0) summary.periodSessions.toString() else "--"
+
+        val isCharging = live.charging
+        val liveKwh = if (live.sessionKwh > 0) live.sessionKwh else 0.0
+        val livePowerEstimated = isCharging && live.isEstimated && live.powerKw > 0
+        val periodEnergyApproximate = summary.periodEstimatedSessions > 0 || (isCharging && liveKwh > 0 && live.isEstimated)
+        val prefix = if (periodEnergyApproximate) "~" else ""
+
+        tvSummaryEnergy.text = if (summary.periodEnergyKwh > 0) {
+            "$prefix${String.format(Locale.US, "%.1f", summary.periodEnergyKwh)} kWh"
+        } else "--"
 
         val curr = state.config.currency.ifEmpty { "₺" }
-        tvSummaryCost.text = "${String.format(Locale.US, "%.2f", summary.periodCost)} $curr".trim()
-        tvSummaryDcAc.text = "${summary.periodDcCount} / ${summary.periodAcCount}"
-        tvSummaryRangeGained.text = "+${summary.periodRangeGained} km"
+        tvSummaryCost.text = if (summary.periodCost > 0) {
+            "$prefix${String.format(Locale.US, "%.2f", summary.periodCost)} $curr".trim()
+        } else "--"
+
+        tvSummaryDcAc.text = if (summary.periodSessions > 0) {
+            "${summary.periodDcCount} / ${summary.periodAcCount}"
+        } else "--"
+
+        tvSummaryRangeGained.text = if (summary.periodRangeGained > 0) {
+            "$prefix+${summary.periodRangeGained} km"
+        } else "--"
+
+        // Estimated Values Disclosure (Sessions Tab)
+        val liveRate = if (state.config.dcRate > 0) state.config.dcRate else state.config.electricityRate
+        val liveCost = if (isCharging && liveKwh > 0 && liveRate > 0) liveKwh * liveRate else 0.0
+        val showSummaryEstimate = periodEnergyApproximate || livePowerEstimated || liveCost > 0
+        cardSummaryEstimateDisclosure.visibility = if (showSummaryEstimate) View.VISIBLE else View.GONE
 
         // Sessions List with sorting
         applySortToSessions(state.sessions)
@@ -620,22 +686,125 @@ class ChargingNativeFragment : Fragment() {
         val sohText = if (live.sohPercent > 0) "SOH ${Math.round(live.sohPercent)}%" else "SOH --"
         tvStatsSoh.text = sohText
 
-        // Average power & cost per kWh
-        val avgPower = if (summary.periodSessions > 0 && summary.periodEnergyKwh > 0) {
-            String.format(Locale.US, "%.1f kW", summary.periodEnergyKwh / summary.periodSessions)
-        } else "-- kW"
-        tvStatsAvgPower.text = avgPower
+        // Average Power Hero Card
+        val isCharging = live.charging
+        val (pwrVal, pwrLive) = if (isCharging && !live.isEstimated && live.powerKw > 0.15) {
+            Pair(live.powerKw, true)
+        } else {
+            var totalEnergy = 0.0
+            var totalHours = 0.0
+            var fallbackTotal = 0.0
+            var fallbackCount = 0
+            for (s in state.sessions) {
+                if (s.isEstimated) continue
+                val dur = s.durationMinutes ?: 0L
+                val nrg = s.energyAdded ?: 0.0
+                val avg = s.avgPower ?: 0.0
+                if (nrg > 0 && dur > 0) {
+                    totalEnergy += nrg
+                    totalHours += dur / 60.0
+                } else if (avg > 0) {
+                    fallbackTotal += avg
+                    fallbackCount++
+                }
+            }
+            if (totalEnergy > 0 && totalHours > 0) {
+                Pair(totalEnergy / totalHours, false)
+            } else if (fallbackCount > 0) {
+                Pair(fallbackTotal / fallbackCount, false)
+            } else if (summary.periodSessions > 0 && summary.periodEnergyKwh > 0) {
+                Pair(summary.periodEnergyKwh / summary.periodSessions, false)
+            } else {
+                Pair(0.0, false)
+            }
+        }
 
+        tvStatsAvgPowerLabel.text = getString(R.string.charge_hero_avg_power)
+        if (pwrVal > 0) {
+            tvStatsAvgPower.text = String.format(Locale.US, "%.1f", pwrVal)
+        } else {
+            tvStatsAvgPower.text = "--"
+        }
+        tvStatsAvgPowerSub.text = when {
+            pwrLive -> getString(R.string.charge_power_live)
+            pwrVal > 0 -> getString(R.string.charge_power_period)
+            else -> getString(R.string.charge_power_waiting)
+        }
+
+        // Cost Hero Card
         val curr = state.config.currency.ifEmpty { "₺" }
-        val costPerKwh = summary.avgCostPerKwh
-        tvStatsCostPerKwh.text = if (costPerKwh != null && costPerKwh > 0) {
-            "${String.format(Locale.US, "%.2f", costPerKwh)} $curr / kWh".trim()
-        } else "--"
+        val liveRate = if (state.config.dcRate > 0) state.config.dcRate else state.config.electricityRate
+        val liveKwh = if (live.sessionKwh > 0) live.sessionKwh else 0.0
+        val measured = summary.avgCostPerKwh ?: 0.0
+        val periodEnergyApproximate = summary.periodEstimatedSessions > 0 || (isCharging && liveKwh > 0 && live.isEstimated)
+        val prefix = if (periodEnergyApproximate) "~" else ""
+
+        if (isCharging && liveKwh > 0 && liveRate > 0) {
+            tvStatsCostLabel.text = getString(R.string.charge_hero_cost_session)
+            tvStatsCostPerKwh.text = "${String.format(Locale.US, "%.2f", liveKwh * liveRate)} $curr".trim()
+            tvStatsCostSub.text = getString(R.string.charge_cost_estimated)
+        } else if (summary.periodCost > 0) {
+            tvStatsCostLabel.text = getString(R.string.charge_hero_cost_period)
+            tvStatsCostPerKwh.text = "$prefix${String.format(Locale.US, "%.2f", summary.periodCost)} $curr".trim()
+            tvStatsCostSub.text = if (measured > 0) {
+                "$prefix${String.format(Locale.US, "%.2f", measured)} $curr / kWh".trim()
+            } else ""
+        } else if (state.config.electricityRate > 0) {
+            tvStatsCostLabel.text = getString(R.string.charge_hero_cost)
+            tvStatsCostPerKwh.text = "${String.format(Locale.US, "%.2f", state.config.electricityRate)} $curr".trim()
+            tvStatsCostSub.text = getString(R.string.charge_cost_configured)
+        } else {
+            tvStatsCostLabel.text = getString(R.string.charge_hero_cost)
+            tvStatsCostPerKwh.text = "--"
+            tvStatsCostSub.text = ""
+        }
+
+        // Completion Hero Card (Time to Full)
+        val completion = when {
+            live.fault -> null
+            live.full -> Pair(getString(R.string.charge_completion_complete), "")
+            live.plugged && !live.charging -> Pair(getString(R.string.charge_completion_waiting), "")
+            live.charging && live.timeToFullMin > 0 -> {
+                val mins = live.timeToFullMin.coerceAtLeast(1)
+                val primary = if (mins >= 60) {
+                    val hrs = mins / 60
+                    val remMins = mins % 60
+                    if (remMins > 0) "${hrs} hr ${remMins} min" else "${hrs} hr"
+                } else {
+                    "${mins} min"
+                }
+                val completedAt = System.currentTimeMillis() + mins * 60_000L
+                val timeFmt = SimpleDateFormat("HH:mm", Locale.getDefault())
+                val clockStr = timeFmt.format(Date(completedAt))
+                val secondary = getString(R.string.charge_completion_full_at, clockStr)
+                Pair(primary, secondary)
+            }
+            else -> null
+        }
+
+        if (completion != null) {
+            cardCompletionHero.visibility = View.VISIBLE
+            tvCompletionValue.text = completion.first
+            tvCompletionSub.text = completion.second
+        } else {
+            cardCompletionHero.visibility = View.GONE
+        }
+
+        // Stats Estimated Values Disclosure
+        val lifetimeEnergyApproximate = summary.lifetimeEstimatedSessions > 0
+        val livePowerEstimated = isCharging && live.isEstimated && live.powerKw > 0
+        val liveCost = if (isCharging && liveKwh > 0 && liveRate > 0) liveKwh * liveRate else 0.0
+        val showStatsEstimate = periodEnergyApproximate || lifetimeEnergyApproximate || livePowerEstimated || liveCost > 0
+        cardStatsEstimateDisclosure.visibility = if (showStatsEstimate) View.VISIBLE else View.GONE
 
         // Lifetime stats
-        tvLifetimeEnergy.text = "${String.format(Locale.US, "%.1f", summary.lifetimeEnergyKwh)} kWh"
-        tvLifetimeSessions.text = summary.lifetimeSessions.toString()
-        tvLifetimeCost.text = "${String.format(Locale.US, "%.2f", summary.lifetimeCost)} $curr".trim()
+        tvLifetimeEnergy.text = if (summary.lifetimeEnergyKwh > 0) {
+            "${String.format(Locale.US, "%.1f", summary.lifetimeEnergyKwh)} kWh"
+        } else "--"
+        tvLifetimeSessions.text = if (summary.lifetimeSessions > 0) summary.lifetimeSessions.toString() else "--"
+        tvLifetimeCost.text = if (summary.lifetimeCost > 0) {
+            "${String.format(Locale.US, "%.2f", summary.lifetimeCost)} $curr".trim()
+        } else "--"
 
         // Empty state vs chart
         statsEmptyState.visibility = if (summary.lifetimeSessions == 0 && state.sessions.isEmpty()) View.VISIBLE else View.GONE

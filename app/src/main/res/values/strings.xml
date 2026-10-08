@@ -2215,6 +2215,20 @@
     <string name="charge_period_30d" translatable="false">30d</string>
     <string name="charge_hero_avg_power" translatable="false">Average power</string>
     <string name="charge_hero_cost" translatable="false">Cost per kWh</string>
+    <string name="charge_hero_avg_power_sub" translatable="false">Available after a recorded charge</string>
+    <string name="charge_power_live" translatable="false">Live measured power</string>
+    <string name="charge_power_period" translatable="false">Across the selected period</string>
+    <string name="charge_power_waiting" translatable="false">Available after a recorded charge</string>
+    <string name="charge_hero_cost_session" translatable="false">Cost this session</string>
+    <string name="charge_hero_cost_period" translatable="false">Cost this period</string>
+    <string name="charge_cost_estimated" translatable="false">estimated</string>
+    <string name="charge_cost_configured" translatable="false">set rate</string>
+    <string name="charge_metric_ttf" translatable="false">Time to full</string>
+    <string name="charge_completion_complete" translatable="false">Complete</string>
+    <string name="charge_completion_waiting" translatable="false">Waiting</string>
+    <string name="charge_completion_full_at" translatable="false">Full at %1$s</string>
+    <string name="charge_estimated_values" translatable="false">Estimated values</string>
+    <string name="charge_estimated_explanation" translatable="false">OverDrive labels a value as estimated when the vehicle does not provide a direct reading. Estimated power is calculated from battery data; estimated energy and cost use battery/SOC changes and the configured tariff. Peak power is shown only from real power samples.</string>
     <string name="charge_hero_soc" translatable="false">State of charge</string>
     <string name="charge_lifetime_stats_title" translatable="false">Lifetime stats</string>
     <string name="charge_lifetime_energy" translatable="false">Total energy</string>
