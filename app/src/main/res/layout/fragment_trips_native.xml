@@ -276,9 +276,8 @@
                                 android:textStyle="bold" />
                         </LinearLayout>
 
-                        <!-- Metrics Row -->
+                        <!-- Row 1: Trips, km, Hours -->
                         <LinearLayout
-                            android:id="@+id/layoutSummaryCards"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
@@ -300,10 +299,11 @@
                                     android:fontFamily="sans-serif-medium"
                                     android:text="0"
                                     android:textColor="?attr/colorOnSurface"
-                                    android:textSize="22sp"
+                                    android:textSize="20sp"
                                     android:textStyle="bold" />
 
                                 <TextView
+                                    android:id="@+id/tvSummaryTripsLabel"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
@@ -312,7 +312,7 @@
                                     android:textColor="?attr/colorOnSurfaceVariant" />
                             </LinearLayout>
 
-                            <!-- Distance -->
+                            <!-- Distance (km) -->
                             <LinearLayout
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
@@ -325,16 +325,17 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="sans-serif-medium"
-                                    android:text="0.0 km"
-                                    android:textColor="#007A62"
-                                    android:textSize="22sp"
+                                    android:text="0.0"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="20sp"
                                     android:textStyle="bold" />
 
                                 <TextView
+                                    android:id="@+id/tvSummaryDistanceLabel"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
-                                    android:text="@string/trip_summary_distance"
+                                    android:text="km"
                                     android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
                                     android:textColor="?attr/colorOnSurfaceVariant" />
                             </LinearLayout>
@@ -352,21 +353,59 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="sans-serif-medium"
-                                    android:text="0.0 h"
+                                    android:text="0.0"
                                     android:textColor="?attr/colorOnSurface"
-                                    android:textSize="22sp"
+                                    android:textSize="20sp"
                                     android:textStyle="bold" />
 
                                 <TextView
+                                    android:id="@+id/tvSummaryDurationLabel"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
-                                    android:text="@string/trip_summary_duration"
+                                    android:text="@string/trip_summary_hours"
+                                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                    android:textColor="?attr/colorOnSurfaceVariant" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <!-- Row 2: Avg Score, kWh, kWh/100km -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <!-- Avg Score -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/tvSummaryAvgScore"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="sans-serif-medium"
+                                    android:text="--"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/tvSummaryAvgScoreLabel"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="@string/trip_summary_avg_score"
                                     android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
                                     android:textColor="?attr/colorOnSurfaceVariant" />
                             </LinearLayout>
 
-                            <!-- Energy -->
+                            <!-- Energy (kWh) -->
                             <LinearLayout
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
@@ -379,16 +418,82 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="sans-serif-medium"
-                                    android:text="0.0 kWh"
-                                    android:textColor="#0288D1"
-                                    android:textSize="22sp"
+                                    android:text="--"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="20sp"
                                     android:textStyle="bold" />
 
                                 <TextView
+                                    android:id="@+id/tvSummaryEnergyLabel"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
-                                    android:text="@string/trip_summary_energy"
+                                    android:text="kWh"
+                                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                    android:textColor="?attr/colorOnSurfaceVariant" />
+                            </LinearLayout>
+
+                            <!-- Consumption (kWh/100km) -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/tvSummaryConsumption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="sans-serif-medium"
+                                    android:text="--"
+                                    android:textColor="@color/brand_primary"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/tvSummaryConsumptionLabel"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="kWh/100km"
+                                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                    android:textColor="?attr/colorOnSurfaceVariant" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <!-- Row 3: km/kWh, Cost, (Spacer) -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <!-- Efficiency (km/kWh) -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/tvSummaryEfficiency"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="sans-serif-medium"
+                                    android:text="--"
+                                    android:textColor="@color/brand_primary"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/tvSummaryEfficiencyLabel"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="km/kWh"
                                     android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
                                     android:textColor="?attr/colorOnSurfaceVariant" />
                             </LinearLayout>
@@ -406,12 +511,13 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="sans-serif-medium"
-                                    android:text="0.00 ₺"
-                                    android:textColor="#7C4DFF"
-                                    android:textSize="22sp"
+                                    android:text="--"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="20sp"
                                     android:textStyle="bold" />
 
                                 <TextView
+                                    android:id="@+id/tvSummaryCostLabel"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
@@ -420,6 +526,11 @@
                                     android:textColor="?attr/colorOnSurfaceVariant" />
                             </LinearLayout>
 
+                            <!-- Spacer to balance 3rd column -->
+                            <View
+                                android:layout_width="0dp"
+                                android:layout_height="0dp"
+                                android:layout_weight="1" />
                         </LinearLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>

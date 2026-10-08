@@ -73,10 +73,21 @@ class TripsNativeFragment : Fragment() {
 
     // Trips Tab Views
     private lateinit var tvSummaryTrips: TextView
+    private lateinit var tvSummaryTripsLabel: TextView
     private lateinit var tvSummaryDistance: TextView
+    private lateinit var tvSummaryDistanceLabel: TextView
     private lateinit var tvSummaryDuration: TextView
+    private lateinit var tvSummaryDurationLabel: TextView
+    private lateinit var tvSummaryAvgScore: TextView
+    private lateinit var tvSummaryAvgScoreLabel: TextView
     private lateinit var tvSummaryEnergy: TextView
+    private lateinit var tvSummaryEnergyLabel: TextView
+    private lateinit var tvSummaryConsumption: TextView
+    private lateinit var tvSummaryConsumptionLabel: TextView
+    private lateinit var tvSummaryEfficiency: TextView
+    private lateinit var tvSummaryEfficiencyLabel: TextView
     private lateinit var tvSummaryCost: TextView
+    private lateinit var tvSummaryCostLabel: TextView
     private lateinit var recyclerTrips: RecyclerView
     private lateinit var layoutEmptyState: LinearLayout
     private lateinit var tripsAdapter: TripsAdapter
@@ -201,10 +212,21 @@ class TripsNativeFragment : Fragment() {
         containerDetail = v.findViewById(R.id.containerDetail)
 
         tvSummaryTrips = v.findViewById(R.id.tvSummaryTrips)
+        tvSummaryTripsLabel = v.findViewById(R.id.tvSummaryTripsLabel)
         tvSummaryDistance = v.findViewById(R.id.tvSummaryDistance)
+        tvSummaryDistanceLabel = v.findViewById(R.id.tvSummaryDistanceLabel)
         tvSummaryDuration = v.findViewById(R.id.tvSummaryDuration)
+        tvSummaryDurationLabel = v.findViewById(R.id.tvSummaryDurationLabel)
+        tvSummaryAvgScore = v.findViewById(R.id.tvSummaryAvgScore)
+        tvSummaryAvgScoreLabel = v.findViewById(R.id.tvSummaryAvgScoreLabel)
         tvSummaryEnergy = v.findViewById(R.id.tvSummaryEnergy)
+        tvSummaryEnergyLabel = v.findViewById(R.id.tvSummaryEnergyLabel)
+        tvSummaryConsumption = v.findViewById(R.id.tvSummaryConsumption)
+        tvSummaryConsumptionLabel = v.findViewById(R.id.tvSummaryConsumptionLabel)
+        tvSummaryEfficiency = v.findViewById(R.id.tvSummaryEfficiency)
+        tvSummaryEfficiencyLabel = v.findViewById(R.id.tvSummaryEfficiencyLabel)
         tvSummaryCost = v.findViewById(R.id.tvSummaryCost)
+        tvSummaryCostLabel = v.findViewById(R.id.tvSummaryCostLabel)
         recyclerTrips = v.findViewById(R.id.recyclerTrips)
         layoutEmptyState = v.findViewById(R.id.layoutEmptyState)
 
@@ -542,16 +564,66 @@ class TripsNativeFragment : Fragment() {
     }
 
     private fun renderTripsTab(state: TripsUiState) {
+        val isMiles = (state.config?.distanceUnit == "mi")
+        val isNight = isNightMode()
+        val brandPrimaryColor = if (isNight) Color.parseColor("#00D4AA") else Color.parseColor("#007A62")
+
+        // 1. Trips
         tvSummaryTrips.text = state.summary.tripCount.toString()
-        tvSummaryDistance.text = String.format(Locale.US, "%.1f km", state.summary.totalDistanceKm)
 
+        // 2. Distance
+        val distVal = if (isMiles) state.summary.totalDistanceKm * 0.621371 else state.summary.totalDistanceKm
+        tvSummaryDistance.text = String.format(Locale.US, "%.1f", distVal)
+        tvSummaryDistanceLabel.text = if (isMiles) "mi" else "km"
+
+        // 3. Duration (Hours)
         val totalHours = state.summary.totalDurationSeconds / 3600.0
-        tvSummaryDuration.text = String.format(Locale.US, "%.1f h", totalHours)
+        tvSummaryDuration.text = String.format(Locale.US, "%.1f", totalHours)
 
-        tvSummaryEnergy.text = String.format(Locale.US, "%.1f kWh", state.summary.totalEnergyKwh)
+        // 4. Avg Score
+        tvSummaryAvgScore.text = state.summary.avgScore?.toString() ?: "--"
 
+        // 5. Energy (kWh)
+        tvSummaryEnergy.text = if (state.summary.totalEnergyKwh > 0.0) {
+            String.format(Locale.US, "%.1f", state.summary.totalEnergyKwh)
+        } else {
+            "--"
+        }
+
+        // 6. Consumption (kWh/100km or kWh/100mi)
+        tvSummaryConsumptionLabel.text = if (isMiles) "kWh/100mi" else "kWh/100km"
+        val cons = state.summary.avgConsumptionKwhPer100Km
+        if (cons != null && cons > 0.0) {
+            val displayCons = if (isMiles) cons / 0.621371 else cons
+            tvSummaryConsumption.text = String.format(Locale.US, "%.1f", displayCons)
+        } else {
+            tvSummaryConsumption.text = "--"
+        }
+        tvSummaryConsumption.setTextColor(brandPrimaryColor)
+
+        // 7. Efficiency (km/kWh or mi/kWh)
+        tvSummaryEfficiencyLabel.text = if (isMiles) "mi/kWh" else "km/kWh"
+        val eff = state.summary.avgEfficiencyKmPerKwh
+        if (eff != null && eff > 0.0) {
+            val displayEff = if (isMiles) eff * 0.621371 else eff
+            tvSummaryEfficiency.text = String.format(Locale.US, "%.1f", displayEff)
+        } else {
+            tvSummaryEfficiency.text = "--"
+        }
+        tvSummaryEfficiency.setTextColor(brandPrimaryColor)
+
+        // 8. Cost
         val currency = state.config?.currency ?: "₺"
-        tvSummaryCost.text = String.format(Locale.US, "%.2f %s", state.summary.totalCost, currency)
+        val electricityRate = state.config?.electricityRate ?: 0.0
+        val cost = state.summary.totalCost
+        if (cost > 0.0) {
+            tvSummaryCost.text = String.format(Locale.US, "%s%.1f", currency, cost)
+        } else if (state.summary.totalEnergyKwh > 0.0 && electricityRate > 0.0) {
+            val computedCost = state.summary.totalEnergyKwh * electricityRate
+            tvSummaryCost.text = String.format(Locale.US, "%s%.1f", currency, computedCost)
+        } else {
+            tvSummaryCost.text = "--"
+        }
 
         val isRecordingEnabled = state.config?.enabled == true
         btnEnableTripsFromEmpty.visibility = if (isRecordingEnabled) View.GONE else View.VISIBLE

@@ -61,7 +61,7 @@ class TripsViewModel @JvmOverloads constructor(
             val currentFilter = _uiState.value.periodFilter
             val result = repository.getBootstrap(days = currentFilter.days, limit = 50, offset = 0)
             result.onSuccess { data ->
-                val summary = computeSummary(data.trips)
+                val summary = computeSummary(data.trips, data.weeklyRollups)
                 _uiState.update {
                     it.copy(
                         isLoading = false,
@@ -117,18 +117,62 @@ class TripsViewModel @JvmOverloads constructor(
         }
     }
 
-    private fun computeSummary(trips: List<TripRecordItem>): TripsSummaryPeriod {
+    private fun computeSummary(trips: List<TripRecordItem>, rollups: List<WeeklyRollupItem> = emptyList()): TripsSummaryPeriod {
+        if (trips.isEmpty() && rollups.isNotEmpty()) {
+            val s = rollups.first()
+            val overall = ((s.avgAnticipation + s.avgSmoothness + s.avgSpeedDiscipline + s.avgEfficiencyScore + s.avgConsistency) / 5)
+            val cons = if (s.totalDistanceKm > 0.5 && s.totalEnergyKwh > 0.0) (s.totalEnergyKwh / s.totalDistanceKm) * 100.0 else null
+            val eff = if (s.totalDistanceKm > 0.5 && s.totalEnergyKwh > 0.0) s.totalDistanceKm / s.totalEnergyKwh else null
+            return TripsSummaryPeriod(
+                tripCount = s.tripCount,
+                totalDistanceKm = s.totalDistanceKm,
+                totalDurationSeconds = s.totalDurationSeconds,
+                totalEnergyKwh = s.totalEnergyKwh,
+                totalCost = s.totalCost,
+                avgScore = if (overall > 0) overall else null,
+                avgConsumptionKwhPer100Km = cons,
+                avgEfficiencyKmPerKwh = eff
+            )
+        }
+
         val count = trips.size
         val dist = trips.sumOf { it.distanceKm }
         val dur = trips.sumOf { it.durationSeconds }
         val energy = trips.sumOf { it.energyUsedKwh }
         val cost = trips.sumOf { it.tripCost }
+
+        val scoredTrips = trips.filter {
+            it.overallScore > 0 || it.anticipationScore > 0 || it.smoothnessScore > 0 ||
+                it.speedDisciplineScore > 0 || it.efficiencyScore > 0 || it.consistencyScore > 0
+        }
+        val avgScore = if (scoredTrips.isNotEmpty()) {
+            val totalScore = scoredTrips.sumOf {
+                if (it.overallScore > 0) it.overallScore
+                else (it.anticipationScore + it.smoothnessScore + it.speedDisciplineScore + it.efficiencyScore + it.consistencyScore) / 5
+            }
+            totalScore / scoredTrips.size
+        } else null
+
+        val avgConsumption = if (dist > 0.5 && energy > 0.0) {
+            (energy / dist) * 100.0
+        } else if (dist > 0.5) {
+            val totalSocDelta = trips.sumOf { (it.socStart - it.socEnd).coerceAtLeast(0.0) }
+            if (totalSocDelta > 0.0) (totalSocDelta / dist) * 100.0 else null
+        } else null
+
+        val avgEfficiency = if (dist > 0.5 && energy > 0.0) {
+            dist / energy
+        } else null
+
         return TripsSummaryPeriod(
             tripCount = count,
             totalDistanceKm = dist,
             totalDurationSeconds = dur,
             totalEnergyKwh = energy,
-            totalCost = cost
+            totalCost = cost,
+            avgScore = avgScore,
+            avgConsumptionKwhPer100Km = avgConsumption,
+            avgEfficiencyKmPerKwh = avgEfficiency
         )
     }
 

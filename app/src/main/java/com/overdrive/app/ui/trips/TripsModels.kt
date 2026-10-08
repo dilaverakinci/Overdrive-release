@@ -350,7 +350,10 @@ data class TripsSummaryPeriod(
     val totalDistanceKm: Double = 0.0,
     val totalDurationSeconds: Int = 0,
     val totalEnergyKwh: Double = 0.0,
-    val totalCost: Double = 0.0
+    val totalCost: Double = 0.0,
+    val avgScore: Int? = null,
+    val avgConsumptionKwhPer100Km: Double? = null,
+    val avgEfficiencyKmPerKwh: Double? = null
 )
 
 data class TripsUiState(
