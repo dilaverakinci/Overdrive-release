@@ -2,11 +2,17 @@
   "name": "OverDrive Dashboard",
   "short_name": "OverDrive",
   "description": "Vehicle dashboard, surveillance, and alerts for your BYD",
-  "start_url": "/",
+  "start_url": "/index.html",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#000000",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
+  "background_color": "#0E1311",
   "theme_color": "#00876C",
+  "orientation": "any",
   "icons": [
     {
       "src": "/shared/app-icon-dark.webp",
@@ -25,6 +31,12 @@
       "sizes": "432x432",
       "type": "image/webp",
       "purpose": "maskable"
+    },
+    {
+      "src": "/shared/app-icon-ios.webp",
+      "sizes": "180x180",
+      "type": "image/webp",
+      "purpose": "any"
     }
   ]
 }

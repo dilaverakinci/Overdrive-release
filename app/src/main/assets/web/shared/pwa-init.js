@@ -15,22 +15,18 @@
     if (typeof navigator === 'undefined') return;
     if (!('serviceWorker' in navigator)) return;
 
-    // Dev escape hatch: ?devPwa=1 in the URL forces SW + subscribe to run on
-    // localhost. Used by dev/preview-server.py — Chrome treats localhost as
-    // a secure context, so the whole flow can be exercised without a real
-    // tunnel, real cert, or a deployed APK.
-    var devPwa = /[?&]devPwa=1\b/.test(window.location.search);
-
-    var host = window.location.hostname;
-    var isLoopback = host === '127.0.0.1' || host === 'localhost' || host === '0.0.0.0';
-    if (isLoopback && !devPwa) {
-        // WebView or LAN — never install a PWA against an unstable origin.
+    // In-car WebView check: AndroidBridge is injected into the head unit cockpit
+    var isInAppWebView = typeof window.AndroidBridge !== 'undefined';
+    if (isInAppWebView) {
+        // Cockpit WebView — never install PWA inside the car's native app
         return;
     }
 
-    if (window.location.protocol !== 'https:' && !isLoopback) {
-        // Service workers require a secure context. https:// is the normal
-        // one; localhost is also accepted by Chrome/Firefox/Safari.
+    var isSecure = window.location.protocol === 'https:' ||
+                   window.location.hostname === 'localhost' ||
+                   window.location.hostname === '127.0.0.1';
+    if (!isSecure) {
+        // Service workers require a secure context (HTTPS or localhost)
         return;
     }
 
