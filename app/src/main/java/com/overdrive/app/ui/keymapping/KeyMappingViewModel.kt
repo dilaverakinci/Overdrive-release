@@ -44,9 +44,56 @@ open class KeyMappingViewModel @JvmOverloads constructor(
     private val _clusterSizeProfile = MutableStateFlow(31)
     val clusterSizeProfile: StateFlow<Int> = _clusterSizeProfile.asStateFlow()
 
+    private val _quickControls = MutableStateFlow<List<QuickControlButton>>(emptyList())
+    val quickControls: StateFlow<List<QuickControlButton>> = _quickControls.asStateFlow()
+
     init {
         loadConfig()
         loadApps()
+        loadQuickControls()
+    }
+
+    fun loadQuickControls() {
+        viewModelScope.launch {
+            repository.getQuickControls().fold(
+                onSuccess = { _quickControls.value = it },
+                onFailure = { /* keep existing */ }
+            )
+        }
+    }
+
+    fun addQuickControl(label: String, action: KeyAction, onComplete: ((Boolean) -> Unit)? = null) {
+        val id = "qc" + System.currentTimeMillis() + (100..999).random()
+        val newBtn = QuickControlButton(id = id, label = label, action = action)
+        val updated = _quickControls.value + newBtn
+        viewModelScope.launch {
+            repository.saveQuickControls(updated).fold(
+                onSuccess = {
+                    _quickControls.value = updated
+                    _successMessage.value = "Dashboard button added"
+                    onComplete?.invoke(true)
+                },
+                onFailure = {
+                    _errorMessage.value = "Failed to save dashboard button: ${it.message}"
+                    onComplete?.invoke(false)
+                }
+            )
+        }
+    }
+
+    fun removeQuickControl(id: String) {
+        val updated = _quickControls.value.filterNot { it.id == id }
+        viewModelScope.launch {
+            repository.saveQuickControls(updated).fold(
+                onSuccess = {
+                    _quickControls.value = updated
+                    _successMessage.value = "Dashboard button removed"
+                },
+                onFailure = {
+                    _errorMessage.value = "Failed to remove dashboard button: ${it.message}"
+                }
+            )
+        }
     }
 
     fun selectTab(tab: KeyMappingTab) {

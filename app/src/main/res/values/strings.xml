@@ -2450,43 +2450,60 @@
     <string name="keymap_page_title" translatable="false">Key Mapping</string>
     <string name="keymap_page_subtitle" translatable="false">Remap steering wheel and dashboard buttons to vehicle commands</string>
     <string name="keymap_tab_bindings" translatable="false">Bindings</string>
-    <string name="keymap_tab_add" translatable="false">Add Binding</string>
+    <string name="keymap_tab_add" translatable="false">Add</string>
     <string name="keymap_master_enable" translatable="false">Enable key mapping</string>
-    <string name="keymap_master_enable_desc" translatable="false">Master switch. When off, hardware buttons follow standard vehicle defaults.</string>
+    <string name="keymap_master_enable_desc" translatable="false">Master switch. When off, all hardware buttons behave exactly as stock — no key is intercepted.</string>
     <string name="keymap_allow_advanced" translatable="false">Advanced actions</string>
-    <string name="keymap_allow_advanced_desc" translatable="false">Allow bindings that execute custom shell scripts.</string>
+    <string name="keymap_allow_advanced_desc" translatable="false">Allow bindings that run a raw shell command. Leave off unless you know exactly what you\'re sending.</string>
     <string name="keymap_double_tap_speed" translatable="false">Double-tap speed</string>
-    <string name="keymap_double_tap_desc" translatable="false">Timeout to register a double-tap before firing single-press action.</string>
-    <string name="keymap_empty_title" translatable="false">No key bindings configured</string>
-    <string name="keymap_empty_hint" translatable="false">Create a binding to map a steering wheel or dashboard button to a vehicle action.</string>
+    <string name="keymap_double_tap_desc" translatable="false">How long to wait for a second tap before a double-tap binding gives up and the single-tap fires. Raise it if your double-taps often trigger the single action; lower it if a single tap feels laggy.</string>
+    <string name="keymap_empty_title" translatable="false">No key bindings yet.</string>
+    <string name="keymap_empty_hint" translatable="false">Press a hardware button to capture it, then choose what it should do.</string>
     <string name="keymap_a11y_needed_title" translatable="false">Accessibility Service Required</string>
     <string name="keymap_a11y_needed_desc" translatable="false">OverDrive accessibility service is required to detect steering wheel and hardware buttons.</string>
-    <string name="keymap_a11y_open_settings" translatable="false">Open Accessibility Settings</string>
-    <string name="keymap_press_single" translatable="false">Single Press</string>
-    <string name="keymap_press_double" translatable="false">Double Press</string>
-    <string name="keymap_press_long" translatable="false">Long Press</string>
+    <string name="keymap_a11y_open_settings" translatable="false">Open accessibility settings</string>
+    <string name="keymap_press_single" translatable="false">Single press</string>
+    <string name="keymap_press_double" translatable="false">Double press</string>
+    <string name="keymap_press_long" translatable="false">Long press</string>
     <string name="keymap_button_label" translatable="false">Button</string>
+    <string name="keymap_choose_button" translatable="false">Choose a button...</string>
+    <string name="keymap_custom_capture" translatable="false">Custom / capture...</string>
     <string name="keymap_capture_button" translatable="false">Capture Key</string>
+    <string name="keymap_capture_hint" translatable="false">Tap “Capture”, then press the steering-wheel or dash button. Some buttons are handled by the car\'s firmware and never reach here — if nothing appears, enter its keycode below.</string>
+    <string name="keymap_capture_idle" translatable="false">No key captured</string>
+    <string name="keymap_capture_cta" translatable="false">Capture a key</string>
     <string name="keymap_capturing" translatable="false">Press a button on your steering wheel or dashboard...</string>
-    <string name="keymap_press_type_label" translatable="false">Press Type</string>
-    <string name="keymap_block_single" translatable="false">Block Single-Click Action</string>
-    <string name="keymap_block_single_desc" translatable="false">Suppress vehicle native single-click while awaiting possible double-click.</string>
-    <string name="keymap_action_kind_label" translatable="false">Action Kind</string>
-    <string name="keymap_kind_curated" translatable="false">Vehicle Action</string>
-    <string name="keymap_kind_app" translatable="false">Open App</string>
-    <string name="keymap_kind_shell" translatable="false">Shell Command</string>
-    <string name="keymap_vehicle_action_label" translatable="false">Select Vehicle Action</string>
-    <string name="keymap_payload_label" translatable="false">Value / Parameter</string>
-    <string name="keymap_app_label" translatable="false">Select App</string>
-    <string name="keymap_app_split" translatable="false">Open in Split Screen</string>
-    <string name="keymap_shell_cmd_label" translatable="false">Shell Command</string>
-    <string name="keymap_steps_label" translatable="false">Chained Action Sequence</string>
-    <string name="keymap_add_step" translatable="false">Add Step</string>
-    <string name="keymap_save_binding" translatable="false">Save Key Binding</string>
+    <string name="keymap_manual_keycode" translatable="false">Or enter a keycode</string>
+    <string name="keymap_manual_keycode_help" translatable="false">Android KeyEvent code, e.g. 87 = next track, 88 = previous.</string>
+    <string name="keymap_press_type_label" translatable="false">Press type</string>
+    <string name="keymap_block_single" translatable="false">Block single-click action</string>
+    <string name="keymap_block_single_desc" translatable="false">Stop the button\'s normal single-click from firing before your double-click action. A single tap still works, just after a short delay.</string>
+    <string name="keymap_action" translatable="false">Action</string>
+    <string name="keymap_action_kind_label" translatable="false">Action</string>
+    <string name="keymap_kind_curated" translatable="false">Vehicle action</string>
+    <string name="keymap_kind_app" translatable="false">Open app</string>
+    <string name="keymap_kind_shell" translatable="false">Advanced: shell</string>
+    <string name="keymap_vehicle_action_label" translatable="false">Vehicle action</string>
+    <string name="keymap_payload_label" translatable="false">Value</string>
+    <string name="keymap_app_label" translatable="false">App</string>
+    <string name="keymap_app_split" translatable="false">Split screen</string>
+    <string name="keymap_app_split_desc" translatable="false">Open the app docked to one half of the screen instead of full-screen.</string>
+    <string name="keymap_shell_cmd_label" translatable="false">Shell command</string>
+    <string name="keymap_shell_warn" translatable="false">Runs as the daemon on every press. A bad command can disrupt the head unit. Requires “Advanced actions” enabled.</string>
+    <string name="keymap_steps_label" translatable="false">Chained action sequence</string>
+    <string name="keymap_add_step" translatable="false">Add step</string>
+    <string name="keymap_save_binding" translatable="false">Add binding</string>
+    <string name="keymap_sequence_hint" translatable="false">Add one action, or chain several with “Add step” to fire them all from one button.</string>
+    <string name="keymap_qc_title" translatable="false">Or add it as a dashboard button</string>
+    <string name="keymap_qc_desc" translatable="false">Saves the action above as a button under Quick controls on the dashboard, with no physical key needed.</string>
+    <string name="keymap_qc_label" translatable="false">Button label</string>
+    <string name="keymap_qc_save" translatable="false">Add dashboard button</string>
+    <string name="keymap_qc_empty" translatable="false">No dashboard buttons yet.</string>
     <string name="keymap_delete_confirm_title" translatable="false">Delete Key Binding</string>
     <string name="keymap_delete_confirm_msg" translatable="false">Are you sure you want to delete the mapping for button %s?</string>
     <string name="keymap_test_action" translatable="false">Test</string>
     <string name="keymap_tab_add_short" translatable="false">Add</string>
+    <string name="keymap_add_title" translatable="false">Add a binding</string>
     <string name="keymap_cluster_size" translatable="false">Cluster size</string>
     <string name="keymap_cluster_size_desc" translatable="false">Match this to your instrument cluster. Shared with the blind-spot cluster view. If the projection looks stretched or cropped, try another option.</string>
     <string name="keymap_cluster_1025" translatable="false">10.25\" cluster</string>

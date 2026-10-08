@@ -1791,6 +1791,23 @@
     <string name="keymap_cluster_88" translatable="false">8.8\" gösterge paneli</string>
     <string name="keymap_list_title" translatable="false">Atamalarınız</string>
     <string name="keymap_btn_add_binding" translatable="false">Atama ekle</string>
+    <string name="keymap_add_title" translatable="false">Atama Ekle</string>
+    <string name="keymap_choose_button" translatable="false">Bir tuş seçin...</string>
+    <string name="keymap_custom_capture" translatable="false">Özel / tuş yakala...</string>
+    <string name="keymap_capture_hint" translatable="false">“Tuşu Yakala” düğmesine dokunun, ardından direksiyon veya konsol tuşuna basın.</string>
+    <string name="keymap_capture_idle" translatable="false">Tuş yakalanmadı</string>
+    <string name="keymap_capture_cta" translatable="false">Bir tuş yakala</string>
+    <string name="keymap_manual_keycode" translatable="false">Veya bir tuş kodu girin</string>
+    <string name="keymap_manual_keycode_help" translatable="false">Android KeyEvent kodu, örn. 87 = sonraki parça, 88 = önceki.</string>
+    <string name="keymap_action" translatable="false">Eylem</string>
+    <string name="keymap_app_split_desc" translatable="false">Uygulamayı tam ekran yerine ekranın bir yarısına bölünmüş olarak açın.</string>
+    <string name="keymap_shell_warn" translatable="false">Her basışta arka plan servisi yetkileriyle çalışır. Hatalı komut ekran ünitesini bozabilir. “Gelişmiş eylemler” açık olmalıdır.</string>
+    <string name="keymap_sequence_hint" translatable="false">Tek bir eylem ekleyin veya bir tuşla hepsini çalıştırmak için “Adım Ekle” ile zincirleyin.</string>
+    <string name="keymap_qc_title" translatable="false">Veya kontrol paneli düğmesi olarak ekleyin</string>
+    <string name="keymap_qc_desc" translatable="false">Yukarıdaki eylemi fiziksel tuş gerekmeden kontrol panelindeki Hızlı Kontroller altına bir düğme olarak kaydeder.</string>
+    <string name="keymap_qc_label" translatable="false">Düğme etiketi</string>
+    <string name="keymap_qc_save" translatable="false">Kontrol paneli düğmesi ekle</string>
+    <string name="keymap_qc_empty" translatable="false">Henüz kontrol paneli düğmesi yok.</string>
 
     <!-- Integrations Native Screen Strings -->
     <string name="rail_integrations_native" translatable="false">Entegrasyonlar (Native)</string>

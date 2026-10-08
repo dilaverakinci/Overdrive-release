@@ -350,6 +350,28 @@ data class KeyBinding(
     }
 }
 
+data class QuickControlButton(
+    val id: String,
+    val label: String,
+    val action: KeyAction
+) {
+    fun toJson(): JSONObject = JSONObject().apply {
+        put("id", id)
+        put("label", label)
+        put("action", action.toJson())
+    }
+
+    companion object {
+        fun fromJson(json: JSONObject): QuickControlButton {
+            return QuickControlButton(
+                id = json.optString("id", ""),
+                label = json.optString("label", ""),
+                action = KeyAction.fromJson(json.optJSONObject("action") ?: JSONObject())
+            )
+        }
+    }
+}
+
 data class KeymapConfig(
     val enabled: Boolean = false,
     val allowAdvanced: Boolean = false,

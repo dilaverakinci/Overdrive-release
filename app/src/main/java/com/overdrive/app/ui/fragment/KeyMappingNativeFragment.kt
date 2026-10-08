@@ -86,6 +86,7 @@ class KeyMappingNativeFragment : Fragment() {
 
     // Add Tab Views
     private lateinit var spinnerKnownButton: Spinner
+    private lateinit var layoutCustomKeyWrap: LinearLayout
     private lateinit var btnCaptureToggle: MaterialButton
     private lateinit var layoutCaptureBox: LinearLayout
     private lateinit var tvCaptureCode: TextView
@@ -97,6 +98,7 @@ class KeyMappingNativeFragment : Fragment() {
     private lateinit var spinnerActionKind: Spinner
     private lateinit var layoutVehicleActionParams: LinearLayout
     private lateinit var spinnerCuratedAction: Spinner
+    private lateinit var layoutPayloadRow: LinearLayout
     private lateinit var tvPayloadLabel: TextView
     private lateinit var spinnerPayload: Spinner
     private lateinit var layoutOpenAppParams: LinearLayout
@@ -107,6 +109,9 @@ class KeyMappingNativeFragment : Fragment() {
     private lateinit var btnAddStep: MaterialButton
     private lateinit var layoutSequenceSteps: LinearLayout
     private lateinit var btnSaveBinding: MaterialButton
+    private lateinit var etQcLabel: EditText
+    private lateinit var btnSaveQuickControl: MaterialButton
+    private lateinit var tvQcEmpty: TextView
 
     // Progress
     private lateinit var progressBarLoading: ProgressBar
@@ -158,6 +163,7 @@ class KeyMappingNativeFragment : Fragment() {
         rvBindings = v.findViewById(R.id.rvBindings)
 
         spinnerKnownButton = v.findViewById(R.id.spinnerKnownButton)
+        layoutCustomKeyWrap = v.findViewById(R.id.layoutCustomKeyWrap)
         btnCaptureToggle = v.findViewById(R.id.btnCaptureToggle)
         layoutCaptureBox = v.findViewById(R.id.layoutCaptureBox)
         tvCaptureCode = v.findViewById(R.id.tvCaptureCode)
@@ -169,6 +175,7 @@ class KeyMappingNativeFragment : Fragment() {
         spinnerActionKind = v.findViewById(R.id.spinnerActionKind)
         layoutVehicleActionParams = v.findViewById(R.id.layoutVehicleActionParams)
         spinnerCuratedAction = v.findViewById(R.id.spinnerCuratedAction)
+        layoutPayloadRow = v.findViewById(R.id.layoutPayloadRow)
         tvPayloadLabel = v.findViewById(R.id.tvPayloadLabel)
         spinnerPayload = v.findViewById(R.id.spinnerPayload)
         layoutOpenAppParams = v.findViewById(R.id.layoutOpenAppParams)
@@ -179,6 +186,9 @@ class KeyMappingNativeFragment : Fragment() {
         btnAddStep = v.findViewById(R.id.btnAddStep)
         layoutSequenceSteps = v.findViewById(R.id.layoutSequenceSteps)
         btnSaveBinding = v.findViewById(R.id.btnSaveBinding)
+        etQcLabel = v.findViewById(R.id.etQcLabel)
+        btnSaveQuickControl = v.findViewById(R.id.btnSaveQuickControl)
+        tvQcEmpty = v.findViewById(R.id.tvQcEmpty)
 
         progressBarLoading = v.findViewById(R.id.progressBarLoading)
 
@@ -211,7 +221,7 @@ class KeyMappingNativeFragment : Fragment() {
         // Double tap slider
         sliderDoubleTap.addOnChangeListener { _, value, fromUser ->
             val ms = value.toLong()
-            tvDoubleTapValue.text = String.format("%.2fs", ms / 1000.0)
+            tvDoubleTapValue.text = formatDoubleTapValue(ms)
             if (fromUser) {
                 viewModel.updateDoubleTapWindowMs(ms)
             }
@@ -305,21 +315,36 @@ class KeyMappingNativeFragment : Fragment() {
 
     private fun setupAddForm() {
         // 1. Hardware Buttons
-        val knownNames = KeyMappingConstants.KNOWN_BUTTONS.map { "[${it.code}] ${it.name}" } + listOf("Custom / Capture Button...")
-        val buttonAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, knownNames)
+        val buttonLabels = mutableListOf(getString(R.string.keymap_choose_button))
+        buttonLabels.addAll(KeyMappingConstants.KNOWN_BUTTONS.map { "${it.name} (${it.code})" })
+        buttonLabels.add(getString(R.string.keymap_custom_capture))
+
+        val buttonAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, buttonLabels)
         spinnerKnownButton.adapter = buttonAdapter
 
         spinnerKnownButton.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                if (position < KeyMappingConstants.KNOWN_BUTTONS.size) {
-                    val known = KeyMappingConstants.KNOWN_BUTTONS[position]
-                    viewModel.setManualKeycode(known.code)
-                    etManualKeycode.setText(known.code.toString())
-                    // Set allowed press types
-                    updatePressTypeOptions(known.allowedPressTypes)
-                } else {
-                    // Custom
-                    updatePressTypeOptions(listOf("single", "double", "long"))
+                when (position) {
+                    0 -> {
+                        // Choose a button placeholder
+                        layoutCustomKeyWrap.visibility = View.GONE
+                        viewModel.setManualKeycode(null)
+                        etManualKeycode.setText("")
+                        updatePressTypeOptions(listOf("single", "double", "long"))
+                    }
+                    buttonLabels.size - 1 -> {
+                        // Custom / capture
+                        layoutCustomKeyWrap.visibility = View.VISIBLE
+                        updatePressTypeOptions(listOf("single", "double", "long"))
+                    }
+                    else -> {
+                        // Known button
+                        layoutCustomKeyWrap.visibility = View.GONE
+                        val known = KeyMappingConstants.KNOWN_BUTTONS[position - 1]
+                        viewModel.setManualKeycode(known.code)
+                        etManualKeycode.setText(known.code.toString())
+                        updatePressTypeOptions(known.allowedPressTypes)
+                    }
                 }
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -382,14 +407,12 @@ class KeyMappingNativeFragment : Fragment() {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val def = KeyMappingConstants.CURATED_ACTIONS.getOrNull(position)
                 if (def != null && def.payloads.isNotEmpty()) {
-                    tvPayloadLabel.visibility = View.VISIBLE
-                    spinnerPayload.visibility = View.VISIBLE
+                    layoutPayloadRow.visibility = View.VISIBLE
                     val payloadLabels = def.payloads.map { it.second }
                     val payloadAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, payloadLabels)
                     spinnerPayload.adapter = payloadAdapter
                 } else {
-                    tvPayloadLabel.visibility = View.GONE
-                    spinnerPayload.visibility = View.GONE
+                    layoutPayloadRow.visibility = View.GONE
                 }
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -444,6 +467,37 @@ class KeyMappingNativeFragment : Fragment() {
 
             viewModel.saveBinding(binding) { success ->
                 if (success) {
+                    sequenceSteps.clear()
+                    renderSequenceSteps()
+                }
+            }
+        }
+
+        // Quick Control Dashboard Button
+        btnSaveQuickControl.setOnClickListener {
+            val label = etQcLabel.text.toString().trim()
+            if (label.isBlank()) {
+                showToast("Please enter a button label")
+                return@setOnClickListener
+            }
+
+            val action: KeyAction = if (sequenceSteps.isNotEmpty()) {
+                val pendingAction = buildCurrentAction()
+                val finalSteps = if (pendingAction != null) sequenceSteps + pendingAction else sequenceSteps
+                if (finalSteps.size == 1) finalSteps[0]
+                else KeyAction(kind = "sequence", steps = finalSteps)
+            } else {
+                val singleAction = buildCurrentAction()
+                if (singleAction == null) {
+                    showToast("Please choose an action")
+                    return@setOnClickListener
+                }
+                singleAction
+            }
+
+            viewModel.addQuickControl(label, action) { success ->
+                if (success) {
+                    etQcLabel.setText("")
                     sequenceSteps.clear()
                     renderSequenceSteps()
                 }
@@ -545,7 +599,7 @@ class KeyMappingNativeFragment : Fragment() {
                 switchMasterEnable.isChecked = config.enabled
                 switchAllowAdvanced.isChecked = config.allowAdvanced
                 sliderDoubleTap.value = config.doubleTapWindowMs.coerceIn(250L, 1500L).toFloat()
-                tvDoubleTapValue.text = String.format("%.2fs", config.doubleTapWindowMs / 1000.0)
+                tvDoubleTapValue.text = formatDoubleTapValue(config.doubleTapWindowMs)
 
                 tvMasterStatusBadge.text = if (config.enabled) "ACTIVE" else "OFF"
                 tvMasterStatusBadge.setBackgroundResource(
@@ -629,6 +683,21 @@ class KeyMappingNativeFragment : Fragment() {
             viewModel.successMessage.collectLatest { msg ->
                 if (!msg.isNullOrBlank()) showToast(msg)
             }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.quickControls.collectLatest { list ->
+                tvQcEmpty.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE
+            }
+        }
+    }
+
+    private fun formatDoubleTapValue(ms: Long): String {
+        val sec = ms / 1000.0
+        return if (ms % 100L == 0L) {
+            String.format(java.util.Locale.US, "%.1fs", sec)
+        } else {
+            String.format(java.util.Locale.US, "%.2fs", sec)
         }
     }
 

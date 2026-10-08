@@ -74,6 +74,37 @@ open class KeyMappingRepository(private val context: Context? = null) {
         }
     }
 
+    open suspend fun getQuickControls(): Result<List<QuickControlButton>> = withContext(Dispatchers.IO) {
+        try {
+            val response = executeHttp("/api/quick-controls", "GET")
+                ?: return@withContext Result.failure(Exception("Empty response fetching quick controls"))
+            val json = JSONObject(response)
+            val arr = json.optJSONArray("buttons") ?: JSONArray()
+            val list = mutableListOf<QuickControlButton>()
+            for (i in 0 until arr.length()) {
+                val b = arr.optJSONObject(i) ?: continue
+                list.add(QuickControlButton.fromJson(b))
+            }
+            Result.success(list)
+        } catch (e: Exception) {
+            logger.error("Error fetching quick controls: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
+    open suspend fun saveQuickControls(buttons: List<QuickControlButton>): Result<Boolean> = withContext(Dispatchers.IO) {
+        try {
+            val arr = JSONArray()
+            buttons.forEach { arr.put(it.toJson()) }
+            val body = JSONObject().apply { put("buttons", arr) }.toString()
+            val response = executeHttp("/api/quick-controls", "POST", body)
+            Result.success(response != null)
+        } catch (e: Exception) {
+            logger.error("Error saving quick controls: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
     open fun getClusterSizeProfile(): Int {
         val bs = UnifiedConfigManager.getBlindSpot()
         val profile = bs.optInt("clusterSizeProfile", 31)
