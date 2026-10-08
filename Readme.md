@@ -129,7 +129,7 @@ This allows accessing an MQTT server through tailscale without port forwarding.
 This can be accessed via the tailscale IP or a subnet that has been advertised on tailscale.
 
 ### WireGuard Tunnel
-For home networks that already run a WireGuard server (OPNsense, pfSense, Fritz!Box, MikroTik, wg-easy, …). The car dials out to your server, so nothing needs to be reachable on the car side. It is meant for reaching your own services, such as the MQTT broker of Home Assistant. It does not publish the dashboard.
+For home networks that already run a WireGuard server (OPNsense, pfSense, Fritz!Box, MikroTik, wg-easy, …). The car dials out to your server, so nothing needs to be reachable on the car side. It is meant for reaching your own services, such as the MQTT broker of Home Assistant. By default the tunnel is outbound-only and the dashboard is not published.
 
 **Setup:**
 1. On your router, add a WireGuard peer for the car and export its client config (the `.conf` file or QR code the router offers).
@@ -141,6 +141,7 @@ Only addresses in `AllowedIPs` go through the tunnel. Everything else, including
 - `PersistentKeepalive` defaults to 25 seconds when the config leaves it out. Without it, the mobile carrier's NAT drops the mapping and commands from Home Assistant stop reaching the car.
 - Saving a new config while the tunnel runs applies it within a few seconds.
 - If the Tailscale proxy runs as well, MQTT goes through Tailscale.
+- **Dashboard reachable over WireGuard** (settings dialog, off by default): serves the dashboard on the car's tunnel address, for example `http://10.8.0.2:8080`, so a device on your home network can open it through the WireGuard server like it would over Tailscale. Requests that arrive this way are treated as remote and must log in; only on-device callers skip the login. Switching it restarts the tunnel. Every peer that can reach the car's tunnel IP can reach the login page, so limit the car's address to trusted peers in the firewall rules of your WireGuard server (for example allow only your admin devices to reach it) and keep a strong dashboard password.
 - The config, including the private key, is readable only by OverDrive's daemon user and is not part of config backups.
 
 ## Home Assistant Integration
