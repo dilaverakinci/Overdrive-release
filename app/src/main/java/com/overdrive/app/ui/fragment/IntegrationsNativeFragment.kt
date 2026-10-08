@@ -1,19 +1,27 @@
 package com.overdrive.app.ui.fragment
 
+import android.content.Context
+import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
+import androidx.annotation.AttrRes
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
@@ -26,7 +34,6 @@ import com.overdrive.app.ui.integrations.IntegrationsSummary
 import com.overdrive.app.ui.integrations.IntegrationsViewModel
 import com.overdrive.app.ui.integrations.MqttBrokerConfig
 import com.overdrive.app.ui.integrations.MqttConnectionsAdapter
-import com.overdrive.app.ui.util.navigateDrillDown
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -34,43 +41,40 @@ class IntegrationsNativeFragment : Fragment() {
 
     private val viewModel: IntegrationsViewModel by viewModels()
 
-    // Header & Tabs
-    private lateinit var tvMasterStatusBadge: TextView
-    private lateinit var tabBtnOverview: MaterialButton
-    private lateinit var tabBtnTelegram: MaterialButton
-    private lateinit var tabBtnAbrp: MaterialButton
-    private lateinit var tabBtnMqtt: MaterialButton
-    private lateinit var tabBtnBydCloud: MaterialButton
+    // Overview Containers & Cards
+    private lateinit var layoutOverviewContainer: NestedScrollView
+    private lateinit var cardTelegram: MaterialCardView
+    private lateinit var cardAbrp: MaterialCardView
+    private lateinit var cardMqtt: MaterialCardView
+    private lateinit var cardBydCloud: MaterialCardView
 
-    // Tab Containers
-    private lateinit var layoutOverviewTab: NestedScrollView
+    // Overview Status Elements
+    private lateinit var heroStatusPill: MaterialCardView
+    private lateinit var tvHeroStatus: TextView
+    private lateinit var dotTelegram: View
+    private lateinit var tvTelegramStatus: TextView
+    private lateinit var dotAbrp: View
+    private lateinit var tvAbrpStatus: TextView
+    private lateinit var dotMqtt: View
+    private lateinit var tvMqttStatus: TextView
+    private lateinit var dotBydCloud: View
+    private lateinit var tvBydCloudStatus: TextView
+
+    // Detail Container & Top Bar
+    private lateinit var layoutDetailContainer: LinearLayout
+    private lateinit var btnBackToOverview: LinearLayout
+    private lateinit var tvDetailTitle: TextView
+
+    // Detail Tabs
     private lateinit var layoutTelegramTab: NestedScrollView
     private lateinit var layoutAbrpTab: NestedScrollView
     private lateinit var layoutMqttTab: NestedScrollView
     private lateinit var layoutBydCloudTab: NestedScrollView
 
-    // Overview Hub Views
-    private lateinit var hubDotTelegram: View
-    private lateinit var hubTvTelegramStatus: TextView
-    private lateinit var hubBtnTelegramConfig: MaterialButton
-    private lateinit var hubBtnTelegramLegacy: MaterialButton
-
-    private lateinit var hubDotAbrp: View
-    private lateinit var hubTvAbrpStatus: TextView
-    private lateinit var hubBtnAbrpConfig: MaterialButton
-    private lateinit var hubBtnAbrpLegacy: MaterialButton
-
-    private lateinit var hubDotMqtt: View
-    private lateinit var hubTvMqttStatus: TextView
-    private lateinit var hubBtnMqttConfig: MaterialButton
-    private lateinit var hubBtnMqttLegacy: MaterialButton
-
-    private lateinit var hubDotBydCloud: View
-    private lateinit var hubTvBydCloudStatus: TextView
-    private lateinit var hubBtnBydCloudConfig: MaterialButton
-    private lateinit var hubBtnBydCloudLegacy: MaterialButton
-
-    // Telegram Tab Views
+    // Telegram Sub-Cards
+    private lateinit var cardTgBot: MaterialCardView
+    private lateinit var cardTgPair: MaterialCardView
+    private lateinit var cardTgPrefs: MaterialCardView
     private lateinit var tgLayoutBotInfo: LinearLayout
     private lateinit var tvTgBotUsername: TextView
     private lateinit var btnTgClearToken: MaterialButton
@@ -88,7 +92,10 @@ class IntegrationsNativeFragment : Fragment() {
     private lateinit var switchTgTyre: MaterialSwitch
     private lateinit var btnTgSavePrefs: MaterialButton
 
-    // ABRP Tab Views
+    // ABRP Sub-Cards
+    private lateinit var cardAbrpStatus: MaterialCardView
+    private lateinit var cardAbrpToken: MaterialCardView
+    private lateinit var cardAbrpTelemetry: MaterialCardView
     private lateinit var switchAbrpEnable: MaterialSwitch
     private lateinit var etAbrpToken: EditText
     private lateinit var btnAbrpClearToken: MaterialButton
@@ -97,7 +104,10 @@ class IntegrationsNativeFragment : Fragment() {
     private lateinit var tvAbrpPower: TextView
     private lateinit var tvAbrpSpeed: TextView
 
-    // MQTT Tab Views
+    // MQTT Sub-Cards
+    private lateinit var cardMqttConnections: MaterialCardView
+    private lateinit var cardMqttAdd: MaterialCardView
+    private lateinit var cardMqttTelemetry: MaterialCardView
     private lateinit var rvMqttConnections: RecyclerView
     private lateinit var tvMqttEmptyState: TextView
     private lateinit var mqttAdapter: MqttConnectionsAdapter
@@ -110,17 +120,33 @@ class IntegrationsNativeFragment : Fragment() {
     private lateinit var switchMqttTls: MaterialSwitch
     private lateinit var btnMqttSaveBroker: MaterialButton
 
-    // BYD Cloud Tab Views
+    // BYD Cloud Sub-Cards
+    private lateinit var cardBydAccount: MaterialCardView
+    private lateinit var cardBydStatus: MaterialCardView
+    private lateinit var cardBydAdvanced: MaterialCardView
     private lateinit var spnBydCountry: Spinner
     private lateinit var etBydUsername: EditText
     private lateinit var etBydPassword: EditText
     private lateinit var etBydPin: EditText
     private lateinit var btnBydLogin: MaterialButton
     private lateinit var btnBydClear: MaterialButton
-    private lateinit var cardBydStatus: MaterialCardView
     private lateinit var tvBydVin: TextView
     private lateinit var btnBydTestLights: MaterialButton
     private lateinit var btnBydTestHorn: MaterialButton
+
+    // Sticky Bottom Sub-Tabs
+    private lateinit var layoutSubBottomTabsBar: LinearLayout
+    private lateinit var tabSub1: LinearLayout
+    private lateinit var ivSubTab1: ImageView
+    private lateinit var tvSubTab1: TextView
+    private lateinit var tabSub2: LinearLayout
+    private lateinit var ivSubTab2: ImageView
+    private lateinit var tvSubTab2: TextView
+    private lateinit var tabSub3: LinearLayout
+    private lateinit var ivSubTab3: ImageView
+    private lateinit var tvSubTab3: TextView
+
+    private var activeSubTabIndex = 0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -131,12 +157,13 @@ class IntegrationsNativeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initViews(view)
-        setupTabButtons()
-        setupOverviewActions()
+        setupOverviewNavigation()
+        setupDetailNavigation()
         setupTelegramActions()
         setupAbrpActions()
         setupMqttActions()
         setupBydCloudActions()
+        setupBackPressedHandler()
         observeViewModel()
     }
 
@@ -146,41 +173,41 @@ class IntegrationsNativeFragment : Fragment() {
     }
 
     private fun initViews(view: View) {
-        tvMasterStatusBadge = view.findViewById(R.id.tvMasterStatusBadge)
-        tabBtnOverview = view.findViewById(R.id.tabBtnOverview)
-        tabBtnTelegram = view.findViewById(R.id.tabBtnTelegram)
-        tabBtnAbrp = view.findViewById(R.id.tabBtnAbrp)
-        tabBtnMqtt = view.findViewById(R.id.tabBtnMqtt)
-        tabBtnBydCloud = view.findViewById(R.id.tabBtnBydCloud)
+        // Overview
+        layoutOverviewContainer = view.findViewById(R.id.layoutOverviewContainer)
+        heroStatusPill = view.findViewById(R.id.heroStatusPill)
+        tvHeroStatus = view.findViewById(R.id.tvHeroStatus)
 
-        layoutOverviewTab = view.findViewById(R.id.layoutOverviewTab)
+        cardTelegram = view.findViewById(R.id.cardTelegram)
+        dotTelegram = view.findViewById(R.id.dotTelegram)
+        tvTelegramStatus = view.findViewById(R.id.tvTelegramStatus)
+
+        cardAbrp = view.findViewById(R.id.cardAbrp)
+        dotAbrp = view.findViewById(R.id.dotAbrp)
+        tvAbrpStatus = view.findViewById(R.id.tvAbrpStatus)
+
+        cardMqtt = view.findViewById(R.id.cardMqtt)
+        dotMqtt = view.findViewById(R.id.dotMqtt)
+        tvMqttStatus = view.findViewById(R.id.tvMqttStatus)
+
+        cardBydCloud = view.findViewById(R.id.cardBydCloud)
+        dotBydCloud = view.findViewById(R.id.dotBydCloud)
+        tvBydCloudStatus = view.findViewById(R.id.tvBydCloudStatus)
+
+        // Detail
+        layoutDetailContainer = view.findViewById(R.id.layoutDetailContainer)
+        btnBackToOverview = view.findViewById(R.id.btnBackToOverview)
+        tvDetailTitle = view.findViewById(R.id.tvDetailTitle)
+
         layoutTelegramTab = view.findViewById(R.id.layoutTelegramTab)
         layoutAbrpTab = view.findViewById(R.id.layoutAbrpTab)
         layoutMqttTab = view.findViewById(R.id.layoutMqttTab)
         layoutBydCloudTab = view.findViewById(R.id.layoutBydCloudTab)
 
-        // Hub Views
-        hubDotTelegram = view.findViewById(R.id.hubDotTelegram)
-        hubTvTelegramStatus = view.findViewById(R.id.hubTvTelegramStatus)
-        hubBtnTelegramConfig = view.findViewById(R.id.hubBtnTelegramConfig)
-        hubBtnTelegramLegacy = view.findViewById(R.id.hubBtnTelegramLegacy)
-
-        hubDotAbrp = view.findViewById(R.id.hubDotAbrp)
-        hubTvAbrpStatus = view.findViewById(R.id.hubTvAbrpStatus)
-        hubBtnAbrpConfig = view.findViewById(R.id.hubBtnAbrpConfig)
-        hubBtnAbrpLegacy = view.findViewById(R.id.hubBtnAbrpLegacy)
-
-        hubDotMqtt = view.findViewById(R.id.hubDotMqtt)
-        hubTvMqttStatus = view.findViewById(R.id.hubTvMqttStatus)
-        hubBtnMqttConfig = view.findViewById(R.id.hubBtnMqttConfig)
-        hubBtnMqttLegacy = view.findViewById(R.id.hubBtnMqttLegacy)
-
-        hubDotBydCloud = view.findViewById(R.id.hubDotBydCloud)
-        hubTvBydCloudStatus = view.findViewById(R.id.hubTvBydCloudStatus)
-        hubBtnBydCloudConfig = view.findViewById(R.id.hubBtnBydCloudConfig)
-        hubBtnBydCloudLegacy = view.findViewById(R.id.hubBtnBydCloudLegacy)
-
-        // Telegram Views
+        // Telegram Sub-Cards
+        cardTgBot = view.findViewById(R.id.cardTgBot)
+        cardTgPair = view.findViewById(R.id.cardTgPair)
+        cardTgPrefs = view.findViewById(R.id.cardTgPrefs)
         tgLayoutBotInfo = view.findViewById(R.id.tgLayoutBotInfo)
         tvTgBotUsername = view.findViewById(R.id.tvTgBotUsername)
         btnTgClearToken = view.findViewById(R.id.btnTgClearToken)
@@ -198,7 +225,10 @@ class IntegrationsNativeFragment : Fragment() {
         switchTgTyre = view.findViewById(R.id.switchTgTyre)
         btnTgSavePrefs = view.findViewById(R.id.btnTgSavePrefs)
 
-        // ABRP Views
+        // ABRP Sub-Cards
+        cardAbrpStatus = view.findViewById(R.id.cardAbrpStatus)
+        cardAbrpToken = view.findViewById(R.id.cardAbrpToken)
+        cardAbrpTelemetry = view.findViewById(R.id.cardAbrpTelemetry)
         switchAbrpEnable = view.findViewById(R.id.switchAbrpEnable)
         etAbrpToken = view.findViewById(R.id.etAbrpToken)
         btnAbrpClearToken = view.findViewById(R.id.btnAbrpClearToken)
@@ -207,7 +237,10 @@ class IntegrationsNativeFragment : Fragment() {
         tvAbrpPower = view.findViewById(R.id.tvAbrpPower)
         tvAbrpSpeed = view.findViewById(R.id.tvAbrpSpeed)
 
-        // MQTT Views
+        // MQTT Sub-Cards
+        cardMqttConnections = view.findViewById(R.id.cardMqttConnections)
+        cardMqttAdd = view.findViewById(R.id.cardMqttAdd)
+        cardMqttTelemetry = view.findViewById(R.id.cardMqttTelemetry)
         rvMqttConnections = view.findViewById(R.id.rvMqttConnections)
         tvMqttEmptyState = view.findViewById(R.id.tvMqttEmptyState)
         etMqttName = view.findViewById(R.id.etMqttName)
@@ -225,50 +258,67 @@ class IntegrationsNativeFragment : Fragment() {
         rvMqttConnections.layoutManager = LinearLayoutManager(requireContext())
         rvMqttConnections.adapter = mqttAdapter
 
-        // BYD Cloud Views
+        // BYD Cloud Sub-Cards
+        cardBydAccount = view.findViewById(R.id.cardBydAccount)
+        cardBydStatus = view.findViewById(R.id.cardBydStatus)
+        cardBydAdvanced = view.findViewById(R.id.cardBydAdvanced)
         spnBydCountry = view.findViewById(R.id.spnBydCountry)
         etBydUsername = view.findViewById(R.id.etBydUsername)
         etBydPassword = view.findViewById(R.id.etBydPassword)
         etBydPin = view.findViewById(R.id.etBydPin)
         btnBydLogin = view.findViewById(R.id.btnBydLogin)
         btnBydClear = view.findViewById(R.id.btnBydClear)
-        cardBydStatus = view.findViewById(R.id.cardBydStatus)
         tvBydVin = view.findViewById(R.id.tvBydVin)
         btnBydTestLights = view.findViewById(R.id.btnBydTestLights)
         btnBydTestHorn = view.findViewById(R.id.btnBydTestHorn)
 
         val countries = listOf("GB (United Kingdom / Europe)", "DE (Germany / Europe)", "AU (Australia)", "NZ (New Zealand)", "SG (Singapore)", "TH (Thailand)", "IL (Israel)", "BR (Brazil)")
         spnBydCountry.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, countries)
+
+        // Sticky Bottom Sub-Tabs
+        layoutSubBottomTabsBar = view.findViewById(R.id.layoutSubBottomTabsBar)
+        tabSub1 = view.findViewById(R.id.tabSub1)
+        ivSubTab1 = view.findViewById(R.id.ivSubTab1)
+        tvSubTab1 = view.findViewById(R.id.tvSubTab1)
+
+        tabSub2 = view.findViewById(R.id.tabSub2)
+        ivSubTab2 = view.findViewById(R.id.ivSubTab2)
+        tvSubTab2 = view.findViewById(R.id.tvSubTab2)
+
+        tabSub3 = view.findViewById(R.id.tabSub3)
+        ivSubTab3 = view.findViewById(R.id.ivSubTab3)
+        tvSubTab3 = view.findViewById(R.id.tvSubTab3)
     }
 
-    private fun setupTabButtons() {
-        tabBtnOverview.setOnClickListener { viewModel.selectTab(IntegrationTab.OVERVIEW) }
-        tabBtnTelegram.setOnClickListener { viewModel.selectTab(IntegrationTab.TELEGRAM) }
-        tabBtnAbrp.setOnClickListener { viewModel.selectTab(IntegrationTab.ABRP) }
-        tabBtnMqtt.setOnClickListener { viewModel.selectTab(IntegrationTab.MQTT) }
-        tabBtnBydCloud.setOnClickListener { viewModel.selectTab(IntegrationTab.BYD_CLOUD) }
+    private fun setupOverviewNavigation() {
+        cardTelegram.setOnClickListener { viewModel.selectTab(IntegrationTab.TELEGRAM) }
+        cardAbrp.setOnClickListener { viewModel.selectTab(IntegrationTab.ABRP) }
+        cardMqtt.setOnClickListener { viewModel.selectTab(IntegrationTab.MQTT) }
+        cardBydCloud.setOnClickListener { viewModel.selectTab(IntegrationTab.BYD_CLOUD) }
     }
 
-    private fun setupOverviewActions() {
-        hubBtnTelegramConfig.setOnClickListener { viewModel.selectTab(IntegrationTab.TELEGRAM) }
-        hubBtnTelegramLegacy.setOnClickListener {
-            findNavController().navigateDrillDown(R.id.telegramSettingsFragment)
+    private fun setupDetailNavigation() {
+        btnBackToOverview.setOnClickListener {
+            viewModel.selectTab(IntegrationTab.OVERVIEW)
         }
 
-        hubBtnAbrpConfig.setOnClickListener { viewModel.selectTab(IntegrationTab.ABRP) }
-        hubBtnAbrpLegacy.setOnClickListener {
-            findNavController().navigateDrillDown(R.id.abrpSettingsFragment)
-        }
+        tabSub1.setOnClickListener { selectSubTab(0) }
+        tabSub2.setOnClickListener { selectSubTab(1) }
+        tabSub3.setOnClickListener { selectSubTab(2) }
+    }
 
-        hubBtnMqttConfig.setOnClickListener { viewModel.selectTab(IntegrationTab.MQTT) }
-        hubBtnMqttLegacy.setOnClickListener {
-            findNavController().navigateDrillDown(R.id.mqttFragment)
-        }
-
-        hubBtnBydCloudConfig.setOnClickListener { viewModel.selectTab(IntegrationTab.BYD_CLOUD) }
-        hubBtnBydCloudLegacy.setOnClickListener {
-            findNavController().navigateDrillDown(R.id.bydCloudFragment)
-        }
+    private fun setupBackPressedHandler() {
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (viewModel.activeTab.value != IntegrationTab.OVERVIEW) {
+                    viewModel.selectTab(IntegrationTab.OVERVIEW)
+                } else {
+                    isEnabled = false
+                    requireActivity().onBackPressedDispatcher.onBackPressed()
+                    isEnabled = true
+                }
+            }
+        })
     }
 
     private fun setupTelegramActions() {
@@ -318,7 +368,7 @@ class IntegrationsNativeFragment : Fragment() {
             val port = etMqttPort.text.toString().toIntOrNull() ?: 1883
             val name = etMqttName.text.toString().ifBlank { "MQTT Broker" }
             val username = etMqttUser.text.toString()
-            val topic = etMqttTopic.text.toString().ifBlank { "overdrive" }
+            val topic = etMqttTopic.text.toString().ifBlank { "overdrive/vehicle/telemetry" }
             val tls = switchMqttTls.isChecked
 
             val broker = MqttBrokerConfig(
@@ -334,6 +384,7 @@ class IntegrationsNativeFragment : Fragment() {
             etMqttHost.text.clear()
             etMqttUser.text.clear()
             etMqttPass.text.clear()
+            selectSubTab(0)
         }
     }
 
@@ -361,12 +412,7 @@ class IntegrationsNativeFragment : Fragment() {
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.activeTab.collectLatest { tab ->
-                updateTabPills(tab)
-                layoutOverviewTab.visibility = if (tab == IntegrationTab.OVERVIEW) View.VISIBLE else View.GONE
-                layoutTelegramTab.visibility = if (tab == IntegrationTab.TELEGRAM) View.VISIBLE else View.GONE
-                layoutAbrpTab.visibility = if (tab == IntegrationTab.ABRP) View.VISIBLE else View.GONE
-                layoutMqttTab.visibility = if (tab == IntegrationTab.MQTT) View.VISIBLE else View.GONE
-                layoutBydCloudTab.visibility = if (tab == IntegrationTab.BYD_CLOUD) View.VISIBLE else View.GONE
+                onTabChanged(tab)
             }
         }
 
@@ -459,44 +505,175 @@ class IntegrationsNativeFragment : Fragment() {
         }
     }
 
-    private fun updateTabPills(active: IntegrationTab) {
-        val buttons = listOf(tabBtnOverview, tabBtnTelegram, tabBtnAbrp, tabBtnMqtt, tabBtnBydCloud)
-        val tabs = listOf(IntegrationTab.OVERVIEW, IntegrationTab.TELEGRAM, IntegrationTab.ABRP, IntegrationTab.MQTT, IntegrationTab.BYD_CLOUD)
+    private fun onTabChanged(tab: IntegrationTab) {
+        if (tab == IntegrationTab.OVERVIEW) {
+            layoutOverviewContainer.visibility = View.VISIBLE
+            layoutDetailContainer.visibility = View.GONE
+            return
+        }
 
-        buttons.forEachIndexed { i, btn ->
-            val isSelected = tabs[i] == active
-            if (isSelected) {
-                btn.setBackgroundResource(R.drawable.bg_pill_state)
-            } else {
-                btn.background = null
+        layoutOverviewContainer.visibility = View.GONE
+        layoutDetailContainer.visibility = View.VISIBLE
+
+        when (tab) {
+            IntegrationTab.TELEGRAM -> {
+                tvDetailTitle.setText(R.string.nav_page_telegram)
+                setupSubTabViews(
+                    icon1 = R.drawable.ic_smart_toy, label1 = R.string.integrations_subtab_bot,
+                    icon2 = R.drawable.ic_link, label2 = R.string.integrations_subtab_pair,
+                    icon3 = R.drawable.ic_settings, label3 = R.string.integrations_subtab_preferences
+                )
+                layoutTelegramTab.visibility = View.VISIBLE
+                layoutAbrpTab.visibility = View.GONE
+                layoutMqttTab.visibility = View.GONE
+                layoutBydCloudTab.visibility = View.GONE
             }
+            IntegrationTab.ABRP -> {
+                tvDetailTitle.setText(R.string.nav_page_abrp)
+                setupSubTabViews(
+                    icon1 = R.drawable.ic_check_circle, label1 = R.string.integrations_subtab_status,
+                    icon2 = R.drawable.ic_security_lock, label2 = R.string.integrations_subtab_token,
+                    icon3 = R.drawable.ic_route, label3 = R.string.integrations_subtab_telemetry
+                )
+                layoutTelegramTab.visibility = View.GONE
+                layoutAbrpTab.visibility = View.VISIBLE
+                layoutMqttTab.visibility = View.GONE
+                layoutBydCloudTab.visibility = View.GONE
+            }
+            IntegrationTab.MQTT -> {
+                tvDetailTitle.setText(R.string.nav_page_mqtt)
+                setupSubTabViews(
+                    icon1 = R.drawable.ic_mqtt, label1 = R.string.integrations_subtab_connections,
+                    icon2 = R.drawable.ic_add, label2 = R.string.integrations_subtab_add,
+                    icon3 = R.drawable.ic_services, label3 = R.string.integrations_subtab_telemetry
+                )
+                layoutTelegramTab.visibility = View.GONE
+                layoutAbrpTab.visibility = View.GONE
+                layoutMqttTab.visibility = View.VISIBLE
+                layoutBydCloudTab.visibility = View.GONE
+            }
+            IntegrationTab.BYD_CLOUD -> {
+                tvDetailTitle.setText(R.string.nav_page_byd_cloud)
+                setupSubTabViews(
+                    icon1 = R.drawable.ic_person, label1 = R.string.integrations_subtab_account,
+                    icon2 = R.drawable.ic_cloud, label2 = R.string.integrations_subtab_status,
+                    icon3 = R.drawable.ic_vehicle_control, label3 = R.string.integrations_subtab_advanced
+                )
+                layoutTelegramTab.visibility = View.GONE
+                layoutAbrpTab.visibility = View.GONE
+                layoutMqttTab.visibility = View.GONE
+                layoutBydCloudTab.visibility = View.VISIBLE
+            }
+            IntegrationTab.OVERVIEW -> { /* Handled above */ }
+        }
+
+        selectSubTab(0)
+    }
+
+    private fun setupSubTabViews(
+        @DrawableRes icon1: Int, @StringRes label1: Int,
+        @DrawableRes icon2: Int, @StringRes label2: Int,
+        @DrawableRes icon3: Int, @StringRes label3: Int
+    ) {
+        ivSubTab1.setImageResource(icon1)
+        tvSubTab1.setText(label1)
+
+        ivSubTab2.setImageResource(icon2)
+        tvSubTab2.setText(label2)
+
+        ivSubTab3.setImageResource(icon3)
+        tvSubTab3.setText(label3)
+    }
+
+    private fun selectSubTab(index: Int) {
+        activeSubTabIndex = index
+        val primaryColor = resolveAttrColor(androidx.appcompat.R.attr.colorPrimary)
+        val onSurfaceVariant = resolveAttrColor(com.google.android.material.R.attr.colorOnSurfaceVariant)
+        val outlineColor = resolveAttrColor(com.google.android.material.R.attr.colorOutline)
+
+        fun applyTab(layout: LinearLayout, iv: ImageView, tv: TextView, active: Boolean) {
+            if (active) {
+                layout.setBackgroundResource(R.drawable.bg_pill_state)
+                iv.setColorFilter(primaryColor)
+                tv.setTextColor(primaryColor)
+                tv.typeface = Typeface.DEFAULT_BOLD
+            } else {
+                layout.setBackgroundColor(Color.TRANSPARENT)
+                iv.setColorFilter(outlineColor)
+                tv.setTextColor(onSurfaceVariant)
+                tv.typeface = Typeface.DEFAULT
+            }
+        }
+
+        applyTab(tabSub1, ivSubTab1, tvSubTab1, index == 0)
+        applyTab(tabSub2, ivSubTab2, tvSubTab2, index == 1)
+        applyTab(tabSub3, ivSubTab3, tvSubTab3, index == 2)
+
+        when (viewModel.activeTab.value) {
+            IntegrationTab.TELEGRAM -> {
+                cardTgBot.visibility = if (index == 0) View.VISIBLE else View.GONE
+                cardTgPair.visibility = if (index == 1) View.VISIBLE else View.GONE
+                cardTgPrefs.visibility = if (index == 2) View.VISIBLE else View.GONE
+            }
+            IntegrationTab.ABRP -> {
+                cardAbrpStatus.visibility = if (index == 0) View.VISIBLE else View.GONE
+                cardAbrpToken.visibility = if (index == 1) View.VISIBLE else View.GONE
+                cardAbrpTelemetry.visibility = if (index == 2) View.VISIBLE else View.GONE
+            }
+            IntegrationTab.MQTT -> {
+                cardMqttConnections.visibility = if (index == 0) View.VISIBLE else View.GONE
+                cardMqttAdd.visibility = if (index == 1) View.VISIBLE else View.GONE
+                cardMqttTelemetry.visibility = if (index == 2) View.VISIBLE else View.GONE
+            }
+            IntegrationTab.BYD_CLOUD -> {
+                cardBydAccount.visibility = if (index == 0) View.VISIBLE else View.GONE
+                cardBydStatus.visibility = if (index == 1) View.VISIBLE else View.GONE
+                cardBydAdvanced.visibility = if (index == 2) View.VISIBLE else View.GONE
+            }
+            IntegrationTab.OVERVIEW -> {}
         }
     }
 
     private fun updateSummary(summary: IntegrationsSummary) {
-        // Master status badge
+        // Hero Status Pill
         if (summary.allConfigured) {
-            tvMasterStatusBadge.text = "ALL CONNECTED"
-            tvMasterStatusBadge.setBackgroundResource(R.drawable.bg_status_badge_active)
+            tvHeroStatus.setText(R.string.integrations_status_configured)
+            heroStatusPill.setCardBackgroundColor(resolveAttrColor(com.google.android.material.R.attr.colorPrimaryContainer))
+            tvHeroStatus.setTextColor(resolveAttrColor(com.google.android.material.R.attr.colorOnPrimaryContainer))
         } else {
-            tvMasterStatusBadge.text = "${summary.activeCount}/4 ACTIVE"
-            tvMasterStatusBadge.setBackgroundResource(R.drawable.bg_status_badge_inactive)
+            tvHeroStatus.setText(R.string.integrations_status_unknown)
+            heroStatusPill.setCardBackgroundColor(resolveAttrColor(com.google.android.material.R.attr.colorSecondaryContainer))
+            tvHeroStatus.setTextColor(resolveAttrColor(com.google.android.material.R.attr.colorOnSecondaryContainer))
         }
 
-        // Telegram hub card
-        hubDotTelegram.setBackgroundResource(if (summary.telegramConfigured) R.drawable.status_dot_online else R.drawable.status_dot_offline)
-        hubTvTelegramStatus.text = if (summary.telegramConfigured) "CONFIGURED" else "NOT SET UP"
+        // Telegram Card
+        bindStatus(dotTelegram, tvTelegramStatus, summary.telegramConfigured)
 
-        // ABRP hub card
-        hubDotAbrp.setBackgroundResource(if (summary.abrpConnected) R.drawable.status_dot_online else R.drawable.status_dot_offline)
-        hubTvAbrpStatus.text = if (summary.abrpConnected) "CONNECTED" else "STOPPED"
+        // ABRP Card
+        bindStatus(dotAbrp, tvAbrpStatus, summary.abrpConnected)
 
-        // MQTT hub card
-        hubDotMqtt.setBackgroundResource(if (summary.mqttConnected) R.drawable.status_dot_online else R.drawable.status_dot_offline)
-        hubTvMqttStatus.text = if (summary.mqttConnected) "CONNECTED" else "INACTIVE"
+        // MQTT Card
+        bindStatus(dotMqtt, tvMqttStatus, summary.mqttConnected)
 
-        // BYD Cloud hub card
-        hubDotBydCloud.setBackgroundResource(if (summary.bydCloudConfigured) R.drawable.status_dot_online else R.drawable.status_dot_offline)
-        hubTvBydCloudStatus.text = if (summary.bydCloudConfigured) "CONFIGURED" else "NOT SET UP"
+        // BYD Cloud Card
+        bindStatus(dotBydCloud, tvBydCloudStatus, summary.bydCloudConfigured)
+    }
+
+    private fun bindStatus(dot: View, label: TextView, configured: Boolean) {
+        if (configured) {
+            label.setText(R.string.integrations_status_configured)
+            label.setTextColor(resolveAttrColor(androidx.appcompat.R.attr.colorPrimary))
+            dot.setBackgroundResource(R.drawable.status_dot_online)
+        } else {
+            label.setText(R.string.integrations_status_not_set_up)
+            label.setTextColor(resolveAttrColor(com.google.android.material.R.attr.colorOnSurfaceVariant))
+            dot.setBackgroundResource(R.drawable.status_dot_offline)
+        }
+    }
+
+    private fun resolveAttrColor(@AttrRes attr: Int): Int {
+        val tv = TypedValue()
+        requireContext().theme.resolveAttribute(attr, tv, true)
+        return tv.data
     }
 }

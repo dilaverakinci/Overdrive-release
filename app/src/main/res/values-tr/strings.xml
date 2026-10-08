@@ -1851,4 +1851,15 @@
     <string name="automation_community_empty" translatable="false">Henüz topluluk otomasyonu yok. İlkini siz yayınlayın.</string>
     <string name="automation_community_empty_hint" translatable="false">Paylaşmak için Otomasyonlar sekmesinden bir otomasyonunuzu yayınlayın.</string>
     <string name="automation_search_hint" translatable="false">Otomasyonlarda ara</string>
+    <string name="integrations_back_to_overview" translatable="false">Entegrasyonlar</string>
+    <string name="integrations_subtab_bot" translatable="false">Bot</string>
+    <string name="integrations_subtab_pair" translatable="false">Eşleme</string>
+    <string name="integrations_subtab_preferences" translatable="false">Tercihler</string>
+    <string name="integrations_subtab_status" translatable="false">Durum</string>
+    <string name="integrations_subtab_token" translatable="false">Belirteç</string>
+    <string name="integrations_subtab_telemetry" translatable="false">Telemetri</string>
+    <string name="integrations_subtab_connections" translatable="false">Bağlantılar</string>
+    <string name="integrations_subtab_add" translatable="false">Ekle</string>
+    <string name="integrations_subtab_account" translatable="false">Hesap</string>
+    <string name="integrations_subtab_advanced" translatable="false">Gelişmiş</string>
 </resources>

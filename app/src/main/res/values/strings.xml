@@ -2487,4 +2487,17 @@
     <string name="byd_cloud_test_lights" translatable="false">Flash Lights</string>
     <string name="byd_cloud_test_horn" translatable="false">Honk Horn</string>
     <string name="byd_cloud_clear_button" translatable="false">Clear Credentials</string>
+
+    <!-- Sub-Integration Navigation Strings -->
+    <string name="integrations_back_to_overview" translatable="false">Integrations</string>
+    <string name="integrations_subtab_bot" translatable="false">Bot</string>
+    <string name="integrations_subtab_pair" translatable="false">Pair</string>
+    <string name="integrations_subtab_preferences" translatable="false">Preferences</string>
+    <string name="integrations_subtab_status" translatable="false">Status</string>
+    <string name="integrations_subtab_token" translatable="false">Token</string>
+    <string name="integrations_subtab_telemetry" translatable="false">Telemetry</string>
+    <string name="integrations_subtab_connections" translatable="false">Connections</string>
+    <string name="integrations_subtab_add" translatable="false">Add</string>
+    <string name="integrations_subtab_account" translatable="false">Account</string>
+    <string name="integrations_subtab_advanced" translatable="false">Advanced</string>
 </resources>
