@@ -1668,4 +1668,8 @@
     <string name="toast_evidence_pack_failed">No s\'ha pogut crear el paquet de proves: %1$s</string>
     <string name="error_unknown">Error desconegut</string>
     <string name="projection_dilink5_mode_required">Establiu el mode del vehicle en DiLink 5 a Diagnòstic i reinicieu el servei de la càmera.</string>
+    <string name="settings_overlay_icon_opacity">Transparència de les icones</string>
+    <string name="settings_overlay_icon_opacity_value">%1$d%%</string>
+    <string name="settings_overlay_icon_size">Mida de la icona</string>
+    <string name="settings_overlay_icon_size_value">%1$d</string>
 </resources>
