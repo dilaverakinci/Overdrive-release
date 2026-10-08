@@ -2316,6 +2316,16 @@
     <string name="trip_chart_speed_dist" translatable="false">Speed Distribution</string>
     <string name="trip_dialog_delete_title" translatable="false">Delete Trip</string>
     <string name="trip_dialog_delete_message" translatable="false">Are you sure you want to delete this trip and its telemetry?</string>
+    <string name="trip_filter_custom" translatable="false">Custom</string>
+    <string name="trip_period_summary" translatable="false">Period Summary</string>
+    <string name="trip_summary_hours" translatable="false">Hours</string>
+    <string name="trip_summary_avg_score" translatable="false">Avg Score</string>
+    <string name="trip_enable_now" translatable="false">Turn on trip recording</string>
+    <string name="trip_range_from" translatable="false">From</string>
+    <string name="trip_range_to" translatable="false">To</string>
+    <string name="trip_range_apply" translatable="false">Apply</string>
+    <string name="trip_no_trips_yet" translatable="false">No trips recorded yet</string>
+    <string name="trip_no_trips_hint" translatable="false">Enable trip analytics and start driving to see your trips here</string>
 
     <!-- Automations Native Screen Strings -->
     <string name="rail_automations_native" translatable="false">Automations (Native)</string>

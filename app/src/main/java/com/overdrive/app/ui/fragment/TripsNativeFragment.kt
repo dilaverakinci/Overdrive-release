@@ -1,6 +1,8 @@
 package com.overdrive.app.ui.fragment
 
+import android.app.DatePickerDialog
 import android.content.res.ColorStateList
+import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -32,19 +34,36 @@ class TripsNativeFragment : Fragment() {
 
     private val viewModel: TripsViewModel by viewModels()
 
-    // Header views
-    private lateinit var layoutTripsHeader: LinearLayout
-    private lateinit var layoutPeriodFilters: LinearLayout
+    // Segmented period filter buttons
+    private lateinit var layoutSegmentedFilterContainer: LinearLayout
     private lateinit var btnFilter7d: MaterialButton
     private lateinit var btnFilter14d: MaterialButton
     private lateinit var btnFilter30d: MaterialButton
-    private lateinit var btnFilterAll: MaterialButton
+    private lateinit var btnFilterCustom: MaterialButton
 
-    private lateinit var layoutTabs: LinearLayout
-    private lateinit var tabBtnTrips: MaterialButton
-    private lateinit var tabBtnStats: MaterialButton
-    private lateinit var tabBtnStorage: MaterialButton
+    // Custom date range
+    private lateinit var layoutCustomRangeRow: LinearLayout
+    private lateinit var btnTripFrom: MaterialButton
+    private lateinit var btnTripTo: MaterialButton
+    private lateinit var btnApplyCustomRange: MaterialButton
+    private val fromCalendar = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -7) }
+    private val toCalendar = Calendar.getInstance()
+    private val shortDateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+
+    // Bottom Tabs
+    private lateinit var layoutBottomTabsBar: LinearLayout
+    private lateinit var tabBottomTrips: LinearLayout
+    private lateinit var ivBottomTabTrips: ImageView
+    private lateinit var tvBottomTabTrips: TextView
+    private lateinit var tabBottomStats: LinearLayout
+    private lateinit var ivBottomTabStats: ImageView
+    private lateinit var tvBottomTabStats: TextView
+    private lateinit var tabBottomStorage: LinearLayout
+    private lateinit var ivBottomTabStorage: ImageView
+    private lateinit var tvBottomTabStorage: TextView
+
     private lateinit var progressLoading: ProgressBar
+    private lateinit var btnEnableTripsFromEmpty: MaterialButton
 
     // Containers
     private lateinit var containerTrips: LinearLayout
@@ -150,18 +169,31 @@ class TripsNativeFragment : Fragment() {
     }
 
     private fun initViews(v: View) {
-        layoutTripsHeader = v.findViewById(R.id.layoutTripsHeader)
-        layoutPeriodFilters = v.findViewById(R.id.layoutPeriodFilters)
+        layoutSegmentedFilterContainer = v.findViewById(R.id.layoutSegmentedFilterContainer)
         btnFilter7d = v.findViewById(R.id.btnFilter7d)
         btnFilter14d = v.findViewById(R.id.btnFilter14d)
         btnFilter30d = v.findViewById(R.id.btnFilter30d)
-        btnFilterAll = v.findViewById(R.id.btnFilterAll)
+        btnFilterCustom = v.findViewById(R.id.btnFilterCustom)
 
-        layoutTabs = v.findViewById(R.id.layoutTabs)
-        tabBtnTrips = v.findViewById(R.id.tabBtnTrips)
-        tabBtnStats = v.findViewById(R.id.tabBtnStats)
-        tabBtnStorage = v.findViewById(R.id.tabBtnStorage)
+        layoutCustomRangeRow = v.findViewById(R.id.layoutCustomRangeRow)
+        btnTripFrom = v.findViewById(R.id.btnTripFrom)
+        btnTripTo = v.findViewById(R.id.btnTripTo)
+        btnApplyCustomRange = v.findViewById(R.id.btnApplyCustomRange)
+        updateDateButtonsText()
+
+        layoutBottomTabsBar = v.findViewById(R.id.layoutBottomTabsBar)
+        tabBottomTrips = v.findViewById(R.id.tabBottomTrips)
+        ivBottomTabTrips = v.findViewById(R.id.ivBottomTabTrips)
+        tvBottomTabTrips = v.findViewById(R.id.tvBottomTabTrips)
+        tabBottomStats = v.findViewById(R.id.tabBottomStats)
+        ivBottomTabStats = v.findViewById(R.id.ivBottomTabStats)
+        tvBottomTabStats = v.findViewById(R.id.tvBottomTabStats)
+        tabBottomStorage = v.findViewById(R.id.tabBottomStorage)
+        ivBottomTabStorage = v.findViewById(R.id.ivBottomTabStorage)
+        tvBottomTabStorage = v.findViewById(R.id.tvBottomTabStorage)
+
         progressLoading = v.findViewById(R.id.progressLoading)
+        btnEnableTripsFromEmpty = v.findViewById(R.id.btnEnableTripsFromEmpty)
 
         containerTrips = v.findViewById(R.id.containerTrips)
         containerStats = v.findViewById(R.id.containerStats)
@@ -236,14 +268,46 @@ class TripsNativeFragment : Fragment() {
     }
 
     private fun setupListeners() {
-        btnFilter7d.setOnClickListener { viewModel.setPeriodFilter(PeriodFilter.DAYS_7) }
-        btnFilter14d.setOnClickListener { viewModel.setPeriodFilter(PeriodFilter.DAYS_14) }
-        btnFilter30d.setOnClickListener { viewModel.setPeriodFilter(PeriodFilter.DAYS_30) }
-        btnFilterAll.setOnClickListener { viewModel.setPeriodFilter(PeriodFilter.ALL) }
+        tabBottomTrips.setOnClickListener { viewModel.selectTab(TripsTab.TRIPS) }
+        tabBottomStats.setOnClickListener { viewModel.selectTab(TripsTab.STATS) }
+        tabBottomStorage.setOnClickListener { viewModel.selectTab(TripsTab.STORAGE) }
 
-        tabBtnTrips.setOnClickListener { viewModel.selectTab(TripsTab.TRIPS) }
-        tabBtnStats.setOnClickListener { viewModel.selectTab(TripsTab.STATS) }
-        tabBtnStorage.setOnClickListener { viewModel.selectTab(TripsTab.STORAGE) }
+        btnFilter7d.setOnClickListener {
+            layoutCustomRangeRow.visibility = View.GONE
+            viewModel.setPeriodFilter(PeriodFilter.DAYS_7)
+        }
+        btnFilter14d.setOnClickListener {
+            layoutCustomRangeRow.visibility = View.GONE
+            viewModel.setPeriodFilter(PeriodFilter.DAYS_14)
+        }
+        btnFilter30d.setOnClickListener {
+            layoutCustomRangeRow.visibility = View.GONE
+            viewModel.setPeriodFilter(PeriodFilter.DAYS_30)
+        }
+        btnFilterCustom.setOnClickListener {
+            val isCurrentlyVisible = layoutCustomRangeRow.visibility == View.VISIBLE
+            layoutCustomRangeRow.visibility = if (isCurrentlyVisible) View.GONE else View.VISIBLE
+            if (!isCurrentlyVisible) {
+                setSegmentedButtonStyle(btnFilter7d, false)
+                setSegmentedButtonStyle(btnFilter14d, false)
+                setSegmentedButtonStyle(btnFilter30d, false)
+                setSegmentedButtonStyle(btnFilterCustom, true)
+            }
+        }
+
+        btnTripFrom.setOnClickListener {
+            showDatePicker(fromCalendar) { updateDateButtonsText() }
+        }
+        btnTripTo.setOnClickListener {
+            showDatePicker(toCalendar) { updateDateButtonsText() }
+        }
+        btnApplyCustomRange.setOnClickListener {
+            applyCustomDateFilter()
+        }
+
+        btnEnableTripsFromEmpty.setOnClickListener {
+            viewModel.updateAnalyticsEnabled(true)
+        }
 
         switchTripAnalytics.setOnCheckedChangeListener { _, isChecked ->
             if (!isProgrammaticChange) {
@@ -327,35 +391,40 @@ class TripsNativeFragment : Fragment() {
             containerTrips.visibility = View.GONE
             containerStats.visibility = View.GONE
             containerStorage.visibility = View.GONE
-            layoutPeriodFilters.visibility = View.GONE
-            layoutTabs.visibility = View.GONE
+            layoutSegmentedFilterContainer.visibility = View.GONE
+            layoutCustomRangeRow.visibility = View.GONE
+            layoutBottomTabsBar.visibility = View.GONE
 
             renderDetail(state.activeTripDetail, state.telemetrySamples)
             return
         }
 
         containerDetail.visibility = View.GONE
-        layoutPeriodFilters.visibility = View.VISIBLE
-        layoutTabs.visibility = View.VISIBLE
+        layoutBottomTabsBar.visibility = View.VISIBLE
 
-        // Render Tabs
-        renderTabs(state.activeTab)
-        renderPeriodFilters(state.periodFilter)
+        // Render Tabs and Period Filters
+        updateBottomTabsBar(state.activeTab)
+        updatePeriodButtons(state.periodFilter)
 
         when (state.activeTab) {
             TripsTab.TRIPS -> {
+                layoutSegmentedFilterContainer.visibility = View.VISIBLE
                 containerTrips.visibility = View.VISIBLE
                 containerStats.visibility = View.GONE
                 containerStorage.visibility = View.GONE
                 renderTripsTab(state)
             }
             TripsTab.STATS -> {
+                layoutSegmentedFilterContainer.visibility = View.GONE
+                layoutCustomRangeRow.visibility = View.GONE
                 containerTrips.visibility = View.GONE
                 containerStats.visibility = View.VISIBLE
                 containerStorage.visibility = View.GONE
                 renderStatsTab(state)
             }
             TripsTab.STORAGE -> {
+                layoutSegmentedFilterContainer.visibility = View.GONE
+                layoutCustomRangeRow.visibility = View.GONE
                 containerTrips.visibility = View.GONE
                 containerStats.visibility = View.GONE
                 containerStorage.visibility = View.VISIBLE
@@ -373,17 +442,103 @@ class TripsNativeFragment : Fragment() {
         }
     }
 
-    private fun renderTabs(activeTab: TripsTab) {
-        tabBtnTrips.applyTabStyle(activeTab == TripsTab.TRIPS)
-        tabBtnStats.applyTabStyle(activeTab == TripsTab.STATS)
-        tabBtnStorage.applyTabStyle(activeTab == TripsTab.STORAGE)
+    private fun isNightMode(): Boolean {
+        return (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
     }
 
-    private fun renderPeriodFilters(filter: PeriodFilter) {
-        btnFilter7d.applyFilterStyle(filter == PeriodFilter.DAYS_7)
-        btnFilter14d.applyFilterStyle(filter == PeriodFilter.DAYS_14)
-        btnFilter30d.applyFilterStyle(filter == PeriodFilter.DAYS_30)
-        btnFilterAll.applyFilterStyle(filter == PeriodFilter.ALL)
+    private fun updateBottomTabsBar(currentTab: TripsTab) {
+        val isNight = isNightMode()
+        val activeBg = R.drawable.bg_bottom_tab_active
+        val activeColor = if (isNight) Color.parseColor("#00D4AA") else Color.parseColor("#004D40")
+        val inactiveColor = if (isNight) Color.parseColor("#8AFFFFFF") else Color.parseColor("#757575")
+
+        // Trips Tab
+        val isTrips = (currentTab == TripsTab.TRIPS)
+        tabBottomTrips.setBackgroundResource(if (isTrips) activeBg else android.R.color.transparent)
+        ivBottomTabTrips.imageTintList = ColorStateList.valueOf(if (isTrips) activeColor else inactiveColor)
+        tvBottomTabTrips.setTextColor(if (isTrips) activeColor else inactiveColor)
+        tvBottomTabTrips.paint.isFakeBoldText = isTrips
+
+        // Stats Tab
+        val isStats = (currentTab == TripsTab.STATS)
+        tabBottomStats.setBackgroundResource(if (isStats) activeBg else android.R.color.transparent)
+        ivBottomTabStats.imageTintList = ColorStateList.valueOf(if (isStats) activeColor else inactiveColor)
+        tvBottomTabStats.setTextColor(if (isStats) activeColor else inactiveColor)
+        tvBottomTabStats.paint.isFakeBoldText = isStats
+
+        // Storage Tab
+        val isStorage = (currentTab == TripsTab.STORAGE)
+        tabBottomStorage.setBackgroundResource(if (isStorage) activeBg else android.R.color.transparent)
+        ivBottomTabStorage.imageTintList = ColorStateList.valueOf(if (isStorage) activeColor else inactiveColor)
+        tvBottomTabStorage.setTextColor(if (isStorage) activeColor else inactiveColor)
+        tvBottomTabStorage.paint.isFakeBoldText = isStorage
+    }
+
+    private fun updatePeriodButtons(currentFilter: PeriodFilter) {
+        val isCustomOpen = layoutCustomRangeRow.visibility == View.VISIBLE
+        setSegmentedButtonStyle(btnFilter7d, currentFilter == PeriodFilter.DAYS_7 && !isCustomOpen)
+        setSegmentedButtonStyle(btnFilter14d, currentFilter == PeriodFilter.DAYS_14 && !isCustomOpen)
+        setSegmentedButtonStyle(btnFilter30d, currentFilter == PeriodFilter.DAYS_30 && !isCustomOpen)
+        setSegmentedButtonStyle(btnFilterCustom, isCustomOpen)
+    }
+
+    private fun setSegmentedButtonStyle(button: MaterialButton, active: Boolean) {
+        val isNight = isNightMode()
+        if (active) {
+            val bgTint = if (isNight) Color.parseColor("#2600D4AA") else Color.parseColor("#1F007A62")
+            val primaryColor = if (isNight) Color.parseColor("#00D4AA") else Color.parseColor("#007A62")
+            button.backgroundTintList = ColorStateList.valueOf(bgTint)
+            button.strokeColor = ColorStateList.valueOf(primaryColor)
+            button.strokeWidth = 2
+            button.setTextColor(primaryColor)
+            button.iconTint = ColorStateList.valueOf(primaryColor)
+            button.paint.isFakeBoldText = true
+        } else {
+            val textCol = if (isNight) Color.parseColor("#8AFFFFFF") else Color.parseColor("#616161")
+            button.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
+            button.strokeColor = ColorStateList.valueOf(Color.TRANSPARENT)
+            button.strokeWidth = 0
+            button.setTextColor(textCol)
+            button.iconTint = ColorStateList.valueOf(textCol)
+            button.paint.isFakeBoldText = false
+        }
+    }
+
+    private fun updateDateButtonsText() {
+        btnTripFrom.text = "${getString(R.string.trip_range_from)}: ${shortDateFormat.format(fromCalendar.time)}"
+        btnTripTo.text = "${getString(R.string.trip_range_to)}: ${shortDateFormat.format(toCalendar.time)}"
+    }
+
+    private fun showDatePicker(calendar: Calendar, onDateSet: () -> Unit) {
+        DatePickerDialog(
+            requireContext(),
+            { _, year, month, dayOfMonth ->
+                calendar.set(Calendar.YEAR, year)
+                calendar.set(Calendar.MONTH, month)
+                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                onDateSet()
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
+
+    private fun applyCustomDateFilter() {
+        val diffMs = toCalendar.timeInMillis - fromCalendar.timeInMillis
+        val diffDays = (diffMs / (1000 * 60 * 60 * 24)).coerceAtLeast(1).toInt()
+        val filter = when {
+            diffDays <= 7 -> PeriodFilter.DAYS_7
+            diffDays <= 14 -> PeriodFilter.DAYS_14
+            diffDays <= 30 -> PeriodFilter.DAYS_30
+            else -> PeriodFilter.ALL
+        }
+        viewModel.setPeriodFilter(filter)
+        Toast.makeText(
+            requireContext(),
+            "${shortDateFormat.format(fromCalendar.time)} → ${shortDateFormat.format(toCalendar.time)} ($diffDays d)",
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     private fun renderTripsTab(state: TripsUiState) {
@@ -397,6 +552,9 @@ class TripsNativeFragment : Fragment() {
 
         val currency = state.config?.currency ?: "₺"
         tvSummaryCost.text = String.format(Locale.US, "%.2f %s", state.summary.totalCost, currency)
+
+        val isRecordingEnabled = state.config?.enabled == true
+        btnEnableTripsFromEmpty.visibility = if (isRecordingEnabled) View.GONE else View.VISIBLE
 
         if (state.trips.isEmpty()) {
             recyclerTrips.visibility = View.GONE
@@ -572,25 +730,5 @@ class TripsNativeFragment : Fragment() {
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
-    }
-
-    private fun MaterialButton.applyTabStyle(selected: Boolean) {
-        if (selected) {
-            setBackgroundColor(Color.parseColor("#BBD4CB"))
-            setTextColor(Color.parseColor("#004D40"))
-        } else {
-            setBackgroundColor(Color.TRANSPARENT)
-            setTextColor(Color.parseColor("#9E9E9E"))
-        }
-    }
-
-    private fun MaterialButton.applyFilterStyle(selected: Boolean) {
-        if (selected) {
-            setBackgroundColor(Color.parseColor("#BBD4CB"))
-            setTextColor(Color.parseColor("#004D40"))
-        } else {
-            setBackgroundColor(Color.TRANSPARENT)
-            setTextColor(Color.parseColor("#9E9E9E"))
-        }
     }
 }

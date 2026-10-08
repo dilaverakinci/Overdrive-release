@@ -1680,6 +1680,16 @@
     <string name="trip_chart_speed_dist" translatable="false">Hız Dağılımı</string>
     <string name="trip_dialog_delete_title" translatable="false">Yolculuğu Sil</string>
     <string name="trip_dialog_delete_message" translatable="false">Bu yolculuğu ve telemetri verisini silmek istediğinizden emin misiniz?</string>
+    <string name="trip_filter_custom" translatable="false">Özel</string>
+    <string name="trip_period_summary" translatable="false">Dönem Özeti</string>
+    <string name="trip_summary_hours" translatable="false">Saat</string>
+    <string name="trip_summary_avg_score" translatable="false">Ort. Puan</string>
+    <string name="trip_enable_now" translatable="false">Sürüş kaydını başlat</string>
+    <string name="trip_range_from" translatable="false">Başlangıç</string>
+    <string name="trip_range_to" translatable="false">Bitiş</string>
+    <string name="trip_range_apply" translatable="false">Uygula</string>
+    <string name="trip_no_trips_yet" translatable="false">Henüz kayıtlı sürüş yok</string>
+    <string name="trip_no_trips_hint" translatable="false">Sürüş analizini etkinleştirin ve sürüşlerinizi burada görmek için aracı kullanın</string>
 
     <!-- Automations Native Screen Strings -->
     <string name="rail_automations_native" translatable="false">Otomasyonlar (Native)</string>
