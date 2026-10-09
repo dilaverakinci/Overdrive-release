@@ -85,11 +85,38 @@ data class ChargingSummary(
     val live: ChargingLiveState = ChargingLiveState()
 )
 
+data class LocationTariff(
+    val id: String,
+    val label: String,
+    val lat: Double,
+    val lng: Double,
+    val radiusM: Int,
+    val acRate: Double,
+    val dcRate: Double,
+    val currency: String,
+    val enabled: Boolean = true,
+    val createdAt: Long = 0L,
+    val lastUsedAt: Long = 0L,
+    val useCount: Int = 0
+)
+
+data class TariffsPayload(
+    val tariffs: List<LocationTariff> = emptyList(),
+    val defaultTariffId: String? = null,
+    val matchedTariffId: String? = null,
+    val lat: Double? = null,
+    val lng: Double? = null,
+    val globalRate: Double? = null,
+    val globalDcRate: Double? = null,
+    val currency: String? = null
+)
+
 data class ChargingBootstrapData(
     val summary: ChargingSummary,
     val sessions: List<ChargingSession>,
     val config: ChargingConfigData,
-    val socHistory: List<SocHistoryPoint>
+    val socHistory: List<SocHistoryPoint>,
+    val tariffsPayload: TariffsPayload? = null
 )
 
 data class ChargingSample(
@@ -140,6 +167,15 @@ data class ChargingUiState(
     val socHistory: List<SocHistoryPoint> = emptyList(),
     val socHours: Int = 168,
     val config: ChargingConfigData = ChargingConfigData(),
+    val tariffs: List<LocationTariff> = emptyList(),
+    val defaultTariffId: String? = null,
+    val matchedTariffId: String? = null,
+    val currentGpsLat: Double? = null,
+    val currentGpsLng: Double? = null,
+    val isTariffEditorOpen: Boolean = false,
+    val editingTariff: LocationTariff? = null,
+    val tariffError: String? = null,
+    val isTariffSaving: Boolean = false,
     val isLoading: Boolean = false,
     val isDetailLoading: Boolean = false,
     val error: String? = null,

@@ -58,8 +58,10 @@ open class ChargingRepository {
                 val sessions = parseSessions(sessionsArr)
                 val config = parseConfig(configObj)
                 val socHistory = parseSocPoints(socArr)
+                val tariffsObj = bootstrap.optJSONObject("tariffs")
+                val tariffsPayload = tariffsObj?.let { parseTariffsPayload(it) }
 
-                Result.success(ChargingBootstrapData(summary, sessions, config, socHistory))
+                Result.success(ChargingBootstrapData(summary, sessions, config, socHistory, tariffsPayload))
             } else {
                 conn.disconnect()
                 Result.failure(Exception("HTTP error ${conn.responseCode}"))
@@ -203,6 +205,91 @@ open class ChargingRepository {
             Result.success(code in 200..299)
         } catch (e: Exception) {
             Log.w(TAG, "saveConfig error: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    open suspend fun getTariffs(): Result<TariffsPayload> = withContext(Dispatchers.IO) {
+        try {
+            val conn = DaemonHttpClient.open("/api/charging/tariffs", "GET", 4000, 4000)
+            if (conn.responseCode == 200) {
+                val body = conn.inputStream.bufferedReader().use { it.readText() }
+                conn.disconnect()
+                val json = JSONObject(body)
+                Result.success(parseTariffsPayload(json))
+            } else {
+                conn.disconnect()
+                Result.failure(Exception("HTTP error ${conn.responseCode}"))
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "getTariffs error: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    open suspend fun saveTariff(payload: JSONObject): Result<Boolean> = withContext(Dispatchers.IO) {
+        try {
+            val conn = DaemonHttpClient.open("/api/charging/tariffs", "POST", 4000, 4000)
+            conn.doOutput = true
+            conn.setRequestProperty("Content-Type", "application/json")
+            OutputStreamWriter(conn.outputStream).use { it.write(payload.toString()) }
+            val code = conn.responseCode
+            val body = if (code in 200..299) {
+                conn.inputStream.bufferedReader().use { it.readText() }
+            } else {
+                conn.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+            }
+            conn.disconnect()
+            if (code in 200..299) {
+                val json = JSONObject(body)
+                if (json.optBoolean("success", false) || json.optBoolean("tariffSaved", false)) {
+                    Result.success(true)
+                } else {
+                    val err = json.optString("error", "Failed to save tariff")
+                    Result.failure(Exception(err))
+                }
+            } else {
+                val err = try {
+                    JSONObject(body).optString("error", "HTTP error $code")
+                } catch (e: Exception) {
+                    "HTTP error $code"
+                }
+                Result.failure(Exception(err))
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "saveTariff error: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    open suspend fun deleteTariff(id: String): Result<Boolean> = withContext(Dispatchers.IO) {
+        try {
+            val conn = DaemonHttpClient.open("/api/charging/tariffs/delete", "POST", 4000, 4000)
+            conn.doOutput = true
+            conn.setRequestProperty("Content-Type", "application/json")
+            val payload = JSONObject().apply { put("id", id) }
+            OutputStreamWriter(conn.outputStream).use { it.write(payload.toString()) }
+            val code = conn.responseCode
+            conn.disconnect()
+            Result.success(code in 200..299)
+        } catch (e: Exception) {
+            Log.w(TAG, "deleteTariff error: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    open suspend fun setDefaultTariff(id: String): Result<Boolean> = withContext(Dispatchers.IO) {
+        try {
+            val conn = DaemonHttpClient.open("/api/charging/tariffs/default", "POST", 4000, 4000)
+            conn.doOutput = true
+            conn.setRequestProperty("Content-Type", "application/json")
+            val payload = JSONObject().apply { put("id", id) }
+            OutputStreamWriter(conn.outputStream).use { it.write(payload.toString()) }
+            val code = conn.responseCode
+            conn.disconnect()
+            Result.success(code in 200..299)
+        } catch (e: Exception) {
+            Log.w(TAG, "setDefaultTariff error: ${e.message}")
             Result.failure(e)
         }
     }
@@ -363,5 +450,52 @@ open class ChargingRepository {
             list.add(SocHistoryPoint(t, soc, isCharging, range, soh, powerKw))
         }
         return list
+    }
+
+    fun parseTariffsPayload(json: JSONObject): TariffsPayload {
+        val tariffsArr = json.optJSONArray("tariffs")
+            ?: json.optJSONObject("meta")?.optJSONArray("tariffs")
+            ?: JSONArray()
+        val meta = json.optJSONObject("meta") ?: json
+        val tariffs = mutableListOf<LocationTariff>()
+        for (i in 0 until tariffsArr.length()) {
+            val obj = tariffsArr.optJSONObject(i) ?: continue
+            tariffs.add(parseTariff(obj))
+        }
+        val defaultId = if (meta.has("defaultTariffId") && !meta.isNull("defaultTariffId")) meta.optString("defaultTariffId") else null
+        val matchedId = if (meta.has("matchedTariffId") && !meta.isNull("matchedTariffId")) meta.optString("matchedTariffId") else null
+        val lat = if (meta.has("lat") && !meta.isNull("lat")) meta.optDouble("lat") else null
+        val lng = if (meta.has("lng") && !meta.isNull("lng")) meta.optDouble("lng") else null
+        val globalRate = if (meta.has("globalRate") && !meta.isNull("globalRate")) meta.optDouble("globalRate") else null
+        val globalDcRate = if (meta.has("globalDcRate") && !meta.isNull("globalDcRate")) meta.optDouble("globalDcRate") else null
+        val currency = if (meta.has("currency") && !meta.isNull("currency")) meta.optString("currency") else null
+
+        return TariffsPayload(
+            tariffs = tariffs,
+            defaultTariffId = if (defaultId.isNullOrEmpty()) null else defaultId,
+            matchedTariffId = if (matchedId.isNullOrEmpty()) null else matchedId,
+            lat = if (lat != null && lat != 0.0) lat else null,
+            lng = if (lng != null && lng != 0.0) lng else null,
+            globalRate = globalRate,
+            globalDcRate = globalDcRate,
+            currency = currency
+        )
+    }
+
+    fun parseTariff(obj: JSONObject): LocationTariff {
+        return LocationTariff(
+            id = obj.optString("id", ""),
+            label = obj.optString("label", ""),
+            lat = obj.optDouble("lat", 0.0),
+            lng = obj.optDouble("lng", 0.0),
+            radiusM = obj.optInt("radiusM", 50),
+            acRate = obj.optDouble("acRate", 0.0),
+            dcRate = obj.optDouble("dcRate", 0.0),
+            currency = obj.optString("currency", ""),
+            enabled = obj.optBoolean("enabled", true),
+            createdAt = obj.optLong("createdAt", 0L),
+            lastUsedAt = obj.optLong("lastUsedAt", 0L),
+            useCount = obj.optInt("useCount", 0)
+        )
     }
 }

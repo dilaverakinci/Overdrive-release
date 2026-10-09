@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 
 open class ChargingViewModel @JvmOverloads constructor(
     application: Application,
@@ -38,6 +39,7 @@ open class ChargingViewModel @JvmOverloads constructor(
             val days = _uiState.value.periodFilter.days
             val result = repository.getBootstrap(days)
             result.onSuccess { data ->
+                val tariffsPayload = data.tariffsPayload
                 _uiState.update { current ->
                     current.copy(
                         isLoading = false,
@@ -45,11 +47,20 @@ open class ChargingViewModel @JvmOverloads constructor(
                         sessions = data.sessions,
                         config = data.config,
                         socHistory = data.socHistory,
+                        tariffs = tariffsPayload?.tariffs ?: current.tariffs,
+                        defaultTariffId = tariffsPayload?.defaultTariffId ?: current.defaultTariffId,
+                        matchedTariffId = tariffsPayload?.matchedTariffId ?: current.matchedTariffId,
+                        currentGpsLat = tariffsPayload?.lat ?: current.currentGpsLat,
+                        currentGpsLng = tariffsPayload?.lng ?: current.currentGpsLng,
                         error = null
                     )
                 }
+                if (tariffsPayload == null) {
+                    loadTariffs()
+                }
             }.onFailure { err ->
                 Log.w(TAG, "Failed to load bootstrap data: ${err.message}")
+                loadTariffs()
                 // Fallback to overview
                 val overviewResult = repository.getOverview(days)
                 overviewResult.onSuccess { (summary, sessions) ->
@@ -258,6 +269,119 @@ open class ChargingViewModel @JvmOverloads constructor(
             if (soc != null && range != null && soh != null) break
         }
         return Triple(soc, range, soh)
+    }
+
+    fun loadTariffs() {
+        viewModelScope.launch {
+            repository.getTariffs().onSuccess { payload ->
+                _uiState.update { current ->
+                    current.copy(
+                        tariffs = payload.tariffs,
+                        defaultTariffId = payload.defaultTariffId,
+                        matchedTariffId = payload.matchedTariffId,
+                        currentGpsLat = payload.lat ?: current.currentGpsLat,
+                        currentGpsLng = payload.lng ?: current.currentGpsLng
+                    )
+                }
+            }.onFailure { err ->
+                Log.w(TAG, "loadTariffs error: ${err.message}")
+            }
+        }
+    }
+
+    fun openTariffEditor(tariff: LocationTariff? = null) {
+        if (tariff == null) {
+            loadTariffs()
+        }
+        _uiState.update {
+            it.copy(
+                isTariffEditorOpen = true,
+                editingTariff = tariff,
+                tariffError = null
+            )
+        }
+    }
+
+    fun closeTariffEditor() {
+        _uiState.update {
+            it.copy(
+                isTariffEditorOpen = false,
+                editingTariff = null,
+                tariffError = null
+            )
+        }
+    }
+
+    fun setTariffError(error: String?) {
+        _uiState.update { it.copy(tariffError = error) }
+    }
+
+    fun saveTariff(
+        label: String,
+        acRate: Double,
+        dcRate: Double,
+        radiusM: Int,
+        onComplete: (Boolean, String?) -> Unit
+    ) {
+        viewModelScope.launch {
+            val editing = _uiState.value.editingTariff
+            val currency = _uiState.value.config.currency.ifEmpty { "$" }
+            val body = JSONObject().apply {
+                put("label", label.trim())
+                put("acRate", acRate)
+                put("dcRate", dcRate)
+                put("radiusM", radiusM)
+                put("currency", currency)
+                if (editing != null) {
+                    put("id", editing.id)
+                } else {
+                    val lat = _uiState.value.currentGpsLat
+                    val lng = _uiState.value.currentGpsLng
+                    if (lat != null && lng != null && (lat != 0.0 || lng != 0.0)) {
+                        put("lat", lat)
+                        put("lng", lng)
+                    }
+                }
+            }
+            _uiState.update { it.copy(isTariffSaving = true, tariffError = null) }
+            val result = repository.saveTariff(body)
+            _uiState.update { it.copy(isTariffSaving = false) }
+            result.onSuccess {
+                closeTariffEditor()
+                loadTariffs()
+                loadData()
+                onComplete(true, null)
+            }.onFailure { err ->
+                val msg = err.message ?: "Failed to save tariff"
+                _uiState.update { it.copy(tariffError = msg) }
+                onComplete(false, msg)
+            }
+        }
+    }
+
+    fun deleteTariff(tariff: LocationTariff, onComplete: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val result = repository.deleteTariff(tariff.id)
+            val success = result.getOrDefault(false)
+            if (success) {
+                loadTariffs()
+                loadData()
+            }
+            onComplete(success)
+        }
+    }
+
+    fun setDefaultTariff(tariff: LocationTariff, onComplete: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val nextId = if (tariff.id == _uiState.value.defaultTariffId) "" else tariff.id
+            val result = repository.setDefaultTariff(nextId)
+            val success = result.getOrDefault(false)
+            if (success) {
+                loadTariffs()
+                loadData()
+            }
+            onComplete(success)
+        }
     }
 
     override fun onCleared() {

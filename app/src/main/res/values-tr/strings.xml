@@ -1539,6 +1539,7 @@
     <string name="common_cancel" translatable="false">İptal</string>
     <string name="common_more" translatable="false">Daha Fazla</string>
     <string name="common_delete" translatable="false">Sil</string>
+    <string name="common_edit" translatable="false">Düzenle</string>
     <string name="common_save" translatable="false">Kaydet</string>
     <string name="common_apply_changes" translatable="false">Değişiklikleri Uygula</string>
 
@@ -1597,6 +1598,39 @@
     <string name="charge_tariffs_empty" translatable="false">Henüz konuma göre tarife yok</string>
     <string name="charge_tariffs_empty_hint" translatable="false">Şarj ettiğiniz yere park halindeyken bir tane ekleyin.</string>
     <string name="charge_tariff_add_here" translatable="false">Bu konum için tarife ekle</string>
+    <string name="charge_tariff_new_title" translatable="false">Bu Konum İçin Tarife Ekle</string>
+    <string name="charge_tariff_edit_title" translatable="false">Konum Tarifesini Düzenle</string>
+    <string name="charge_tariff_label" translatable="false">Etiket</string>
+    <string name="charge_tariff_label_hint" translatable="false">Ev, İş Yeri, Hızlı Şarj…</string>
+    <string name="charge_tariff_ac_rate" translatable="false">AC Ücreti</string>
+    <string name="charge_tariff_dc_rate" translatable="false">DC Ücreti (İsteğe bağlı)</string>
+    <string name="charge_tariff_dc_rate_hint" translatable="false">DC için AC ücretini kullanmak üzere boş bırakın</string>
+    <string name="charge_tariff_radius" translatable="false">Eşleşme Yarıçapı</string>
+    <string name="charge_tariff_radius_hint" translatable="false">25 ile 2000 m arası</string>
+    <string name="charge_tariff_location" translatable="false">Konum</string>
+    <string name="charge_tariff_no_gps" translatable="false">GPS bekleniyor…</string>
+    <string name="charge_tariff_pill_here" translatable="false">burada aktif</string>
+    <string name="charge_tariff_pill_default" translatable="false">varsayılan</string>
+    <string name="charge_tariff_set_default" translatable="false">Eşleşmeyen konumlarda kullan</string>
+    <string name="charge_tariff_used_count" translatable="false">%1$d× kullanıldı</string>
+    <string name="charge_tariff_delete_confirm" translatable="false">Bu tarife silinsin mi? Bununla fiyatlandırılan şarjlar diğer ücretlerinize geri dönecektir.</string>
+    <string name="charge_tariff_err_no_rate" translatable="false">Bir AC veya DC ücreti girin</string>
+    <string name="charge_tariff_err_rate_range" translatable="false">Ücretler 0 ile 100000 arasında olmalıdır</string>
+    <string name="charge_tariff_err_radius" translatable="false">Eşleşme yarıçapı 25 ile 2000 m arasında olmalıdır</string>
+    <string name="charge_tariff_err_label" translatable="false">Etiket çok uzun (en fazla 48 karakter)</string>
+    <string name="charge_tariff_err_label_required" translatable="false">Bu konum için bir etiket girin</string>
+    <string name="charge_tariff_err_dupe_label" translatable="false">Bu etikete sahip bir tarife zaten mevcut</string>
+    <string name="charge_tariff_err_save" translatable="false">Tarife kaydedilemedi</string>
+    <string name="charge_tariff_err_delete" translatable="false">Tarife silinemedi</string>
+    <string name="charge_tariff_saved" translatable="false">Tarife kaydedildi</string>
+    <string name="charge_tariff_deleted" translatable="false">Tarife silindi</string>
+    <string name="charge_tariff_auto_hint" translatable="false">Kaydedildi. Buraya %1$d m mesafedeki şarjlar bu tarifeyi otomatik olarak kullanacak.</string>
+    <string name="charge_tariff_fallback_default" translatable="false">Tarife dışındaki tüm şarjlar “%1$s” tarifesini kullanır.</string>
+    <string name="charge_tariff_fallback_global" translatable="false">Tarife dışındaki tüm şarjlar %1$s/kWh kullanır.</string>
+    <string name="charge_tariff_no_rate" translatable="false">Ücret belirtilmedi</string>
+    <string name="charge_tariff_unnamed" translatable="false">İsimsiz tarife</string>
+    <string name="charge_tariff_ac_short" translatable="false">AC</string>
+    <string name="charge_tariff_dc_short" translatable="false">DC</string>
     <string name="charge_sort_recent" translatable="false">En yeniden eskiye</string>
     <string name="charge_sort_oldest" translatable="false">En eskiden yeniye</string>
     <string name="charge_settings_data_title" translatable="false">Veri</string>

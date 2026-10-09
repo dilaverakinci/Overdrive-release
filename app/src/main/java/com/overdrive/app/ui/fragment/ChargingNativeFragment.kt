@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
@@ -30,6 +31,7 @@ import com.google.android.material.card.MaterialCardView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.overdrive.app.R
 import com.overdrive.app.ui.charging.ChargingCurveView
 import com.overdrive.app.ui.charging.ChargingSample
@@ -38,6 +40,7 @@ import com.overdrive.app.ui.charging.ChargingSessionAdapter
 import com.overdrive.app.ui.charging.ChargingTab
 import com.overdrive.app.ui.charging.ChargingUiState
 import com.overdrive.app.ui.charging.ChargingViewModel
+import com.overdrive.app.ui.charging.LocationTariff
 import com.overdrive.app.ui.charging.PeriodFilter
 import com.overdrive.app.ui.charging.SocGaugeView
 import com.overdrive.app.ui.charging.SocHistoryChartView
@@ -151,6 +154,25 @@ class ChargingNativeFragment : Fragment() {
     private lateinit var btnApplySettings: MaterialButton
     private lateinit var btnTariffAdd: MaterialButton
     private lateinit var btnClearHistory: MaterialButton
+
+    // Tariffs Section Views
+    private lateinit var tvTariffFallbackNote: TextView
+    private lateinit var layoutTariffsList: LinearLayout
+    private lateinit var layoutTariffEmpty: LinearLayout
+    private lateinit var layoutTariffEditor: LinearLayout
+    private lateinit var tvTariffEditorTitle: TextView
+    private lateinit var tilTariffLabel: TextInputLayout
+    private lateinit var etTariffLabel: TextInputEditText
+    private lateinit var tilTariffAcRate: TextInputLayout
+    private lateinit var etTariffAcRate: TextInputEditText
+    private lateinit var tilTariffDcRate: TextInputLayout
+    private lateinit var etTariffDcRate: TextInputEditText
+    private lateinit var tilTariffRadius: TextInputLayout
+    private lateinit var etTariffRadius: TextInputEditText
+    private lateinit var tvTariffLocation: TextView
+    private lateinit var tvTariffError: TextView
+    private lateinit var btnTariffCancel: MaterialButton
+    private lateinit var btnTariffSave: MaterialButton
 
     // Detail Panel Views
     private lateinit var btnBackFromDetail: MaterialButton
@@ -287,6 +309,25 @@ class ChargingNativeFragment : Fragment() {
         btnApplySettings = v.findViewById(R.id.btnApplySettings)
         btnTariffAdd = v.findViewById(R.id.btnTariffAdd)
         btnClearHistory = v.findViewById(R.id.btnClearHistory)
+
+        // Tariffs Section Views
+        tvTariffFallbackNote = v.findViewById(R.id.tvTariffFallbackNote)
+        layoutTariffsList = v.findViewById(R.id.layoutTariffsList)
+        layoutTariffEmpty = v.findViewById(R.id.layoutTariffEmpty)
+        layoutTariffEditor = v.findViewById(R.id.layoutTariffEditor)
+        tvTariffEditorTitle = v.findViewById(R.id.tvTariffEditorTitle)
+        tilTariffLabel = v.findViewById(R.id.tilTariffLabel)
+        etTariffLabel = v.findViewById(R.id.etTariffLabel)
+        tilTariffAcRate = v.findViewById(R.id.tilTariffAcRate)
+        etTariffAcRate = v.findViewById(R.id.etTariffAcRate)
+        tilTariffDcRate = v.findViewById(R.id.tilTariffDcRate)
+        etTariffDcRate = v.findViewById(R.id.etTariffDcRate)
+        tilTariffRadius = v.findViewById(R.id.tilTariffRadius)
+        etTariffRadius = v.findViewById(R.id.etTariffRadius)
+        tvTariffLocation = v.findViewById(R.id.tvTariffLocation)
+        tvTariffError = v.findViewById(R.id.tvTariffError)
+        btnTariffCancel = v.findViewById(R.id.btnTariffCancel)
+        btnTariffSave = v.findViewById(R.id.btnTariffSave)
 
         // Detail Panel Views
         btnBackFromDetail = v.findViewById(R.id.btnBackFromDetail)
@@ -431,9 +472,9 @@ class ChargingNativeFragment : Fragment() {
         // Settings actions
         btnApplySettings.setOnClickListener { applySettings() }
         btnClearHistory.setOnClickListener { showClearHistoryDialog() }
-        btnTariffAdd.setOnClickListener {
-            Toast.makeText(requireContext(), R.string.charge_tariff_add_here, Toast.LENGTH_SHORT).show()
-        }
+        btnTariffAdd.setOnClickListener { openTariffEditor(null) }
+        btnTariffCancel.setOnClickListener { viewModel.closeTariffEditor() }
+        btnTariffSave.setOnClickListener { saveTariff() }
 
         // Detail panel actions
         btnBackFromDetail.setOnClickListener { viewModel.closeSessionDetail() }
@@ -454,6 +495,8 @@ class ChargingNativeFragment : Fragment() {
             override fun handleOnBackPressed() {
                 if (viewModel.uiState.value.isDetailOpen) {
                     viewModel.closeSessionDetail()
+                } else if (viewModel.uiState.value.isTariffEditorOpen) {
+                    viewModel.closeTariffEditor()
                 } else {
                     isEnabled = false
                     requireActivity().onBackPressedDispatcher.onBackPressed()
@@ -475,7 +518,7 @@ class ChargingNativeFragment : Fragment() {
 
     private fun renderUi(state: ChargingUiState) {
         progressLoading.visibility = if (state.isLoading || state.isDetailLoading) View.VISIBLE else View.GONE
-        backCallback?.isEnabled = state.isDetailOpen
+        backCallback?.isEnabled = state.isDetailOpen || state.isTariffEditorOpen
 
         if (state.isDetailOpen) {
             layoutBottomTabsBar.visibility = View.GONE
@@ -844,6 +887,235 @@ class ChargingNativeFragment : Fragment() {
         if (currencyIdx >= 0) {
             spinnerCurrency.setSelection(currencyIdx)
         }
+
+        renderTariffs(state)
+    }
+
+    private fun renderTariffs(state: ChargingUiState) {
+        // Fallback note
+        val defaultTariff = state.tariffs.find { it.id == state.defaultTariffId }
+        if (defaultTariff != null) {
+            val label = defaultTariff.label.ifEmpty { getString(R.string.charge_tariff_unnamed) }
+            tvTariffFallbackNote.text = getString(R.string.charge_tariff_fallback_default, label)
+            tvTariffFallbackNote.visibility = View.VISIBLE
+        } else if (state.config.electricityRate > 0) {
+            val rateStr = "${String.format(Locale.US, "%.2f", state.config.electricityRate)} ${state.config.currency}".trim()
+            tvTariffFallbackNote.text = getString(R.string.charge_tariff_fallback_global, rateStr)
+            tvTariffFallbackNote.visibility = View.VISIBLE
+        } else {
+            tvTariffFallbackNote.visibility = View.GONE
+        }
+
+        // List vs Empty
+        if (state.tariffs.isEmpty()) {
+            layoutTariffEmpty.visibility = View.VISIBLE
+            layoutTariffsList.visibility = View.GONE
+            layoutTariffsList.removeAllViews()
+        } else {
+            layoutTariffEmpty.visibility = View.GONE
+            layoutTariffsList.visibility = View.VISIBLE
+            layoutTariffsList.removeAllViews()
+
+            val inflater = LayoutInflater.from(requireContext())
+            for (tariff in state.tariffs) {
+                val itemView = inflater.inflate(R.layout.item_charging_tariff, layoutTariffsList, false)
+                val tvTariffLabel = itemView.findViewById<TextView>(R.id.tvTariffLabel)
+                val tvBadgeHere = itemView.findViewById<TextView>(R.id.tvBadgeHere)
+                val tvBadgeDefault = itemView.findViewById<TextView>(R.id.tvBadgeDefault)
+                val btnTariffDefault = itemView.findViewById<ImageButton>(R.id.btnTariffDefault)
+                val btnTariffEdit = itemView.findViewById<ImageButton>(R.id.btnTariffEdit)
+                val btnTariffDelete = itemView.findViewById<ImageButton>(R.id.btnTariffDelete)
+                val tvTariffRates = itemView.findViewById<TextView>(R.id.tvTariffRates)
+                val tvTariffSub = itemView.findViewById<TextView>(R.id.tvTariffSub)
+
+                tvTariffLabel.text = tariff.label.ifEmpty { getString(R.string.charge_tariff_unnamed) }
+                tvBadgeHere.visibility = if (tariff.id == state.matchedTariffId) View.VISIBLE else View.GONE
+                tvBadgeDefault.visibility = if (tariff.id == state.defaultTariffId) View.VISIBLE else View.GONE
+
+                val isDefault = (tariff.id == state.defaultTariffId)
+                if (isDefault) {
+                    val primaryColor = if (isNightMode()) Color.parseColor("#00D4AA") else Color.parseColor("#007A62")
+                    btnTariffDefault.imageTintList = ColorStateList.valueOf(primaryColor)
+                } else {
+                    val defaultTint = if (isNightMode()) Color.parseColor("#8AFFFFFF") else Color.parseColor("#757575")
+                    btnTariffDefault.imageTintList = ColorStateList.valueOf(defaultTint)
+                }
+
+                btnTariffDefault.setOnClickListener {
+                    viewModel.setDefaultTariff(tariff) { success ->
+                        if (!success) {
+                            Toast.makeText(requireContext(), R.string.charge_tariff_err_save, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+
+                btnTariffEdit.setOnClickListener {
+                    openTariffEditor(tariff)
+                }
+
+                btnTariffDelete.setOnClickListener {
+                    showDeleteTariffDialog(tariff)
+                }
+
+                // Rates
+                val cur = tariff.currency.ifEmpty { state.config.currency.ifEmpty { "$" } }
+                val rateParts = mutableListOf<String>()
+                if (tariff.acRate > 0) {
+                    rateParts.add("${cur}${String.format(Locale.US, "%.2f", tariff.acRate)} ${getString(R.string.charge_tariff_ac_short)}")
+                }
+                if (tariff.dcRate > 0) {
+                    rateParts.add("${cur}${String.format(Locale.US, "%.2f", tariff.dcRate)} ${getString(R.string.charge_tariff_dc_short)}")
+                }
+                if (rateParts.isEmpty()) {
+                    rateParts.add(getString(R.string.charge_tariff_no_rate))
+                }
+                tvTariffRates.text = rateParts.joinToString(" · ")
+
+                // Sub
+                val subParts = mutableListOf<String>()
+                subParts.add("${tariff.radiusM} m")
+                if (tariff.useCount > 0) {
+                    subParts.add(getString(R.string.charge_tariff_used_count, tariff.useCount))
+                }
+                if (tariff.lat != 0.0 || tariff.lng != 0.0) {
+                    subParts.add(String.format(Locale.US, "%.3f, %.3f", tariff.lat, tariff.lng))
+                }
+                tvTariffSub.text = subParts.joinToString(" · ")
+
+                layoutTariffsList.addView(itemView)
+            }
+        }
+
+        // Editor
+        if (state.isTariffEditorOpen) {
+            layoutTariffEditor.visibility = View.VISIBLE
+            btnTariffAdd.visibility = View.GONE
+
+            val t = state.editingTariff
+            if (t != null && (t.lat != 0.0 || t.lng != 0.0)) {
+                tvTariffLocation.text = String.format(Locale.US, "%.5f, %.5f", t.lat, t.lng)
+            } else if (state.currentGpsLat != null && state.currentGpsLng != null &&
+                (state.currentGpsLat != 0.0 || state.currentGpsLng != 0.0)) {
+                tvTariffLocation.text = String.format(Locale.US, "%.5f, %.5f", state.currentGpsLat, state.currentGpsLng)
+            } else {
+                tvTariffLocation.setText(R.string.charge_tariff_no_gps)
+            }
+
+            if (!state.tariffError.isNullOrEmpty()) {
+                tvTariffError.text = state.tariffError
+                tvTariffError.visibility = View.VISIBLE
+            } else {
+                tvTariffError.visibility = View.GONE
+            }
+
+            btnTariffSave.isEnabled = !state.isTariffSaving
+            btnTariffCancel.isEnabled = !state.isTariffSaving
+        } else {
+            layoutTariffEditor.visibility = View.GONE
+            btnTariffAdd.visibility = View.VISIBLE
+        }
+    }
+
+    private fun openTariffEditor(tariff: LocationTariff?) {
+        viewModel.openTariffEditor(tariff)
+        tvTariffEditorTitle.setText(if (tariff == null) R.string.charge_tariff_new_title else R.string.charge_tariff_edit_title)
+        etTariffLabel.setText(tariff?.label ?: "")
+
+        val defaultAc = if (tariff != null) {
+            if (tariff.acRate > 0) tariff.acRate.toString() else ""
+        } else {
+            val global = viewModel.uiState.value.config.electricityRate
+            if (global > 0) global.toString() else ""
+        }
+        etTariffAcRate.setText(defaultAc)
+
+        val defaultDc = if (tariff != null) {
+            if (tariff.dcRate > 0) tariff.dcRate.toString() else ""
+        } else {
+            val globalDc = viewModel.uiState.value.config.dcRate
+            if (globalDc > 0) globalDc.toString() else ""
+        }
+        etTariffDcRate.setText(defaultDc)
+
+        etTariffRadius.setText((tariff?.radiusM ?: 50).toString())
+        tvTariffError.visibility = View.GONE
+        tvTariffError.text = ""
+        etTariffLabel.requestFocus()
+    }
+
+    private fun saveTariff() {
+        val label = etTariffLabel.text?.toString()?.trim() ?: ""
+        val acRateStr = etTariffAcRate.text?.toString()?.trim() ?: ""
+        val dcRateStr = etTariffDcRate.text?.toString()?.trim() ?: ""
+        val radiusStr = etTariffRadius.text?.toString()?.trim() ?: ""
+
+        val acRate = acRateStr.toDoubleOrNull() ?: 0.0
+        val dcRate = dcRateStr.toDoubleOrNull() ?: 0.0
+        val radius = radiusStr.toIntOrNull() ?: 50
+
+        if (acRate <= 0 && dcRate <= 0) {
+            showTariffInlineError(getString(R.string.charge_tariff_err_no_rate))
+            return
+        }
+        if (acRate < 0 || dcRate < 0 || acRate >= 100000 || dcRate >= 100000) {
+            showTariffInlineError(getString(R.string.charge_tariff_err_rate_range))
+            return
+        }
+        if (radius < 25 || radius > 2000) {
+            showTariffInlineError(getString(R.string.charge_tariff_err_radius))
+            return
+        }
+        if (label.length > 48) {
+            showTariffInlineError(getString(R.string.charge_tariff_err_label))
+            return
+        }
+        val editing = viewModel.uiState.value.editingTariff
+        val dupe = viewModel.uiState.value.tariffs.any {
+            it.label.isNotBlank() && label.isNotBlank() &&
+            it.label.equals(label, ignoreCase = true) &&
+            (editing == null || it.id != editing.id)
+        }
+        if (dupe) {
+            showTariffInlineError(getString(R.string.charge_tariff_err_dupe_label))
+            return
+        }
+
+        tvTariffError.visibility = View.GONE
+        val isNew = (editing == null)
+        viewModel.saveTariff(label, acRate, dcRate, radius) { success, error ->
+            if (success) {
+                val toastMsg = if (isNew) {
+                    getString(R.string.charge_tariff_auto_hint, radius)
+                } else {
+                    getString(R.string.charge_tariff_saved)
+                }
+                Toast.makeText(requireContext(), toastMsg, Toast.LENGTH_LONG).show()
+            } else {
+                showTariffInlineError(error ?: getString(R.string.charge_tariff_err_save))
+            }
+        }
+    }
+
+    private fun showTariffInlineError(error: String) {
+        tvTariffError.text = error
+        tvTariffError.visibility = View.VISIBLE
+    }
+
+    private fun showDeleteTariffDialog(tariff: LocationTariff) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.common_delete)
+            .setMessage(R.string.charge_tariff_delete_confirm)
+            .setPositiveButton(R.string.common_delete) { _, _ ->
+                viewModel.deleteTariff(tariff) { success ->
+                    if (success) {
+                        Toast.makeText(requireContext(), R.string.charge_tariff_deleted, Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(requireContext(), R.string.charge_tariff_err_delete, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton(R.string.common_cancel, null)
+            .show()
     }
 
     private fun renderDetail(state: ChargingUiState) {

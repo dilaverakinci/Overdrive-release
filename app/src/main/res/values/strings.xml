@@ -2194,6 +2194,7 @@
     <string name="common_cancel" translatable="false">Cancel</string>
     <string name="common_more" translatable="false">More</string>
     <string name="common_delete" translatable="false">Delete</string>
+    <string name="common_edit" translatable="false">Edit</string>
     <string name="common_save" translatable="false">Save</string>
     <string name="common_apply_changes" translatable="false">Apply Changes</string>
 
@@ -2266,6 +2267,39 @@
     <string name="charge_tariffs_empty" translatable="false">No location tariffs yet</string>
     <string name="charge_tariffs_empty_hint" translatable="false">Add one while parked where you charge.</string>
     <string name="charge_tariff_add_here" translatable="false">Add tariff for this location</string>
+    <string name="charge_tariff_new_title" translatable="false">Add Tariff for This Location</string>
+    <string name="charge_tariff_edit_title" translatable="false">Edit Location Tariff</string>
+    <string name="charge_tariff_label" translatable="false">Label</string>
+    <string name="charge_tariff_label_hint" translatable="false">Home, Office, Fast Charger…</string>
+    <string name="charge_tariff_ac_rate" translatable="false">AC Rate</string>
+    <string name="charge_tariff_dc_rate" translatable="false">DC Rate (optional)</string>
+    <string name="charge_tariff_dc_rate_hint" translatable="false">Leave blank to use AC rate for DC charges</string>
+    <string name="charge_tariff_radius" translatable="false">Match Radius</string>
+    <string name="charge_tariff_radius_hint" translatable="false">How close a charge must be (25 - 2000 m)</string>
+    <string name="charge_tariff_location" translatable="false">Location</string>
+    <string name="charge_tariff_no_gps" translatable="false">Waiting for GPS…</string>
+    <string name="charge_tariff_pill_here" translatable="false">auto here</string>
+    <string name="charge_tariff_pill_default" translatable="false">default</string>
+    <string name="charge_tariff_set_default" translatable="false">Use when nothing matches</string>
+    <string name="charge_tariff_used_count" translatable="false">%1$d× used</string>
+    <string name="charge_tariff_delete_confirm" translatable="false">Delete this tariff? Charges priced with it will fall back to your other rates.</string>
+    <string name="charge_tariff_err_no_rate" translatable="false">Enter an AC or DC rate</string>
+    <string name="charge_tariff_err_rate_range" translatable="false">Rates must be between 0 and 100000</string>
+    <string name="charge_tariff_err_radius" translatable="false">Match radius must be between 25 and 2000 m</string>
+    <string name="charge_tariff_err_label" translatable="false">Label is too long (max 48 characters)</string>
+    <string name="charge_tariff_err_label_required" translatable="false">Enter a label for this location</string>
+    <string name="charge_tariff_err_dupe_label" translatable="false">A tariff with that label already exists</string>
+    <string name="charge_tariff_err_save" translatable="false">Could not save tariff</string>
+    <string name="charge_tariff_err_delete" translatable="false">Could not delete tariff</string>
+    <string name="charge_tariff_saved" translatable="false">Tariff saved</string>
+    <string name="charge_tariff_deleted" translatable="false">Tariff deleted</string>
+    <string name="charge_tariff_auto_hint" translatable="false">Saved. Charges within %1$d m of here will use this tariff automatically.</string>
+    <string name="charge_tariff_fallback_default" translatable="false">Charges outside every tariff use “%1$s”.</string>
+    <string name="charge_tariff_fallback_global" translatable="false">Charges outside every tariff use %1$s/kWh.</string>
+    <string name="charge_tariff_no_rate" translatable="false">No rate set</string>
+    <string name="charge_tariff_unnamed" translatable="false">Unnamed tariff</string>
+    <string name="charge_tariff_ac_short" translatable="false">AC</string>
+    <string name="charge_tariff_dc_short" translatable="false">DC</string>
     <string name="charge_sort_recent" translatable="false">Most recent</string>
     <string name="charge_sort_oldest" translatable="false">Oldest first</string>
     <string name="charge_settings_data_title" translatable="false">Data</string>
