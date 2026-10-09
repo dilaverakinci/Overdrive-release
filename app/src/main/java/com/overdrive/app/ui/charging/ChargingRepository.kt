@@ -498,4 +498,118 @@ open class ChargingRepository {
             useCount = obj.optInt("useCount", 0)
         )
     }
+
+    open suspend fun getNearbyStations(
+        lat: Double,
+        lng: Double,
+        radiusM: Double = 15000.0,
+        limit: Int = 40
+    ): Result<List<EvStationItem>> = withContext(Dispatchers.IO) {
+        try {
+            // Priority 1: Direct in-process SQLite lookup via EvStationDatabase (<5ms)
+            val localDb = com.overdrive.app.charging.EvStationDatabase.getInstance()
+            if (localDb.isAvailable) {
+                val list = localDb.findNearbyStations(lat, lng, radiusM, limit)
+                val items = list.map { s ->
+                    val connectors = try {
+                        val arr = JSONArray(s.connectorsJson)
+                        (0 until arr.length()).map { idx ->
+                            val c = arr.getJSONObject(idx)
+                            EvConnectorItem(
+                                type = c.optString("type", "Type 2"),
+                                powerKw = c.optDouble("power_kw", 0.0),
+                                current = c.optString("current", "AC"),
+                                count = c.optInt("count", 1),
+                                pricePerKwh = if (c.has("price_per_kwh")) c.optDouble("price_per_kwh") else null
+                            )
+                        }
+                    } catch (e: Exception) { emptyList() }
+
+                    EvStationItem(
+                        id = s.id,
+                        operator = s.operator,
+                        name = s.name,
+                        city = s.city,
+                        district = s.district,
+                        address = s.address,
+                        latitude = s.latitude,
+                        longitude = s.longitude,
+                        chargingType = s.chargingType,
+                        maxPowerKw = s.maxPowerKw,
+                        socketCount = s.socketCount,
+                        acPrice = s.acPrice,
+                        dcPrice = s.dcPrice,
+                        logoUrl = s.logoUrl,
+                        distanceMeters = s.distanceMeters,
+                        connectors = connectors
+                    )
+                }
+                return@withContext Result.success(items)
+            }
+
+            // Priority 2: Fallback to daemon HTTP API
+            val conn = DaemonHttpClient.open(
+                "/api/charging/stations/nearby?lat=$lat&lng=$lng&radius=$radiusM&limit=$limit",
+                "GET",
+                4000,
+                4000
+            )
+            if (conn.responseCode == 200) {
+                val body = conn.inputStream.bufferedReader().use { it.readText() }
+                conn.disconnect()
+                val json = JSONObject(body)
+                val arr = json.optJSONArray("stations") ?: JSONArray()
+                val stations = parseStationItems(arr)
+                Result.success(stations)
+            } else {
+                conn.disconnect()
+                Result.failure(Exception("HTTP error ${conn.responseCode}"))
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "getNearbyStations error: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    private fun parseStationItems(arr: JSONArray): List<EvStationItem> {
+        val list = mutableListOf<EvStationItem>()
+        for (i in 0 until arr.length()) {
+            val obj = arr.optJSONObject(i) ?: continue
+            val connsArr = obj.optJSONArray("connectors") ?: JSONArray()
+            val connectors = mutableListOf<EvConnectorItem>()
+            for (j in 0 until connsArr.length()) {
+                val c = connsArr.optJSONObject(j) ?: continue
+                connectors.add(
+                    EvConnectorItem(
+                        type = c.optString("type", "Type 2"),
+                        powerKw = c.optDouble("power_kw", 0.0),
+                        current = c.optString("current", "AC"),
+                        count = c.optInt("count", 1),
+                        pricePerKwh = if (c.has("price_per_kwh")) c.optDouble("price_per_kwh") else null
+                    )
+                )
+            }
+            list.add(
+                EvStationItem(
+                    id = obj.optString("id", ""),
+                    operator = obj.optString("operator", ""),
+                    name = obj.optString("name", ""),
+                    city = obj.optString("city", ""),
+                    district = obj.optString("district", ""),
+                    address = obj.optString("address", ""),
+                    latitude = obj.optDouble("latitude", 0.0),
+                    longitude = obj.optDouble("longitude", 0.0),
+                    chargingType = obj.optString("chargingType", "AC"),
+                    maxPowerKw = obj.optDouble("maxPowerKw", 0.0),
+                    socketCount = obj.optInt("socketCount", 0),
+                    acPrice = obj.optDouble("acPrice", 0.0),
+                    dcPrice = obj.optDouble("dcPrice", 0.0),
+                    logoUrl = obj.optString("logoUrl", ""),
+                    distanceMeters = obj.optDouble("distanceMeters", 0.0),
+                    connectors = connectors
+                )
+            )
+        }
+        return list
+    }
 }

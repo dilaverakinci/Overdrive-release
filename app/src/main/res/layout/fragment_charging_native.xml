@@ -1539,6 +1539,237 @@
 
                 </LinearLayout>
 
+                <!-- ==================== STATIONS TAB ==================== -->
+                <LinearLayout
+                    android:id="@+id/containerStations"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingBottom="24dp"
+                    android:visibility="gone"
+                    tools:visibility="gone">
+
+                    <!-- Search & Filter Card -->
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Material3.CardView.Filled"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="?attr/colorOutlineVariant"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="@string/charge_stations_title"
+                                    android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textStyle="bold" />
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btnRefreshStations"
+                                    style="@style/Widget.Material3.Button.IconButton"
+                                    android:layout_width="40dp"
+                                    android:layout_height="40dp"
+                                    app:icon="@drawable/ic_refresh"
+                                    app:iconTint="?attr/colorOnSurfaceVariant" />
+                            </LinearLayout>
+
+                            <!-- Search Input -->
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/tilStationSearch"
+                                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                app:boxCornerRadiusBottomEnd="12dp"
+                                app:boxCornerRadiusBottomStart="12dp"
+                                app:boxCornerRadiusTopEnd="12dp"
+                                app:boxCornerRadiusTopStart="12dp"
+                                app:hintEnabled="false"
+                                app:startIconDrawable="@drawable/ic_nav_search"
+                                app:startIconTint="?attr/colorOnSurfaceVariant">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etStationSearch"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/charge_stations_search_hint"
+                                    android:imeOptions="actionSearch"
+                                    android:inputType="text"
+                                    android:maxLines="1"
+                                    android:paddingVertical="10dp"
+                                    android:textSize="14sp" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <!-- Filters Row: Type Filter & Radius Selector -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="12dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <!-- Type Segmented Filter: Tümü | DC | AC -->
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:background="@drawable/bg_segmented_control_container"
+                                    android:orientation="horizontal"
+                                    android:padding="4dp">
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btnStationFilterAll"
+                                        style="@style/Widget.Material3.Button.TonalButton"
+                                        android:layout_width="0dp"
+                                        android:layout_height="36dp"
+                                        android:layout_weight="1"
+                                        android:minHeight="36dp"
+                                        android:padding="0dp"
+                                        android:text="@string/charge_stations_filter_all"
+                                        android:textSize="12sp"
+                                        android:textStyle="bold"
+                                        app:cornerRadius="10dp" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btnStationFilterDc"
+                                        style="@style/Widget.Material3.Button.TextButton"
+                                        android:layout_width="0dp"
+                                        android:layout_height="36dp"
+                                        android:layout_weight="1"
+                                        android:minHeight="36dp"
+                                        android:padding="0dp"
+                                        android:text="@string/charge_stations_filter_dc"
+                                        android:textColor="?attr/colorOnSurfaceVariant"
+                                        android:textSize="12sp"
+                                        app:cornerRadius="10dp" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btnStationFilterAc"
+                                        style="@style/Widget.Material3.Button.TextButton"
+                                        android:layout_width="0dp"
+                                        android:layout_height="36dp"
+                                        android:layout_weight="1"
+                                        android:minHeight="36dp"
+                                        android:padding="0dp"
+                                        android:text="@string/charge_stations_filter_ac"
+                                        android:textColor="?attr/colorOnSurfaceVariant"
+                                        android:textSize="12sp"
+                                        app:cornerRadius="10dp" />
+                                </LinearLayout>
+
+                                <!-- Radius Selector Buttons: 5km | 15km | 50km -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="8dp"
+                                    android:background="@drawable/bg_segmented_control_container"
+                                    android:orientation="horizontal"
+                                    android:padding="4dp">
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btnRadius5km"
+                                        style="@style/Widget.Material3.Button.TextButton"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="36dp"
+                                        android:minHeight="36dp"
+                                        android:paddingHorizontal="10dp"
+                                        android:paddingVertical="0dp"
+                                        android:text="@string/charge_stations_radius_5km"
+                                        android:textColor="?attr/colorOnSurfaceVariant"
+                                        android:textSize="11sp"
+                                        app:cornerRadius="10dp" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btnRadius15km"
+                                        style="@style/Widget.Material3.Button.TonalButton"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="36dp"
+                                        android:minHeight="36dp"
+                                        android:paddingHorizontal="10dp"
+                                        android:paddingVertical="0dp"
+                                        android:text="@string/charge_stations_radius_15km"
+                                        android:textSize="11sp"
+                                        android:textStyle="bold"
+                                        app:cornerRadius="10dp" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btnRadius50km"
+                                        style="@style/Widget.Material3.Button.TextButton"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="36dp"
+                                        android:minHeight="36dp"
+                                        android:paddingHorizontal="10dp"
+                                        android:paddingVertical="0dp"
+                                        android:text="@string/charge_stations_radius_50km"
+                                        android:textColor="?attr/colorOnSurfaceVariant"
+                                        android:textSize="11sp"
+                                        app:cornerRadius="10dp" />
+                                </LinearLayout>
+                            </LinearLayout>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Stations List Count Header -->
+                    <TextView
+                        android:id="@+id/tvStationsCountHeader"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:text="Çevrede 0 istasyon bulundu"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="13sp" />
+
+                    <!-- Stations RecyclerView -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerStations"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false" />
+
+                    <!-- Empty State -->
+                    <LinearLayout
+                        android:id="@+id/layoutStationsEmpty"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="32dp"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:src="@drawable/ic_ev_station"
+                            app:tint="?attr/colorOutline" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="@string/charge_stations_empty"
+                            android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+                    </LinearLayout>
+                </LinearLayout>
+
                 <!-- ==================== SETTINGS TAB ==================== -->
                 <LinearLayout
                     android:id="@+id/containerSettings"
@@ -2619,6 +2850,36 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:text="@string/charge_tab_stats"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <!-- Stations Tab -->
+            <LinearLayout
+                android:id="@+id/tabBottomStations"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/ivBottomTabStations"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:contentDescription="@string/charge_tab_stations"
+                    android:src="@drawable/ic_ev_station"
+                    app:tint="?attr/colorOutline" />
+
+                <TextView
+                    android:id="@+id/tvBottomTabStations"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/charge_tab_stations"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="11sp" />
             </LinearLayout>

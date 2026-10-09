@@ -1,9 +1,11 @@
 package com.overdrive.app.ui.fragment
 
 import android.app.DatePickerDialog
+import android.content.Intent
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,6 +21,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.core.widget.NestedScrollView
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -37,9 +40,11 @@ import com.overdrive.app.ui.charging.ChargingCurveView
 import com.overdrive.app.ui.charging.ChargingSample
 import com.overdrive.app.ui.charging.ChargingSession
 import com.overdrive.app.ui.charging.ChargingSessionAdapter
+import com.overdrive.app.ui.charging.ChargingStationAdapter
 import com.overdrive.app.ui.charging.ChargingTab
 import com.overdrive.app.ui.charging.ChargingUiState
 import com.overdrive.app.ui.charging.ChargingViewModel
+import com.overdrive.app.ui.charging.EvStationItem
 import com.overdrive.app.ui.charging.LocationTariff
 import com.overdrive.app.ui.charging.PeriodFilter
 import com.overdrive.app.ui.charging.SocGaugeView
@@ -68,6 +73,9 @@ class ChargingNativeFragment : Fragment() {
     private lateinit var tabBottomStats: LinearLayout
     private lateinit var ivBottomTabStats: ImageView
     private lateinit var tvBottomTabStats: TextView
+    private lateinit var tabBottomStations: LinearLayout
+    private lateinit var ivBottomTabStations: ImageView
+    private lateinit var tvBottomTabStations: TextView
     private lateinit var tabBottomSettings: LinearLayout
     private lateinit var ivBottomTabSettings: ImageView
     private lateinit var tvBottomTabSettings: TextView
@@ -89,6 +97,7 @@ class ChargingNativeFragment : Fragment() {
     // Containers
     private lateinit var containerSessions: LinearLayout
     private lateinit var containerStats: LinearLayout
+    private lateinit var containerStations: LinearLayout
     private lateinit var containerSettings: LinearLayout
     private lateinit var containerDetail: LinearLayout
 
@@ -174,6 +183,21 @@ class ChargingNativeFragment : Fragment() {
     private lateinit var btnTariffCancel: MaterialButton
     private lateinit var btnTariffSave: MaterialButton
 
+    // Stations Tab Views
+    private lateinit var btnRefreshStations: MaterialButton
+    private lateinit var tilStationSearch: TextInputLayout
+    private lateinit var etStationSearch: TextInputEditText
+    private lateinit var btnStationFilterAll: MaterialButton
+    private lateinit var btnStationFilterDc: MaterialButton
+    private lateinit var btnStationFilterAc: MaterialButton
+    private lateinit var btnRadius5km: MaterialButton
+    private lateinit var btnRadius15km: MaterialButton
+    private lateinit var btnRadius50km: MaterialButton
+    private lateinit var tvStationsCountHeader: TextView
+    private lateinit var recyclerStations: RecyclerView
+    private lateinit var layoutStationsEmpty: LinearLayout
+    private lateinit var stationAdapter: ChargingStationAdapter
+
     // Detail Panel Views
     private lateinit var btnBackFromDetail: MaterialButton
     private lateinit var tvDetailTitle: TextView
@@ -226,6 +250,9 @@ class ChargingNativeFragment : Fragment() {
         tabBottomStats = v.findViewById(R.id.tabBottomStats)
         ivBottomTabStats = v.findViewById(R.id.ivBottomTabStats)
         tvBottomTabStats = v.findViewById(R.id.tvBottomTabStats)
+        tabBottomStations = v.findViewById(R.id.tabBottomStations)
+        ivBottomTabStations = v.findViewById(R.id.ivBottomTabStations)
+        tvBottomTabStations = v.findViewById(R.id.tvBottomTabStations)
         tabBottomSettings = v.findViewById(R.id.tabBottomSettings)
         ivBottomTabSettings = v.findViewById(R.id.ivBottomTabSettings)
         tvBottomTabSettings = v.findViewById(R.id.tvBottomTabSettings)
@@ -246,6 +273,7 @@ class ChargingNativeFragment : Fragment() {
         // Containers
         containerSessions = v.findViewById(R.id.containerSessions)
         containerStats = v.findViewById(R.id.containerStats)
+        containerStations = v.findViewById(R.id.containerStations)
         containerSettings = v.findViewById(R.id.containerSettings)
         containerDetail = v.findViewById(R.id.containerDetail)
 
@@ -329,6 +357,20 @@ class ChargingNativeFragment : Fragment() {
         btnTariffCancel = v.findViewById(R.id.btnTariffCancel)
         btnTariffSave = v.findViewById(R.id.btnTariffSave)
 
+        // Stations Tab Views
+        btnRefreshStations = v.findViewById(R.id.btnRefreshStations)
+        tilStationSearch = v.findViewById(R.id.tilStationSearch)
+        etStationSearch = v.findViewById(R.id.etStationSearch)
+        btnStationFilterAll = v.findViewById(R.id.btnStationFilterAll)
+        btnStationFilterDc = v.findViewById(R.id.btnStationFilterDc)
+        btnStationFilterAc = v.findViewById(R.id.btnStationFilterAc)
+        btnRadius5km = v.findViewById(R.id.btnRadius5km)
+        btnRadius15km = v.findViewById(R.id.btnRadius15km)
+        btnRadius50km = v.findViewById(R.id.btnRadius50km)
+        tvStationsCountHeader = v.findViewById(R.id.tvStationsCountHeader)
+        recyclerStations = v.findViewById(R.id.recyclerStations)
+        layoutStationsEmpty = v.findViewById(R.id.layoutStationsEmpty)
+
         // Detail Panel Views
         btnBackFromDetail = v.findViewById(R.id.btnBackFromDetail)
         tvDetailTitle = v.findViewById(R.id.tvDetailTitle)
@@ -373,6 +415,17 @@ class ChargingNativeFragment : Fragment() {
         )
         rvChargingSessions.layoutManager = LinearLayoutManager(requireContext())
         rvChargingSessions.adapter = sessionAdapter
+
+        stationAdapter = ChargingStationAdapter(
+            onNavigateClick = { station ->
+                launchNavigationIntent(station)
+            },
+            onItemClick = { station ->
+                showStationDetailDialog(station)
+            }
+        )
+        recyclerStations.layoutManager = LinearLayoutManager(requireContext())
+        recyclerStations.adapter = stationAdapter
     }
 
     private fun setupListeners() {
@@ -383,8 +436,37 @@ class ChargingNativeFragment : Fragment() {
         tabBottomStats.setOnClickListener {
             viewModel.selectTab(ChargingTab.STATS)
         }
+        tabBottomStations.setOnClickListener {
+            viewModel.selectTab(ChargingTab.STATIONS)
+        }
         tabBottomSettings.setOnClickListener {
             viewModel.selectTab(ChargingTab.SETTINGS)
+        }
+
+        // Stations Tab actions
+        btnRefreshStations.setOnClickListener {
+            viewModel.loadNearbyStations()
+        }
+        etStationSearch.doAfterTextChanged { editable ->
+            viewModel.setStationSearchQuery(editable?.toString() ?: "")
+        }
+        btnStationFilterAll.setOnClickListener {
+            viewModel.setStationFilterType("ALL")
+        }
+        btnStationFilterDc.setOnClickListener {
+            viewModel.setStationFilterType("DC")
+        }
+        btnStationFilterAc.setOnClickListener {
+            viewModel.setStationFilterType("AC")
+        }
+        btnRadius5km.setOnClickListener {
+            viewModel.setStationRadius(5000.0)
+        }
+        btnRadius15km.setOnClickListener {
+            viewModel.setStationRadius(15000.0)
+        }
+        btnRadius50km.setOnClickListener {
+            viewModel.setStationRadius(50000.0)
         }
 
         // Sessions Tab: Top segmented period filters
@@ -517,13 +599,14 @@ class ChargingNativeFragment : Fragment() {
     }
 
     private fun renderUi(state: ChargingUiState) {
-        progressLoading.visibility = if (state.isLoading || state.isDetailLoading) View.VISIBLE else View.GONE
+        progressLoading.visibility = if (state.isLoading || state.isDetailLoading || (state.currentTab == ChargingTab.STATIONS && state.isStationsLoading)) View.VISIBLE else View.GONE
         backCallback?.isEnabled = state.isDetailOpen || state.isTariffEditorOpen
 
         if (state.isDetailOpen) {
             layoutBottomTabsBar.visibility = View.GONE
             containerSessions.visibility = View.GONE
             containerStats.visibility = View.GONE
+            containerStations.visibility = View.GONE
             containerSettings.visibility = View.GONE
             containerDetail.visibility = View.VISIBLE
             renderDetail(state)
@@ -536,11 +619,13 @@ class ChargingNativeFragment : Fragment() {
 
             containerSessions.visibility = if (state.currentTab == ChargingTab.SESSIONS) View.VISIBLE else View.GONE
             containerStats.visibility = if (state.currentTab == ChargingTab.STATS) View.VISIBLE else View.GONE
+            containerStations.visibility = if (state.currentTab == ChargingTab.STATIONS) View.VISIBLE else View.GONE
             containerSettings.visibility = if (state.currentTab == ChargingTab.SETTINGS) View.VISIBLE else View.GONE
 
             when (state.currentTab) {
                 ChargingTab.SESSIONS -> renderSessions(state)
                 ChargingTab.STATS -> renderStats(state)
+                ChargingTab.STATIONS -> renderStations(state)
                 ChargingTab.SETTINGS -> renderSettings(state)
             }
         }
@@ -569,6 +654,13 @@ class ChargingNativeFragment : Fragment() {
         ivBottomTabStats.imageTintList = ColorStateList.valueOf(if (isStats) activeColor else inactiveColor)
         tvBottomTabStats.setTextColor(if (isStats) activeColor else inactiveColor)
         tvBottomTabStats.paint.isFakeBoldText = isStats
+
+        // Stations Tab
+        val isStations = (currentTab == ChargingTab.STATIONS)
+        tabBottomStations.setBackgroundResource(if (isStations) activeBg else android.R.color.transparent)
+        ivBottomTabStations.imageTintList = ColorStateList.valueOf(if (isStations) activeColor else inactiveColor)
+        tvBottomTabStations.setTextColor(if (isStations) activeColor else inactiveColor)
+        tvBottomTabStations.paint.isFakeBoldText = isStations
 
         // Settings Tab
         val isSettings = (currentTab == ChargingTab.SETTINGS)
@@ -1198,6 +1290,120 @@ class ChargingNativeFragment : Fragment() {
                 }
             }
             .setNegativeButton(R.string.common_cancel, null)
+            .show()
+    }
+
+    private fun renderStations(state: ChargingUiState) {
+        // Update filter button styles
+        setSegmentedButtonStyle(btnStationFilterAll, state.stationFilterType == "ALL")
+        setSegmentedButtonStyle(btnStationFilterDc, state.stationFilterType == "DC")
+        setSegmentedButtonStyle(btnStationFilterAc, state.stationFilterType == "AC")
+
+        // Update radius button styles
+        setSegmentedButtonStyle(btnRadius5km, state.stationRadiusM == 5000.0)
+        setSegmentedButtonStyle(btnRadius15km, state.stationRadiusM == 15000.0)
+        setSegmentedButtonStyle(btnRadius50km, state.stationRadiusM == 50000.0)
+
+        // Filter by type ("ALL", "DC", "AC")
+        var filtered = when (state.stationFilterType) {
+            "DC" -> state.stations.filter { it.chargingType.contains("DC", ignoreCase = true) || it.dcPrice > 0 }
+            "AC" -> state.stations.filter { it.chargingType.contains("AC", ignoreCase = true) && !it.chargingType.contains("DC", ignoreCase = true) }
+            else -> state.stations
+        }
+
+        // Filter by search query
+        val q = state.stationSearchQuery.trim()
+        if (q.isNotEmpty()) {
+            filtered = filtered.filter { s ->
+                s.name.contains(q, ignoreCase = true) ||
+                s.operator.contains(q, ignoreCase = true) ||
+                s.address.contains(q, ignoreCase = true) ||
+                s.city.contains(q, ignoreCase = true) ||
+                s.district.contains(q, ignoreCase = true)
+            }
+        }
+
+        stationAdapter.submitList(filtered)
+
+        val countText = getString(R.string.charge_stations_count, filtered.size)
+        tvStationsCountHeader.text = countText
+
+        val isEmpty = filtered.isEmpty() && !state.isStationsLoading
+        layoutStationsEmpty.visibility = if (isEmpty) View.VISIBLE else View.GONE
+        recyclerStations.visibility = if (isEmpty) View.GONE else View.VISIBLE
+    }
+
+    private fun launchNavigationIntent(station: EvStationItem) {
+        val lat = station.latitude
+        val lng = station.longitude
+        val label = Uri.encode(station.name.ifEmpty { station.operator })
+
+        // 1. Try geo:lat,lng?q=lat,lng(label)
+        val geoUri = Uri.parse("geo:$lat,$lng?q=$lat,$lng($label)")
+        val mapIntent = Intent(Intent.ACTION_VIEW, geoUri).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+
+        try {
+            startActivity(mapIntent)
+        } catch (e: Exception) {
+            // Fallback: Google Maps web URL or intent
+            try {
+                val gmmIntentUri = Uri.parse("https://www.google.com/maps/dir/?api=1&destination=$lat,$lng")
+                val webIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                startActivity(webIntent)
+            } catch (e2: Exception) {
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.charge_stations_nav_error),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+    private fun showStationDetailDialog(station: EvStationItem) {
+        val context = requireContext()
+        val locParts = mutableListOf<String>()
+        if (station.district.isNotEmpty() && station.city.isNotEmpty()) {
+            locParts.add("${station.district} / ${station.city}")
+        } else if (station.city.isNotEmpty()) {
+            locParts.add(station.city)
+        }
+        if (station.address.isNotEmpty()) {
+            locParts.add(station.address)
+        }
+        val addressStr = if (locParts.isNotEmpty()) locParts.joinToString("\n") else "—"
+
+        val details = buildString {
+            append("⚡ ${getString(R.string.charge_stations_power)}: ${Math.round(station.maxPowerKw)} kW (${station.chargingType})\n")
+            if (station.socketCount > 0) {
+                append("🔌 ${getString(R.string.charge_stations_sockets, station.socketCount)}\n")
+            }
+            if (station.dcPrice > 0) {
+                append("💰 DC: ${String.format(Locale.getDefault(), "%.2f ₺/kWh", station.dcPrice)}\n")
+            }
+            if (station.acPrice > 0) {
+                append("💰 AC: ${String.format(Locale.getDefault(), "%.2f ₺/kWh", station.acPrice)}\n")
+            }
+            val distStr = if (station.distanceMeters < 1000) {
+                "${Math.round(station.distanceMeters)} m"
+            } else {
+                String.format(Locale.getDefault(), "%.1f km", station.distanceMeters / 1000.0)
+            }
+            append("📍 ${getString(R.string.charge_stations_distance, distStr)}\n\n")
+            append(addressStr)
+        }
+
+        MaterialAlertDialogBuilder(context)
+            .setTitle(station.name.ifEmpty { station.operator })
+            .setMessage(details)
+            .setPositiveButton(getString(R.string.charge_stations_nav_start)) { _, _ ->
+                launchNavigationIntent(station)
+            }
+            .setNegativeButton(getString(R.string.common_cancel), null)
             .show()
     }
 

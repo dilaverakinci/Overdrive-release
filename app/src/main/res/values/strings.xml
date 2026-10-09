@@ -2212,7 +2212,24 @@
     <string name="charge_range_apply" translatable="false">Apply</string>
     <string name="charge_tab_sessions" translatable="false">Sessions</string>
     <string name="charge_tab_stats" translatable="false">Stats</string>
+    <string name="charge_tab_stations" translatable="false">Stations</string>
     <string name="charge_tab_settings" translatable="false">Settings</string>
+    <string name="charge_stations_title" translatable="false">Nearby Charging Stations</string>
+    <string name="charge_stations_search_hint" translatable="false">Search station or operator...</string>
+    <string name="charge_stations_filter_all" translatable="false">All</string>
+    <string name="charge_stations_filter_dc" translatable="false">DC Fast</string>
+    <string name="charge_stations_filter_ac" translatable="false">AC</string>
+    <string name="charge_stations_navigate" translatable="false">Navigate</string>
+    <string name="charge_stations_empty" translatable="false">No charging stations found in range</string>
+    <string name="charge_stations_sockets" translatable="false">%d Sockets</string>
+    <string name="charge_stations_radius_5km" translatable="false">5 km</string>
+    <string name="charge_stations_radius_15km" translatable="false">15 km</string>
+    <string name="charge_stations_radius_50km" translatable="false">50 km</string>
+    <string name="charge_stations_count" translatable="false">%d stations found nearby</string>
+    <string name="charge_stations_power" translatable="false">Power</string>
+    <string name="charge_stations_distance" translatable="false">Distance: %s</string>
+    <string name="charge_stations_nav_start" translatable="false">Start Navigation</string>
+    <string name="charge_stations_nav_error" translatable="false">Could not open navigation application</string>
     <string name="charge_state_charging" translatable="false">Charging now</string>
     <string name="charge_state_plugged" translatable="false">Plugged in</string>
     <string name="charge_summary_sessions" translatable="false">Sessions</string>

@@ -145,6 +145,33 @@ data class SocHistoryPoint(
     val powerKw: Double? = null
 )
 
+data class EvConnectorItem(
+    val type: String,
+    val powerKw: Double,
+    val current: String,
+    val count: Int,
+    val pricePerKwh: Double?
+)
+
+data class EvStationItem(
+    val id: String,
+    val operator: String,
+    val name: String,
+    val city: String,
+    val district: String,
+    val address: String,
+    val latitude: Double,
+    val longitude: Double,
+    val chargingType: String,
+    val maxPowerKw: Double,
+    val socketCount: Int,
+    val acPrice: Double,
+    val dcPrice: Double,
+    val logoUrl: String,
+    val distanceMeters: Double,
+    val connectors: List<EvConnectorItem> = emptyList()
+)
+
 enum class PeriodFilter(val days: Int) {
     DAYS_7(7),
     DAYS_30(30),
@@ -154,6 +181,7 @@ enum class PeriodFilter(val days: Int) {
 enum class ChargingTab {
     SESSIONS,
     STATS,
+    STATIONS,
     SETTINGS
 }
 
@@ -179,5 +207,13 @@ data class ChargingUiState(
     val isLoading: Boolean = false,
     val isDetailLoading: Boolean = false,
     val error: String? = null,
-    val isDetailOpen: Boolean = false
+    val isDetailOpen: Boolean = false,
+
+    // Stations Tab State
+    val stations: List<EvStationItem> = emptyList(),
+    val isStationsLoading: Boolean = false,
+    val stationFilterType: String = "ALL", // "ALL", "DC", "AC"
+    val stationSearchQuery: String = "",
+    val stationRadiusM: Double = 15000.0,
+    val selectedStationForDetail: EvStationItem? = null
 )

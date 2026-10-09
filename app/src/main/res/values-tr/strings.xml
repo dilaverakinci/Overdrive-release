@@ -1557,7 +1557,24 @@
     <string name="charge_range_apply" translatable="false">Uygula</string>
     <string name="charge_tab_sessions" translatable="false">Oturumlar</string>
     <string name="charge_tab_stats" translatable="false">İstatistikler</string>
+    <string name="charge_tab_stations" translatable="false">İstasyonlar</string>
     <string name="charge_tab_settings" translatable="false">Ayarlar</string>
+    <string name="charge_stations_title" translatable="false">Yakındaki Şarj İstasyonları</string>
+    <string name="charge_stations_search_hint" translatable="false">İstasyon veya operatör ara...</string>
+    <string name="charge_stations_filter_all" translatable="false">Tümü</string>
+    <string name="charge_stations_filter_dc" translatable="false">DC Hızlı</string>
+    <string name="charge_stations_filter_ac" translatable="false">AC</string>
+    <string name="charge_stations_navigate" translatable="false">Yol Tarifi</string>
+    <string name="charge_stations_empty" translatable="false">Bu mesafede şarj istasyonu bulunamadı</string>
+    <string name="charge_stations_sockets" translatable="false">%d Soket</string>
+    <string name="charge_stations_radius_5km" translatable="false">5 km</string>
+    <string name="charge_stations_radius_15km" translatable="false">15 km</string>
+    <string name="charge_stations_radius_50km" translatable="false">50 km</string>
+    <string name="charge_stations_count" translatable="false">Çevrede %d istasyon bulundu</string>
+    <string name="charge_stations_power" translatable="false">Güç</string>
+    <string name="charge_stations_distance" translatable="false">Mesafe: %s</string>
+    <string name="charge_stations_nav_start" translatable="false">Yol Tarifi Başlat</string>
+    <string name="charge_stations_nav_error" translatable="false">Navigasyon uygulaması açılamadı</string>
     <string name="charge_state_charging" translatable="false">Şarj ediliyor</string>
     <string name="charge_state_plugged" translatable="false">Kablo takılı</string>
     <string name="charge_summary_sessions" translatable="false">Oturum</string>

@@ -119,6 +119,46 @@ open class ChargingViewModel @JvmOverloads constructor(
 
     fun selectTab(tab: ChargingTab) {
         _uiState.update { it.copy(currentTab = tab, isDetailOpen = false) }
+        if (tab == ChargingTab.STATIONS && _uiState.value.stations.isEmpty()) {
+            loadNearbyStations()
+        }
+    }
+
+    fun loadNearbyStations(lat: Double? = null, lng: Double? = null) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isStationsLoading = true) }
+            val gps = com.overdrive.app.monitor.GpsMonitor.getInstance()
+            val gpsLat = if (gps != null && gps.hasLocation()) gps.latitude else null
+            val gpsLng = if (gps != null && gps.hasLocation()) gps.longitude else null
+
+            val targetLat = lat ?: gpsLat ?: _uiState.value.currentGpsLat ?: 39.953046
+            val targetLng = lng ?: gpsLng ?: _uiState.value.currentGpsLng ?: 32.697987
+            val radius = _uiState.value.stationRadiusM
+            val result = repository.getNearbyStations(targetLat, targetLng, radius, 50)
+            result.onSuccess { list ->
+                _uiState.update { it.copy(stations = list, isStationsLoading = false, currentGpsLat = targetLat, currentGpsLng = targetLng) }
+            }.onFailure { err ->
+                Log.w(TAG, "Failed to load stations: ${err.message}")
+                _uiState.update { it.copy(isStationsLoading = false) }
+            }
+        }
+    }
+
+    fun setStationFilterType(type: String) {
+        _uiState.update { it.copy(stationFilterType = type) }
+    }
+
+    fun setStationRadius(radiusM: Double) {
+        _uiState.update { it.copy(stationRadiusM = radiusM) }
+        loadNearbyStations()
+    }
+
+    fun setStationSearchQuery(query: String) {
+        _uiState.update { it.copy(stationSearchQuery = query) }
+    }
+
+    fun selectStationForDetail(station: EvStationItem?) {
+        _uiState.update { it.copy(selectedStationForDetail = station) }
     }
 
     fun setPeriodFilter(filter: PeriodFilter) {
