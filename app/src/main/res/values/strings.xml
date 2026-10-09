@@ -2375,6 +2375,14 @@
     <string name="trip_timeline_accelerating" translatable="false">Accelerating</string>
     <string name="trip_timeline_coasting" translatable="false">Coasting</string>
     <string name="trip_timeline_braking" translatable="false">Braking</string>
+    <string name="trip_timeline_play" translatable="false">Play</string>
+    <string name="trip_timeline_pause" translatable="false">Pause</string>
+    <string name="trip_elevation_title" translatable="false">Elevation Profile</string>
+    <string name="trip_elevation_uphill" translatable="false">Uphill</string>
+    <string name="trip_elevation_downhill" translatable="false">Downhill</string>
+    <string name="trip_elevation_flat" translatable="false">Flat</string>
+    <string name="trip_elevation_gain" translatable="false">Gain</string>
+    <string name="trip_elevation_loss" translatable="false">Loss</string>
     <string name="trip_dna_breakdown_title" translatable="false">Driving DNA Breakdown</string>
     <string name="trip_dna_coaching_hint" translatable="false">Tap rows for coaching 💡</string>
     <string name="trip_dna_anticipation_title" translatable="false">Anticipation</string>

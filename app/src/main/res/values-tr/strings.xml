@@ -2044,4 +2044,12 @@
     <string name="roadsense_bs_reset_align" translatable="false">Varsayılana Sıfırla</string>
     <string name="status_on">AÇIK</string>
     <string name="status_off">KAPALI</string>
+    <string name="trip_timeline_play">Oynat</string>
+    <string name="trip_timeline_pause">Duraklat</string>
+    <string name="trip_elevation_title">Yükseklik Profili</string>
+    <string name="trip_elevation_uphill">Yukarı</string>
+    <string name="trip_elevation_downhill">Aşağı</string>
+    <string name="trip_elevation_flat">Düz</string>
+    <string name="trip_elevation_gain">Çıkış</string>
+    <string name="trip_elevation_loss">İniş</string>
 </resources>

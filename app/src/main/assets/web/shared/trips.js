@@ -3502,6 +3502,10 @@ const TRIPS = {
         this.setEl('sliderStartTime', '0:00');
         this.setEl('sliderEndTime', durMin + ' min');
 
+        this.stopPlayback();
+        const speedBtn = document.getElementById('timelineSpeedBtn');
+        if (speedBtn) speedBtn.textContent = this._playback.labels[this._playback.speedIndex];
+
         // Hover scrub — moving mouse over slider area scrubs the position
         const self = this;
         const wrap = slider.parentElement;
@@ -3518,7 +3522,72 @@ const TRIPS = {
         this.updateSliderDisplay(0);
     },
 
+    _playback: {
+        isPlaying: false,
+        intervalId: null,
+        speedIndex: 0,
+        speeds: [1, 2, 4, 8],
+        labels: ['1x', '2x', '4x', '8x']
+    },
+
+    togglePlayback() {
+        if (this._playback.isPlaying) {
+            this.stopPlayback();
+        } else {
+            this.startPlayback();
+        }
+    },
+
+    togglePlaybackSpeed() {
+        this._playback.speedIndex = (this._playback.speedIndex + 1) % this._playback.speeds.length;
+        const label = this._playback.labels[this._playback.speedIndex];
+        const btn = document.getElementById('timelineSpeedBtn');
+        if (btn) btn.textContent = label;
+        if (this._playback.isPlaying) {
+            this.stopPlayback();
+            this.startPlayback();
+        }
+    },
+
+    startPlayback() {
+        const samples = this.telemetryCache;
+        if (!samples || samples.length < 2) return;
+        const slider = document.getElementById('timelineSlider');
+        if (!slider) return;
+        if (parseInt(slider.value) >= parseInt(slider.max)) {
+            slider.value = 0;
+            this.updateSliderDisplay(0);
+        }
+        this._playback.isPlaying = true;
+        const icon = document.getElementById('timelinePlayIcon');
+        if (icon) icon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+        const speed = this._playback.speeds[this._playback.speedIndex];
+        const delayMs = Math.max(40, Math.round(1000 / speed));
+        const self = this;
+        this._playback.intervalId = setInterval(() => {
+            let curr = parseInt(slider.value) || 0;
+            if (curr < parseInt(slider.max)) {
+                curr++;
+                slider.value = curr;
+                self.updateSliderDisplay(curr);
+            } else {
+                self.stopPlayback();
+            }
+        }, delayMs);
+    },
+
+    stopPlayback() {
+        this._playback.isPlaying = false;
+        if (this._playback.intervalId) {
+            clearInterval(this._playback.intervalId);
+            this._playback.intervalId = null;
+        }
+        const icon = document.getElementById('timelinePlayIcon');
+        if (icon) icon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+    },
+
     onSliderInput(val) {
+        if (this._playback.isPlaying) this.stopPlayback();
         const idx = parseInt(val);
         this.updateSliderDisplay(idx);
     },
@@ -3642,6 +3711,230 @@ const TRIPS = {
         const tlCanvas = document.getElementById('timelineChart');
         if (tlCanvas && samples.length > 1) {
             this.renderTimeline(tlCanvas, samples, idx);
+        }
+
+        // 4. Sync Elevation Profile chart scrubber
+        this.renderElevationProfile(samples, idx);
+    },
+
+    renderElevationProfile(samples, highlightIdx) {
+        const canvas = document.getElementById('elevationChart');
+        if (!canvas || !samples || samples.length < 2) return;
+
+        // 1. Process & smooth altitudes
+        const alts = [];
+        let lastValidAlt = 0;
+        for (let i = 0; i < samples.length; i++) {
+            const a = samples[i].al;
+            if (a != null && a > 0 && isFinite(a)) {
+                lastValidAlt = a;
+                alts.push(a);
+            } else if (lastValidAlt > 0) {
+                alts.push(lastValidAlt);
+            } else {
+                const f = samples.slice(i).find(s => s.al && s.al > 0);
+                lastValidAlt = f ? f.al : 0;
+                alts.push(lastValidAlt);
+            }
+        }
+        if (!alts.some(a => a > 0)) return;
+
+        // 5-point moving median/average
+        const smoothed = [];
+        for (let i = 0; i < alts.length; i++) {
+            const start = Math.max(0, i - 2);
+            const end = Math.min(alts.length - 1, i + 2);
+            let sum = 0, count = 0;
+            for (let j = start; j <= end; j++) {
+                sum += alts[j];
+                count++;
+            }
+            smoothed.push(count > 0 ? sum / count : alts[i]);
+        }
+
+        // 2. Cumulative distance & Up/Down partitioning
+        let runningDistKm = 0;
+        const cumDist = [0];
+        let uphillKm = 0, downhillKm = 0, flatKm = 0;
+        let totalGainM = 0, totalLossM = 0;
+
+        for (let i = 1; i < samples.length; i++) {
+            const s0 = samples[i - 1];
+            const s1 = samples[i];
+            let segDist = 0;
+            if (s0.la && s0.lo && s1.la && s1.lo) {
+                const R = 6371;
+                const dLat = (s1.la - s0.la) * Math.PI / 180;
+                const dLon = (s1.lo - s0.lo) * Math.PI / 180;
+                const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(s0.la*Math.PI/180)*Math.cos(s1.la*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+                segDist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            } else {
+                const dtH = Math.max(0, s1.t - s0.t) / 3600000;
+                segDist = (s1.s || 0) * dtH;
+            }
+            runningDistKm += segDist;
+            cumDist.push(runningDistKm);
+
+            const dh = smoothed[i] - smoothed[i - 1];
+            if (dh > 0) totalGainM += dh;
+            else if (dh < 0) totalLossM += Math.abs(dh);
+
+            const grad = segDist > 0.001 ? (dh / (segDist * 1000)) * 100 : 0;
+            if (grad > 0.75) uphillKm += segDist;
+            else if (grad < -0.75) downhillKm += segDist;
+            else flatKm += segDist;
+        }
+
+        const totalDist = runningDistKm;
+        const upPct = totalDist > 0.05 ? Math.round((uphillKm / totalDist) * 100) : 0;
+        const downPct = totalDist > 0.05 ? Math.round((downhillKm / totalDist) * 100) : 0;
+        const flatPct = totalDist > 0.05 ? Math.round((flatKm / totalDist) * 100) : 0;
+
+        // 3. Update DOM Badges
+        const trip = this.currentTripData;
+        const gainVal = totalGainM > 0 ? totalGainM : (trip ? (trip.elevationGainM || trip.elevation_gain_m || 0) : 0);
+        const lossVal = totalLossM > 0 ? totalLossM : (trip ? (trip.elevationLossM || trip.elevation_loss_m || 0) : 0);
+        this.setEl('webElevGainBadge', `↑ +${Math.round(gainVal)}m`);
+        this.setEl('webElevLossBadge', `↓ -${Math.round(lossVal)}m`);
+
+        const minAlt = Math.min(...smoothed);
+        const maxAlt = Math.max(...smoothed);
+        this.setEl('webElevRangeBadge', `${Math.round(minAlt)} - ${Math.round(maxAlt)}m`);
+
+        if (totalDist > 0.05) {
+            this.setEl('webElevUphillDist', `${uphillKm.toFixed(1)} km (${upPct}%)`);
+            this.setEl('webElevDownhillDist', `${downhillKm.toFixed(1)} km (${downPct}%)`);
+            this.setEl('webElevFlatDist', `${flatKm.toFixed(1)} km (${flatPct}%)`);
+        }
+
+        // 4. Render Canvas Chart
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return;
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+
+        const padLeft = 45, padRight = 25, padTop = 18, padBottom = 22;
+        const plotW = rect.width - padLeft - padRight;
+        const plotH = rect.height - padTop - padBottom;
+        if (plotW <= 0 || plotH <= 0) return;
+
+        const altPad = Math.max(4, (maxAlt - minAlt) * 0.15);
+        const minDisp = Math.max(0, minAlt - altPad);
+        const maxDisp = Math.max(minDisp + 10, maxAlt + altPad);
+        const altSpan = maxDisp - minDisp;
+
+        // Grid lines
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.setLineDash([4, 4]);
+        ctx.font = '10px "JetBrains Mono", monospace';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.textAlign = 'right';
+
+        for (let i = 0; i <= 2; i++) {
+            const y = padTop + plotH - (i / 2) * plotH;
+            ctx.beginPath();
+            ctx.moveTo(padLeft, y);
+            ctx.lineTo(padLeft + plotW, y);
+            ctx.stroke();
+            const altLabel = Math.round(minDisp + (i / 2) * altSpan) + 'm';
+            ctx.fillText(altLabel, padLeft - 6, y + 3);
+        }
+
+        // Bottom distance labels
+        ctx.textAlign = 'center';
+        for (let i = 0; i <= 2; i++) {
+            const x = padLeft + (i / 2) * plotW;
+            ctx.beginPath();
+            ctx.moveTo(x, padTop);
+            ctx.lineTo(x, padTop + plotH);
+            ctx.stroke();
+            const dLabel = ((i / 2) * totalDist).toFixed(1) + ' km';
+            ctx.fillText(dLabel, x, rect.height - 4);
+        }
+        ctx.setLineDash([]);
+
+        // Area gradient & curve
+        const n = smoothed.length;
+        const dx = plotW / Math.max(1, n - 1);
+
+        const grad = ctx.createLinearGradient(0, padTop, 0, padTop + plotH);
+        grad.addColorStop(0, 'rgba(0, 212, 170, 0.28)');
+        grad.addColorStop(1, 'rgba(0, 212, 170, 0.02)');
+
+        ctx.beginPath();
+        ctx.moveTo(padLeft, padTop + plotH);
+        for (let i = 0; i < n; i++) {
+            const x = padLeft + i * dx;
+            const y = padTop + plotH - ((smoothed[i] - minDisp) / altSpan) * plotH;
+            ctx.lineTo(x, y);
+        }
+        ctx.lineTo(padLeft + (n - 1) * dx, padTop + plotH);
+        ctx.closePath();
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        // Stroke line
+        ctx.beginPath();
+        for (let i = 0; i < n; i++) {
+            const x = padLeft + i * dx;
+            const y = padTop + plotH - ((smoothed[i] - minDisp) / altSpan) * plotH;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = '#00D4AA';
+        ctx.stroke();
+
+        // Cursor & Tooltip if highlightIdx is set
+        if (highlightIdx != null && highlightIdx >= 0 && highlightIdx < n) {
+            const sx = padLeft + highlightIdx * dx;
+            const sy = padTop + plotH - ((smoothed[highlightIdx] - minDisp) / altSpan) * plotH;
+
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = 'rgba(0, 212, 170, 0.6)';
+            ctx.setLineDash([4, 3]);
+            ctx.beginPath();
+            ctx.moveTo(sx, padTop);
+            ctx.lineTo(sx, padTop + plotH);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Dot
+            ctx.beginPath();
+            ctx.arc(sx, sy, 7, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0, 212, 170, 0.25)';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(sx, sy, 3.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#00D4AA';
+            ctx.fill();
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#ffffff';
+            ctx.stroke();
+
+            // Tooltip badge
+            const tipText = `${Math.round(smoothed[highlightIdx])}m (${cumDist[highlightIdx].toFixed(1)} km)`;
+            ctx.font = 'bold 10px "JetBrains Mono", monospace';
+            const tw = ctx.measureText(tipText).width;
+            const bw = tw + 14;
+            const bh = 18;
+            const bx = Math.max(padLeft, Math.min(padLeft + plotW - bw, sx - bw / 2));
+            const by = Math.max(padTop - 2, sy - bh - 8);
+
+            ctx.fillStyle = 'rgba(17, 24, 39, 0.85)';
+            ctx.beginPath();
+            ctx.roundRect(bx, by, bw, bh, 4);
+            ctx.fill();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.fillText(tipText, bx + bw / 2, by + 12);
         }
     },
 

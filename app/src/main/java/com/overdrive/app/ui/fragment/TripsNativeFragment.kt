@@ -29,7 +29,9 @@ import com.google.android.material.textfield.TextInputEditText
 import com.overdrive.app.R
 import com.overdrive.app.navmap.nav.MapNetworking
 import com.overdrive.app.ui.trips.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.maplibre.android.MapLibre
 import org.maplibre.android.camera.CameraUpdateFactory
@@ -182,6 +184,15 @@ class TripsNativeFragment : Fragment() {
     private lateinit var tvSliderCurrentTime: TextView
     private lateinit var tvSliderEndTime: TextView
 
+    // Playback Controls
+    private lateinit var btnTimelinePlayPause: MaterialButton
+    private lateinit var btnTimelineSpeed: MaterialButton
+    private var isPlaying: Boolean = false
+    private val playbackSpeeds = floatArrayOf(1.0f, 2.0f, 4.0f, 8.0f)
+    private val playbackSpeedLabels = arrayOf("1x", "2x", "4x", "8x")
+    private var speedIndex: Int = 0
+    private var playbackJob: kotlinx.coroutines.Job? = null
+
     // Route Map Views
     private lateinit var cardRouteMap: MaterialCardView
     private lateinit var mapViewTripRoute: MapView
@@ -190,6 +201,15 @@ class TripsNativeFragment : Fragment() {
     private lateinit var btnMapZoomIn: MaterialCardView
     private lateinit var btnMapZoomOut: MaterialCardView
     private var tripMap: MapLibreMap? = null
+
+    // Elevation Profile Views
+    private lateinit var tvElevGainBadge: TextView
+    private lateinit var tvElevLossBadge: TextView
+    private lateinit var tvElevRangeBadge: TextView
+    private lateinit var tvElevUphillDist: TextView
+    private lateinit var tvElevDownhillDist: TextView
+    private lateinit var tvElevFlatDist: TextView
+    private lateinit var chartElevation: TripElevationChartView
 
     // Pedal breakdown row
     private lateinit var tvTlAccelPct: TextView
@@ -301,6 +321,7 @@ class TripsNativeFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        stopPlayback()
         tripMap = null
         mapViewTripRoute.onDestroy()
     }
@@ -424,6 +445,8 @@ class TripsNativeFragment : Fragment() {
         tvSliderStartTime = v.findViewById(R.id.tvSliderStartTime)
         tvSliderCurrentTime = v.findViewById(R.id.tvSliderCurrentTime)
         tvSliderEndTime = v.findViewById(R.id.tvSliderEndTime)
+        btnTimelinePlayPause = v.findViewById(R.id.btnTimelinePlayPause)
+        btnTimelineSpeed = v.findViewById(R.id.btnTimelineSpeed)
 
         // Route Map
         cardRouteMap = v.findViewById(R.id.cardRouteMap)
@@ -432,6 +455,15 @@ class TripsNativeFragment : Fragment() {
         btnMapFocusVehicle = v.findViewById(R.id.btnMapFocusVehicle)
         btnMapZoomIn = v.findViewById(R.id.btnMapZoomIn)
         btnMapZoomOut = v.findViewById(R.id.btnMapZoomOut)
+
+        // Elevation Profile
+        tvElevGainBadge = v.findViewById(R.id.tvElevGainBadge)
+        tvElevLossBadge = v.findViewById(R.id.tvElevLossBadge)
+        tvElevRangeBadge = v.findViewById(R.id.tvElevRangeBadge)
+        tvElevUphillDist = v.findViewById(R.id.tvElevUphillDist)
+        tvElevDownhillDist = v.findViewById(R.id.tvElevDownhillDist)
+        tvElevFlatDist = v.findViewById(R.id.tvElevFlatDist)
+        chartElevation = v.findViewById(R.id.chartElevation)
 
         // Pedal breakdown
         tvTlAccelPct = v.findViewById(R.id.tvTlAccelPct)
@@ -681,17 +713,40 @@ class TripsNativeFragment : Fragment() {
             }
         }
 
+        // Playback buttons
+        btnTimelinePlayPause.setOnClickListener {
+            if (isPlaying) {
+                stopPlayback()
+            } else {
+                startPlayback()
+            }
+        }
+
+        btnTimelineSpeed.setOnClickListener {
+            speedIndex = (speedIndex + 1) % playbackSpeeds.size
+            btnTimelineSpeed.text = playbackSpeedLabels[speedIndex]
+        }
+
         // Timeline SeekBar scrubbing
         sbTimeline.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 updateScrubPosition(progress)
             }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                if (isPlaying) stopPlayback()
+            }
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
         // Chart timeline direct scrubbing
         chartTimeline.onScrubListener = { idx ->
+            if (isPlaying) stopPlayback()
+            sbTimeline.progress = idx
+        }
+
+        // Chart elevation direct scrubbing
+        chartElevation.onScrubListener = { idx ->
+            if (isPlaying) stopPlayback()
             sbTimeline.progress = idx
         }
 
@@ -770,6 +825,7 @@ class TripsNativeFragment : Fragment() {
             return
         }
 
+        stopPlayback()
         containerDetail.visibility = View.GONE
         layoutBottomTabsBar.visibility = View.VISIBLE
 
@@ -1205,13 +1261,82 @@ class TripsNativeFragment : Fragment() {
             val secs = durationSec % 60
             tvSliderEndTime.text = String.format(Locale.US, "%d:%02d", mins, secs)
 
+            stopPlayback()
+            btnTimelineSpeed.text = playbackSpeedLabels[speedIndex]
             updateScrubPosition(0)
         } else {
+            stopPlayback()
             cardTimelineSlider.visibility = View.GONE
         }
 
         // 6. Plot Route on Map
         plotTripRoute()
+
+        // 7. Elevation profile and metrics
+        chartElevation.setSamples(samples)
+        chartElevation.onMetricsCalculated = { metrics ->
+            val gain = if (metrics.totalGainM > 0.0) metrics.totalGainM else trip.elevationGainM
+            val loss = if (metrics.totalLossM > 0.0) metrics.totalLossM else trip.elevationLossM
+            tvElevGainBadge.text = String.format(Locale.US, "↑ +%.0fm", gain)
+            tvElevLossBadge.text = String.format(Locale.US, "↓ -%.0fm", loss)
+            if (metrics.maxAltitudeM > 0.0) {
+                tvElevRangeBadge.text = String.format(Locale.US, "%.0f - %.0fm", metrics.minAltitudeM, metrics.maxAltitudeM)
+            } else {
+                tvElevRangeBadge.text = "--m"
+            }
+
+            if (metrics.totalDistanceKm > 0.05) {
+                tvElevUphillDist.text = String.format(Locale.US, "%.1f km (%d%%)", metrics.uphillDistanceKm, metrics.uphillPercent)
+                tvElevDownhillDist.text = String.format(Locale.US, "%.1f km (%d%%)", metrics.downhillDistanceKm, metrics.downhillPercent)
+                tvElevFlatDist.text = String.format(Locale.US, "%.1f km (%d%%)", metrics.flatDistanceKm, metrics.flatPercent)
+            } else {
+                tvElevUphillDist.text = "-- km (--%)"
+                tvElevDownhillDist.text = "-- km (--%)"
+                tvElevFlatDist.text = "-- km (--%)"
+            }
+        }
+    }
+
+    private fun startPlayback() {
+        if (activeSamples.size < 2) return
+        isPlaying = true
+        if (::btnTimelinePlayPause.isInitialized) {
+            btnTimelinePlayPause.setIconResource(R.drawable.ic_pause)
+            btnTimelinePlayPause.contentDescription = getString(R.string.trip_timeline_pause)
+        }
+
+        if (sbTimeline.progress >= sbTimeline.max) {
+            sbTimeline.progress = 0
+            updateScrubPosition(0)
+        }
+
+        playbackJob?.cancel()
+        playbackJob = viewLifecycleOwner.lifecycleScope.launch {
+            while (isActive && isPlaying) {
+                val speed = playbackSpeeds[speedIndex]
+                val delayMs = (1000L / speed).toLong().coerceAtLeast(40L)
+                delay(delayMs)
+                if (!isPlaying) break
+                val curr = sbTimeline.progress
+                if (curr < sbTimeline.max) {
+                    val next = curr + 1
+                    sbTimeline.progress = next
+                } else {
+                    stopPlayback()
+                    break
+                }
+            }
+        }
+    }
+
+    private fun stopPlayback() {
+        isPlaying = false
+        playbackJob?.cancel()
+        playbackJob = null
+        if (::btnTimelinePlayPause.isInitialized) {
+            btnTimelinePlayPause.setIconResource(R.drawable.ic_play_arrow)
+            btnTimelinePlayPause.contentDescription = getString(R.string.trip_timeline_play)
+        }
     }
 
     private fun updateScrubPosition(idx: Int) {
@@ -1243,8 +1368,9 @@ class TripsNativeFragment : Fragment() {
         val secs = elapsedSec % 60
         tvSliderCurrentTime.text = String.format(Locale.US, "%d:%02d", mins, secs)
 
-        // 2. Chart timeline scrubber
+        // 2. Chart timeline & elevation scrubbers
         chartTimeline.setScrubberIndex(idx)
+        chartElevation.setScrubberIndex(idx)
 
         // 3. Move vehicle marker on Map
         val ptSample = if (s.lat != 0.0 && s.lon != 0.0 && s.lat.isFinite() && s.lon.isFinite()) {

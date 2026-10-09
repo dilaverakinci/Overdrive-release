@@ -1925,9 +1925,15 @@
                         <div class="timeline-slider-wrap">
                             <input type="range" id="timelineSlider" min="0" max="100" value="0" oninput="TRIPS.onSliderInput(this.value)">
                         </div>
-                        <div class="timeline-slider-labels">
-                            <span id="sliderStartTime">0:00</span>
-                            <span id="sliderCurrentTime" style="color:var(--brand-primary);font-weight:600;">--:--</span>
+                        <div class="timeline-slider-labels" style="align-items:center;">
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <button type="button" id="timelinePlayBtn" onclick="TRIPS.togglePlayback()" style="width:28px;height:28px;border-radius:14px;background:var(--brand-primary);border:none;color:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;" title="Play/Pause">
+                                    <svg id="timelinePlayIcon" viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                </button>
+                                <button type="button" id="timelineSpeedBtn" onclick="TRIPS.togglePlaybackSpeed()" style="height:24px;padding:0 8px;border-radius:12px;background:var(--bg-hover);border:1px solid var(--border-subtle);color:var(--text-primary);font-size:11px;font-weight:700;cursor:pointer;">1x</button>
+                                <span id="sliderStartTime" style="margin-left:4px;">0:00</span>
+                            </div>
+                            <span id="sliderCurrentTime" style="color:var(--brand-primary);font-weight:600;font-family:'JetBrains Mono',monospace;">--:--</span>
                             <span id="sliderEndTime">--:--</span>
                         </div>
                     </div>
@@ -1943,6 +1949,44 @@
                             <span><span class="legend-dot" style="background:var(--success)"></span> <span id="routeSpeedLow" data-i18n="trip.route.speed_low">&lt;40 km/h</span></span>
                             <span><span class="legend-dot" style="background:var(--warning)"></span> <span id="routeSpeedMid" data-i18n="trip.route.speed_mid">40–80 km/h</span></span>
                             <span><span class="legend-dot" style="background:var(--danger)"></span> <span id="routeSpeedHigh" data-i18n="trip.route.speed_high">&gt;80 km/h</span></span>
+                        </div>
+
+                        <!-- Elevation Profile -->
+                        <div class="elevation-profile-section" style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border-subtle);">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                                <div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--text-primary);">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px;color:var(--brand-primary);"><path d="M14 6l-3.75 5 2.85 3.8-1.6 1.2C9.81 13.75 7 10 7 10l-6 8h22L14 6z"/></svg>
+                                    <span data-i18n="trip.elevation.title">Elevation Profile</span>
+                                </div>
+                                <div style="display:flex;gap:10px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;">
+                                    <span style="color:var(--brand-primary);" id="webElevGainBadge">↑ --m</span>
+                                    <span style="color:var(--danger);" id="webElevLossBadge">↓ --m</span>
+                                    <span style="color:var(--text-muted);" id="webElevRangeBadge">--m</span>
+                                </div>
+                            </div>
+                            <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;margin-bottom:12px;">
+                                <div style="background:var(--bg-hover);border-radius:var(--radius-sm, 8px);padding:6px 10px;">
+                                    <div style="font-size:10px;color:var(--text-muted);display:flex;align-items:center;gap:4px;">
+                                        <span style="color:var(--brand-primary);">↑</span> <span data-i18n="trip.elevation.uphill">Uphill</span>
+                                    </div>
+                                    <div id="webElevUphillDist" style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--brand-primary);margin-top:2px;">-- km (--%)</div>
+                                </div>
+                                <div style="background:var(--bg-hover);border-radius:var(--radius-sm, 8px);padding:6px 10px;">
+                                    <div style="font-size:10px;color:var(--text-muted);display:flex;align-items:center;gap:4px;">
+                                        <span style="color:var(--danger);">↓</span> <span data-i18n="trip.elevation.downhill">Downhill</span>
+                                    </div>
+                                    <div id="webElevDownhillDist" style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--danger);margin-top:2px;">-- km (--%)</div>
+                                </div>
+                                <div style="background:var(--bg-hover);border-radius:var(--radius-sm, 8px);padding:6px 10px;">
+                                    <div style="font-size:10px;color:var(--text-muted);display:flex;align-items:center;gap:4px;">
+                                        <span style="color:var(--text-muted);">⇋</span> <span data-i18n="trip.elevation.flat">Flat</span>
+                                    </div>
+                                    <div id="webElevFlatDist" style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--text-primary);margin-top:2px;">-- km (--%)</div>
+                                </div>
+                            </div>
+                            <div class="chart-canvas-wrap" style="height:140px;">
+                                <canvas id="elevationChart" style="width:100%;height:140px;"></canvas>
+                            </div>
                         </div>
                     </div>
 
