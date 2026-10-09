@@ -69,7 +69,7 @@ Enable your preferred tunnel (Zrok, Cloudflared or Tailscale).
 | Proximity Recording | ✅ Market First | ❌ |
 | Real-time Performance Monitor | ✅ Built-in | ❌ |
 | ISP Blocklist Bypass | ✅ Via BYD SIM | ❌ Requires WiFi Hotspot |
-| Remote Access | 4 methods (LAN, Cloudflared, Zrok, Tailscale) | Usually 1 (if any) |
+| Remote Access | 4 methods (LAN, Cloudflared, Zrok, Tailscale), plus WireGuard for private services | Usually 1 (if any) |
 | ADB Shell Runner | ✅ | ❌ |
 | Telegram Notifications | ✅ Free | Paid or None |
 | Data Privacy | 100% On-Device | Often Cloud-Required |
@@ -128,6 +128,22 @@ With tailscale enabled, the tailscale proxy can be enabled from the tailscale se
 This allows accessing an MQTT server through tailscale without port forwarding.
 This can be accessed via the tailscale IP or a subnet that has been advertised on tailscale.
 
+### WireGuard Tunnel
+For home networks that already run a WireGuard server (OPNsense, pfSense, Fritz!Box, MikroTik, wg-easy, …). The car dials out to your server, so nothing needs to be reachable on the car side. It is meant for reaching your own services, such as the MQTT broker of Home Assistant. By default the tunnel is outbound-only and the dashboard is not published.
+
+**Setup:**
+1. On your router, add a WireGuard peer for the car and export its client config (the `.conf` file or QR code the router offers).
+2. In OverDrive: Daemons → WireGuard Tunnel → settings. Paste the config, import the `.conf` from a USB stick (a picture of the QR code works too), or tap **Set up from phone** and open the shown link on your phone to upload the file there.
+3. Save. The tunnel starts by itself; the daemon row shows the endpoint once the handshake is done.
+
+Only addresses in `AllowedIPs` go through the tunnel. Everything else, including public MQTT brokers, keeps its normal route (direct, or via sing-box when it runs). With `AllowedIPs = 0.0.0.0/0` all proxied traffic uses the tunnel. If the config sets `DNS =`, host names are asked there first while the tunnel is up, so a broker address like `homeassistant.lan` works.
+
+- `PersistentKeepalive` defaults to 25 seconds when the config leaves it out. Without it, the mobile carrier's NAT drops the mapping and commands from Home Assistant stop reaching the car.
+- Saving a new config while the tunnel runs applies it within a few seconds.
+- If the Tailscale proxy runs as well, MQTT goes through Tailscale.
+- **Dashboard reachable over WireGuard** (settings dialog, off by default): serves the dashboard on the car's tunnel address, for example `http://10.8.0.2:8080`, so a device on your home network can open it through the WireGuard server like it would over Tailscale. Requests that arrive this way are treated as remote and must log in; only on-device callers skip the login. Switching it restarts the tunnel. Every peer that can reach the car's tunnel IP can reach the login page, so limit the car's address to trusted peers in the firewall rules of your WireGuard server (for example allow only your admin devices to reach it) and keep a strong dashboard password.
+- The config, including the private key, is readable only by OverDrive's daemon user and is not part of config backups.
+
 ## Home Assistant Integration
 
 OverDrive can publish your vehicle's live telemetry to [Home Assistant](https://www.home-assistant.io/) over MQTT **and** let Home Assistant send commands back to the car (climate, windows, seats, charge limit, and more). Entities appear in Home Assistant automatically — **no YAML editing required**.
@@ -144,7 +160,7 @@ OverDrive can publish your vehicle's live telemetry to [Home Assistant](https://
 1. A running **MQTT broker**. If you use the [Mosquitto add-on](https://github.com/home-assistant/addons/tree/master/mosquitto) in Home Assistant, you already have one.
 2. The **MQTT integration** enabled in Home Assistant (Settings → Devices & Services → Add Integration → MQTT).
 3. Your broker's **address and port** (default port is `1883`, or `8883` for TLS), and a **username/password** if your broker requires one.
-4. Your car and Home Assistant able to reach each other on the network. If they're not on the same LAN, enable the **Tailscale proxy** (see [Tailscale proxy](#tailscale-proxy) above) so the car can reach your broker without port forwarding.
+4. Your car and Home Assistant able to reach each other on the network. If they're not on the same LAN, enable the **Tailscale proxy** (see [Tailscale proxy](#tailscale-proxy) above) or the [WireGuard Tunnel](#wireguard-tunnel) so the car can reach your broker without port forwarding.
 
 ### Step 1 — Add the connection in OverDrive
 
@@ -153,12 +169,52 @@ Open OverDrive → **MQTT** (sidebar or app drawer) → **Add Connection**, then
 | Field | What to enter |
 |---|---|
 | **Connection Name** | Anything, e.g. `Home Assistant` |
-| **Broker URL** | Your broker's host, e.g. `192.168.1.10` (or `mqtts://...` for TLS) |
-| **Port** | `1883` (plain) or `8883` (TLS) |
+| **Broker URL** | Your broker's host, e.g. `192.168.1.10`. For TLS or WebSocket, add a protocol prefix — see [Broker URL formats](#broker-url-formats) |
+| **Port** | `1883` (plain) or `8883` (TLS). Ignored if the Broker URL already contains a port |
 | **Username / Password** | Only if your broker requires login (leave blank otherwise) |
 | **Topic** | Leave the default `overdrive/vehicle/telemetry` unless you have a reason to change it |
 
 > **Self-signed / Mosquitto TLS certificate?** Enable the **trust self-signed certificates** option on the connection so OverDrive accepts your broker's cert.
+
+#### Broker URL formats
+
+The protocol comes from the prefix on the **Broker URL**. Without a prefix, OverDrive always connects with plain, unencrypted MQTT (`tcp://`), even on port `8883`.
+
+| Protocol | Prefix | Typical port |
+|---|---|---|
+| Plain MQTT | none, or `tcp://` | `1883` |
+| MQTT over TLS | `ssl://` | `8883` |
+| MQTT over WebSocket | `ws://` | depends on broker |
+| MQTT over secure WebSocket | `wss://` | `443` or `8884` |
+
+Only these four prefixes work. `mqtt://`, `mqtts://`, `http://` and `https://` aren't recognised.
+
+How the Broker URL and **Port** field combine:
+
+| Broker URL | Port field | Connects to |
+|---|---|---|
+| `192.168.1.10` | `1883` | `tcp://192.168.1.10:1883` |
+| `ssl://broker.example.com` | `8883` | `ssl://broker.example.com:8883` |
+| `ssl://broker.example.com:8883` | anything | `ssl://broker.example.com:8883` (Port field ignored) |
+| `wss://broker.example.com:8884/mqtt` | anything | `wss://broker.example.com:8884/mqtt` (Port field ignored) |
+
+Rules:
+
+- **To use a TLS port, add `ssl://` or `wss://`.** A bare host with port `8883` connects as `tcp://host:8883`, sending plain MQTT to a TLS port. The broker drops it, and the connection fails with `reason=32109` / `EOFException`.
+- **A port in a bare host doesn't work.** `broker.example.com:8883` becomes `tcp://broker.example.com:8883:1883`. Put the port in the Port field, or add a prefix and keep the port in the URL.
+- **A WebSocket path needs the port in the URL.** Write `wss://host:8884/mqtt`. Without the port, `wss://host/mqtt` gets the Port field appended after the path (`wss://host/mqtt:8884`), which is invalid.
+- **A trailing slash is removed**, so `ssl://broker.example.com/` works the same as `ssl://broker.example.com`.
+
+Examples:
+
+| Broker | Broker URL | Port |
+|---|---|---|
+| Home Assistant Mosquitto, plain | `192.168.1.10` | `1883` |
+| Home Assistant Mosquitto, TLS (turn on *trust self-signed certificates*) | `ssl://192.168.1.10` | `8883` |
+| HiveMQ Cloud, TLS | `ssl://<cluster-id>.s1.eu.hivemq.cloud:8883` | (ignored) |
+| HiveMQ Cloud, secure WebSocket | `wss://<cluster-id>.s1.eu.hivemq.cloud:8884/mqtt` | (ignored) |
+
+For HiveMQ Cloud, use the credentials from the cluster's **Access Management** page, not your HiveMQ console login, and leave *trust self-signed certificates* off.
 
 ### Step 2 — Turn on Home Assistant discovery
 
@@ -229,7 +285,8 @@ Full list of controllable entities and their accepted payloads:
 - **No OverDrive device in Home Assistant?** Check the MQTT connection shows **Connected** in OverDrive, confirm the **Discovery prefix** matches HA's (default `homeassistant`), and make sure the HA MQTT integration points at the *same* broker.
 - **Sensors show but controls are missing?** "Allow vehicle control" isn't enabled — see Step 3 (it only appears after discovery is on).
 - **A command does nothing?** The car must be awake/accessible to the head-unit SDK for that action. OverDrive optimistically updates the entity, then the next telemetry refresh reconciles the true state.
-- **Broker on a different network?** Enable the [Tailscale proxy](#tailscale-proxy) so the car can reach it without port forwarding.
+- **Broker on a different network?** Enable the [Tailscale proxy](#tailscale-proxy) or the [WireGuard Tunnel](#wireguard-tunnel) so the car can reach it without port forwarding.
+- **`Connect failed (reason=32109)` with `EOFException`?** The broker closed the connection before answering. This usually means plain MQTT is going to a TLS port. Add `ssl://` (or `wss://`) to the Broker URL — see [Broker URL formats](#broker-url-formats).
 
 ## Tech Specs
 

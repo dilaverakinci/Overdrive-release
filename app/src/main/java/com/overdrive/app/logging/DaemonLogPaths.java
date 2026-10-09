@@ -26,6 +26,7 @@ public final class DaemonLogPaths {
         PATHS.put("cloudflared",com.overdrive.app.util.DaemonStorage.rebase("/data/local/tmp/cloudflared.log"));
         PATHS.put("zrok",       com.overdrive.app.util.DaemonStorage.rebase("/data/local/tmp/zrok.log"));
         PATHS.put("tailscale",  com.overdrive.app.util.DaemonStorage.rebase("/data/local/tmp/.tailscale/tailscale.log"));
+        PATHS.put("wireguard",  com.overdrive.app.wireguard.WireGuardPaths.LOG);
         PATHS.put("singbox",    com.overdrive.app.util.DaemonStorage.rebase("/data/local/tmp/singbox.log"));
     }
 

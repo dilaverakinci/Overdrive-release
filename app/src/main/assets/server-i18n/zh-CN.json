@@ -220,6 +220,7 @@
       "cloudflare_tunnel": "Cloudflare隧道",
       "zrok_tunnel": "Zrok 隧道",
       "tailscale_tunnel": "定制Tunnel",
+      "wireguard_tunnel": "WireGuard 隧道",
       "sing_box": "单方框"
     },
     "buttons": {
