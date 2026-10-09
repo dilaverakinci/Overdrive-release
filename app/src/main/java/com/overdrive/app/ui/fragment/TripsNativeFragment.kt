@@ -172,8 +172,8 @@ class TripsNativeFragment : Fragment() {
     private lateinit var chartTimeline: TripTimelineChartView
     private lateinit var histogramSpeed: SpeedHistogramView
 
-    // Timeline Scrubber Card Views
-    private lateinit var cardTimelineSlider: MaterialCardView
+    // Timeline Scrubber Section Views (inside Route Card)
+    private lateinit var layoutTimelineSection: LinearLayout
     private lateinit var tvSliderSpeed: TextView
     private lateinit var tvSliderSpeedUnit: TextView
     private lateinit var tvSliderAccel: TextView
@@ -434,8 +434,8 @@ class TripsNativeFragment : Fragment() {
         chartTimeline = v.findViewById(R.id.chartTimeline)
         histogramSpeed = v.findViewById(R.id.histogramSpeed)
 
-        // Timeline Scrubber
-        cardTimelineSlider = v.findViewById(R.id.cardTimelineSlider)
+        // Timeline Scrubber (inside Route Card)
+        layoutTimelineSection = v.findViewById(R.id.layoutTimelineSection)
         tvSliderSpeed = v.findViewById(R.id.tvSliderSpeed)
         tvSliderSpeedUnit = v.findViewById(R.id.tvSliderSpeedUnit)
         tvSliderAccel = v.findViewById(R.id.tvSliderAccel)
@@ -1251,7 +1251,7 @@ class TripsNativeFragment : Fragment() {
 
         // 5. Timeline Scrubber
         if (samples.size >= 2) {
-            cardTimelineSlider.visibility = View.VISIBLE
+            layoutTimelineSection.visibility = View.VISIBLE
             sbTimeline.max = samples.size - 1
             sbTimeline.progress = 0
             tvSliderStartTime.text = "0:00"
@@ -1266,7 +1266,7 @@ class TripsNativeFragment : Fragment() {
             updateScrubPosition(0)
         } else {
             stopPlayback()
-            cardTimelineSlider.visibility = View.GONE
+            layoutTimelineSection.visibility = View.GONE
         }
 
         // 6. Plot Route on Map

@@ -1456,248 +1456,6 @@
                     android:textColor="?attr/colorOnSurfaceVariant"
                     tools:text="Wednesday, Oct 7 • 14:30 - 15:05 (35 min)" />
 
-                <!-- Timeline Slider Card -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardTimelineSlider"
-                    style="@style/Widget.Material3.CardView.Filled"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="0dp"
-                    app:strokeColor="?attr/colorOutlineVariant"
-                    app:strokeWidth="1dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <!-- Top row: Title and Telemetry Stats HUD -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal">
-
-                            <LinearLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal">
-
-                                <ImageView
-                                    android:layout_width="18dp"
-                                    android:layout_height="18dp"
-                                    android:src="@drawable/ic_trips"
-                                    app:tint="#00D4AA" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="8dp"
-                                    android:text="@string/trip_timeline_title"
-                                    android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-                                    android:textColor="?attr/colorOnSurface"
-                                    android:textStyle="bold" />
-                            </LinearLayout>
-
-                            <View
-                                android:layout_width="0dp"
-                                android:layout_height="1dp"
-                                android:layout_weight="1" />
-
-                            <!-- Stats badges: Speed, Accel, Brake, SoC -->
-                            <LinearLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/trip_timeline_speed"
-                                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
-                                    android:textColor="?attr/colorOnSurfaceVariant" />
-
-                                <TextView
-                                    android:id="@+id/tvSliderSpeed"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="4dp"
-                                    android:fontFamily="monospace"
-                                    android:text="--"
-                                    android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
-                                    android:textColor="#00D4AA"
-                                    android:textStyle="bold" />
-
-                                <TextView
-                                    android:id="@+id/tvSliderSpeedUnit"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="2dp"
-                                    android:text="km/h"
-                                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
-                                    android:textColor="?attr/colorOnSurfaceVariant" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="12dp"
-                                    android:text="@string/trip_timeline_accel"
-                                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
-                                    android:textColor="?attr/colorOnSurfaceVariant" />
-
-                                <TextView
-                                    android:id="@+id/tvSliderAccel"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="4dp"
-                                    android:fontFamily="monospace"
-                                    android:text="--%"
-                                    android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
-                                    android:textColor="#0EA5E9"
-                                    android:textStyle="bold" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="12dp"
-                                    android:text="@string/trip_timeline_brake"
-                                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
-                                    android:textColor="?attr/colorOnSurfaceVariant" />
-
-                                <TextView
-                                    android:id="@+id/tvSliderBrake"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="4dp"
-                                    android:fontFamily="monospace"
-                                    android:text="--%"
-                                    android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
-                                    android:textColor="#EF4444"
-                                    android:textStyle="bold" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="12dp"
-                                    android:text="@string/trip_timeline_soc"
-                                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
-                                    android:textColor="?attr/colorOnSurfaceVariant" />
-
-                                <TextView
-                                    android:id="@+id/tvSliderSoc"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="4dp"
-                                    android:fontFamily="monospace"
-                                    android:text="--%"
-                                    android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
-                                    android:textColor="#F59E0B"
-                                    android:textStyle="bold" />
-                            </LinearLayout>
-                        </LinearLayout>
-
-                        <!-- Scrubber SeekBar -->
-                        <SeekBar
-                            android:id="@+id/sbTimeline"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:max="100"
-                            android:progress="0"
-                            android:progressTint="#00D4AA"
-                            android:thumbTint="#00D4AA" />
-
-                        <!-- Playback Controls and Time indicators row -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal">
-
-                            <!-- Play / Pause Button -->
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnTimelinePlayPause"
-                                style="@style/Widget.Material3.Button.IconButton.Filled"
-                                android:layout_width="36dp"
-                                android:layout_height="36dp"
-                                android:backgroundTint="#00D4AA"
-                                android:contentDescription="@string/trip_timeline_play"
-                                android:insetLeft="0dp"
-                                android:insetTop="0dp"
-                                android:insetRight="0dp"
-                                android:insetBottom="0dp"
-                                android:padding="0dp"
-                                app:cornerRadius="18dp"
-                                app:icon="@drawable/ic_play_arrow"
-                                app:iconGravity="textStart"
-                                app:iconPadding="0dp"
-                                app:iconSize="20dp"
-                                app:iconTint="@android:color/white" />
-
-                            <!-- Playback Speed Button (1x, 2x, 4x, 8x) -->
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnTimelineSpeed"
-                                style="@style/Widget.Material3.Button.TonalButton"
-                                android:layout_width="wrap_content"
-                                android:layout_height="30dp"
-                                android:layout_marginStart="8dp"
-                                android:insetTop="0dp"
-                                android:insetBottom="0dp"
-                                android:paddingHorizontal="10dp"
-                                android:paddingVertical="0dp"
-                                android:text="1x"
-                                android:textSize="12sp"
-                                android:textStyle="bold"
-                                app:cornerRadius="15dp" />
-
-                            <TextView
-                                android:id="@+id/tvSliderStartTime"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="12dp"
-                                android:text="0:00"
-                                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
-
-                            <View
-                                android:layout_width="0dp"
-                                android:layout_height="1dp"
-                                android:layout_weight="1" />
-
-                            <TextView
-                                android:id="@+id/tvSliderCurrentTime"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="monospace"
-                                android:text="--:--"
-                                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
-                                android:textColor="#00D4AA"
-                                android:textStyle="bold" />
-
-                            <View
-                                android:layout_width="0dp"
-                                android:layout_height="1dp"
-                                android:layout_weight="1" />
-
-                            <TextView
-                                android:id="@+id/tvSliderEndTime"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="--:--"
-                                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
-                        </LinearLayout>
-
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
                 <!-- Route Map Card -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardRouteMap"
@@ -1916,6 +1674,242 @@
                                 android:text="@string/trip_route_speed_high"
                                 android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
                                 android:textColor="?attr/colorOnSurfaceVariant" />
+                        </LinearLayout>
+
+                        <!-- Timeline Section inside Route Card -->
+                        <LinearLayout
+                            android:id="@+id/layoutTimelineSection"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <!-- Divider between Map Legend and Timeline -->
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_marginTop="16dp"
+                                android:layout_marginBottom="14dp"
+                                android:background="?attr/colorOutlineVariant" />
+
+                            <!-- Top row: Title and Telemetry Stats HUD -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal">
+
+                                    <ImageView
+                                        android:layout_width="18dp"
+                                        android:layout_height="18dp"
+                                        android:src="@drawable/ic_trips"
+                                        app:tint="#00D4AA" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="8dp"
+                                        android:text="@string/trip_timeline_title"
+                                        android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                                        android:textColor="?attr/colorOnSurface"
+                                        android:textStyle="bold" />
+                                </LinearLayout>
+
+                                <View
+                                    android:layout_width="0dp"
+                                    android:layout_height="1dp"
+                                    android:layout_weight="1" />
+
+                                <!-- Stats badges: Speed, Accel, Brake, SoC -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/trip_timeline_speed"
+                                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                    <TextView
+                                        android:id="@+id/tvSliderSpeed"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="4dp"
+                                        android:fontFamily="monospace"
+                                        android:text="--"
+                                        android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                                        android:textColor="#00D4AA"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:id="@+id/tvSliderSpeedUnit"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="2dp"
+                                        android:text="km/h"
+                                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="12dp"
+                                        android:text="@string/trip_timeline_accel"
+                                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                    <TextView
+                                        android:id="@+id/tvSliderAccel"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="4dp"
+                                        android:fontFamily="monospace"
+                                        android:text="--%"
+                                        android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                                        android:textColor="#0EA5E9"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="12dp"
+                                        android:text="@string/trip_timeline_brake"
+                                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                    <TextView
+                                        android:id="@+id/tvSliderBrake"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="4dp"
+                                        android:fontFamily="monospace"
+                                        android:text="--%"
+                                        android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                                        android:textColor="#EF4444"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="12dp"
+                                        android:text="@string/trip_timeline_soc"
+                                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                    <TextView
+                                        android:id="@+id/tvSliderSoc"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="4dp"
+                                        android:fontFamily="monospace"
+                                        android:text="--%"
+                                        android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                                        android:textColor="#F59E0B"
+                                        android:textStyle="bold" />
+                                </LinearLayout>
+                            </LinearLayout>
+
+                            <!-- Scrubber SeekBar -->
+                            <SeekBar
+                                android:id="@+id/sbTimeline"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="12dp"
+                                android:max="100"
+                                android:progress="0"
+                                android:progressTint="#00D4AA"
+                                android:thumbTint="#00D4AA" />
+
+                            <!-- Playback Controls and Time indicators row -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <!-- Play / Pause Button -->
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btnTimelinePlayPause"
+                                    style="@style/Widget.Material3.Button.IconButton.Filled"
+                                    android:layout_width="36dp"
+                                    android:layout_height="36dp"
+                                    android:backgroundTint="#00D4AA"
+                                    android:contentDescription="@string/trip_timeline_play"
+                                    android:insetLeft="0dp"
+                                    android:insetTop="0dp"
+                                    android:insetRight="0dp"
+                                    android:insetBottom="0dp"
+                                    android:padding="0dp"
+                                    app:cornerRadius="18dp"
+                                    app:icon="@drawable/ic_play_arrow"
+                                    app:iconGravity="textStart"
+                                    app:iconPadding="0dp"
+                                    app:iconSize="20dp"
+                                    app:iconTint="@android:color/white" />
+
+                                <!-- Playback Speed Button (1x, 2x, 4x, 8x) -->
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btnTimelineSpeed"
+                                    style="@style/Widget.Material3.Button.TonalButton"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="30dp"
+                                    android:layout_marginStart="8dp"
+                                    android:insetTop="0dp"
+                                    android:insetBottom="0dp"
+                                    android:paddingHorizontal="10dp"
+                                    android:paddingVertical="0dp"
+                                    android:text="1x"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold"
+                                    app:cornerRadius="15dp" />
+
+                                <TextView
+                                    android:id="@+id/tvSliderStartTime"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="12dp"
+                                    android:text="0:00"
+                                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                <View
+                                    android:layout_width="0dp"
+                                    android:layout_height="1dp"
+                                    android:layout_weight="1" />
+
+                                <TextView
+                                    android:id="@+id/tvSliderCurrentTime"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="monospace"
+                                    android:text="--:--"
+                                    android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                                    android:textColor="#00D4AA"
+                                    android:textStyle="bold" />
+
+                                <View
+                                    android:layout_width="0dp"
+                                    android:layout_height="1dp"
+                                    android:layout_weight="1" />
+
+                                <TextView
+                                    android:id="@+id/tvSliderEndTime"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="--:--"
+                                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                                    android:textColor="?attr/colorOnSurfaceVariant" />
+                            </LinearLayout>
                         </LinearLayout>
 
                         <!-- Elevation Profile Section -->
