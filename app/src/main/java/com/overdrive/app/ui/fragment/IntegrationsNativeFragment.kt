@@ -22,6 +22,7 @@ import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
@@ -38,6 +39,15 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class IntegrationsNativeFragment : Fragment() {
+
+    companion object {
+        const val ARG_INITIAL_TAB = "initial_tab"
+        const val TAB_OVERVIEW = "overview"
+        const val TAB_TELEGRAM = "telegram"
+        const val TAB_ABRP = "abrp"
+        const val TAB_MQTT = "mqtt"
+        const val TAB_BYD_CLOUD = "byd_cloud"
+    }
 
     private val viewModel: IntegrationsViewModel by viewModels()
 
@@ -157,13 +167,26 @@ class IntegrationsNativeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initViews(view)
-        setupOverviewNavigation()
+        setupOverviewNavigation(view)
         setupDetailNavigation()
         setupTelegramActions()
         setupAbrpActions()
         setupMqttActions()
         setupBydCloudActions()
         setupBackPressedHandler()
+        val initialTab = arguments?.getString(ARG_INITIAL_TAB)
+        if (!initialTab.isNullOrEmpty()) {
+            val targetTab = when (initialTab.lowercase()) {
+                TAB_TELEGRAM, "telegram" -> IntegrationTab.TELEGRAM
+                TAB_ABRP, "abrp" -> IntegrationTab.ABRP
+                TAB_MQTT, "mqtt" -> IntegrationTab.MQTT
+                TAB_BYD_CLOUD, "byd_cloud", "byd-cloud" -> IntegrationTab.BYD_CLOUD
+                else -> null
+            }
+            if (targetTab != null) {
+                viewModel.selectTab(targetTab)
+            }
+        }
         observeViewModel()
     }
 
@@ -290,16 +313,28 @@ class IntegrationsNativeFragment : Fragment() {
         tvSubTab3 = view.findViewById(R.id.tvSubTab3)
     }
 
-    private fun setupOverviewNavigation() {
+    private fun setupOverviewNavigation(rootView: View) {
         cardTelegram.setOnClickListener { viewModel.selectTab(IntegrationTab.TELEGRAM) }
         cardAbrp.setOnClickListener { viewModel.selectTab(IntegrationTab.ABRP) }
         cardMqtt.setOnClickListener { viewModel.selectTab(IntegrationTab.MQTT) }
         cardBydCloud.setOnClickListener { viewModel.selectTab(IntegrationTab.BYD_CLOUD) }
+
+        rootView.findViewById<View>(R.id.btnTelegramConfigure)?.setOnClickListener { viewModel.selectTab(IntegrationTab.TELEGRAM) }
+        rootView.findViewById<View>(R.id.btnAbrpConfigure)?.setOnClickListener { viewModel.selectTab(IntegrationTab.ABRP) }
+        rootView.findViewById<View>(R.id.btnMqttConfigure)?.setOnClickListener { viewModel.selectTab(IntegrationTab.MQTT) }
+        rootView.findViewById<View>(R.id.btnBydCloudConfigure)?.setOnClickListener { viewModel.selectTab(IntegrationTab.BYD_CLOUD) }
     }
 
     private fun setupDetailNavigation() {
         btnBackToOverview.setOnClickListener {
-            viewModel.selectTab(IntegrationTab.OVERVIEW)
+            val hasInitialTab = !arguments?.getString(ARG_INITIAL_TAB).isNullOrEmpty()
+            if (hasInitialTab) {
+                if (!findNavController().popBackStack()) {
+                    viewModel.selectTab(IntegrationTab.OVERVIEW)
+                }
+            } else {
+                viewModel.selectTab(IntegrationTab.OVERVIEW)
+            }
         }
 
         tabSub1.setOnClickListener { selectSubTab(0) }
@@ -310,7 +345,12 @@ class IntegrationsNativeFragment : Fragment() {
     private fun setupBackPressedHandler() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (viewModel.activeTab.value != IntegrationTab.OVERVIEW) {
+                val hasInitialTab = !arguments?.getString(ARG_INITIAL_TAB).isNullOrEmpty()
+                if (hasInitialTab) {
+                    isEnabled = false
+                    requireActivity().onBackPressedDispatcher.onBackPressed()
+                    isEnabled = true
+                } else if (viewModel.activeTab.value != IntegrationTab.OVERVIEW) {
                     viewModel.selectTab(IntegrationTab.OVERVIEW)
                 } else {
                     isEnabled = false

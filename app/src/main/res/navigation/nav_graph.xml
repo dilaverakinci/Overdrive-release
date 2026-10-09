@@ -92,29 +92,19 @@
             android:defaultValue="/parking" />
     </fragment>
 
-    <!-- Surveillance settings (web) — kept reachable from Recordings → Settings ↗ button -->
+    <!-- Surveillance settings (native) -->
     <fragment
         android:id="@+id/surveillanceSettingsWebFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
+        android:name="com.overdrive.app.ui.fragment.settings.SettingsSurveillanceFragment"
         android:label="@string/settings_section_surveillance"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/surveillance" />
-    </fragment>
+        tools:layout="@layout/fragment_settings_surveillance_native" />
 
-    <!-- Recording settings (web) — same path -->
+    <!-- Recording settings (native) -->
     <fragment
         android:id="@+id/recordingSettingsWebFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
+        android:name="com.overdrive.app.ui.fragment.settings.SettingsRecordingFragment"
         android:label="@string/settings_section_recording"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/recording" />
-    </fragment>
+        tools:layout="@layout/fragment_settings_recording_native" />
 
     <!-- Vehicle: native vs legacy webview -->
     <fragment
@@ -257,46 +247,46 @@
          touching native layouts every time. -->
     <fragment
         android:id="@+id/telegramSettingsFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
+        android:name="com.overdrive.app.ui.fragment.IntegrationsNativeFragment"
         android:label="@string/nav_page_telegram"
-        tools:layout="@layout/fragment_webview">
+        tools:layout="@layout/fragment_integrations_native">
         <argument
-            android:name="page_path"
+            android:name="initial_tab"
             app:argType="string"
-            android:defaultValue="/telegram" />
+            android:defaultValue="telegram" />
     </fragment>
 
     <fragment
         android:id="@+id/abrpSettingsFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
+        android:name="com.overdrive.app.ui.fragment.IntegrationsNativeFragment"
         android:label="@string/nav_page_abrp"
-        tools:layout="@layout/fragment_webview">
+        tools:layout="@layout/fragment_integrations_native">
         <argument
-            android:name="page_path"
+            android:name="initial_tab"
             app:argType="string"
-            android:defaultValue="/abrp" />
+            android:defaultValue="abrp" />
     </fragment>
 
     <fragment
         android:id="@+id/mqttFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
+        android:name="com.overdrive.app.ui.fragment.IntegrationsNativeFragment"
         android:label="@string/nav_page_mqtt"
-        tools:layout="@layout/fragment_webview">
+        tools:layout="@layout/fragment_integrations_native">
         <argument
-            android:name="page_path"
+            android:name="initial_tab"
             app:argType="string"
-            android:defaultValue="/mqtt" />
+            android:defaultValue="mqtt" />
     </fragment>
 
     <fragment
         android:id="@+id/bydCloudFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
+        android:name="com.overdrive.app.ui.fragment.IntegrationsNativeFragment"
         android:label="@string/nav_page_byd_cloud"
-        tools:layout="@layout/fragment_webview">
+        tools:layout="@layout/fragment_integrations_native">
         <argument
-            android:name="page_path"
+            android:name="initial_tab"
             app:argType="string"
-            android:defaultValue="/byd-cloud" />
+            android:defaultValue="byd_cloud" />
     </fragment>
 
     <!-- RoadSense Native: pure Kotlin/Material 3 hazard sensing, map projection, warnings, blindspot -->

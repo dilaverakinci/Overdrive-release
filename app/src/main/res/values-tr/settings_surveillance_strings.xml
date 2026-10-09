@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_surveillance_title">Gözetim ve Sentry Ayarları</string>
+    <string name="settings_surveillance_subtitle">Park halinde nöbetçi modu, hareket algılama, yapay zeka nesne tanıma ve caydırıcı uyarılar.</string>
+    <string name="settings_surveillance_master_enable">Sentry Gözetimini Etkinleştir</string>
+    <string name="settings_surveillance_master_enable_desc">Park halindeyken kameralarla hareketi ve olası tehditleri izler</string>
+    <string name="settings_surveillance_mode_title">Sentry Modu ve Güç</string>
+    <string name="settings_surveillance_op_mode">Çalışma Modu</string>
+    <string name="settings_surveillance_op_on_off">Sürekli Açık</string>
+    <string name="settings_surveillance_op_on_off_desc">Park halindeyken de izlemeye devam eder</string>
+    <string name="settings_surveillance_op_on_only">Yalnızca Sürüşte</string>
+    <string name="settings_surveillance_op_on_only_desc">Araç kapandığında uykuya geçer</string>
+    <string name="settings_surveillance_arm_mode">Devreye Girme Modu</string>
+    <string name="settings_surveillance_arm_lock">Kilitleyince</string>
+    <string name="settings_surveillance_arm_power">Araç Kapanınca</string>
+    <string name="settings_surveillance_accoff_mode">Park Kayıt Modu</string>
+    <string name="settings_surveillance_accoff_smart">Akıllı (Yapay Zeka)</string>
+    <string name="settings_surveillance_accoff_continuous">Kesintisiz Kayıt</string>
+    <string name="settings_surveillance_low_power">Park Halinde Düşük Güç Tasarrufu</string>
+    <string name="settings_surveillance_low_power_desc">Hareketsiz anlarda kamerayı 5 FPS\'e düşürür; hareket anında anında tam kare hızına çıkar</string>
+    <string name="settings_surveillance_low_soc">Düşük Batarya Koruması</string>
+    <string name="settings_surveillance_low_soc_desc">Batarya bu seviyenin altına indiğinde aküyü ve pili korumak için gözetimi sonlandırır</string>
+    <string name="settings_surveillance_usb_power">Park Halinde USB Gücünü Açık Tut</string>
+    <string name="settings_surveillance_usb_power_desc">Park halindeyken USB portlarına ve SD karta güç sağlamaya devam eder</string>
+    <string name="settings_surveillance_mobile_data">Hücresel Veriyi Açık Tut</string>
+    <string name="settings_surveillance_mobile_data_desc">Park halindeyken araç internet bağlantısının uykuya geçmesini engeller</string>
+
+    <string name="settings_surveillance_detection_title">Algılama ve Yapay Zeka</string>
+    <string name="settings_surveillance_env_preset">Ortam Önayarı</string>
+    <string name="settings_surveillance_env_outdoor">Açık Alan</string>
+    <string name="settings_surveillance_env_garage">Kapalı Garaj</string>
+    <string name="settings_surveillance_env_street">Sokak</string>
+    <string name="settings_surveillance_sensitivity">Hareket Hassasiyeti</string>
+    <string name="settings_surveillance_detection_zone">Algılama Alanı</string>
+    <string name="settings_surveillance_zone_close">Yakın (~3m)</string>
+    <string name="settings_surveillance_zone_normal">Normal (~6m)</string>
+    <string name="settings_surveillance_zone_extended">Genişletilmiş</string>
+    <string name="settings_surveillance_loitering">Bekleme Eşiği (Saniye)</string>
+    <string name="settings_surveillance_loitering_desc">Kayıt başlamadan önce birinin araç yakınında beklemesi gereken süre</string>
+    <string name="settings_surveillance_ai_objects">Yapay Zeka Nesne Tanıma</string>
+    <string name="settings_surveillance_obj_person">İnsan</string>
+    <string name="settings_surveillance_obj_vehicle">Araç</string>
+    <string name="settings_surveillance_obj_bicycle">Bisiklet</string>
+    <string name="settings_surveillance_obj_animal">Hayvan</string>
+    <string name="settings_surveillance_camera_controls">Aktif Kameralar</string>
+    <string name="settings_surveillance_cam_front">Ön</string>
+    <string name="settings_surveillance_cam_rear">Arka</string>
+    <string name="settings_surveillance_cam_left">Sol</string>
+    <string name="settings_surveillance_cam_right">Sağ</string>
+
+    <string name="settings_surveillance_buffer_title">Tampon Süresi ve Video Kalitesi</string>
+    <string name="settings_surveillance_pre_buffer">Olay Öncesi Tampon Süresi</string>
+    <string name="settings_surveillance_post_buffer">Olay Sonrası Tampon Süresi</string>
+    <string name="settings_surveillance_quality_tier">Gözetim Kalitesi</string>
+    <string name="settings_surveillance_fps">Gözetim Kare Hızı (FPS)</string>
+    <string name="settings_surveillance_telemetry">Gözetim Kayıtlarında Telemetriyi Göster</string>
+    <string name="settings_surveillance_telemetry_desc">Park kayıtlarına hız, tarih ve batarya durumunu işler</string>
+
+    <string name="settings_surveillance_deterrent_title">Caydırıcı Uyarılar</string>
+    <string name="settings_surveillance_screen_warning">Harekette Ekranda Uyarı Göster</string>
+    <string name="settings_surveillance_screen_warning_desc">Ekranı uyandırıp kırmızı tam ekran nöbetçi ikazı gösterir</string>
+    <string name="settings_surveillance_warning_duration">Uyarı Görünme Süresi</string>
+    <string name="settings_surveillance_test_warning">Ekran Uyarısını Test Et</string>
+    <string name="settings_surveillance_test_triggered">Ekran uyarısı testi başlatıldı</string>
+    <string name="settings_surveillance_saved">Ayarlar güncellendi</string>
+</resources>

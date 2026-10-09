@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_recording_title">Kayıt Ayarları</string>
+    <string name="settings_recording_subtitle">Araç kamerası, video kalitesi, depolama ve ses kaydı ayarları.</string>
+    <string name="settings_recording_mode_title">Kayıt Modu (Kontak Açık)</string>
+    <string name="settings_recording_mode_subtitle">Sürüş sırasında kameranın ne zaman kayıt yapacağını seçin</string>
+    <string name="settings_recording_mode_none">Kapalı (Varsayılan)</string>
+    <string name="settings_recording_mode_none_desc">Kayıt yapılmaz — batarya ve depolama tasarrufu sağlar</string>
+    <string name="settings_recording_mode_continuous">Sürekli Kayıt</string>
+    <string name="settings_recording_mode_continuous_desc">Kamera açık olduğu sürece kesintisiz kayıt yapar</string>
+    <string name="settings_recording_mode_drive">Sürüş Modu</string>
+    <string name="settings_recording_mode_drive_desc">Sadece araç vitesteyken (D/R/S/M) kayıt yapar</string>
+    <string name="settings_recording_mode_proximity">Yakınlık Koruması</string>
+    <string name="settings_recording_mode_proximity_desc">Araç etrafında yaklaşan nesne veya hareket olunca kaydeder</string>
+
+    <string name="settings_recording_layout_title">Kamera Yerleşimi</string>
+    <string name="settings_recording_layout_standard">Standart (360 2x2 Izgara)</string>
+    <string name="settings_recording_layout_dashcam">Araç Kamerası (Ön Yol + Yanlar)</string>
+    <string name="settings_recording_layout_windshield">Ön Cam Kamerasını Kullan</string>
+    <string name="settings_recording_layout_windshield_desc">Desteklenen araçlarda üst ön görünüm için bağımsız ön cam sensörünü kullanır</string>
+
+    <string name="settings_recording_quality_title">Video Kalitesi ve Kodlayıcı</string>
+    <string name="settings_recording_quality_tier">Kalite Seviyesi</string>
+    <string name="settings_recording_codec">Video Formatı</string>
+    <string name="settings_recording_codec_h264">H.264</string>
+    <string name="settings_recording_codec_h265">H.265 (HEVC — %50 daha az yer)</string>
+    <string name="settings_recording_fps">Kamera Kare Hızı (FPS)</string>
+    <string name="settings_recording_clip_duration">Klip Süresi</string>
+    <string name="settings_recording_rectify">Balıkgözü Düzeltme</string>
+    <string name="settings_recording_rectify_desc">Köşelerdeki balıkgözü distorsiyonunu düzeltir</string>
+
+    <string name="settings_recording_telemetry_title">Telemetri ve Kabin Sesi</string>
+    <string name="settings_recording_telemetry_overlay">Telemetri Bilgilerini Videoya İşle</string>
+    <string name="settings_recording_telemetry_overlay_desc">Kaydedilen videolara hız, güç, vites ve zaman damgasını işler</string>
+    <string name="settings_recording_audio">Kabin İçi Ses Kaydı</string>
+    <string name="settings_recording_audio_desc">Sürüş kayıtları sırasında araç içi mikrofonu kaydeder</string>
+
+    <string name="settings_recording_storage_title">Depolama ve Otomatik Temizlik</string>
+    <string name="settings_recording_storage_location">Kayıt Konumu</string>
+    <string name="settings_recording_storage_internal">Dahili</string>
+    <string name="settings_recording_storage_sd">SD Kart</string>
+    <string name="settings_recording_storage_usb">USB Bellek</string>
+    <string name="settings_recording_storage_limit">Depolama Sınırı</string>
+    <string name="settings_recording_storage_cleanup">Depolama dolduğunda en eski kayıtları otomatik sil</string>
+    <string name="settings_recording_saved">Ayarlar güncellendi</string>
+</resources>
