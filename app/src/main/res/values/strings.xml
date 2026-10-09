@@ -1860,6 +1860,7 @@
     <string name="roadsense_map_stop_added">Stop added</string>
     <string name="roadsense_map_remove_stop_action">Remove stop</string>
     <string name="roadsense_map_poi_navigate">Navigate here</string>
+    <string name="roadsense_map_poi_external_nav">Open in navigation app</string>
     <string name="roadsense_map_poi_kind_charging">Charging station</string>
     <string name="roadsense_map_poi_kind_fuel">Fuel station</string>
     <string name="roadsense_map_poi_charging_generic">Charging station</string>

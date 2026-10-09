@@ -1220,6 +1220,7 @@
     <string name="roadsense_map_stop_added">Durak eklendi</string>
     <string name="roadsense_map_remove_stop_action">Durağı kaldır</string>
     <string name="roadsense_map_poi_navigate">Buraya git</string>
+    <string name="roadsense_map_poi_external_nav">Harita uygulamasında aç</string>
     <string name="roadsense_map_poi_kind_charging">Şarj istasyonu</string>
     <string name="roadsense_map_poi_kind_fuel">Yakıt istasyonu</string>
     <string name="roadsense_map_poi_charging_generic">Şarj istasyonu</string>

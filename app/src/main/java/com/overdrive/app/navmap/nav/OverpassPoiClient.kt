@@ -1,6 +1,7 @@
 package com.overdrive.app.navmap.nav
 
 import android.util.Log
+import com.overdrive.app.charging.EvStationDatabase
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -58,7 +59,7 @@ object OverpassPoiClient {
     private const val ROUTE_BBOX_PAD_DEG = 0.02
 
     /** Overpass server-side query budget, in seconds (also our read-timeout anchor). */
-    private const val OVERPASS_TIMEOUT_S = 25
+    private const val OVERPASS_TIMEOUT_S = 4
 
     /** Overpass expects the QL body as plain text. */
     private val PLAIN = "text/plain; charset=utf-8".toMediaType()
@@ -80,10 +81,9 @@ object OverpassPoiClient {
     // Proxy-aware via MapNetworking (Overpass is a public-internet endpoint).
     private val http: OkHttpClient by lazy {
         MapNetworking.builder()
-            .connectTimeout(4, TimeUnit.SECONDS)
-            // Overpass can be slow; align with the server-side [timeout:25] budget.
+            .connectTimeout(3, TimeUnit.SECONDS)
             .readTimeout(OVERPASS_TIMEOUT_S.toLong(), TimeUnit.SECONDS)
-            .writeTimeout(5, TimeUnit.SECONDS)
+            .writeTimeout(3, TimeUnit.SECONDS)
             .retryOnConnectionFailure(false)
             .build()
     }
@@ -121,28 +121,81 @@ object OverpassPoiClient {
         val key = cacheKey(south, west, north, east, kinds)
         cacheGet(key)?.let { return it }
 
-        return try {
-            val query = buildQuery(south, west, north, east, kinds)
-            val req = Request.Builder()
-                .url(OVERPASS_ENDPOINT)
-                .header("User-Agent", USER_AGENT)
-                .post(query.toRequestBody(PLAIN))
-                .build()
+        val combined = ArrayList<RoutePoi>()
+        val kindsForOverpass = HashSet<PoiKind>(kinds)
 
-            http.newCall(req).execute().use { resp ->
-                if (!resp.isSuccessful) {
-                    Log.w(TAG, "POST overpass -> HTTP ${resp.code}")
-                    return emptyList()
-                }
-                val bodyStr = resp.body?.string() ?: return emptyList()
-                val pois = parseOverpass(bodyStr)
-                cachePut(key, pois)
-                pois
+        // 1) Offline-first EV station query via local SQLite database (instant <2ms, works offline)
+        if (kinds.contains(PoiKind.CHARGING)) {
+            val localStations = try {
+                EvStationDatabase.getInstance().findStationsInBbox(south, west, north, east, RESULT_CAP)
+            } catch (t: Throwable) {
+                Log.d(TAG, "Offline EV station lookup skipped: ${t.message}")
+                emptyList()
             }
-        } catch (t: Throwable) {
-            Log.w(TAG, "poisNearBbox failed: ${t.message}")
-            emptyList()
+            Log.d(TAG, "poisNearBbox: bounds=[$south, $west, $north, $east], found ${localStations.size} local EV stations")
+
+            if (localStations.isNotEmpty()) {
+                for (s in localStations) {
+                    val addr = if (s.district.isNotBlank() && s.city.isNotBlank()) "${s.district}, ${s.city}"
+                    else s.address.ifBlank { s.city }
+                    combined.add(
+                        RoutePoi(
+                            kind = PoiKind.CHARGING,
+                            name = s.name.ifBlank { s.operator },
+                            lat = s.latitude,
+                            lng = s.longitude,
+                            operator = s.operator,
+                            powerKw = s.maxPowerKw,
+                            socketCount = s.socketCount,
+                            acPrice = s.acPrice,
+                            dcPrice = s.dcPrice,
+                            chargingType = s.chargingType,
+                            address = addr
+                        )
+                    )
+                }
+                // Charging satisfied from local database; do not hit Overpass for charging
+                kindsForOverpass.remove(PoiKind.CHARGING)
+            } else {
+                // Not in Turkey or local DB empty -> Try Open Charge Map v3 (Europe / Global)
+                val ocmStations = OpenChargeMapClient.poisNearBbox(south, west, north, east, RESULT_CAP)
+                if (ocmStations.isNotEmpty()) {
+                    combined.addAll(ocmStations)
+                    kindsForOverpass.remove(PoiKind.CHARGING)
+                }
+                // If OCM is also empty (or no key/network), PoiKind.CHARGING remains for Overpass fallback
+            }
         }
+
+        // 2) Overpass API query for remaining kinds (e.g. FUEL or non-cached global charging)
+        if (kindsForOverpass.isNotEmpty() && combined.size < RESULT_CAP) {
+            try {
+                val query = buildQuery(south, west, north, east, kindsForOverpass)
+                val req = Request.Builder()
+                    .url(OVERPASS_ENDPOINT)
+                    .header("User-Agent", USER_AGENT)
+                    .post(query.toRequestBody(PLAIN))
+                    .build()
+
+                http.newCall(req).execute().use { resp ->
+                    if (resp.isSuccessful) {
+                        val bodyStr = resp.body?.string()
+                        if (bodyStr != null) {
+                            val overpassPois = parseOverpass(bodyStr)
+                            combined.addAll(overpassPois)
+                        }
+                    } else {
+                        Log.w(TAG, "POST overpass -> HTTP ${resp.code}")
+                    }
+                }
+            } catch (t: Throwable) {
+                Log.w(TAG, "poisNearBbox Overpass query failed: ${t.message}")
+            }
+        }
+
+        val result = if (combined.size > RESULT_CAP) combined.subList(0, RESULT_CAP) else combined
+        cachePut(key, result)
+        return result
     }
 
     /**
@@ -244,7 +297,41 @@ object OverpassPoiClient {
                     else -> continue
                 }
                 val name = tags.optString("name", "").trim()
-                out.add(RoutePoi(kind, name, lat, lng))
+                val operator = tags.optString("operator", "").trim()
+                val brand = tags.optString("brand", "").trim()
+                val effectiveOp = operator.ifBlank { brand }
+                val sockets = tags.optString("capacity", "").toIntOrNull() ?: 0
+
+                var maxPower = 0.0
+                val keys = tags.keys()
+                while (keys.hasNext()) {
+                    val k = keys.next()
+                    if (k.startsWith("socket:") && k.endsWith(":output")) {
+                        val pStr = tags.optString(k, "").replace("kW", "").trim()
+                        val pVal = pStr.toDoubleOrNull() ?: 0.0
+                        if (pVal > maxPower) maxPower = pVal
+                    }
+                }
+                val chargingType = if (maxPower >= 40.0) "DC" else if (maxPower > 0) "AC" else ""
+                val street = tags.optString("addr:street", "").trim()
+                val city = tags.optString("addr:city", "").trim()
+                val address = if (street.isNotBlank() && city.isNotBlank()) "$street, $city" else street.ifBlank { city }
+
+                out.add(
+                    RoutePoi(
+                        kind = kind,
+                        name = name.ifBlank { effectiveOp },
+                        lat = lat,
+                        lng = lng,
+                        operator = effectiveOp,
+                        powerKw = maxPower,
+                        socketCount = sockets,
+                        acPrice = 0.0,
+                        dcPrice = 0.0,
+                        chargingType = chargingType,
+                        address = address
+                    )
+                )
             }
         } catch (t: Throwable) {
             Log.w(TAG, "parseOverpass failed: ${t.message}")

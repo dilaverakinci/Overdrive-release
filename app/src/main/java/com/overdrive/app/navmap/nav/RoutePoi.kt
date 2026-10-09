@@ -11,17 +11,29 @@ package com.overdrive.app.navmap.nav
  *
  * @property kind what category of POI this is ([PoiKind.CHARGING] EV charger
  *   or [PoiKind.FUEL] petrol/diesel station)
- * @property name the OSM `name` tag, or an empty string when the OSM element is
- *   unnamed (many chargers/pumps are) — callers should fall back to a generic
- *   label per [kind] when this is blank
+ * @property name the place name or brand
  * @property lat latitude in decimal degrees (north positive)
  * @property lng longitude in decimal degrees (east positive)
+ * @property operator charging network or station operator name (e.g. "Trugo", "ZES", "Ionity")
+ * @property powerKw maximum charging power in kilowatts (e.g. 180.0, 300.0)
+ * @property socketCount number of physical charging plugs / sockets available
+ * @property acPrice price per kWh for AC charging in local currency
+ * @property dcPrice price per kWh for DC fast charging in local currency
+ * @property chargingType charging category ("DC", "AC", "DC/AC")
+ * @property address textual address or district/city description
  */
 data class RoutePoi(
     val kind: PoiKind,
     val name: String,
     val lat: Double,
-    val lng: Double
+    val lng: Double,
+    val operator: String = "",
+    val powerKw: Double = 0.0,
+    val socketCount: Int = 0,
+    val acPrice: Double = 0.0,
+    val dcPrice: Double = 0.0,
+    val chargingType: String = "",
+    val address: String = ""
 )
 
 /**
