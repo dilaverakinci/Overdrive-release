@@ -1,5 +1,6 @@
 package com.overdrive.app.navmap
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.PointF
@@ -105,7 +106,15 @@ open class RoadSenseMapActivity : AppCompatActivity() {
     @Volatile private var fetchToken: Long = 0L
 
     /** Debounce runnable for camera-idle viewport refetches. */
-    private val refetchRunnable = Runnable { fetchViewportHazards() }
+    private val refetchRunnable = Runnable {
+        fetchViewportHazards()
+        if (poiEnabled) {
+            val active = previewRoutes.getOrNull(previewSelectedIdx)
+            if (active == null || !navigating) {
+                loadPoisInViewport(silent = true)
+            }
+        }
+    }
 
     /** Most recent GPS fix (for the puck + prefetch); null until first fix. */
     @Volatile private var lastFix: RoadSenseHazardApiClient.LatLngFix? = null
@@ -194,7 +203,7 @@ open class RoadSenseMapActivity : AppCompatActivity() {
 
     // --- POI along route (EV charging / fuel) ---
     private var poiSource: GeoJsonSource? = null
-    @Volatile private var poiEnabled = false
+    @Volatile private var poiEnabled = true
 
     // --- Itinerary markers (destination pin + numbered stop pins) ---
     private var markerSource: GeoJsonSource? = null
@@ -500,7 +509,10 @@ open class RoadSenseMapActivity : AppCompatActivity() {
 
         // Hazard visibility filter (toggle / severity) + POI (EV charging / fuel) toggle.
         setupHazardFilter()
-        findViewById<FloatingActionButton>(R.id.fabPoi)?.setOnClickListener { togglePoi() }
+        findViewById<FloatingActionButton>(R.id.fabPoi)?.let { fab ->
+            fab.setOnClickListener { togglePoi() }
+            updatePoiFab(fab)
+        }
         findViewById<FloatingActionButton>(R.id.fabMap3d)?.setOnClickListener { toggleMap3d() }
 
         // Per-map day/night override (Auto → Light → Dark). Loaded before the first
@@ -1711,12 +1723,17 @@ open class RoadSenseMapActivity : AppCompatActivity() {
 
         // 8) First viewport fetch.
         fetchViewportHazards()
+        if (poiEnabled) {
+            loadPoisInViewport(silent = true)
+        }
 
         // 9) Configure the offline ambient tile cache once, then auto-center on
         //    the live GPS fix the first time the map opens (so it lands on the
-        //    user, not the default region). Subsequent recenters are manual (FAB).
+        //    user, not the default region). If launched with a target station, center
+        //    on that station and open its sheet instead of recentering to GPS.
         MapTilePrefetcher.configureAmbientCache(applicationContext)
-        if (!didInitialRecenter) {
+        val handledTargetStation = checkTargetStationIntent(intent)
+        if (!handledTargetStation && !didInitialRecenter) {
             didInitialRecenter = true
             recenter()
         }
@@ -2736,18 +2753,25 @@ open class RoadSenseMapActivity : AppCompatActivity() {
         return bmp
     }
 
+    private fun updatePoiFab(fab: FloatingActionButton? = findViewById(R.id.fabPoi)) {
+        fab?.let {
+            val bgAttr = if (poiEnabled) androidx.appcompat.R.attr.colorPrimary
+                         else com.google.android.material.R.attr.colorSurfaceContainerHighest
+            val iconAttr = if (poiEnabled) com.google.android.material.R.attr.colorOnPrimary
+                           else com.google.android.material.R.attr.colorOnSurface
+            it.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                com.google.android.material.color.MaterialColors.getColor(it, bgAttr)
+            )
+            it.imageTintList = android.content.res.ColorStateList.valueOf(
+                com.google.android.material.color.MaterialColors.getColor(it, iconAttr)
+            )
+        }
+    }
+
     /** Toggle the POI overlay; when turning on with an active route, load POIs along it. */
     private fun togglePoi() {
         poiEnabled = !poiEnabled
-        findViewById<FloatingActionButton>(R.id.fabPoi)?.let { fab ->
-            // Resolve via theme attrs (not fixed _light colors) so the active/idle
-            // tint is correct in both day and night.
-            val attr = if (poiEnabled) androidx.appcompat.R.attr.colorPrimary
-                       else com.google.android.material.R.attr.colorSurfaceContainerHighest
-            fab.backgroundTintList = android.content.res.ColorStateList.valueOf(
-                com.google.android.material.color.MaterialColors.getColor(fab, attr)
-            )
-        }
+        updatePoiFab()
         if (!poiEnabled) { poiSource?.setGeoJson(EMPTY_FEATURE_COLLECTION); return }
         // If a route is active, search its corridor; otherwise search the current
         // map viewport so the user can browse charging/fuel near them with no route.
@@ -2757,10 +2781,10 @@ open class RoadSenseMapActivity : AppCompatActivity() {
     }
 
     /** Load POIs across the current visible map bounds (no active route). */
-    private fun loadPoisInViewport() {
+    private fun loadPoisInViewport(silent: Boolean = false) {
         val mlMap = map ?: return
         val b = mlMap.projection.visibleRegion.latLngBounds
-        showSnackbar(getString(R.string.roadsense_map_poi_loading))
+        if (!silent) showSnackbar(getString(R.string.roadsense_map_poi_loading))
         ioExecutor().execute {
             // 1) Instant offline EV charging lookup (<2ms from local SQLite)
             val evPois = com.overdrive.app.navmap.nav.OverpassPoiClient.poisNearBbox(
@@ -2783,7 +2807,7 @@ open class RoadSenseMapActivity : AppCompatActivity() {
             mainHandler.post {
                 if (isFinishing || isDestroyed || !poiEnabled) return@post
                 renderPoiFeatures(allPois)
-                if (allPois.isEmpty()) showSnackbar(getString(R.string.roadsense_map_poi_none))
+                if (!silent && allPois.isEmpty()) showSnackbar(getString(R.string.roadsense_map_poi_none))
             }
         }
     }
@@ -3038,6 +3062,56 @@ open class RoadSenseMapActivity : AppCompatActivity() {
         routeStops.removeAt(index)
         showSnackbar(getString(R.string.roadsense_map_stop_removed))
         if (routeStops.isEmpty()) clearRoutePreview() else recomputeItinerary()
+    }
+
+    /**
+     * Checks if the launch intent contains target EV station coordinates and metadata.
+     * If so, centers the map camera on the station, loads nearby viewport POIs, and
+     * opens the station details action sheet.
+     */
+    private fun checkTargetStationIntent(targetIntent: Intent?): Boolean {
+        if (targetIntent == null) return false
+        val targetLat = targetIntent.getDoubleExtra(EXTRA_TARGET_LAT, Double.NaN)
+        val targetLng = targetIntent.getDoubleExtra(EXTRA_TARGET_LNG, Double.NaN)
+        if (targetLat.isNaN() || targetLng.isNaN()) return false
+
+        val name = targetIntent.getStringExtra(EXTRA_STATION_NAME).orEmpty()
+        val op = targetIntent.getStringExtra(EXTRA_STATION_OPERATOR).orEmpty()
+        val power = targetIntent.getDoubleExtra(EXTRA_STATION_POWER, 0.0)
+        val sockets = targetIntent.getIntExtra(EXTRA_STATION_SOCKETS, 0)
+        val acPrice = targetIntent.getDoubleExtra(EXTRA_STATION_AC_PRICE, 0.0)
+        val dcPrice = targetIntent.getDoubleExtra(EXTRA_STATION_DC_PRICE, 0.0)
+        val chargingType = targetIntent.getStringExtra(EXTRA_STATION_TYPE).orEmpty()
+        val address = targetIntent.getStringExtra(EXTRA_STATION_ADDRESS).orEmpty()
+
+        // Consume extras so subsequent theme/style reload does not re-trigger
+        targetIntent.removeExtra(EXTRA_TARGET_LAT)
+        targetIntent.removeExtra(EXTRA_TARGET_LNG)
+
+        didInitialRecenter = true
+
+        val mlMap = map
+        if (mlMap != null) {
+            mlMap.easeCamera(
+                CameraUpdateFactory.newLatLngZoom(LatLng(targetLat, targetLng), 15.0),
+                500
+            )
+            loadPoisInViewport(silent = true)
+            showPoiSheet(
+                kind = "charging",
+                name = name,
+                lat = targetLat,
+                lng = targetLng,
+                operator = op,
+                powerKw = power,
+                sockets = sockets,
+                acPrice = acPrice,
+                dcPrice = dcPrice,
+                chargingType = chargingType,
+                address = address
+            )
+        }
+        return true
     }
 
     // ---------------------------------------------------------------------
@@ -5942,6 +6016,12 @@ open class RoadSenseMapActivity : AppCompatActivity() {
     // or the render surface leaks / crashes. This is intentionally verbatim.
     // ---------------------------------------------------------------------
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        checkTargetStationIntent(intent)
+    }
+
     override fun onStart() {
         super.onStart()
         // mapView is a lateinit assigned at the END of onCreate. onCreate has an
@@ -6148,7 +6228,7 @@ open class RoadSenseMapActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    private companion object {
+    companion object {
         private const val TAG = "RoadSenseMapActivity"
 
         /** Cluster-only self-finish poll cadence (ms). The daemon sets
@@ -6525,6 +6605,19 @@ open class RoadSenseMapActivity : AppCompatActivity() {
         const val POI_PROP_DC_PRICE = "dc_price"
         const val POI_PROP_CHARGING_TYPE = "charging_type"
         const val POI_PROP_ADDRESS = "address"
+
+        // Intent extras for targeting a specific station from external screens (e.g. Charging tab)
+        const val EXTRA_TARGET_LAT = "extra_target_lat"
+        const val EXTRA_TARGET_LNG = "extra_target_lng"
+        const val EXTRA_STATION_ID = "extra_station_id"
+        const val EXTRA_STATION_NAME = "extra_station_name"
+        const val EXTRA_STATION_OPERATOR = "extra_station_operator"
+        const val EXTRA_STATION_POWER = "extra_station_power"
+        const val EXTRA_STATION_SOCKETS = "extra_station_sockets"
+        const val EXTRA_STATION_AC_PRICE = "extra_station_ac_price"
+        const val EXTRA_STATION_DC_PRICE = "extra_station_dc_price"
+        const val EXTRA_STATION_TYPE = "extra_station_type"
+        const val EXTRA_STATION_ADDRESS = "extra_station_address"
 
         // Hazard filter modes (persisted in prefs).
         const val HAZARD_FILTER_HIDDEN = 0

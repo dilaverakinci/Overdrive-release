@@ -2231,6 +2231,11 @@
     <string name="charge_stations_distance" translatable="false">Distance: %s</string>
     <string name="charge_stations_nav_start" translatable="false">Start Navigation</string>
     <string name="charge_stations_nav_error" translatable="false">Could not open navigation application</string>
+    <string name="charge_stations_view_list" translatable="false">List</string>
+    <string name="charge_stations_view_map" translatable="false">Map</string>
+    <string name="charge_stations_show_on_map" translatable="false">Show on Map</string>
+    <string name="charge_stations_open_roadsense" translatable="false">Open in RoadSense Map</string>
+    <string name="charge_stations_map_recenter" translatable="false">My Location</string>
     <string name="charge_state_charging" translatable="false">Charging now</string>
     <string name="charge_state_plugged" translatable="false">Plugged in</string>
     <string name="charge_summary_sessions" translatable="false">Sessions</string>

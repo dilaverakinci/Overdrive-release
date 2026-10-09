@@ -13,13 +13,14 @@ import java.util.Locale
 
 class ChargingStationAdapter(
     private val onNavigateClick: (EvStationItem) -> Unit,
-    private val onItemClick: (EvStationItem) -> Unit
+    private val onItemClick: (EvStationItem) -> Unit,
+    private val onShowOnMapClick: ((EvStationItem) -> Unit)? = null
 ) : ListAdapter<EvStationItem, ChargingStationAdapter.StationViewHolder>(StationDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StationViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_charging_station, parent, false)
-        return StationViewHolder(view, onNavigateClick, onItemClick)
+        return StationViewHolder(view, onNavigateClick, onItemClick, onShowOnMapClick)
     }
 
     override fun onBindViewHolder(holder: StationViewHolder, position: Int) {
@@ -29,7 +30,8 @@ class ChargingStationAdapter(
     class StationViewHolder(
         itemView: View,
         private val onNavigateClick: (EvStationItem) -> Unit,
-        private val onItemClick: (EvStationItem) -> Unit
+        private val onItemClick: (EvStationItem) -> Unit,
+        private val onShowOnMapClick: ((EvStationItem) -> Unit)?
     ) : RecyclerView.ViewHolder(itemView) {
 
         private val tvOperator: TextView = itemView.findViewById(R.id.tvStationOperator)
@@ -40,6 +42,7 @@ class ChargingStationAdapter(
         private val tvAddress: TextView = itemView.findViewById(R.id.tvStationAddress)
         private val tvDcPrice: TextView = itemView.findViewById(R.id.tvStationDcPrice)
         private val tvAcPrice: TextView = itemView.findViewById(R.id.tvStationAcPrice)
+        private val btnShowOnMap: MaterialButton? = itemView.findViewById(R.id.btnShowStationOnMap)
         private val btnNavigate: MaterialButton = itemView.findViewById(R.id.btnNavigateStation)
 
         fun bind(station: EvStationItem) {
@@ -101,6 +104,10 @@ class ChargingStationAdapter(
 
             btnNavigate.setOnClickListener {
                 onNavigateClick(station)
+            }
+
+            btnShowOnMap?.setOnClickListener {
+                onShowOnMapClick?.invoke(station)
             }
 
             itemView.setOnClickListener {

@@ -174,12 +174,32 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
+            <!-- Show on Map Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnShowStationOnMap"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:minHeight="38dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="0dp"
+                android:text="@string/charge_stations_show_on_map"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_roadsense_map"
+                app:iconGravity="textStart"
+                app:iconPadding="4dp"
+                app:iconSize="16dp" />
+
             <!-- Navigate / Yol Tarifi Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnNavigateStation"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="38dp"
+                android:layout_marginStart="4dp"
                 android:minHeight="38dp"
                 android:paddingHorizontal="14dp"
                 android:paddingVertical="0dp"

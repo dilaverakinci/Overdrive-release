@@ -1576,6 +1576,11 @@
     <string name="charge_stations_distance" translatable="false">Mesafe: %s</string>
     <string name="charge_stations_nav_start" translatable="false">Yol Tarifi Başlat</string>
     <string name="charge_stations_nav_error" translatable="false">Navigasyon uygulaması açılamadı</string>
+    <string name="charge_stations_view_list" translatable="false">Liste</string>
+    <string name="charge_stations_view_map" translatable="false">Harita</string>
+    <string name="charge_stations_show_on_map" translatable="false">Haritada Göster</string>
+    <string name="charge_stations_open_roadsense" translatable="false">RoadSense Haritasında Aç</string>
+    <string name="charge_stations_map_recenter" translatable="false">Konumuma Odakla</string>
     <string name="charge_state_charging" translatable="false">Şarj ediliyor</string>
     <string name="charge_state_plugged" translatable="false">Kablo takılı</string>
     <string name="charge_summary_sessions" translatable="false">Oturum</string>

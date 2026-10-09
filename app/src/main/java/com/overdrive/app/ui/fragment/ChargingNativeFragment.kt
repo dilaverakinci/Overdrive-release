@@ -36,6 +36,7 @@ import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.overdrive.app.R
+import com.overdrive.app.navmap.RoadSenseMapActivity
 import com.overdrive.app.ui.charging.ChargingCurveView
 import com.overdrive.app.ui.charging.ChargingSample
 import com.overdrive.app.ui.charging.ChargingSession
@@ -58,6 +59,10 @@ import java.util.Date
 import java.util.Locale
 
 class ChargingNativeFragment : Fragment() {
+
+    companion object {
+        private const val TAG = "ChargingNativeFragment"
+    }
 
     private val viewModel: ChargingViewModel by viewModels()
 
@@ -422,6 +427,9 @@ class ChargingNativeFragment : Fragment() {
             },
             onItemClick = { station ->
                 showStationDetailDialog(station)
+            },
+            onShowOnMapClick = { station ->
+                openStationInRoadSenseMap(station)
             }
         )
         recyclerStations.layoutManager = LinearLayoutManager(requireContext())
@@ -1333,6 +1341,23 @@ class ChargingNativeFragment : Fragment() {
         recyclerStations.visibility = if (isEmpty) View.GONE else View.VISIBLE
     }
 
+    private fun openStationInRoadSenseMap(station: EvStationItem) {
+        val intent = Intent(requireContext(), RoadSenseMapActivity::class.java).apply {
+            putExtra(RoadSenseMapActivity.EXTRA_TARGET_LAT, station.latitude)
+            putExtra(RoadSenseMapActivity.EXTRA_TARGET_LNG, station.longitude)
+            putExtra(RoadSenseMapActivity.EXTRA_STATION_ID, station.id)
+            putExtra(RoadSenseMapActivity.EXTRA_STATION_NAME, station.name)
+            putExtra(RoadSenseMapActivity.EXTRA_STATION_OPERATOR, station.operator)
+            putExtra(RoadSenseMapActivity.EXTRA_STATION_POWER, station.maxPowerKw)
+            putExtra(RoadSenseMapActivity.EXTRA_STATION_SOCKETS, station.socketCount)
+            putExtra(RoadSenseMapActivity.EXTRA_STATION_AC_PRICE, station.acPrice)
+            putExtra(RoadSenseMapActivity.EXTRA_STATION_DC_PRICE, station.dcPrice)
+            putExtra(RoadSenseMapActivity.EXTRA_STATION_TYPE, station.chargingType)
+            putExtra(RoadSenseMapActivity.EXTRA_STATION_ADDRESS, station.address)
+        }
+        startActivity(intent)
+    }
+
     private fun launchNavigationIntent(station: EvStationItem) {
         val lat = station.latitude
         val lng = station.longitude
@@ -1402,6 +1427,9 @@ class ChargingNativeFragment : Fragment() {
             .setMessage(details)
             .setPositiveButton(getString(R.string.charge_stations_nav_start)) { _, _ ->
                 launchNavigationIntent(station)
+            }
+            .setNeutralButton(getString(R.string.charge_stations_show_on_map)) { _, _ ->
+                openStationInRoadSenseMap(station)
             }
             .setNegativeButton(getString(R.string.common_cancel), null)
             .show()

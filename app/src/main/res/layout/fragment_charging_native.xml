@@ -1732,7 +1732,7 @@
                         android:id="@+id/tvStationsCountHeader"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
+                        android:layout_marginBottom="12dp"
                         android:text="Çevrede 0 istasyon bulundu"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="13sp" />
