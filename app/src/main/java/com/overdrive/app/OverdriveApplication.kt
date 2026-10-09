@@ -52,6 +52,15 @@ class OverdriveApplication : Application() {
         // Apply persisted theme mode (Auto / Light / Dark) before any Activity
         // is created so the first paint matches the user's choice.
         AppCompatDelegate.setDefaultNightMode(PreferencesManager.getThemeMode())
+
+        // Extract EV Charging Stations database in background if missing
+        Thread {
+            try {
+                com.overdrive.app.charging.EvStationDatabase.copyFromAssetsIfMissing(this)
+            } catch (e: Throwable) {
+                Log.w("OverdriveApplication", "EV station database extraction skipped: ${e.message}")
+            }
+        }.start()
         
         // Privileged shell (UID 1000) DISABLED — causes BYD default dashcam
         // to show "no signal" by elevating app's camera priority via accmodemanager.

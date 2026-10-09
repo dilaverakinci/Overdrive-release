@@ -17,6 +17,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -110,6 +111,11 @@ public class ChargingApiHandler {
             // Pin the fallback tariff used when a charge location matches nothing.
             if (path.equals("/api/charging/tariffs/default") && "POST".equals(method)) {
                 return handleSetDefaultTariff(body);
+            }
+
+            // EV Charging Stations (Nearby query for UI / map)
+            if (path.equals("/api/charging/stations/nearby") && "GET".equals(method)) {
+                return handleGetNearbyStations(params);
             }
 
             if (path.equals("/api/charging/history") && "DELETE".equals(method)) {
@@ -1644,6 +1650,58 @@ public class ChargingApiHandler {
         } catch (NumberFormatException e) {
             return defaultValue;
         }
+    }
+
+    private JSONObject handleGetNearbyStations(Map<String, String> params) {
+        JSONObject response = new JSONObject();
+        try {
+            double lat = 0;
+            double lng = 0;
+            if (params != null) {
+                if (params.containsKey("lat")) {
+                    try { lat = Double.parseDouble(params.get("lat")); } catch (Exception ignored) {}
+                }
+                if (params.containsKey("lng")) {
+                    try { lng = Double.parseDouble(params.get("lng")); } catch (Exception ignored) {}
+                }
+            }
+            if (lat == 0 && lng == 0) {
+                com.overdrive.app.monitor.GpsMonitor gps = com.overdrive.app.monitor.GpsMonitor.getInstance();
+                if (gps != null && gps.hasLocation()) {
+                    lat = gps.getLatitude();
+                    lng = gps.getLongitude();
+                }
+            }
+            double radius = 10000; // default 10 km
+            if (params != null && params.containsKey("radius")) {
+                try { radius = Double.parseDouble(params.get("radius")); } catch (Exception ignored) {}
+            }
+            int limit = 30;
+            if (params != null && params.containsKey("limit")) {
+                try { limit = Integer.parseInt(params.get("limit")); } catch (Exception ignored) {}
+            }
+
+            EvStationDatabase db = EvStationDatabase.getInstance();
+            List<EvStationDatabase.Station> stations = db.findNearbyStations(lat, lng, radius, limit);
+            JSONArray arr = new JSONArray();
+            for (EvStationDatabase.Station s : stations) {
+                arr.put(s.toJson());
+            }
+
+            response.put("success", true);
+            response.put("lat", lat);
+            response.put("lng", lng);
+            response.put("totalDatabaseStations", db.getStationCount());
+            response.put("count", stations.size());
+            response.put("stations", arr);
+        } catch (Exception e) {
+            logger.error("Error finding nearby stations", e);
+            try {
+                response.put("success", false);
+                response.put("error", e.getMessage() != null ? e.getMessage() : "Failed to find nearby stations");
+            } catch (Exception ignored) {}
+        }
+        return response;
     }
 
     private JSONObject errorResponse(String message, int status) {

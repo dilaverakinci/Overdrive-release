@@ -1153,7 +1153,7 @@ public class HttpServer {
         // Charging Analytics API
         if (path.startsWith("/api/charging")) {
             com.overdrive.app.charging.ChargingSessionManager csm = CameraDaemon.getChargingSessionManager();
-            if (csm != null) {
+            if (csm != null || path.startsWith("/api/charging/stations")) {
                 com.overdrive.app.charging.ChargingApiHandler handler =
                     new com.overdrive.app.charging.ChargingApiHandler(
                         csm,

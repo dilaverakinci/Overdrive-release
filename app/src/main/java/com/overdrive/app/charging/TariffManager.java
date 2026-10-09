@@ -607,6 +607,10 @@ public class TariffManager {
         TariffProfile inCircle = resolveInCircle(lat, lng, isDc);
         if (inCircle != null) return inCircle;
 
+        // Auto-match against the EV charging station database if vehicle is near a station
+        TariffProfile stationProfile = resolveFromStationDatabase(lat, lng, isDc);
+        if (stationProfile != null) return stationProfile;
+
         // A rate the user SET is honoured for both AC and DC. rateFor() applies the
         // separate dcRate only when they bothered to enter one; otherwise the single
         // rate they typed covers every gun at that place. Entering one number must
@@ -638,8 +642,40 @@ public class TariffManager {
         }
         TariffProfile inCircle = resolveInCircleLoaded(lat, lng, isDc);
         if (inCircle != null) return inCircle;
+
+        TariffProfile stationProfile = resolveFromStationDatabase(lat, lng, isDc);
+        if (stationProfile != null) return stationProfile;
+
         TariffProfile def = findById(defaultTariffId);
         if (def != null && def.isEnabled() && def.rateFor(isDc) > 0) return def;
+        return null;
+    }
+
+    private TariffProfile resolveFromStationDatabase(double lat, double lng, int isDc) {
+        if (lat == 0 && lng == 0) return null;
+        try {
+            EvStationDatabase db = EvStationDatabase.getInstance();
+            if (db != null) {
+                EvStationDatabase.Station station = db.findNearestStation(lat, lng, 200.0);
+                if (station != null) {
+                    double ac = station.acPrice;
+                    double dc = station.dcPrice;
+                    if (isDc == 1 && dc <= 0 && ac > 0) dc = ac;
+                    if (isDc == 0 && ac <= 0 && dc > 0) ac = dc;
+                    double effectiveRate = (isDc == 1) ? dc : ac;
+                    if (effectiveRate > 0) {
+                        String typeStr = (isDc == 1) ? "DC" : "AC";
+                        String opName = (station.operator != null && !station.operator.isEmpty())
+                                ? station.operator : station.name;
+                        String label = opName + " (" + typeStr + " " + Math.round(station.maxPowerKw) + "kW)";
+                        return new TariffProfile("station_" + station.id, label, station.latitude, station.longitude,
+                                200, ac, dc, "₺");
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            logger.debug("EvStationDatabase resolve error: " + t.getMessage());
+        }
         return null;
     }
 

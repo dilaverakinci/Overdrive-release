@@ -1,0 +1,710 @@
+{
+  "sessions": [
+    {
+      "id": 1,
+      "startTime": 1791488361405,
+      "endTime": 1791490881405,
+      "inProgress": false,
+      "chargingNow": false,
+      "startSoc": 14.0,
+      "endSoc": 82.0,
+      "energyAdded": 56.5,
+      "peakPower": 128.5,
+      "avgPower": 80.71,
+      "rangeGained": 360,
+      "gunState": 3,
+      "isDc": true,
+      "electricityRate": 13.5,
+      "cost": 762.75,
+      "currency": "₺",
+      "timeToFullMin": 0,
+      "tempHigh": 38.5,
+      "tempLow": 32.0,
+      "tempAvg": 35.2,
+      "durationMinutes": 42,
+      "lat": 38.35412,
+      "lng": 39.51234,
+      "placeLabel": "Trugo Hızlı Şarj İstasyonu",
+      "startOdometerKm": 12780,
+      "startRangeKm": 75,
+      "tariffId": "dc_fast_tariff",
+      "tariffLabel": "DC Hızlı Şarj",
+      "isEstimated": false
+    },
+    {
+      "id": 2,
+      "startTime": 1791401961405,
+      "endTime": 1791423561405,
+      "inProgress": false,
+      "chargingNow": false,
+      "startSoc": 22.0,
+      "endSoc": 80.0,
+      "energyAdded": 48.2,
+      "peakPower": 11.2,
+      "avgPower": 8.03,
+      "rangeGained": 310,
+      "gunState": 2,
+      "isDc": false,
+      "electricityRate": 9.9,
+      "cost": 477.18,
+      "currency": "₺",
+      "timeToFullMin": 0,
+      "tempHigh": 26.5,
+      "tempLow": 23.0,
+      "tempAvg": 24.8,
+      "durationMinutes": 360,
+      "lat": 37.97837,
+      "lng": 40.15138,
+      "placeLabel": "Ev (Home)",
+      "startOdometerKm": 12450,
+      "startRangeKm": 115,
+      "tariffId": "home_tariff",
+      "tariffLabel": "Ev Tarifesi",
+      "isEstimated": false
+    }
+  ],
+  "samples_ac": [
+    {
+      "t": 1791401961405,
+      "powerKw": 10.8,
+      "soc": 22.0,
+      "temp": 23.0,
+      "tempHigh": 24.2,
+      "tempLow": 21.9
+    },
+    {
+      "t": 1791402561405,
+      "powerKw": 10.95,
+      "soc": 23.6,
+      "temp": 23.1,
+      "tempHigh": 24.3,
+      "tempLow": 22.0
+    },
+    {
+      "t": 1791403161405,
+      "powerKw": 11.1,
+      "soc": 25.2,
+      "temp": 23.1,
+      "tempHigh": 24.3,
+      "tempLow": 22.0
+    },
+    {
+      "t": 1791403761405,
+      "powerKw": 10.8,
+      "soc": 26.8,
+      "temp": 23.2,
+      "tempHigh": 24.4,
+      "tempLow": 22.1
+    },
+    {
+      "t": 1791404361405,
+      "powerKw": 10.95,
+      "soc": 28.4,
+      "temp": 23.2,
+      "tempHigh": 24.4,
+      "tempLow": 22.1
+    },
+    {
+      "t": 1791404961405,
+      "powerKw": 11.1,
+      "soc": 30.1,
+      "temp": 23.3,
+      "tempHigh": 24.5,
+      "tempLow": 22.2
+    },
+    {
+      "t": 1791405561405,
+      "powerKw": 10.8,
+      "soc": 31.7,
+      "temp": 23.4,
+      "tempHigh": 24.6,
+      "tempLow": 22.3
+    },
+    {
+      "t": 1791406161405,
+      "powerKw": 10.95,
+      "soc": 33.3,
+      "temp": 23.4,
+      "tempHigh": 24.6,
+      "tempLow": 22.3
+    },
+    {
+      "t": 1791406761405,
+      "powerKw": 11.1,
+      "soc": 34.9,
+      "temp": 23.5,
+      "tempHigh": 24.7,
+      "tempLow": 22.4
+    },
+    {
+      "t": 1791407361405,
+      "powerKw": 10.8,
+      "soc": 36.5,
+      "temp": 23.6,
+      "tempHigh": 24.8,
+      "tempLow": 22.5
+    },
+    {
+      "t": 1791407961405,
+      "powerKw": 10.95,
+      "soc": 38.1,
+      "temp": 23.6,
+      "tempHigh": 24.8,
+      "tempLow": 22.5
+    },
+    {
+      "t": 1791408561405,
+      "powerKw": 11.1,
+      "soc": 39.7,
+      "temp": 23.7,
+      "tempHigh": 24.9,
+      "tempLow": 22.6
+    },
+    {
+      "t": 1791409161405,
+      "powerKw": 10.8,
+      "soc": 41.3,
+      "temp": 23.7,
+      "tempHigh": 24.9,
+      "tempLow": 22.6
+    },
+    {
+      "t": 1791409761405,
+      "powerKw": 10.95,
+      "soc": 42.9,
+      "temp": 23.8,
+      "tempHigh": 25.0,
+      "tempLow": 22.7
+    },
+    {
+      "t": 1791410361405,
+      "powerKw": 11.1,
+      "soc": 44.6,
+      "temp": 23.9,
+      "tempHigh": 25.1,
+      "tempLow": 22.8
+    },
+    {
+      "t": 1791410961405,
+      "powerKw": 10.8,
+      "soc": 46.2,
+      "temp": 23.9,
+      "tempHigh": 25.1,
+      "tempLow": 22.8
+    },
+    {
+      "t": 1791411561405,
+      "powerKw": 10.95,
+      "soc": 47.8,
+      "temp": 24.0,
+      "tempHigh": 25.2,
+      "tempLow": 22.9
+    },
+    {
+      "t": 1791412161405,
+      "powerKw": 11.1,
+      "soc": 49.4,
+      "temp": 24.0,
+      "tempHigh": 25.2,
+      "tempLow": 22.9
+    },
+    {
+      "t": 1791412761405,
+      "powerKw": 10.8,
+      "soc": 51.0,
+      "temp": 24.1,
+      "tempHigh": 25.3,
+      "tempLow": 23.0
+    },
+    {
+      "t": 1791413361405,
+      "powerKw": 10.95,
+      "soc": 52.6,
+      "temp": 24.2,
+      "tempHigh": 25.4,
+      "tempLow": 23.1
+    },
+    {
+      "t": 1791413961405,
+      "powerKw": 11.1,
+      "soc": 54.2,
+      "temp": 24.2,
+      "tempHigh": 25.4,
+      "tempLow": 23.1
+    },
+    {
+      "t": 1791414561405,
+      "powerKw": 10.8,
+      "soc": 55.8,
+      "temp": 24.3,
+      "tempHigh": 25.5,
+      "tempLow": 23.2
+    },
+    {
+      "t": 1791415161405,
+      "powerKw": 10.95,
+      "soc": 57.4,
+      "temp": 24.3,
+      "tempHigh": 25.5,
+      "tempLow": 23.2
+    },
+    {
+      "t": 1791415761405,
+      "powerKw": 11.1,
+      "soc": 59.1,
+      "temp": 24.4,
+      "tempHigh": 25.6,
+      "tempLow": 23.3
+    },
+    {
+      "t": 1791416361405,
+      "powerKw": 10.8,
+      "soc": 60.7,
+      "temp": 24.5,
+      "tempHigh": 25.7,
+      "tempLow": 23.4
+    },
+    {
+      "t": 1791416961405,
+      "powerKw": 10.95,
+      "soc": 62.3,
+      "temp": 24.5,
+      "tempHigh": 25.7,
+      "tempLow": 23.4
+    },
+    {
+      "t": 1791417561405,
+      "powerKw": 11.1,
+      "soc": 63.9,
+      "temp": 24.6,
+      "tempHigh": 25.8,
+      "tempLow": 23.5
+    },
+    {
+      "t": 1791418161405,
+      "powerKw": 10.8,
+      "soc": 65.5,
+      "temp": 24.6,
+      "tempHigh": 25.8,
+      "tempLow": 23.5
+    },
+    {
+      "t": 1791418761405,
+      "powerKw": 10.95,
+      "soc": 67.1,
+      "temp": 24.7,
+      "tempHigh": 25.9,
+      "tempLow": 23.6
+    },
+    {
+      "t": 1791419361405,
+      "powerKw": 11.1,
+      "soc": 68.7,
+      "temp": 24.8,
+      "tempHigh": 26.0,
+      "tempLow": 23.7
+    },
+    {
+      "t": 1791419961405,
+      "powerKw": 10.8,
+      "soc": 70.3,
+      "temp": 24.8,
+      "tempHigh": 26.0,
+      "tempLow": 23.7
+    },
+    {
+      "t": 1791420561405,
+      "powerKw": 10.58,
+      "soc": 71.9,
+      "temp": 24.9,
+      "tempHigh": 26.1,
+      "tempLow": 23.8
+    },
+    {
+      "t": 1791421161405,
+      "powerKw": 10.02,
+      "soc": 73.6,
+      "temp": 25.0,
+      "tempHigh": 26.2,
+      "tempLow": 23.9
+    },
+    {
+      "t": 1791421761405,
+      "powerKw": 9.47,
+      "soc": 75.2,
+      "temp": 25.0,
+      "tempHigh": 26.2,
+      "tempLow": 23.9
+    },
+    {
+      "t": 1791422361405,
+      "powerKw": 8.91,
+      "soc": 76.8,
+      "temp": 25.1,
+      "tempHigh": 26.3,
+      "tempLow": 24.0
+    },
+    {
+      "t": 1791422961405,
+      "powerKw": 8.36,
+      "soc": 78.4,
+      "temp": 25.1,
+      "tempHigh": 26.3,
+      "tempLow": 24.0
+    },
+    {
+      "t": 1791423561405,
+      "powerKw": 7.8,
+      "soc": 80.0,
+      "temp": 25.2,
+      "tempHigh": 26.4,
+      "tempLow": 24.1
+    }
+  ],
+  "samples_dc": [
+    {
+      "t": 1791488361405,
+      "powerKw": 45.0,
+      "soc": 14.0,
+      "temp": 25.0,
+      "tempHigh": 28.2,
+      "tempLow": 22.2
+    },
+    {
+      "t": 1791488421405,
+      "powerKw": 95.0,
+      "soc": 15.5,
+      "temp": 25.3,
+      "tempHigh": 28.5,
+      "tempLow": 22.5
+    },
+    {
+      "t": 1791488481405,
+      "powerKw": 110.0,
+      "soc": 17.0,
+      "temp": 25.6,
+      "tempHigh": 28.8,
+      "tempLow": 22.8
+    },
+    {
+      "t": 1791488541405,
+      "powerKw": 125.0,
+      "soc": 18.5,
+      "temp": 26.0,
+      "tempHigh": 29.2,
+      "tempLow": 23.2
+    },
+    {
+      "t": 1791488601405,
+      "powerKw": 124.0,
+      "soc": 20.7,
+      "temp": 26.3,
+      "tempHigh": 29.5,
+      "tempLow": 23.5
+    },
+    {
+      "t": 1791488661405,
+      "powerKw": 125.2,
+      "soc": 22.9,
+      "temp": 26.6,
+      "tempHigh": 29.8,
+      "tempLow": 23.8
+    },
+    {
+      "t": 1791488721405,
+      "powerKw": 126.4,
+      "soc": 25.1,
+      "temp": 26.9,
+      "tempHigh": 30.1,
+      "tempLow": 24.1
+    },
+    {
+      "t": 1791488781405,
+      "powerKw": 127.6,
+      "soc": 27.3,
+      "temp": 27.2,
+      "tempHigh": 30.4,
+      "tempLow": 24.4
+    },
+    {
+      "t": 1791488841405,
+      "powerKw": 128.5,
+      "soc": 29.5,
+      "temp": 27.6,
+      "tempHigh": 30.8,
+      "tempLow": 24.8
+    },
+    {
+      "t": 1791488901405,
+      "powerKw": 125.2,
+      "soc": 31.7,
+      "temp": 27.9,
+      "tempHigh": 31.1,
+      "tempLow": 25.1
+    },
+    {
+      "t": 1791488961405,
+      "powerKw": 126.4,
+      "soc": 33.9,
+      "temp": 28.2,
+      "tempHigh": 31.4,
+      "tempLow": 25.4
+    },
+    {
+      "t": 1791489021405,
+      "powerKw": 127.6,
+      "soc": 36.1,
+      "temp": 28.5,
+      "tempHigh": 31.7,
+      "tempLow": 25.7
+    },
+    {
+      "t": 1791489081405,
+      "powerKw": 124.0,
+      "soc": 38.3,
+      "temp": 28.8,
+      "tempHigh": 32.0,
+      "tempLow": 26.0
+    },
+    {
+      "t": 1791489141405,
+      "powerKw": 125.2,
+      "soc": 40.5,
+      "temp": 29.2,
+      "tempHigh": 32.4,
+      "tempLow": 26.4
+    },
+    {
+      "t": 1791489201405,
+      "powerKw": 126.4,
+      "soc": 42.7,
+      "temp": 29.5,
+      "tempHigh": 32.7,
+      "tempLow": 26.7
+    },
+    {
+      "t": 1791489261405,
+      "powerKw": 127.6,
+      "soc": 44.9,
+      "temp": 29.8,
+      "tempHigh": 33.0,
+      "tempLow": 27.0
+    },
+    {
+      "t": 1791489321405,
+      "powerKw": 124.0,
+      "soc": 47.1,
+      "temp": 30.1,
+      "tempHigh": 33.3,
+      "tempLow": 27.3
+    },
+    {
+      "t": 1791489381405,
+      "powerKw": 125.2,
+      "soc": 49.3,
+      "temp": 30.4,
+      "tempHigh": 33.6,
+      "tempLow": 27.6
+    },
+    {
+      "t": 1791489441405,
+      "powerKw": 126.4,
+      "soc": 51.5,
+      "temp": 30.8,
+      "tempHigh": 34.0,
+      "tempLow": 28.0
+    },
+    {
+      "t": 1791489501405,
+      "powerKw": 91.2,
+      "soc": 53.1,
+      "temp": 31.1,
+      "tempHigh": 34.3,
+      "tempLow": 28.3
+    },
+    {
+      "t": 1791489561405,
+      "powerKw": 90.4,
+      "soc": 54.7,
+      "temp": 31.4,
+      "tempHigh": 34.6,
+      "tempLow": 28.6
+    },
+    {
+      "t": 1791489621405,
+      "powerKw": 89.6,
+      "soc": 56.3,
+      "temp": 31.7,
+      "tempHigh": 34.9,
+      "tempLow": 28.9
+    },
+    {
+      "t": 1791489681405,
+      "powerKw": 88.8,
+      "soc": 57.9,
+      "temp": 32.0,
+      "tempHigh": 35.2,
+      "tempLow": 29.2
+    },
+    {
+      "t": 1791489741405,
+      "powerKw": 88.0,
+      "soc": 59.5,
+      "temp": 32.4,
+      "tempHigh": 35.6,
+      "tempLow": 29.6
+    },
+    {
+      "t": 1791489801405,
+      "powerKw": 87.2,
+      "soc": 61.1,
+      "temp": 32.7,
+      "tempHigh": 35.9,
+      "tempLow": 29.9
+    },
+    {
+      "t": 1791489861405,
+      "powerKw": 86.4,
+      "soc": 62.7,
+      "temp": 33.0,
+      "tempHigh": 36.2,
+      "tempLow": 30.2
+    },
+    {
+      "t": 1791489921405,
+      "powerKw": 85.6,
+      "soc": 64.3,
+      "temp": 33.3,
+      "tempHigh": 36.5,
+      "tempLow": 30.5
+    },
+    {
+      "t": 1791489981405,
+      "powerKw": 84.8,
+      "soc": 65.9,
+      "temp": 33.6,
+      "tempHigh": 36.8,
+      "tempLow": 30.8
+    },
+    {
+      "t": 1791490041405,
+      "powerKw": 84.0,
+      "soc": 67.5,
+      "temp": 34.0,
+      "tempHigh": 37.2,
+      "tempLow": 31.2
+    },
+    {
+      "t": 1791490101405,
+      "powerKw": 58.8,
+      "soc": 68.6,
+      "temp": 34.3,
+      "tempHigh": 37.5,
+      "tempLow": 31.5
+    },
+    {
+      "t": 1791490161405,
+      "powerKw": 57.6,
+      "soc": 69.7,
+      "temp": 34.6,
+      "tempHigh": 37.8,
+      "tempLow": 31.8
+    },
+    {
+      "t": 1791490221405,
+      "powerKw": 56.4,
+      "soc": 70.8,
+      "temp": 34.9,
+      "tempHigh": 38.1,
+      "tempLow": 32.1
+    },
+    {
+      "t": 1791490281405,
+      "powerKw": 55.2,
+      "soc": 71.9,
+      "temp": 35.2,
+      "tempHigh": 38.4,
+      "tempLow": 32.4
+    },
+    {
+      "t": 1791490341405,
+      "powerKw": 54.0,
+      "soc": 73.0,
+      "temp": 35.2,
+      "tempHigh": 38.4,
+      "tempLow": 32.4
+    },
+    {
+      "t": 1791490401405,
+      "powerKw": 52.8,
+      "soc": 74.1,
+      "temp": 35.2,
+      "tempHigh": 38.4,
+      "tempLow": 32.4
+    },
+    {
+      "t": 1791490461405,
+      "powerKw": 51.6,
+      "soc": 75.2,
+      "temp": 35.2,
+      "tempHigh": 38.4,
+      "tempLow": 32.4
+    },
+    {
+      "t": 1791490521405,
+      "powerKw": 50.4,
+      "soc": 76.3,
+      "temp": 35.2,
+      "tempHigh": 38.4,
+      "tempLow": 32.4
+    },
+    {
+      "t": 1791490581405,
+      "powerKw": 40.8,
+      "soc": 77.2,
+      "temp": 35.2,
+      "tempHigh": 38.4,
+      "tempLow": 32.4
+    },
+    {
+      "t": 1791490641405,
+      "powerKw": 39.6,
+      "soc": 78.1,
+      "temp": 35.2,
+      "tempHigh": 38.4,
+      "tempLow": 32.4
+    },
+    {
+      "t": 1791490701405,
+      "powerKw": 38.4,
+      "soc": 79.0,
+      "temp": 35.2,
+      "tempHigh": 38.4,
+      "tempLow": 32.4
+    },
+    {
+      "t": 1791490761405,
+      "powerKw": 37.2,
+      "soc": 79.9,
+      "temp": 35.2,
+      "tempHigh": 38.4,
+      "tempLow": 32.4
+    },
+    {
+      "t": 1791490821405,
+      "powerKw": 36.0,
+      "soc": 80.8,
+      "temp": 35.2,
+      "tempHigh": 38.4,
+      "tempLow": 32.4
+    },
+    {
+      "t": 1791490881405,
+      "powerKw": 34.8,
+      "soc": 81.7,
+      "temp": 35.2,
+      "tempHigh": 38.4,
+      "tempLow": 32.4
+    }
+  ]
+}

@@ -162,6 +162,8 @@ public final class GeocodingResolver {
         if (!isFlowEnabled(flow)) return null;
         PlaceResult sz = resolveSafeZone(lat, lng);
         if (sz != null) return sz;
+        PlaceResult ev = resolveEvStation(lat, lng);
+        if (ev != null) return ev;
         return GeoCache.getInstance().get(lat, lng, LocaleManager.get());
     }
 
@@ -192,6 +194,13 @@ public final class GeocodingResolver {
         PlaceResult sz = resolveSafeZone(lat, lng);
         if (sz != null) {
             if (callback != null) safeInvokeCallback(callback, sz);
+            return;
+        }
+
+        // Fast-path: EV Charging Station database overlay is fast and local.
+        PlaceResult ev = resolveEvStation(lat, lng);
+        if (ev != null) {
+            if (callback != null) safeInvokeCallback(callback, ev);
             return;
         }
 
@@ -330,6 +339,12 @@ public final class GeocodingResolver {
             return sz;
         }
 
+        // 1b. EV Charging Station database overlay (indexed SQLite, <5ms).
+        PlaceResult ev = resolveEvStation(lat, lng);
+        if (ev != null) {
+            return ev;
+        }
+
         // 2. Cache (cheap, may have been written by another worker since the
         // outer fast-path checked). Re-checking here keeps this method usable
         // standalone (e.g. the backfill sweep enters here directly).
@@ -377,6 +392,40 @@ public final class GeocodingResolver {
             }
         } catch (Throwable t) {
             logger.warn("SafeLocation lookup failed: " + t.getMessage());
+        }
+        return null;
+    }
+
+    // ---- Tier A2: EV Charging Station database ---------------------------
+
+    private PlaceResult resolveEvStation(double lat, double lng) {
+        if (lat == 0 && lng == 0) return null;
+        try {
+            com.overdrive.app.charging.EvStationDatabase db =
+                    com.overdrive.app.charging.EvStationDatabase.getInstance();
+            if (db != null) {
+                com.overdrive.app.charging.EvStationDatabase.Station s =
+                        db.findNearestStation(lat, lng, 200.0);
+                if (s != null) {
+                    String op = s.operator != null ? s.operator : "";
+                    String name = s.name != null ? s.name : "";
+                    String displayName = (!op.isEmpty() && !name.isEmpty())
+                            ? (op + " - " + name)
+                            : (!name.isEmpty() ? name : op);
+                    return new PlaceResult(
+                            displayName,
+                            s.district != null ? s.district : "",
+                            s.city != null ? s.city : "",
+                            s.address != null ? s.address : "",
+                            "TR",
+                            LocaleManager.get(),
+                            PlaceResult.Source.SAFEZONE,
+                            System.currentTimeMillis()
+                    );
+                }
+            }
+        } catch (Throwable t) {
+            logger.debug("EvStation lookup failed: " + t.getMessage());
         }
         return null;
     }
