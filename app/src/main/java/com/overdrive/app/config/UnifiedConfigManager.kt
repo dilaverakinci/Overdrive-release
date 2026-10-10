@@ -3145,6 +3145,21 @@ object UnifiedConfigManager {
         return updateSection("updates", JSONObject().put("channel", channel))
     }
 
+    const val DEFAULT_UPDATE_REPO = "yash-srivastava/Overdrive-release"
+
+    @JvmStatic
+    fun getUpdateRepo(): String {
+        val repo = loadConfig().optJSONObject("updates")?.optString("repo", "")
+        return if (!repo.isNullOrEmpty()) repo else DEFAULT_UPDATE_REPO
+    }
+
+    @JvmStatic
+    fun setUpdateRepo(repo: String): Boolean {
+        val updates = loadConfig().optJSONObject("updates") ?: JSONObject()
+        updates.put("repo", repo)
+        return updateSection("updates", updates)
+    }
+
     /**
      * Get status-overlay (floating pill) visibility section.
      * Each segment defaults to visible=true so installs that pre-date this

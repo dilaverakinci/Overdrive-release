@@ -39,7 +39,17 @@ import okhttp3.Response;
 public class AppUpdater {
 
     private static final String TAG = "AppUpdater";
-    private static final String GITHUB_REPO = "yash-srivastava/Overdrive-release";
+    public static final String GITHUB_REPO = "yash-srivastava/Overdrive-release";
+
+    public static String getGithubRepo() {
+        try {
+            String repo = com.overdrive.app.config.UnifiedConfigManager.getUpdateRepo();
+            if (repo != null && !repo.trim().isEmpty()) {
+                return repo.trim();
+            }
+        } catch (Throwable ignored) {}
+        return GITHUB_REPO;
+    }
     private static final String PREFS_NAME = "app_updater";
     // LEGACY (pre-channel) baseline key/file. Still read once by
     // migrateBaseline() to seed the per-channel "alpha" slot, then unused.
@@ -827,7 +837,7 @@ public class AppUpdater {
         executor.execute(() -> {
             try {
                 migrateBaseline(channel);
-                String apiUrl = "https://api.github.com/repos/" + GITHUB_REPO +
+                String apiUrl = "https://api.github.com/repos/" + getGithubRepo() +
                         "/releases/tags/" + channel;
 
                 OkHttpClient client = buildClient(15, 15);
@@ -3209,7 +3219,7 @@ public class AppUpdater {
         }
         executor.execute(() -> {
             try {
-                String apiUrl = "https://api.github.com/repos/" + GITHUB_REPO +
+                String apiUrl = "https://api.github.com/repos/" + getGithubRepo() +
                         "/releases/tags/" + channel;
 
                 OkHttpClient client = buildClient(10, 10);
@@ -3321,7 +3331,7 @@ public class AppUpdater {
     public void listVersions(VersionListCallback callback) {
         executor.execute(() -> {
             try {
-                String apiUrl = "https://api.github.com/repos/" + GITHUB_REPO +
+                String apiUrl = "https://api.github.com/repos/" + getGithubRepo() +
                         "/releases?per_page=100";
                 OkHttpClient client = buildClient(15, 15);
                 Request request = new Request.Builder()
@@ -3474,7 +3484,7 @@ public class AppUpdater {
         if (!isValidAlphaTag(tag)) {
             throw new IllegalArgumentException("Unsupported version tag: " + tag);
         }
-        String apiUrl = "https://api.github.com/repos/" + GITHUB_REPO +
+        String apiUrl = "https://api.github.com/repos/" + getGithubRepo() +
                 "/releases/tags/" + tag;
         OkHttpClient client = buildClient(15, 15);
         Request request = new Request.Builder()
