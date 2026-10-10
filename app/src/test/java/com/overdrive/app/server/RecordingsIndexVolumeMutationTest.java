@@ -92,9 +92,7 @@ public class RecordingsIndexVolumeMutationTest {
     }
 
     private RecordingsIndex newIndex(String name) throws Exception {
-        Class.forName("org.h2.Driver");
-        connection = DriverManager.getConnection(
-                "jdbc:h2:mem:volume_" + name + ";DB_CLOSE_DELAY=-1", "sa", "");
+        connection = com.overdrive.app.database.OverdriveSqliteMaster.useInMemoryForTesting().asJdbcConnection();
         RecordingsIndexSchema.ensure(connection);
 
         Constructor<RecordingsIndex> constructor = RecordingsIndex.class.getDeclaredConstructor();

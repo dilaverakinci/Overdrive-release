@@ -611,9 +611,8 @@ dependencies {
     // Encrypted SharedPreferences for secure token/owner storage
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
     
-    // H2 Database - Pure Java embedded SQL (no native dependencies, no .so files)
-    // Works for UID 2000 because it's 100% Java bytecode - no Android framework needed
-    implementation("com.h2database:h2:2.2.224")
+    // Unified SQLite Database replaces H2 Database entirely.
+
 
     // Eclipse Paho MQTT - Pure Java MQTT client (no native dependencies)
     // mqttv3 used by HA/Mosquitto publish path (MqttPublisherService).

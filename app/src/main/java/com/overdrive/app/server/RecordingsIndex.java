@@ -314,91 +314,24 @@ public final class RecordingsIndex {
         // server is still accepting requests), re-acquiring the lock file and
         // orphaning a .lock.db that blocks the next daemon boot.
         shuttingDown = false;
-        logger.info("Initializing RecordingsIndex at " + DB_PATH);
+        logger.info("Initializing RecordingsIndex via OverdriveSqliteMaster");
 
         try {
-            Class.forName("org.h2.Driver");
-        } catch (ClassNotFoundException e) {
-            logger.error("H2 driver not found — check gradle deps", e);
+            connection = openConnection();
+            createSchema();
+            initialized = true;
+            everInitialized = true;
+            logger.info("RecordingsIndex initialized (schema v" + SCHEMA_VERSION + ")");
+            return true;
+        } catch (Exception e) {
+            logger.error("Failed to initialize RecordingsIndex: " + e.getMessage(), e);
+            initFailedPermanently = true;
             return false;
         }
+    }
 
-        // Same retry-on-stale-lock pattern as TripDatabase. SIGKILL of the
-        // previous daemon can leave a stale .lock.db that blocks reopen.
-        int maxRetries = 3;
-        int retryDelayMs = 1000;
-        for (int attempt = 1; attempt <= maxRetries; attempt++) {
-            try {
-                connection = DriverManager.getConnection(JDBC_URL, "sa", "");
-                logger.info("H2 recordings connection established");
-                try (Statement stmt = connection.createStatement()) {
-                    // 8 MiB cache — same as TripDatabase. Tuned for the
-                    // ~1000-row typical workload; queries are mostly
-                    // index seeks + small fact-table reads, the cache
-                    // mainly absorbs index pages.
-                    stmt.execute("SET CACHE_SIZE 8192");
-                }
-                createSchema();
-                initialized = true;
-                everInitialized = true;
-                logger.info("RecordingsIndex initialized (schema v" + SCHEMA_VERSION + ")");
-                return true;
-            } catch (Exception e) {
-                String msg = e.getMessage();
-                boolean lockErr = msg != null
-                        && (msg.contains("Locked by another process")
-                                || msg.contains("lock.db")
-                                || msg.contains("already in use"));
-                // Corruption: a hard power-cut / SIGKILL mid-write can leave the
-                // MVStore file half-flushed. H2 surfaces this as "File corrupted"
-                // / IO_EXCEPTION (SQLState-adjacent code 90030). This is NOT
-                // recoverable by retrying the same file — the previous behaviour
-                // (return false) left `initialized=false` for the whole daemon
-                // lifetime, and because there is no direct-FS listing fallback
-                // anymore, EVERY /api/recordings query returned an empty list
-                // even with .mp4 files present on disk → the app/web UI showed
-                // no recordings at all. The index is a pure derived cache of the
-                // filesystem (warmup rebuilds it by walking every dir), so the
-                // safe recovery is to wipe the corrupt store and reopen fresh;
-                // warmupAsync() then repopulates every row from disk.
-                boolean corruptErr = msg != null
-                        && (msg.contains("File corrupted")
-                                || msg.contains("90030")
-                                || msg.contains("Corrupt")
-                                || msg.contains("Unable to read")
-                                || msg.contains("MVStoreException"));
-                if (lockErr && attempt < maxRetries) {
-                    logger.warn("Index DB locked (attempt " + attempt + "/" + maxRetries + "), cleaning stale locks");
-                    cleanupStaleLocks();
-                    try { Thread.sleep((long) retryDelayMs * attempt); }
-                    catch (InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                        return false;
-                    }
-                } else if (corruptErr && attempt < maxRetries) {
-                    logger.error("Index DB corrupted (attempt " + attempt + "/" + maxRetries
-                            + "), wiping store to rebuild from filesystem: " + msg, e);
-                    // A partially-opened connection can hold an OS handle on the
-                    // file — close it before deleting so the unlink actually frees
-                    // the inode and the reopen sees a clean directory.
-                    closeQuietly();
-                    wipeCorruptStore();
-                    // No sleep needed — this isn't a transient contention error.
-                } else {
-                    logger.error("Failed to init RecordingsIndex: " + msg, e);
-                    // Permanent: the API must report the index as unavailable
-                    // rather than serving an empty list as authoritative.
-                    // There is no direct-FS listing fallback in the handler
-                    // anymore, so a silent empty response here would look
-                    // exactly like "you have no recordings".
-                    initFailedPermanently = true;
-                    return false;
-                }
-            }
-        }
-        // Retries exhausted without success — same reasoning as above.
-        initFailedPermanently = true;
-        return false;
+    private Connection openConnection() throws Exception {
+        return com.overdrive.app.database.OverdriveSqliteMaster.getInstance().asJdbcConnection();
     }
 
     public synchronized void close() {
@@ -505,15 +438,7 @@ public final class RecordingsIndex {
                 try { connection.close(); } catch (Exception ignored) { /* already dead */ }
                 connection = null;
             }
-            connection = DriverManager.getConnection(JDBC_URL, "sa", "");
-            try (Statement stmt = connection.createStatement()) {
-                stmt.execute("SET CACHE_SIZE 8192");
-            }
-            // Re-assert the schema: if the store was wiped (corrupt-recovery
-            // on a previous open, or an external delete of the .mv.db) the
-            // reopened DB is empty and every statement would fail on a
-            // missing table. createSchema() is idempotent — it is already run
-            // on every normal open.
+            connection = openConnection();
             createSchema();
             initialized = true;
             // Fresh connection + asserted schema: clear the unhealthy latch so
@@ -846,15 +771,30 @@ public final class RecordingsIndex {
         final Row r = row;
         return withRetry("upsertRow(" + row.filename + ")", Boolean.FALSE, () -> {
             String sql =
-                "MERGE INTO recordings (recording_id, filename, abs_path, root_id, volume_id,"
+                "INSERT INTO recordings (recording_id, filename, abs_path, root_id, volume_id,"
                 + " relative_path, root_rank, is_available, type, camera_id, ts_ms, size_bytes,"
                 + " mp4_mtime, sidecar_mtime, schema_version, peak_severity, peak_proximity,"
                 + " person_count, vehicle_count, bike_count, animal_count, hero_thumb,"
                 + " actor_classes, place_short, place_medium, place_display, place_country,"
                 + " place_source, start_lat, start_lng, ymd, storage,"
-                + " parking_session_id, event_cameras, peak_confidence) KEY(recording_id) VALUES ("
+                + " parking_session_id, event_cameras, peak_confidence) VALUES ("
                 + "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,"
-                + " ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                + " ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+                + "ON CONFLICT(recording_id) DO UPDATE SET "
+                + "filename=excluded.filename, abs_path=excluded.abs_path, root_id=excluded.root_id, "
+                + "volume_id=excluded.volume_id, relative_path=excluded.relative_path, root_rank=excluded.root_rank, "
+                + "is_available=excluded.is_available, type=excluded.type, camera_id=excluded.camera_id, "
+                + "ts_ms=excluded.ts_ms, size_bytes=excluded.size_bytes, mp4_mtime=excluded.mp4_mtime, "
+                + "sidecar_mtime=excluded.sidecar_mtime, schema_version=excluded.schema_version, "
+                + "peak_severity=excluded.peak_severity, peak_proximity=excluded.peak_proximity, "
+                + "person_count=excluded.person_count, vehicle_count=excluded.vehicle_count, "
+                + "bike_count=excluded.bike_count, animal_count=excluded.animal_count, "
+                + "hero_thumb=excluded.hero_thumb, actor_classes=excluded.actor_classes, "
+                + "place_short=excluded.place_short, place_medium=excluded.place_medium, "
+                + "place_display=excluded.place_display, place_country=excluded.place_country, "
+                + "place_source=excluded.place_source, start_lat=excluded.start_lat, start_lng=excluded.start_lng, "
+                + "ymd=excluded.ymd, storage=excluded.storage, parking_session_id=excluded.parking_session_id, "
+                + "event_cameras=excluded.event_cameras, peak_confidence=excluded.peak_confidence";
             try (PreparedStatement ps = connection.prepareStatement(sql)) {
                 ps.setString(1, r.recordingId);
                 ps.setString(2, r.filename);
@@ -1040,7 +980,11 @@ public final class RecordingsIndex {
         Integer count = withRetry("countRowsUnderRoots", null, () -> {
             try (PreparedStatement ps = connection.prepareStatement(query)) {
                 for (int i = 0; i < params.size(); i++) {
-                    ps.setString(i + 1, params.get(i) + "/%");
+                    String root = params.get(i);
+                    if (!root.endsWith("/") && !root.endsWith(File.separator)) {
+                        root = root + File.separator;
+                    }
+                    ps.setString(i + 1, root + "%");
                 }
                 try (ResultSet rs = ps.executeQuery()) {
                     return rs.next() ? rs.getInt(1) : 0;
@@ -1275,7 +1219,8 @@ public final class RecordingsIndex {
         final String v = value;
         withRetry("writeMeta(" + key + ")", Boolean.FALSE, () -> {
             try (PreparedStatement ps = connection.prepareStatement(
-                    "MERGE INTO recordings_meta KEY(meta_key) VALUES (?, ?)")) {
+                    "INSERT INTO recordings_meta (meta_key, meta_value) VALUES (?, ?) "
+                    + "ON CONFLICT(meta_key) DO UPDATE SET meta_value = excluded.meta_value")) {
                 ps.setString(1, k);
                 ps.setString(2, v);
                 ps.executeUpdate();

@@ -207,8 +207,8 @@
 -dontwarn javax.tools.**
 -dontwarn javax.script.**
 
-# 9. Keep H2 functional
--keep class org.h2.** { *; }
+# 9. SQLite Master is kept via standard Android rules
+-keep class com.overdrive.app.database.** { *; }
 
 # ==================== Log Stripping (Release Builds) ====================
 #

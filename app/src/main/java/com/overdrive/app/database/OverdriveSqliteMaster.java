@@ -230,6 +230,14 @@ public final class OverdriveSqliteMaster {
         return getBackend().inTransaction();
     }
 
+    /**
+     * Exposes this master SQLite database as a standard {@link java.sql.Connection}
+     * for seamless compatibility with legacy JDBC stores.
+     */
+    public java.sql.Connection asJdbcConnection() {
+        return SqliteConnectionBridge.create(this);
+    }
+
     // ── Master Schema DDL ───────────────────────────────────────────────
 
     private void createMasterTables() {
@@ -335,138 +343,7 @@ public final class OverdriveSqliteMaster {
                     + "last_sample_ms INTEGER DEFAULT 0"
                     + ");");
 
-            // 4. Recordings Meta & Index
-            execSQL("CREATE TABLE IF NOT EXISTS recordings_meta ("
-                    + "meta_key TEXT PRIMARY KEY,"
-                    + "meta_value TEXT"
-                    + ");");
-            execSQL("CREATE TABLE IF NOT EXISTS recordings ("
-                    + "recording_id TEXT PRIMARY KEY,"
-                    + "filename TEXT NOT NULL UNIQUE,"
-                    + "abs_path TEXT NOT NULL,"
-                    + "type TEXT NOT NULL,"
-                    + "camera_id TEXT,"
-                    + "ts_ms INTEGER NOT NULL,"
-                    + "size_bytes INTEGER NOT NULL,"
-                    + "mp4_mtime INTEGER NOT NULL,"
-                    + "sidecar_mtime INTEGER DEFAULT -1,"
-                    + "schema_version INTEGER DEFAULT 0,"
-                    + "peak_severity REAL DEFAULT 0,"
-                    + "peak_proximity REAL DEFAULT 0,"
-                    + "person_count INTEGER DEFAULT 0,"
-                    + "vehicle_count INTEGER DEFAULT 0,"
-                    + "bike_count INTEGER DEFAULT 0,"
-                    + "animal_count INTEGER DEFAULT 0,"
-                    + "hero_thumb TEXT,"
-                    + "actor_classes TEXT,"
-                    + "place_short TEXT,"
-                    + "place_medium TEXT,"
-                    + "place_display TEXT,"
-                    + "place_country TEXT,"
-                    + "place_source TEXT,"
-                    + "start_lat REAL,"
-                    + "start_lng REAL,"
-                    + "ymd TEXT NOT NULL,"
-                    + "storage TEXT NOT NULL,"
-                    + "parking_session_id TEXT,"
-                    + "event_cameras TEXT,"
-                    + "peak_confidence REAL DEFAULT 0"
-                    + ");");
-            execSQL("CREATE INDEX IF NOT EXISTS idx_recordings_ts ON recordings(ts_ms DESC);");
-            execSQL("CREATE INDEX IF NOT EXISTS idx_recordings_type ON recordings(type);");
-            execSQL("CREATE INDEX IF NOT EXISTS idx_recordings_ymd ON recordings(ymd);");
-            execSQL("CREATE INDEX IF NOT EXISTS idx_recordings_parking ON recordings(parking_session_id);");
-
-            // 5. Trips & GPS Telemetry Points
-            execSQL("CREATE TABLE IF NOT EXISTS trips ("
-                    + "trip_id TEXT PRIMARY KEY,"
-                    + "start_time_ms INTEGER NOT NULL,"
-                    + "end_time_ms INTEGER DEFAULT 0,"
-                    + "start_address TEXT,"
-                    + "end_address TEXT,"
-                    + "distance_km REAL DEFAULT 0,"
-                    + "duration_seconds INTEGER DEFAULT 0,"
-                    + "start_soc REAL DEFAULT 0,"
-                    + "end_soc REAL DEFAULT 0,"
-                    + "energy_used_kwh REAL DEFAULT 0,"
-                    + "avg_speed_kmh REAL DEFAULT 0,"
-                    + "max_speed_kmh REAL DEFAULT 0,"
-                    + "start_lat REAL,"
-                    + "start_lng REAL,"
-                    + "end_lat REAL,"
-                    + "end_lng REAL,"
-                    + "metadata_json TEXT"
-                    + ");");
-            execSQL("CREATE TABLE IF NOT EXISTS trip_points ("
-                    + "point_id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                    + "trip_id TEXT NOT NULL,"
-                    + "timestamp_ms INTEGER NOT NULL,"
-                    + "lat REAL NOT NULL,"
-                    + "lng REAL NOT NULL,"
-                    + "speed_kmh REAL,"
-                    + "soc REAL,"
-                    + "power_kw REAL,"
-                    + "FOREIGN KEY (trip_id) REFERENCES trips(trip_id) ON DELETE CASCADE"
-                    + ");");
-            execSQL("CREATE INDEX IF NOT EXISTS idx_trips_start ON trips(start_time_ms DESC);");
-            execSQL("CREATE INDEX IF NOT EXISTS idx_trip_points_trip ON trip_points(trip_id, timestamp_ms ASC);");
-
-            // 6. SoC History, Charging Sessions & SOH Telemetry
-            execSQL("CREATE TABLE IF NOT EXISTS soc_history ("
-                    + "timestamp_ms INTEGER PRIMARY KEY,"
-                    + "soc_percent REAL NOT NULL,"
-                    + "battery_temp_c REAL,"
-                    + "voltage_v REAL,"
-                    + "current_a REAL,"
-                    + "power_kw REAL,"
-                    + "remaining_kwh REAL"
-                    + ");");
-            execSQL("CREATE TABLE IF NOT EXISTS charging_sessions ("
-                    + "session_id TEXT PRIMARY KEY,"
-                    + "start_ms INTEGER NOT NULL,"
-                    + "end_ms INTEGER DEFAULT 0,"
-                    + "start_soc REAL NOT NULL,"
-                    + "end_soc REAL DEFAULT 0,"
-                    + "energy_added_kwh REAL DEFAULT 0,"
-                    + "max_power_kw REAL DEFAULT 0,"
-                    + "avg_power_kw REAL DEFAULT 0,"
-                    + "charger_type TEXT,"
-                    + "location_text TEXT"
-                    + ");");
-            execSQL("CREATE TABLE IF NOT EXISTS charging_power_samples ("
-                    + "sample_id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                    + "session_id TEXT NOT NULL,"
-                    + "timestamp_ms INTEGER NOT NULL,"
-                    + "power_kw REAL NOT NULL,"
-                    + "soc_percent REAL NOT NULL,"
-                    + "FOREIGN KEY (session_id) REFERENCES charging_sessions(session_id) ON DELETE CASCADE"
-                    + ");");
-            execSQL("CREATE TABLE IF NOT EXISTS soc_daily ("
-                    + "day_ymd TEXT PRIMARY KEY,"
-                    + "min_soc REAL,"
-                    + "max_soc REAL,"
-                    + "avg_soc REAL,"
-                    + "start_soc REAL,"
-                    + "end_soc REAL"
-                    + ");");
-            execSQL("CREATE TABLE IF NOT EXISTS charging_daily ("
-                    + "day_ymd TEXT PRIMARY KEY,"
-                    + "total_kwh REAL,"
-                    + "session_count INTEGER,"
-                    + "total_duration_ms INTEGER"
-                    + ");");
-            execSQL("CREATE TABLE IF NOT EXISTS acc_events ("
-                    + "event_id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                    + "timestamp_ms INTEGER NOT NULL,"
-                    + "power_level INTEGER NOT NULL,"
-                    + "source TEXT"
-                    + ");");
-            execSQL("CREATE INDEX IF NOT EXISTS idx_soc_history_ts ON soc_history(timestamp_ms DESC);");
-            execSQL("CREATE INDEX IF NOT EXISTS idx_charging_sessions_start ON charging_sessions(start_ms DESC);");
-            execSQL("CREATE INDEX IF NOT EXISTS idx_cps_session ON charging_power_samples(session_id, timestamp_ms ASC);");
-            execSQL("CREATE INDEX IF NOT EXISTS idx_acc_events_ts ON acc_events(timestamp_ms DESC);");
-
-            // 7. RoadSense Hazards
+            // 4. RoadSense Hazards
             execSQL("CREATE TABLE IF NOT EXISTS roadsense_hazards ("
                     + "id TEXT PRIMARY KEY,"
                     + "lat REAL NOT NULL,"
