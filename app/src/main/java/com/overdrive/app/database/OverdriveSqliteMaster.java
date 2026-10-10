@@ -41,11 +41,21 @@ public final class OverdriveSqliteMaster {
     private static final Object INSTANCE_LOCK = new Object();
 
     private final String dbPath;
-    private volatile SQLiteDatabase database;
+    private volatile SqliteBackend backend;
     private volatile boolean isInitialized = false;
 
     private OverdriveSqliteMaster(String dbPath) {
         this.dbPath = dbPath;
+    }
+
+    public static boolean isAndroidRuntime() {
+        try {
+            String vendor = System.getProperty("java.vendor", "");
+            String vmName = System.getProperty("java.vm.name", "");
+            return vendor.contains("Android") || vmName.contains("Dalvik") || vmName.contains("ART");
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     public static OverdriveSqliteMaster getInstance() {
@@ -66,6 +76,24 @@ public final class OverdriveSqliteMaster {
         return inst;
     }
 
+    public synchronized void setBackend(SqliteBackend backend) {
+        if (this.backend != null && this.backend.isOpen()) {
+            this.backend.close();
+        }
+        this.backend = backend;
+        this.isInitialized = false;
+    }
+
+    public static OverdriveSqliteMaster useInMemoryForTesting() {
+        synchronized (INSTANCE_LOCK) {
+            OverdriveSqliteMaster master = new OverdriveSqliteMaster(":memory:");
+            master.setBackend(JdbcSqliteBackend.createInMemory());
+            master.open();
+            instance = master;
+            return master;
+        }
+    }
+
     /**
      * Opens or creates the SQLite master database and applies automotive WAL tuning.
      * Thread-safe and idempotent.
@@ -76,29 +104,26 @@ public final class OverdriveSqliteMaster {
         }
 
         try {
-            File dbFile = new File(dbPath);
-            File parentDir = dbFile.getParentFile();
-            if (parentDir != null && !parentDir.exists()) {
-                parentDir.mkdirs();
+            if (backend == null) {
+                if (isAndroidRuntime()) {
+                    backend = new AndroidSqliteBackend(dbPath);
+                } else {
+                    backend = JdbcSqliteBackend.createInMemory();
+                }
             }
 
-            logger.info("Opening master SQLite database at: " + dbPath);
-            database = SQLiteDatabase.openOrCreateDatabase(dbFile, null);
-
-            // Configure high-performance WAL and automotive durability pragmas
-            database.enableWriteAheadLogging();
-            database.execSQL("PRAGMA synchronous = NORMAL;");
-            database.execSQL("PRAGMA busy_timeout = 5000;");
-            database.execSQL("PRAGMA foreign_keys = ON;");
-            database.execSQL("PRAGMA temp_store = MEMORY;");
-            database.execSQL("PRAGMA cache_size = -4000;"); // 4MB cache
+            if (!backend.open()) {
+                return false;
+            }
 
             createMasterTables();
             isInitialized = true;
-            logger.info("Master SQLite database opened successfully in WAL mode.");
+            logger.info("Master SQLite database opened successfully via " + backend.getClass().getSimpleName());
 
-            // Trigger one-shot legacy H2 data migration in background
-            H2ToSqliteMigrator.checkAndMigrateAsync(this);
+            // Trigger one-shot legacy H2 data migration on Android in background
+            if (isAndroidRuntime()) {
+                H2ToSqliteMigrator.checkAndMigrateAsync(this);
+            }
 
             return true;
         } catch (Throwable t) {
@@ -109,11 +134,7 @@ public final class OverdriveSqliteMaster {
     }
 
     public synchronized boolean isOpen() {
-        try {
-            return database != null && database.isOpen();
-        } catch (Exception e) {
-            return false;
-        }
+        return backend != null && backend.isOpen();
     }
 
     public synchronized void close() {
@@ -121,42 +142,48 @@ public final class OverdriveSqliteMaster {
     }
 
     private void closeQuietly() {
-        SQLiteDatabase db = database;
-        database = null;
+        SqliteBackend b = backend;
+        backend = null;
         isInitialized = false;
-        if (db != null) {
+        if (b != null) {
             try {
-                db.close();
+                b.close();
                 logger.info("Master SQLite database closed cleanly.");
             } catch (Exception ignored) {}
         }
     }
 
-    public SQLiteDatabase getRawDatabase() {
-        SQLiteDatabase db = database;
-        if (db == null || !db.isOpen()) {
+    public SqliteBackend getBackend() {
+        if (backend == null || !backend.isOpen()) {
             synchronized (this) {
                 if (!open()) {
                     throw new IllegalStateException("OverdriveSqliteMaster database is not open: " + dbPath);
                 }
-                return database;
             }
         }
-        return db;
+        return backend;
+    }
+
+    public SQLiteDatabase getRawDatabase() {
+        SqliteBackend b = getBackend();
+        if (b instanceof AndroidSqliteBackend) {
+            return ((AndroidSqliteBackend) b).getRawDatabase();
+        }
+        throw new UnsupportedOperationException("getRawDatabase is only supported on AndroidSqliteBackend");
     }
 
     // ── Helper Execution Methods ────────────────────────────────────────
 
     public void execSQL(String sql) {
-        getRawDatabase().execSQL(sql);
+        getBackend().execSQL(sql);
     }
 
     public void execSQL(String sql, Object[] bindArgs) {
-        getRawDatabase().execSQL(sql, bindArgs);
+        getBackend().execSQL(sql, bindArgs);
     }
 
     public Cursor rawQuery(String sql, String[] selectionArgs) {
-        return getRawDatabase().rawQuery(sql, selectionArgs);
+        return getBackend().rawQuery(sql, selectionArgs);
     }
 
     public SQLiteStatement compileStatement(String sql) {
@@ -164,19 +191,19 @@ public final class OverdriveSqliteMaster {
     }
 
     public void beginTransaction() {
-        getRawDatabase().beginTransaction();
+        getBackend().beginTransaction();
     }
 
     public void setTransactionSuccessful() {
-        getRawDatabase().setTransactionSuccessful();
+        getBackend().setTransactionSuccessful();
     }
 
     public void endTransaction() {
-        getRawDatabase().endTransaction();
+        getBackend().endTransaction();
     }
 
     public boolean inTransaction() {
-        return getRawDatabase().inTransaction();
+        return getBackend().inTransaction();
     }
 
     // ── Master Schema DDL ───────────────────────────────────────────────
@@ -227,28 +254,37 @@ public final class OverdriveSqliteMaster {
             // 2. Persistent Notifications
             execSQL("CREATE TABLE IF NOT EXISTS notifications ("
                     + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                    + "timestamp_ms INTEGER NOT NULL,"
+                    + "ts INTEGER NOT NULL,"
                     + "category TEXT NOT NULL,"
                     + "severity TEXT NOT NULL,"
                     + "title TEXT NOT NULL,"
                     + "body TEXT,"
-                    + "resolved_url TEXT,"
-                    + "action_json TEXT,"
-                    + "metadata_json TEXT"
+                    + "tag TEXT,"
+                    + "click_url TEXT,"
+                    + "data TEXT"
                     + ");");
-            execSQL("CREATE INDEX IF NOT EXISTS idx_notifications_timestamp ON notifications(timestamp_ms DESC);");
+            execSQL("CREATE INDEX IF NOT EXISTS idx_notifications_ts ON notifications(ts DESC);");
             execSQL("CREATE INDEX IF NOT EXISTS idx_notifications_category ON notifications(category);");
 
             // 3. Network Data Usage
-            execSQL("CREATE TABLE IF NOT EXISTS data_usage ("
-                    + "timestamp_ms INTEGER PRIMARY KEY,"
-                    + "app_rx_bytes INTEGER DEFAULT 0,"
-                    + "app_tx_bytes INTEGER DEFAULT 0,"
-                    + "total_rx_bytes INTEGER DEFAULT 0,"
-                    + "total_tx_bytes INTEGER DEFAULT 0,"
-                    + "active_interface TEXT"
+            execSQL("CREATE TABLE IF NOT EXISTS data_usage_daily ("
+                    + "day_key TEXT PRIMARY KEY,"
+                    + "wifi_bytes INTEGER DEFAULT 0,"
+                    + "mobile_bytes INTEGER DEFAULT 0,"
+                    + "other_bytes INTEGER DEFAULT 0,"
+                    + "app_bytes INTEGER DEFAULT 0,"
+                    + "system_bytes INTEGER DEFAULT 0,"
+                    + "updated_at INTEGER DEFAULT 0"
                     + ");");
-            execSQL("CREATE INDEX IF NOT EXISTS idx_data_usage_ts ON data_usage(timestamp_ms DESC);");
+            execSQL("CREATE TABLE IF NOT EXISTS data_usage_state ("
+                    + "id INTEGER PRIMARY KEY,"
+                    + "wifi_last INTEGER DEFAULT 0,"
+                    + "mobile_last INTEGER DEFAULT 0,"
+                    + "other_last INTEGER DEFAULT 0,"
+                    + "app_last INTEGER DEFAULT 0,"
+                    + "system_last INTEGER DEFAULT 0,"
+                    + "last_sample_ms INTEGER DEFAULT 0"
+                    + ");");
 
             // 4. Recordings Meta & Index
             execSQL("CREATE TABLE IF NOT EXISTS recordings_meta ("
