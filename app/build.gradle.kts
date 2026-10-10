@@ -294,10 +294,15 @@ tasks.register("extractWebAssets") {
 android {
     signingConfigs {
         create("release") {
-            storeFile = file(System.getenv("KEYSTORE_FILE") ?: "release.jks")
-            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
-            keyPassword = System.getenv("KEY_PASSWORD") ?: ""
-            keyAlias = System.getenv("KEY_ALIAS") ?: "key0"
+            val customKeystore = System.getenv("KEYSTORE_FILE")?.let { file(it) } ?: file("release.jks")
+            if (customKeystore.exists()) {
+                storeFile = customKeystore
+                storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
+                keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+                keyAlias = System.getenv("KEY_ALIAS") ?: "key0"
+            } else {
+                initWith(getByName("debug"))
+            }
         }
     }
     namespace = "com.overdrive.app"
