@@ -627,6 +627,7 @@ dependencies {
     testImplementation(libs.junit)
     // Android's mockable org.json stubs throw in local JVM tests.
     testImplementation("org.json:json:20231013")
+    testImplementation("org.xerial:sqlite-jdbc:3.45.1.0")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 

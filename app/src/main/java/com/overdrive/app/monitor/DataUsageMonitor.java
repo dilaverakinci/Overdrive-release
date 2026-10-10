@@ -2,6 +2,9 @@ package com.overdrive.app.monitor;
 
 import android.content.Context;
 
+import android.database.Cursor;
+
+import com.overdrive.app.database.OverdriveSqliteMaster;
 import com.overdrive.app.logging.DaemonLogger;
 
 import org.json.JSONArray;
@@ -9,14 +12,8 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -121,7 +118,7 @@ public class DataUsageMonitor {
     private static DataUsageMonitor instance;
     private static final Object lock = new Object();
 
-    private Connection connection;
+    private final OverdriveSqliteMaster master;
     private volatile boolean isInitialized = false;
     private volatile boolean isRunning = false;
     private ScheduledExecutorService scheduler;
@@ -130,12 +127,12 @@ public class DataUsageMonitor {
     // resolved → we then count UID 2000 only (still useful; logged).
     private volatile int appUid = -1;
 
-    private DataUsageMonitor() {
-        try {
-            Class.forName("org.h2.Driver");
-        } catch (Throwable t) {
-            logger.error("H2 Driver not found for DataUsageMonitor: " + t.getMessage(), t);
-        }
+    public DataUsageMonitor() {
+        this(OverdriveSqliteMaster.getInstance());
+    }
+
+    public DataUsageMonitor(OverdriveSqliteMaster master) {
+        this.master = master != null ? master : OverdriveSqliteMaster.getInstance();
     }
 
     public static DataUsageMonitor getInstance() {
@@ -230,58 +227,13 @@ public class DataUsageMonitor {
         synchronized (lock) {
             if (isInitialized) return;
             try {
-                connection = DriverManager.getConnection(JDBC_URL, "sa", "");
-                try (Statement st = connection.createStatement()) {
-                    st.execute("SET CACHE_SIZE 2048");
+                if (master.open()) {
+                    isInitialized = true;
+                    logger.info("DataUsageMonitor: SQLite initialized via OverdriveSqliteMaster");
                 }
-                createTables();
-                isInitialized = true;
-                logger.info("DataUsageMonitor: H2 initialized at " + DB_PATH);
             } catch (Throwable t) {
                 logger.error("DataUsageMonitor: init failed: " + t.getMessage(), t);
             }
-        }
-    }
-
-    private void createTables() throws Exception {
-        try (Statement st = connection.createStatement()) {
-            // Two independent breakdowns of the SAME total: by transport
-            // (wifi/mobile/other) and by origin (app vs system=UID-2000
-            // daemons+tunnels). app+system == wifi+mobile+other by construction
-            // (same qtaguid rows summed two ways).
-            st.execute(
-                // NB: the day-key column is named `day_key`, NOT `day` — `DAY` is a
-                // RESERVED word in H2 (the DAY() datetime function / field), so
-                // `CREATE TABLE (day VARCHAR...)` fails with "Syntax error ...
-                // expected identifier" and the whole DB never initializes → sampler
-                // never starts → the Data tab shows an empty graph forever. Renaming
-                // (rather than quoting "day" everywhere) keeps every query simple.
-                "CREATE TABLE IF NOT EXISTS " + TABLE_DAILY + " (" +
-                "day_key VARCHAR(10) PRIMARY KEY," + // local yyyy-MM-dd
-                "wifi_bytes BIGINT DEFAULT 0," +
-                "mobile_bytes BIGINT DEFAULT 0," +
-                "other_bytes BIGINT DEFAULT 0," +
-                "app_bytes BIGINT DEFAULT 0," +
-                "system_bytes BIGINT DEFAULT 0," +
-                "updated_at BIGINT DEFAULT 0" +
-                ");"
-            );
-            // Migration for DBs created before the origin split.
-            try { st.execute("ALTER TABLE " + TABLE_DAILY + " ADD COLUMN IF NOT EXISTS app_bytes BIGINT DEFAULT 0;"); } catch (Exception ignored) {}
-            try { st.execute("ALTER TABLE " + TABLE_DAILY + " ADD COLUMN IF NOT EXISTS system_bytes BIGINT DEFAULT 0;"); } catch (Exception ignored) {}
-            st.execute(
-                "CREATE TABLE IF NOT EXISTS " + TABLE_STATE + " (" +
-                "id INT PRIMARY KEY," +
-                "wifi_last BIGINT DEFAULT 0," +
-                "mobile_last BIGINT DEFAULT 0," +
-                "other_last BIGINT DEFAULT 0," +
-                "app_last BIGINT DEFAULT 0," +
-                "system_last BIGINT DEFAULT 0," +
-                "last_sample_ms BIGINT DEFAULT 0" +
-                ");"
-            );
-            try { st.execute("ALTER TABLE " + TABLE_STATE + " ADD COLUMN IF NOT EXISTS app_last BIGINT DEFAULT 0;"); } catch (Exception ignored) {}
-            try { st.execute("ALTER TABLE " + TABLE_STATE + " ADD COLUMN IF NOT EXISTS system_last BIGINT DEFAULT 0;"); } catch (Exception ignored) {}
         }
     }
 
@@ -302,19 +254,32 @@ public class DataUsageMonitor {
         if (cur == null) return;       // proc unreadable — recorded nothing
 
         long now = System.currentTimeMillis();
+        recordSample(cur, now);
+    }
+
+    /**
+     * Visible for testing and internal sampling. Updates state and daily usage row.
+     */
+    void recordSample(long[] cur, long now) throws Exception {
+        if (!isInitialized) {
+            init();
+            if (!isInitialized) return;
+        }
+
         long[] last = new long[]{0, 0, 0, 0, 0};
         long lastMs = 0;
         boolean haveState = false;
-        try (Statement st = connection.createStatement();
-             ResultSet rs = st.executeQuery("SELECT wifi_last, mobile_last, other_last, "
-                     + "app_last, system_last, last_sample_ms FROM " + TABLE_STATE + " WHERE id=1")) {
-            if (rs.next()) {
-                last[0] = rs.getLong(1);
-                last[1] = rs.getLong(2);
-                last[2] = rs.getLong(3);
-                last[3] = rs.getLong(4);
-                last[4] = rs.getLong(5);
-                lastMs = rs.getLong(6);
+
+        try (Cursor rs = master.rawQuery(
+                "SELECT wifi_last, mobile_last, other_last, app_last, system_last, last_sample_ms FROM "
+                        + TABLE_STATE + " WHERE id=1", null)) {
+            if (rs != null && rs.moveToFirst()) {
+                last[0] = rs.getLong(0);
+                last[1] = rs.getLong(1);
+                last[2] = rs.getLong(2);
+                last[3] = rs.getLong(3);
+                last[4] = rs.getLong(4);
+                lastMs = rs.getLong(5);
                 haveState = true;
             }
         }
@@ -335,19 +300,20 @@ public class DataUsageMonitor {
             }
         }
 
-        // Persist the new baseline (MERGE = upsert the single state row).
-        try (PreparedStatement ps = connection.prepareStatement(
-                "MERGE INTO " + TABLE_STATE
+        // Persist the new baseline (atomic SQLite upsert)
+        master.execSQL(
+                "INSERT INTO " + TABLE_STATE
                         + " (id, wifi_last, mobile_last, other_last, app_last, system_last, last_sample_ms) "
-                        + "KEY(id) VALUES (1, ?, ?, ?, ?, ?, ?)")) {
-            ps.setLong(1, cur[0]);
-            ps.setLong(2, cur[1]);
-            ps.setLong(3, cur[2]);
-            ps.setLong(4, cur[3]);
-            ps.setLong(5, cur[4]);
-            ps.setLong(6, now);
-            ps.executeUpdate();
-        }
+                        + "VALUES (1, ?, ?, ?, ?, ?, ?) "
+                        + "ON CONFLICT(id) DO UPDATE SET "
+                        + "wifi_last = excluded.wifi_last, "
+                        + "mobile_last = excluded.mobile_last, "
+                        + "other_last = excluded.other_last, "
+                        + "app_last = excluded.app_last, "
+                        + "system_last = excluded.system_last, "
+                        + "last_sample_ms = excluded.last_sample_ms",
+                new Object[]{cur[0], cur[1], cur[2], cur[3], cur[4], now}
+        );
     }
 
     /** Reset-safe delta: a smaller current means the counter reset (reboot /
@@ -358,37 +324,19 @@ public class DataUsageMonitor {
 
     private void addToDay(String day, long wifi, long mobile, long other,
                           long app, long system, long now) throws Exception {
-        // Read-modify-write under the single sampler thread (only writer). MERGE
-        // with an accumulating subselect is possible but verbose in H2; a plain
-        // select-then-upsert is clear and correct given the single writer.
-        long curWifi = 0, curMobile = 0, curOther = 0, curApp = 0, curSystem = 0;
-        try (PreparedStatement ps = connection.prepareStatement(
-                "SELECT wifi_bytes, mobile_bytes, other_bytes, app_bytes, system_bytes FROM "
-                        + TABLE_DAILY + " WHERE day_key=?")) {
-            ps.setString(1, day);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    curWifi = rs.getLong(1);
-                    curMobile = rs.getLong(2);
-                    curOther = rs.getLong(3);
-                    curApp = rs.getLong(4);
-                    curSystem = rs.getLong(5);
-                }
-            }
-        }
-        try (PreparedStatement ps = connection.prepareStatement(
-                "MERGE INTO " + TABLE_DAILY
+        master.execSQL(
+                "INSERT INTO " + TABLE_DAILY
                         + " (day_key, wifi_bytes, mobile_bytes, other_bytes, app_bytes, system_bytes, updated_at) "
-                        + "KEY(day_key) VALUES (?, ?, ?, ?, ?, ?, ?)")) {
-            ps.setString(1, day);
-            ps.setLong(2, curWifi + wifi);
-            ps.setLong(3, curMobile + mobile);
-            ps.setLong(4, curOther + other);
-            ps.setLong(5, curApp + app);
-            ps.setLong(6, curSystem + system);
-            ps.setLong(7, now);
-            ps.executeUpdate();
-        }
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?) "
+                        + "ON CONFLICT(day_key) DO UPDATE SET "
+                        + "wifi_bytes = wifi_bytes + excluded.wifi_bytes, "
+                        + "mobile_bytes = mobile_bytes + excluded.mobile_bytes, "
+                        + "other_bytes = other_bytes + excluded.other_bytes, "
+                        + "app_bytes = app_bytes + excluded.app_bytes, "
+                        + "system_bytes = system_bytes + excluded.system_bytes, "
+                        + "updated_at = excluded.updated_at",
+                new Object[]{day, wifi, mobile, other, app, system, now}
+        );
     }
 
     /**
@@ -622,7 +570,12 @@ public class DataUsageMonitor {
     public JSONObject getUsage(int days) {
         JSONObject out = new JSONObject();
         try {
-            boolean enabled = com.overdrive.app.config.UnifiedConfigManager.isDataUsageEnabled();
+            boolean enabled = false;
+            try {
+                enabled = com.overdrive.app.config.UnifiedConfigManager.isDataUsageEnabled();
+            } catch (Throwable ignored) {
+                // JVM test fallback
+            }
             out.put("enabled", enabled);
             // available flips true once any backend yields a reading. When the
             // feature was just enabled and no tick has run yet, report true
@@ -645,16 +598,16 @@ public class DataUsageMonitor {
 
             JSONArray arr = new JSONArray();
             long tW = 0, tM = 0, tO = 0, tA = 0, tS = 0;
-            try (PreparedStatement ps = connection.prepareStatement(
+            try (Cursor rs = master.rawQuery(
                     "SELECT day_key, wifi_bytes, mobile_bytes, other_bytes, app_bytes, system_bytes FROM "
-                            + TABLE_DAILY + " WHERE day_key >= ? ORDER BY day_key ASC")) {
-                ps.setString(1, from);
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        long w = rs.getLong(2), m = rs.getLong(3), o = rs.getLong(4);
-                        long a = rs.getLong(5), s = rs.getLong(6);
+                            + TABLE_DAILY + " WHERE day_key >= ? ORDER BY day_key ASC",
+                    new String[]{from})) {
+                if (rs != null) {
+                    while (rs.moveToNext()) {
+                        long w = rs.getLong(1), m = rs.getLong(2), o = rs.getLong(3);
+                        long a = rs.getLong(4), s = rs.getLong(5);
                         JSONObject d = new JSONObject();
-                        d.put("date", rs.getString(1));
+                        d.put("date", rs.getString(0));
                         d.put("wifi", w);
                         d.put("mobile", m);
                         d.put("other", o);
@@ -684,9 +637,9 @@ public class DataUsageMonitor {
      *  Used by the performance page's Reset action. */
     public boolean resetHistory() {
         if (!isInitialized) return false;
-        try (Statement st = connection.createStatement()) {
-            st.execute("DELETE FROM " + TABLE_DAILY);
-            st.execute("DELETE FROM " + TABLE_STATE);
+        try {
+            master.execSQL("DELETE FROM " + TABLE_DAILY);
+            master.execSQL("DELETE FROM " + TABLE_STATE);
             logger.info("DataUsageMonitor: history reset");
             return true;
         } catch (Throwable t) {
@@ -695,14 +648,10 @@ public class DataUsageMonitor {
         }
     }
 
-    /** Close the H2 connection on daemon shutdown. */
+    /** Cleanup on daemon shutdown. */
     public void shutdown() {
         stop();
         synchronized (lock) {
-            if (connection != null) {
-                try { connection.close(); } catch (Throwable ignored) {}
-                connection = null;
-            }
             isInitialized = false;
         }
     }
