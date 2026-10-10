@@ -1094,7 +1094,7 @@ class DashboardNativeFragment : Fragment() {
         }
     }
 
-    private fun showVehicleCapacityDialog(): Boolean {
+    fun showVehicleCapacityDialog(onFinished: (() -> Unit)? = null): Boolean {
         val ctx = context ?: return false
         val dialogView = layoutInflater.inflate(R.layout.dialog_vehicle_capacity, null, false)
 
@@ -1324,6 +1324,9 @@ class DashboardNativeFragment : Fragment() {
             cancelButton.setOnClickListener { dialog.dismiss() }
         }
 
+        if (onFinished != null) {
+            dialog.setOnDismissListener { onFinished() }
+        }
         dialog.show()
         return true
     }

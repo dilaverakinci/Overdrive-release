@@ -12,85 +12,31 @@
         tools:layout="@layout/fragment_dashboard" />
 
     <fragment
-        android:id="@+id/dashboardLegacyFragment"
-        android:name="com.overdrive.app.ui.fragment.DashboardFragment"
-        android:label="@string/rail_dashboard_legacy"
-        tools:layout="@layout/fragment_dashboard" />
-
-    <fragment
         android:id="@+id/genAiFragment"
         android:name="com.overdrive.app.ui.fragment.AssistantNativeFragment"
         android:label="@string/rail_assistant"
         tools:layout="@layout/fragment_assistant" />
 
-    <fragment
-        android:id="@+id/genAiLegacyFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_assistant_legacy"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/assistant" />
-    </fragment>
-
-    <!-- Live view: canonical multi-cam page (WebView). Falls back from
-         WebCodecs to JMuxer on Chrome 58 / Android 7.1 head unit.
-         page_path is /live-view (the camera UI moved out of index.html
-         when the new Dashboard landing page took over /). -->
-    <!-- Live view: native vs legacy webview -->
+    <!-- Live view: native -->
     <fragment
         android:id="@+id/liveViewFragment"
         android:name="com.overdrive.app.ui.fragment.LiveViewNativeFragment"
         android:label="@string/rail_live"
         tools:layout="@layout/fragment_live_view" />
 
-    <fragment
-        android:id="@+id/liveViewLegacyFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_live_legacy"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/live-view" />
-    </fragment>
-
-    <!-- Recordings: native two-pane (library + player) vs legacy events webview -->
+    <!-- Recordings: native two-pane (library + player) -->
     <fragment
         android:id="@+id/recordingsFragment"
         android:name="com.overdrive.app.ui.fragment.RecordingsFragment"
         android:label="@string/rail_recordings"
         tools:layout="@layout/fragment_recordings" />
 
-    <fragment
-        android:id="@+id/recordingsLegacyFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_recordings_legacy"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/events" />
-    </fragment>
-
-    <!-- Parking Intelligence: native vs legacy webview -->
+    <!-- Parking Intelligence: native -->
     <fragment
         android:id="@+id/parkingFragment"
         android:name="com.overdrive.app.ui.fragment.ParkingNativeFragment"
         android:label="@string/rail_parking"
         tools:layout="@layout/fragment_parking" />
-
-    <fragment
-        android:id="@+id/parkingLegacyFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_parking_legacy"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/parking" />
-    </fragment>
 
     <!-- Surveillance settings (native) -->
     <fragment
@@ -113,17 +59,6 @@
         android:label="@string/rail_vehicle"
         tools:layout="@layout/fragment_vehicle_native" />
 
-    <fragment
-        android:id="@+id/vehicleControlLegacyFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_vehicle_legacy"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/vehicle-control" />
-    </fragment>
-
     <!-- Projection (native only — cast + live mirror of the driver cluster) -->
     <fragment
         android:id="@+id/projectionFragment"
@@ -138,36 +73,12 @@
         android:label="@string/rail_trips"
         tools:layout="@layout/fragment_trips_native" />
 
-    <!-- Trips (Legacy Web) -->
-    <fragment
-        android:id="@+id/tripsLegacyFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_trips_legacy"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/trips" />
-    </fragment>
-
     <!-- Charging (Native) -->
     <fragment
         android:id="@+id/chargingFragment"
         android:name="com.overdrive.app.ui.fragment.ChargingNativeFragment"
         android:label="@string/rail_charging"
         tools:layout="@layout/fragment_charging_native" />
-
-    <!-- Charging (Legacy Web) -->
-    <fragment
-        android:id="@+id/chargingLegacyFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_charging_legacy"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/charging" />
-    </fragment>
 
     <!-- Automations (Native) -->
     <fragment
@@ -176,36 +87,12 @@
         android:label="@string/rail_automations"
         tools:layout="@layout/fragment_automations_native" />
 
-    <!-- Automations (Legacy Web) -->
-    <fragment
-        android:id="@+id/automationsLegacyFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_automations_legacy"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/automations" />
-    </fragment>
-
     <!-- Seat Positions (native) -->
     <fragment
         android:id="@+id/seatPositionsFragment"
         android:name="com.overdrive.app.ui.fragment.SeatPositionsNativeFragment"
         android:label="@string/rail_seat_positions"
         tools:layout="@layout/fragment_seat_positions_native" />
-
-    <!-- Seat Positions (legacy web) -->
-    <fragment
-        android:id="@+id/seatPositionsLegacyFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_seat_positions_legacy"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/seat-positions" />
-    </fragment>
 
     <!-- Key Mapping (Native) -->
     <fragment
@@ -214,31 +101,12 @@
         android:label="@string/rail_key_mapping"
         tools:layout="@layout/fragment_key_mapping_native" />
 
-    <!-- Key Mapping (Legacy Web) -->
-    <fragment
-        android:id="@+id/keyMappingLegacyFragment"
-        android:name="com.overdrive.app.ui.fragment.WebViewFragment"
-        android:label="@string/rail_key_mapping_legacy"
-        tools:layout="@layout/fragment_webview">
-        <argument
-            android:name="page_path"
-            app:argType="string"
-            android:defaultValue="/key-mapping" />
-    </fragment>
-
     <!-- Integrations (Native) -->
     <fragment
         android:id="@+id/integrationsFragment"
         android:name="com.overdrive.app.ui.fragment.IntegrationsNativeFragment"
         android:label="@string/rail_integrations"
         tools:layout="@layout/fragment_integrations_native" />
-
-    <!-- Integrations (Legacy Hub) -->
-    <fragment
-        android:id="@+id/integrationsLegacyFragment"
-        android:name="com.overdrive.app.ui.fragment.IntegrationsFragment"
-        android:label="@string/rail_integrations_legacy"
-        tools:layout="@layout/fragment_integrations" />
 
     <!-- Sub-destinations under Integrations (entered via cards, not the rail).
          All three render via WebViewFragment pointing at the corresponding
@@ -295,12 +163,6 @@
         android:name="com.overdrive.app.ui.fragment.RoadSenseNativeFragment"
         android:label="@string/rail_roadsense"
         tools:layout="@layout/fragment_roadsense_native" />
-
-    <!-- RoadSense Legacy: WebView wrapper for /road-sense -->
-    <fragment
-        android:id="@+id/roadSenseLegacyFragment"
-        android:name="com.overdrive.app.ui.fragment.RoadSenseFragment"
-        android:label="@string/rail_roadsense_legacy" />
 
     <!-- Network & Hotspot: SIM-data sharing, clients, data limit, proxy.
          Its own top-level destination (not a Daemons entry) because it owns

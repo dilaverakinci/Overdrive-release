@@ -1672,17 +1672,11 @@ open class MainActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.dashboardFragment,
-                R.id.dashboardLegacyFragment,
                 R.id.genAiFragment,
-                R.id.genAiLegacyFragment,
                 R.id.liveViewFragment,
-                R.id.liveViewLegacyFragment,
                 R.id.recordingsFragment,
-                R.id.recordingsLegacyFragment,
                 R.id.parkingFragment,
-                R.id.parkingLegacyFragment,
                 R.id.vehicleControlFragment,
-                R.id.vehicleControlLegacyFragment,
                 R.id.seatPositionsFragment,
                 R.id.projectionFragment,
                 R.id.tripsFragment,
@@ -1690,9 +1684,7 @@ open class MainActivity : AppCompatActivity() {
                 R.id.automationsFragment,
                 R.id.keyMappingFragment,
                 R.id.integrationsFragment,
-                R.id.integrationsLegacyFragment,
                 R.id.roadSenseFragment,
-                R.id.roadSenseLegacyFragment,
                 R.id.networkFragment,
                 R.id.diagnosticsFragment,
                 R.id.settingsFragment,
@@ -4939,17 +4931,16 @@ open class MainActivity : AppCompatActivity() {
         val nav = supportFragmentManager.findFragmentById(R.id.navHostFragment)
                 as? androidx.navigation.fragment.NavHostFragment
         val dash = nav?.childFragmentManager?.primaryNavigationFragment
-                as? com.overdrive.app.ui.fragment.DashboardFragment
+                as? com.overdrive.app.ui.fragment.DashboardNativeFragment
                 ?: return false
         return dash.showVehicleCapacityDialog(onFinished)
     }
 
-    /** Live DashboardFragment root for the orientation tour anchors (null if not current). */
+    /** Live Dashboard root for the orientation tour anchors (null if not current). */
     fun currentDashboardRoot(): android.view.View? {
         val nav = supportFragmentManager.findFragmentById(R.id.navHostFragment)
                 as? androidx.navigation.fragment.NavHostFragment
         val dash = nav?.childFragmentManager?.primaryNavigationFragment
-                as? com.overdrive.app.ui.fragment.DashboardFragment
         return dash?.view
     }
 
