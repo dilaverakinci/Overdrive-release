@@ -19,9 +19,25 @@ import com.overdrive.app.R;
 
 public class UpdateDialog {
 
+    private static java.lang.ref.WeakReference<AlertDialog> activeUpdateDialogRef;
+
     public static void showUpdateAvailable(Context context, String currentVersion,
                                            String newVersion, String releaseNotes,
                                            Runnable onUpdate, Runnable onDismiss) {
+        if (context instanceof android.app.Activity) {
+            android.app.Activity activity = (android.app.Activity) context;
+            if (activity.isFinishing() || activity.isDestroyed()) {
+                if (onDismiss != null) onDismiss.run();
+                return;
+            }
+        }
+        if (activeUpdateDialogRef != null) {
+            AlertDialog existing = activeUpdateDialogRef.get();
+            if (existing != null && existing.isShowing()) {
+                existing.dismiss();
+            }
+        }
+
         View view = LayoutInflater.from(context).inflate(R.layout.dialog_update_available, null);
         // currentVersion (getDisplayVersion) and newVersion (extractVersion) are
         // already self-prefixed labels like "alpha-v26.1" / "v26.1" — do NOT add
@@ -40,7 +56,7 @@ public class UpdateDialog {
             notes.setText(rendered);
         }
 
-        new com.google.android.material.dialog.MaterialAlertDialogBuilder(
+        AlertDialog dialog = new com.google.android.material.dialog.MaterialAlertDialogBuilder(
                 context, R.style.Theme_Overdrive_M3_Dialog)
                 .setView(view)
                 .setPositiveButton(R.string.update_dialog_install_now, (d, w) -> { d.dismiss(); onUpdate.run(); })
@@ -52,7 +68,15 @@ public class UpdateDialog {
                 // + tunnel-poll scheduler) until process death.
                 .setOnCancelListener(d -> { if (onDismiss != null) onDismiss.run(); })
                 .setCancelable(true)
-                .show();
+                .create();
+
+        activeUpdateDialogRef = new java.lang.ref.WeakReference<>(dialog);
+        dialog.setOnDismissListener(d -> {
+            if (activeUpdateDialogRef != null && activeUpdateDialogRef.get() == d) {
+                activeUpdateDialogRef = null;
+            }
+        });
+        dialog.show();
     }
 
     /** Callback for the alpha version picker \u2014 receives the chosen entry. */

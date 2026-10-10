@@ -183,7 +183,10 @@ class OverdriveApplication : Application() {
             } else {
                 LocaleListCompat.forLanguageTags(raw)
             }
-            AppCompatDelegate.setApplicationLocales(locales)
+            val currentLocales = AppCompatDelegate.getApplicationLocales()
+            if (currentLocales != locales) {
+                AppCompatDelegate.setApplicationLocales(locales)
+            }
         } catch (e: Exception) {
             Log.w("OverdriveApplication", "applyPersistedLocale failed: ${e.message}")
         }

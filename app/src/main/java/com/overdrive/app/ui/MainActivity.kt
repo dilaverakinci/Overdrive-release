@@ -122,6 +122,8 @@ open class MainActivity : AppCompatActivity() {
     // activity instance after recreate.
     private val mainHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private var updateCheckRunnable: Runnable? = null
+    private var initialUpdateCheckRunnable: Runnable? = null
+    private var setupGuideRunnable: Runnable? = null
 
     // True while a system-driven boot/update launch is being moved behind
     // the user's current task. The marker is consumed from both cold and
@@ -380,56 +382,60 @@ open class MainActivity : AppCompatActivity() {
         checkTrafficMonitorStatus()
         
         // Check for app updates (delayed to not block startup)
-        if (!remoteDevSession) android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-            // Clean up any leftover update APK from previous install. Use the
-            // shared daemonStartupManager.adbLauncher — allocating a fresh
-            // AdbDaemonLauncher here would leak its non-daemon executor + a
-            // tunnel-poll scheduler thread on every postDelayed firing.
-            daemonStartupManager.adbLauncher.executeShellCommand("rm -f /data/local/tmp/overdrive_update.apk", object : com.overdrive.app.launcher.AdbDaemonLauncher.LaunchCallback {
-                override fun onLog(message: String) {}
-                override fun onLaunched() {}
-                override fun onError(error: String) {}
-            })
+        if (!remoteDevSession) {
+            initialUpdateCheckRunnable = Runnable {
+                if (isFinishing || isDestroyed) return@Runnable
+                // Clean up any leftover update APK from previous install. Use the
+                // shared daemonStartupManager.adbLauncher — allocating a fresh
+                // AdbDaemonLauncher here would leak its non-daemon executor + a
+                // tunnel-poll scheduler thread on every postDelayed firing.
+                daemonStartupManager.adbLauncher.executeShellCommand("rm -f /data/local/tmp/overdrive_update.apk", object : com.overdrive.app.launcher.AdbDaemonLauncher.LaunchCallback {
+                    override fun onLog(message: String) {}
+                    override fun onLaunched() {}
+                    override fun onError(error: String) {}
+                })
 
-            // Post-update toasts are consumed by EXACTLY ONE path. On a
-            // post-update launch the hardResetDaemons callback drives
-            // showPostUpdateToasts(); consuming the same one-shot markers here
-            // too could double-fire the toast (the markers clear via async
-            // apply()). So only consume here on a NORMAL launch (where the
-            // post-update path won't run). The markers survive to the next
-            // launch if neither path ran.
-            if (!com.overdrive.app.updater.UpdateLifecycle.isPostUpdateLaunch(this, intent)) {
-                // Surface failed-install errors first (consumeJustUpdatedVersion
-                // returns null when a failure marker is present, so the success
-                // toast never fires on a failed install).
-                val installError = com.overdrive.app.updater.AppUpdater.consumeFailedUpdateError(this)
-                if (installError != null) {
-                    Toast.makeText(this, getString(R.string.toast_update_install_failed, installError), Toast.LENGTH_LONG).show()
-                    logsViewModel.warn("Update", "Install failed: $installError")
+                // Post-update toasts are consumed by EXACTLY ONE path. On a
+                // post-update launch the hardResetDaemons callback drives
+                // showPostUpdateToasts(); consuming the same one-shot markers here
+                // too could double-fire the toast (the markers clear via async
+                // apply()). So only consume here on a NORMAL launch (where the
+                // post-update path won't run). The markers survive to the next
+                // launch if neither path ran.
+                if (!com.overdrive.app.updater.UpdateLifecycle.isPostUpdateLaunch(this, intent)) {
+                    // Surface failed-install errors first (consumeJustUpdatedVersion
+                    // returns null when a failure marker is present, so the success
+                    // toast never fires on a failed install).
+                    val installError = com.overdrive.app.updater.AppUpdater.consumeFailedUpdateError(this)
+                    if (installError != null) {
+                        Toast.makeText(this, getString(R.string.toast_update_install_failed, installError), Toast.LENGTH_LONG).show()
+                        logsViewModel.warn("Update", "Install failed: $installError")
+                    }
+
+                    // Show post-update message if app was just updated.
+                    // consumeJustUpdatedVersion is the success MARKER and ALSO
+                    // carries the GitHub label that was installed (PREF_UPDATED_VERSION
+                    // = remoteVersion). Prefer that label so this toast matches the
+                    // About row (getDisplayVersion) and /status (getDisplayVersionFromFile),
+                    // both VERSION_FILE-first. getInstalledVersion() is the BuildConfig
+                    // identity (braveheart-v26.0 today — versionName is pinned), which
+                    // would make THIS toast the lone surface showing a stale 26.0 on a
+                    // braveheart in-place re-upload. Empty marker (remoteVersion was
+                    // "unknown") → fall through getDisplayVersion (still VERSION_FILE-
+                    // first, only drops to BuildConfig on a fresh sideload).
+                    val justUpdated = com.overdrive.app.updater.AppUpdater.consumeJustUpdatedVersion(this)
+                    if (justUpdated != null) {
+                        val shown = if (justUpdated.isNotEmpty()) justUpdated
+                                    else com.overdrive.app.updater.AppUpdater.getDisplayVersion(this)
+                        Toast.makeText(this, getString(R.string.toast_updated_to, shown), Toast.LENGTH_LONG).show()
+                        logsViewModel.info("Update", "App updated to $shown")
+                    }
                 }
 
-                // Show post-update message if app was just updated.
-                // consumeJustUpdatedVersion is the success MARKER and ALSO
-                // carries the GitHub label that was installed (PREF_UPDATED_VERSION
-                // = remoteVersion). Prefer that label so this toast matches the
-                // About row (getDisplayVersion) and /status (getDisplayVersionFromFile),
-                // both VERSION_FILE-first. getInstalledVersion() is the BuildConfig
-                // identity (braveheart-v26.0 today — versionName is pinned), which
-                // would make THIS toast the lone surface showing a stale 26.0 on a
-                // braveheart in-place re-upload. Empty marker (remoteVersion was
-                // "unknown") → fall through getDisplayVersion (still VERSION_FILE-
-                // first, only drops to BuildConfig on a fresh sideload).
-                val justUpdated = com.overdrive.app.updater.AppUpdater.consumeJustUpdatedVersion(this)
-                if (justUpdated != null) {
-                    val shown = if (justUpdated.isNotEmpty()) justUpdated
-                                else com.overdrive.app.updater.AppUpdater.getDisplayVersion(this)
-                    Toast.makeText(this, getString(R.string.toast_updated_to, shown), Toast.LENGTH_LONG).show()
-                    logsViewModel.info("Update", "App updated to $shown")
-                }
+                checkForAppUpdate()
             }
-
-            checkForAppUpdate()
-        }, 10000) // 10 seconds after launch
+            mainHandler.postDelayed(initialUpdateCheckRunnable!!, 10000) // 10 seconds after launch
+        }
         
         // Schedule periodic update checks (every 6 hours)
         if (!remoteDevSession) schedulePeriodicUpdateCheck()
@@ -465,7 +471,8 @@ open class MainActivity : AppCompatActivity() {
 
         // showIfNeeded is no-op when the seen install-time matches the current
         // PackageInfo.lastUpdateTime, so it's safe to call on every launch.
-        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+        setupGuideRunnable = Runnable {
+            if (isFinishing || isDestroyed) return@Runnable
             val guideShown = com.overdrive.app.overlay.SetupGuideDialog.showIfNeeded(this)
             // Sequence the onboarding guide AFTER the setup-guide perms dialog. If the
             // setup guide was shown this launch, wait for the user to clear it before
@@ -475,7 +482,8 @@ open class MainActivity : AppCompatActivity() {
             // ACC broadcast, and is sequenced after the PIN gate because startStatusOverlay
             // runs in onCreate after maybeShowPinLock.
             maybeStartOnboarding(if (guideShown) 1500L else 0L)
-        }, 2000)
+        }
+        mainHandler.postDelayed(setupGuideRunnable!!, 2000)
     }
 
     private fun maybeStartOnboarding(delayMs: Long) {
@@ -4881,8 +4889,12 @@ open class MainActivity : AppCompatActivity() {
         navPollRunnable = null
         // Remove ADB auth callback
         if (!remoteDevSession) com.overdrive.app.launcher.AdbShellExecutor.setAuthCallback(null)
-        // Cancel the periodic update check so the Runnable doesn't leak the
+        // Cancel the periodic update check and initial check so Runnables don't leak the
         // activity reference after recreate.
+        initialUpdateCheckRunnable?.let { mainHandler.removeCallbacks(it) }
+        initialUpdateCheckRunnable = null
+        setupGuideRunnable?.let { mainHandler.removeCallbacks(it) }
+        setupGuideRunnable = null
         updateCheckRunnable?.let { mainHandler.removeCallbacks(it) }
         updateCheckRunnable = null
         // Stop the install-progress poll loop (Hide normally clears it, but a
