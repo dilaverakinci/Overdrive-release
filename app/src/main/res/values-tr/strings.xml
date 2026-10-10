@@ -616,7 +616,8 @@
     <!-- M3 Revamp: navigation rail + settings sub-rail + theme picker  -->
     <!-- ============================================================== -->
     <!-- Top-level destinations (navigation rail labels) -->
-    <string name="rail_dashboard">Tablo</string>
+    <string name="rail_dashboard">Dashboard</string>
+    <string name="rail_assistant">Asistan</string>
     <string name="rail_live">Canlı</string>
     <string name="rail_recordings">Kayıtlar</string>
     <string name="rail_vehicle">Araç</string>
@@ -704,7 +705,7 @@
     <string name="vc_cmd_sent">Komut gönderildi</string>
     <string name="vc_cmd_failed">Komut gönderilemedi</string>
     <string name="rail_projection">Yansıtma</string>
-    <string name="rail_trips">Seyahatler</string>
+    <string name="rail_trips">Yolculuklar</string>
     <string name="rail_parking">Park</string>
 
     <!-- Parking Screen Strings (1:1 with parking.html) -->
@@ -745,9 +746,12 @@
     <string name="parking_settings_storage_desc">Eski oturumlar temizlenmeden önce park fotoğrafları ve klipler için izin verilen maksimum megabayt.</string>
     <string name="parking_unit_days">gün</string>
     <string name="parking_unit_mb">MB</string>
-    <string name="rail_integrations">Entegreler</string>
-    <string name="rail_diagnostics">Teşhisler</string>
+    <string name="rail_integrations">Entegrasyonlar</string>
+    <string name="rail_diagnostics">Tanılama</string>
     <string name="rail_settings">Ayarlar</string>
+    <string name="rail_seat_positions">Koltuk Konumları</string>
+    <string name="rail_key_mapping">Tuş Atama</string>
+    <string name="rail_network">Ağ</string>
     <!-- Settings sub-rail -->
     <string name="settings_section_appearance">Görünüm</string>
     <string name="settings_section_recording">Kayıt</string>

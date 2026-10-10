@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/dashboardFragment"
         android:name="com.overdrive.app.ui.fragment.DashboardNativeFragment"
-        android:label="@string/rail_dashboard_native"
+        android:label="@string/rail_dashboard"
         tools:layout="@layout/fragment_dashboard" />
 
     <fragment
@@ -20,7 +20,7 @@
     <fragment
         android:id="@+id/genAiFragment"
         android:name="com.overdrive.app.ui.fragment.AssistantNativeFragment"
-        android:label="@string/rail_assistant_native"
+        android:label="@string/rail_assistant"
         tools:layout="@layout/fragment_assistant" />
 
     <fragment
@@ -42,7 +42,7 @@
     <fragment
         android:id="@+id/liveViewFragment"
         android:name="com.overdrive.app.ui.fragment.LiveViewNativeFragment"
-        android:label="@string/rail_live_native"
+        android:label="@string/rail_live"
         tools:layout="@layout/fragment_live_view" />
 
     <fragment
@@ -60,7 +60,7 @@
     <fragment
         android:id="@+id/recordingsFragment"
         android:name="com.overdrive.app.ui.fragment.RecordingsFragment"
-        android:label="@string/rail_recordings_native"
+        android:label="@string/rail_recordings"
         tools:layout="@layout/fragment_recordings" />
 
     <fragment
@@ -78,7 +78,7 @@
     <fragment
         android:id="@+id/parkingFragment"
         android:name="com.overdrive.app.ui.fragment.ParkingNativeFragment"
-        android:label="@string/rail_parking_native"
+        android:label="@string/rail_parking"
         tools:layout="@layout/fragment_parking" />
 
     <fragment
@@ -110,7 +110,7 @@
     <fragment
         android:id="@+id/vehicleControlFragment"
         android:name="com.overdrive.app.ui.fragment.VehicleNativeFragment"
-        android:label="@string/rail_vehicle_native"
+        android:label="@string/rail_vehicle"
         tools:layout="@layout/fragment_vehicle_native" />
 
     <fragment
@@ -135,7 +135,7 @@
     <fragment
         android:id="@+id/tripsFragment"
         android:name="com.overdrive.app.ui.fragment.TripsNativeFragment"
-        android:label="@string/rail_trips_native"
+        android:label="@string/rail_trips"
         tools:layout="@layout/fragment_trips_native" />
 
     <!-- Trips (Legacy Web) -->
@@ -154,7 +154,7 @@
     <fragment
         android:id="@+id/chargingFragment"
         android:name="com.overdrive.app.ui.fragment.ChargingNativeFragment"
-        android:label="@string/rail_charging_native"
+        android:label="@string/rail_charging"
         tools:layout="@layout/fragment_charging_native" />
 
     <!-- Charging (Legacy Web) -->
@@ -173,7 +173,7 @@
     <fragment
         android:id="@+id/automationsFragment"
         android:name="com.overdrive.app.ui.fragment.AutomationsNativeFragment"
-        android:label="@string/rail_automations_native"
+        android:label="@string/rail_automations"
         tools:layout="@layout/fragment_automations_native" />
 
     <!-- Automations (Legacy Web) -->
@@ -192,7 +192,7 @@
     <fragment
         android:id="@+id/seatPositionsFragment"
         android:name="com.overdrive.app.ui.fragment.SeatPositionsNativeFragment"
-        android:label="@string/rail_seat_positions_native"
+        android:label="@string/rail_seat_positions"
         tools:layout="@layout/fragment_seat_positions_native" />
 
     <!-- Seat Positions (legacy web) -->
@@ -211,7 +211,7 @@
     <fragment
         android:id="@+id/keyMappingFragment"
         android:name="com.overdrive.app.ui.fragment.KeyMappingNativeFragment"
-        android:label="@string/rail_key_mapping_native"
+        android:label="@string/rail_key_mapping"
         tools:layout="@layout/fragment_key_mapping_native" />
 
     <!-- Key Mapping (Legacy Web) -->
@@ -230,7 +230,7 @@
     <fragment
         android:id="@+id/integrationsFragment"
         android:name="com.overdrive.app.ui.fragment.IntegrationsNativeFragment"
-        android:label="@string/rail_integrations_native"
+        android:label="@string/rail_integrations"
         tools:layout="@layout/fragment_integrations_native" />
 
     <!-- Integrations (Legacy Hub) -->
@@ -293,7 +293,7 @@
     <fragment
         android:id="@+id/roadSenseFragment"
         android:name="com.overdrive.app.ui.fragment.RoadSenseNativeFragment"
-        android:label="@string/rail_roadsense_native"
+        android:label="@string/rail_roadsense"
         tools:layout="@layout/fragment_roadsense_native" />
 
     <!-- RoadSense Legacy: WebView wrapper for /road-sense -->

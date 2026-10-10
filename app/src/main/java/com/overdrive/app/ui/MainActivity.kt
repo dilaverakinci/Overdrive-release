@@ -97,19 +97,6 @@ open class MainActivity : AppCompatActivity() {
     // The always-pinned rows. Every other key lives in NavigationRailCatalog,
     // which is the set the user can hide.
     private val RAIL_KEY_DASHBOARD = "dashboard"
-    private val RAIL_KEY_DASHBOARD_LEGACY = "dashboard_legacy"
-    private val RAIL_KEY_ASSISTANT_LEGACY = "assistant_legacy"
-    private val RAIL_KEY_LIVE_LEGACY = "live_legacy"
-    private val RAIL_KEY_RECORDINGS_LEGACY = "recordings_legacy"
-    private val RAIL_KEY_PARKING_LEGACY = "parking_legacy"
-    private val RAIL_KEY_VEHICLE_LEGACY = "vehicle_legacy"
-    private val RAIL_KEY_SEAT_POSITIONS_LEGACY = "seat_positions_legacy"
-    private val RAIL_KEY_CHARGING_LEGACY = "charging_legacy"
-    private val RAIL_KEY_TRIPS_LEGACY = "trips_legacy"
-    private val RAIL_KEY_AUTOMATIONS_LEGACY = "automations_legacy"
-    private val RAIL_KEY_KEY_MAPPING_LEGACY = "key_mapping_legacy"
-    private val RAIL_KEY_INTEGRATIONS_LEGACY = "integrations_legacy"
-    private val RAIL_KEY_ROADSENSE_LEGACY = "roadsense_legacy"
     private val RAIL_KEY_SETTINGS = "settings"
     private val RAIL_KEY_ABOUT = "about"
     private val KEY_RAIL_EXPANDED = "navigation_rail_expanded"
@@ -156,32 +143,24 @@ open class MainActivity : AppCompatActivity() {
             R.id.railSectionCameras, R.string.rail_section_cameras,
             setOf(
                 NavigationRailCatalog.LIVE,
-                RAIL_KEY_LIVE_LEGACY,
                 NavigationRailCatalog.RECORDINGS,
-                RAIL_KEY_RECORDINGS_LEGACY,
                 NavigationRailCatalog.PARKING,
-                RAIL_KEY_PARKING_LEGACY,
             )
         ),
         RailSection(
             R.id.railSectionControls, R.string.rail_section_controls,
             setOf(
                 NavigationRailCatalog.VEHICLE,
-                RAIL_KEY_VEHICLE_LEGACY,
                 NavigationRailCatalog.SEAT_POSITIONS,
-                RAIL_KEY_SEAT_POSITIONS_LEGACY,
                 NavigationRailCatalog.PROJECTION,
                 NavigationRailCatalog.CHARGING,
-                RAIL_KEY_CHARGING_LEGACY,
             )
         ),
         RailSection(
             R.id.railSectionDriving, R.string.rail_section_driving,
             setOf(
                 NavigationRailCatalog.TRIPS,
-                RAIL_KEY_TRIPS_LEGACY,
                 NavigationRailCatalog.ROAD_SENSE,
-                RAIL_KEY_ROADSENSE_LEGACY,
                 NavigationRailCatalog.MAP,
             )
         ),
@@ -189,11 +168,8 @@ open class MainActivity : AppCompatActivity() {
             R.id.railSectionAutomation, R.string.rail_section_automation,
             setOf(
                 NavigationRailCatalog.AUTOMATIONS,
-                RAIL_KEY_AUTOMATIONS_LEGACY,
                 NavigationRailCatalog.KEY_MAPPING,
-                RAIL_KEY_KEY_MAPPING_LEGACY,
                 NavigationRailCatalog.INTEGRATIONS,
-                RAIL_KEY_INTEGRATIONS_LEGACY,
             )
         ),
         RailSection(
@@ -557,22 +533,19 @@ open class MainActivity : AppCompatActivity() {
         intent.removeExtra(EXTRA_NAVIGATE_TO)
         setIntent(intent)
         val destinationId = when (target) {
-            "trips" -> R.id.tripsFragment
-            "charging" -> R.id.chargingFragment
-            "roadsense" -> R.id.roadSenseFragment
-            "roadsense_legacy" -> R.id.roadSenseLegacyFragment
-            "recordings" -> R.id.recordingsFragment
-            "parking" -> R.id.parkingFragment
-            "live" -> R.id.liveViewFragment
-            "vehicle" -> R.id.vehicleControlFragment
-            "dashboard" -> R.id.dashboardFragment
-            "assistant" -> R.id.genAiFragment
-            "keymapping" -> R.id.keyMappingFragment
-            "keymapping_legacy" -> R.id.keyMappingLegacyFragment
-            "automations" -> R.id.automationsFragment
-            "automations_legacy" -> R.id.automationsLegacyFragment
-            "integrations" -> R.id.integrationsFragment
-            "integrations_legacy" -> R.id.integrationsLegacyFragment
+            "trips", "trips_legacy" -> R.id.tripsFragment
+            "charging", "charging_legacy" -> R.id.chargingFragment
+            "roadsense", "roadsense_legacy" -> R.id.roadSenseFragment
+            "recordings", "recordings_legacy" -> R.id.recordingsFragment
+            "parking", "parking_legacy" -> R.id.parkingFragment
+            "live", "live_legacy" -> R.id.liveViewFragment
+            "vehicle", "vehicle_legacy" -> R.id.vehicleControlFragment
+            "seat_positions", "seat_positions_legacy" -> R.id.seatPositionsFragment
+            "dashboard", "dashboard_legacy" -> R.id.dashboardFragment
+            "assistant", "assistant_legacy" -> R.id.genAiFragment
+            "keymapping", "keymapping_legacy" -> R.id.keyMappingFragment
+            "automations", "automations_legacy" -> R.id.automationsFragment
+            "integrations", "integrations_legacy" -> R.id.integrationsFragment
             else -> return
         }
         // navigateToRailDestination self-defers via pendingRailDestination when
@@ -1753,62 +1726,37 @@ open class MainActivity : AppCompatActivity() {
         // where the category headers sit between these rows.
         val items = listOf(
             RailItem(RAIL_KEY_DASHBOARD, R.id.railDestDashboard, R.id.dashboardFragment,
-                R.drawable.ic_dashboard, R.string.rail_dashboard_native),
-            RailItem(RAIL_KEY_DASHBOARD_LEGACY, R.id.railDestDashboardLegacy, R.id.dashboardLegacyFragment,
-                R.drawable.ic_dashboard, R.string.rail_dashboard_legacy),
+                R.drawable.ic_dashboard, R.string.rail_dashboard),
             RailItem(NavigationRailCatalog.ASSISTANT, R.id.railDestAssistant,
-                R.id.genAiFragment, R.drawable.ic_smart_toy, R.string.rail_assistant_native),
-            RailItem(RAIL_KEY_ASSISTANT_LEGACY, R.id.railDestAssistantLegacy,
-                R.id.genAiLegacyFragment, R.drawable.ic_smart_toy, R.string.rail_assistant_legacy),
+                R.id.genAiFragment, R.drawable.ic_smart_toy, R.string.rail_assistant),
             RailItem(NavigationRailCatalog.LIVE, R.id.railDestLive, R.id.liveViewFragment,
-                R.drawable.ic_live, R.string.rail_live_native),
-            RailItem(RAIL_KEY_LIVE_LEGACY, R.id.railDestLiveLegacy, R.id.liveViewLegacyFragment,
-                R.drawable.ic_live, R.string.rail_live_legacy),
+                R.drawable.ic_live, R.string.rail_live),
             RailItem(NavigationRailCatalog.RECORDINGS, R.id.railDestRecordings,
-                R.id.recordingsFragment, R.drawable.ic_recording, R.string.rail_recordings_native,
+                R.id.recordingsFragment, R.drawable.ic_recording, R.string.rail_recordings,
                 ownedDestinationIds = setOf(
                     R.id.videoPlayerFragment,
                     R.id.surveillanceSettingsWebFragment,
                     R.id.recordingSettingsWebFragment,
                 )),
-            RailItem(RAIL_KEY_RECORDINGS_LEGACY, R.id.railDestRecordingsLegacy,
-                R.id.recordingsLegacyFragment, R.drawable.ic_recording, R.string.rail_recordings_legacy),
             RailItem(NavigationRailCatalog.PARKING, R.id.railDestParking,
-                R.id.parkingFragment, R.drawable.ic_parking, R.string.rail_parking_native),
-            RailItem(RAIL_KEY_PARKING_LEGACY, R.id.railDestParkingLegacy,
-                R.id.parkingLegacyFragment, R.drawable.ic_parking, R.string.rail_parking_legacy),
+                R.id.parkingFragment, R.drawable.ic_parking, R.string.rail_parking),
             RailItem(NavigationRailCatalog.VEHICLE, R.id.railDestVehicle,
                 R.id.vehicleControlFragment,
-                R.drawable.ic_vehicle_control, R.string.rail_vehicle_native),
-            RailItem(RAIL_KEY_VEHICLE_LEGACY, R.id.railDestVehicleLegacy,
-                R.id.vehicleControlLegacyFragment,
-                R.drawable.ic_vehicle_control, R.string.rail_vehicle_legacy),
+                R.drawable.ic_vehicle_control, R.string.rail_vehicle),
             RailItem(NavigationRailCatalog.SEAT_POSITIONS, R.id.railDestSeatPositions,
                 R.id.seatPositionsFragment,
-                R.drawable.ic_seat_positions, R.string.rail_seat_positions_native),
-            RailItem(RAIL_KEY_SEAT_POSITIONS_LEGACY, R.id.railDestSeatPositionsLegacy,
-                R.id.seatPositionsLegacyFragment,
-                R.drawable.ic_seat_positions, R.string.rail_seat_positions_legacy),
+                R.drawable.ic_seat_positions, R.string.rail_seat_positions),
             RailItem(NavigationRailCatalog.PROJECTION, R.id.railDestProjection,
                 R.id.projectionFragment,
                 R.drawable.ic_projection, R.string.rail_projection),
             RailItem(NavigationRailCatalog.CHARGING, R.id.railDestCharging,
                 R.id.chargingFragment,
-                R.drawable.ic_charging, R.string.rail_charging_native),
-            RailItem(RAIL_KEY_CHARGING_LEGACY, R.id.railDestChargingLegacy,
-                R.id.chargingLegacyFragment,
-                R.drawable.ic_charging, R.string.rail_charging_legacy),
+                R.drawable.ic_charging, R.string.rail_charging),
             RailItem(NavigationRailCatalog.TRIPS, R.id.railDestTrips, R.id.tripsFragment,
-                R.drawable.ic_trips, R.string.rail_trips_native),
-            RailItem(RAIL_KEY_TRIPS_LEGACY, R.id.railDestTripsLegacy,
-                R.id.tripsLegacyFragment,
-                R.drawable.ic_trips, R.string.rail_trips_legacy),
+                R.drawable.ic_trips, R.string.rail_trips),
             RailItem(NavigationRailCatalog.ROAD_SENSE, R.id.railDestRoadSense,
                 R.id.roadSenseFragment,
-                R.drawable.ic_roadsense, R.string.rail_roadsense_native),
-            RailItem(RAIL_KEY_ROADSENSE_LEGACY, R.id.railDestRoadSenseLegacy,
-                R.id.roadSenseLegacyFragment,
-                R.drawable.ic_roadsense, R.string.rail_roadsense_legacy),
+                R.drawable.ic_roadsense, R.string.rail_roadsense),
             // Hazard Map is a standalone Activity, not a nav-graph fragment,
             // so it launches via startActivity (destinationId = 0).
             RailItem(NavigationRailCatalog.MAP, R.id.railDestMap, 0,
@@ -1816,22 +1764,13 @@ open class MainActivity : AppCompatActivity() {
                 launchActivity = com.overdrive.app.navmap.RoadSenseMapActivity::class.java),
             RailItem(NavigationRailCatalog.AUTOMATIONS, R.id.railDestAutomations,
                 R.id.automationsFragment,
-                R.drawable.ic_automations, R.string.rail_automations_native),
-            RailItem(RAIL_KEY_AUTOMATIONS_LEGACY, R.id.railDestAutomationsLegacy,
-                R.id.automationsLegacyFragment,
-                R.drawable.ic_automations, R.string.rail_automations_legacy),
+                R.drawable.ic_automations, R.string.rail_automations),
             RailItem(NavigationRailCatalog.KEY_MAPPING, R.id.railDestKeyMapping,
                 R.id.keyMappingFragment,
-                R.drawable.ic_key_mapping, R.string.rail_key_mapping_native),
-            RailItem(RAIL_KEY_KEY_MAPPING_LEGACY, R.id.railDestKeyMappingLegacy,
-                R.id.keyMappingLegacyFragment,
-                R.drawable.ic_key_mapping, R.string.rail_key_mapping_legacy),
+                R.drawable.ic_key_mapping, R.string.rail_key_mapping),
             RailItem(NavigationRailCatalog.INTEGRATIONS, R.id.railDestIntegrations,
                 R.id.integrationsFragment, R.drawable.ic_integrations,
-                R.string.rail_integrations_native),
-            RailItem(RAIL_KEY_INTEGRATIONS_LEGACY, R.id.railDestIntegrationsLegacy,
-                R.id.integrationsLegacyFragment, R.drawable.ic_integrations,
-                R.string.rail_integrations_legacy,
+                R.string.rail_integrations,
                 ownedDestinationIds = setOf(
                     R.id.telegramSettingsFragment,
                     R.id.abrpSettingsFragment,

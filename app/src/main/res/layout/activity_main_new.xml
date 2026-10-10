@@ -90,17 +90,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
                     <include
-                        android:id="@+id/railDestDashboardLegacy"
-                        layout="@layout/item_rail_destination"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                    <include
                         android:id="@+id/railDestAssistant"
-                        layout="@layout/item_rail_destination"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                    <include
-                        android:id="@+id/railDestAssistantLegacy"
                         layout="@layout/item_rail_destination"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
@@ -116,27 +106,12 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
                     <include
-                        android:id="@+id/railDestLiveLegacy"
-                        layout="@layout/item_rail_destination"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                    <include
                         android:id="@+id/railDestRecordings"
                         layout="@layout/item_rail_destination"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
                     <include
-                        android:id="@+id/railDestRecordingsLegacy"
-                        layout="@layout/item_rail_destination"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                    <include
                         android:id="@+id/railDestParking"
-                        layout="@layout/item_rail_destination"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                    <include
-                        android:id="@+id/railDestParkingLegacy"
                         layout="@layout/item_rail_destination"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
@@ -150,17 +125,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
                     <include
-                        android:id="@+id/railDestVehicleLegacy"
-                        layout="@layout/item_rail_destination"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                    <include
                         android:id="@+id/railDestSeatPositions"
-                        layout="@layout/item_rail_destination"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                    <include
-                        android:id="@+id/railDestSeatPositionsLegacy"
                         layout="@layout/item_rail_destination"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
@@ -174,11 +139,6 @@
                         layout="@layout/item_rail_destination"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
-                    <include
-                        android:id="@+id/railDestChargingLegacy"
-                        layout="@layout/item_rail_destination"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
 
                     <include
                         android:id="@+id/railSectionDriving"
@@ -189,17 +149,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
                     <include
-                        android:id="@+id/railDestTripsLegacy"
-                        layout="@layout/item_rail_destination"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                    <include
                         android:id="@+id/railDestRoadSense"
-                        layout="@layout/item_rail_destination"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                    <include
-                        android:id="@+id/railDestRoadSenseLegacy"
                         layout="@layout/item_rail_destination"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
@@ -218,27 +168,12 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
                     <include
-                        android:id="@+id/railDestAutomationsLegacy"
-                        layout="@layout/item_rail_destination"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                    <include
                         android:id="@+id/railDestKeyMapping"
                         layout="@layout/item_rail_destination"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
                     <include
-                        android:id="@+id/railDestKeyMappingLegacy"
-                        layout="@layout/item_rail_destination"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                    <include
                         android:id="@+id/railDestIntegrations"
-                        layout="@layout/item_rail_destination"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                    <include
-                        android:id="@+id/railDestIntegrationsLegacy"
                         layout="@layout/item_rail_destination"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
