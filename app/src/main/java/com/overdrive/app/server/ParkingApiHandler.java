@@ -330,17 +330,12 @@ public final class ParkingApiHandler {
         if (live != null && live.isOpen()) {
             try { return fn.apply(live); } catch (Throwable t) { return null; }
         }
-        // Feature off: read the history from a transient store — but never CREATE
-        // the database from a GET. No file ⇒ there is no history to show.
-        if (!new File(ParkingStore.DEFAULT_DB_PATH + ".mv.db").isFile()) return null;
         ParkingStore tmp = new ParkingStore();
         try {
             if (!tmp.open()) return null;
             return fn.apply(tmp);
         } catch (Throwable t) {
             return null;
-        } finally {
-            tmp.close();
         }
     }
 
