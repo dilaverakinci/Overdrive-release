@@ -37,23 +37,7 @@ public class SocHistoryDatabase {
     // Without it, H2's JVM shutdown hook runs concurrently with our explicit
     // stop() and our last in-flight 2-minute SOC tick, producing the
     // "Database is already closed" + "Could not save properties …lock.db"
-    // pair that orphans the lock file across daemon restarts.
-    //
-    // AUTO_SERVER intentionally omitted — H2 throws
-    // "AUTO_SERVER=TRUE && DB_CLOSE_ON_EXIT=FALSE is not supported" if both
-    // are set. We're single-process anyway (only the camera daemon writes;
-    // HTTP reads happen in the same JVM via NotificationApiHandler). The
-    // FILE_LOCK=SOCKET is the actual cross-process safety net.
-    // AUTO_COMPACT_FILL_RATE=50: idle-CPU tuning shared by all seven H2 stores.
-    // The default fill-rate target of 90 keeps the MVStore background thread
-    // rewriting chunks while the car idles (FileStore.rewriteChunks /
-    // getChunksFillRate showed up in on-device profiles); 50 stops that without
-    // touching durability. WRITE_DELAY is deliberately left at its 500ms default:
-    // a head unit loses power abruptly with the car, and raising the delay widens
-    // the delayed-write loss window on every one of these stores.
-    private static final String JDBC_URL = "jdbc:h2:file:" + DB_PATH +
-        ";FILE_LOCK=SOCKET;TRACE_LEVEL_FILE=0;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1" +
-        ";AUTO_COMPACT_FILL_RATE=50";
+
     
     // Table names
     private static final String TABLE_SOC = "soc_history";

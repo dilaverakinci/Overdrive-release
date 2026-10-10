@@ -82,19 +82,7 @@ public final class RecordingsIndex {
     private static final DaemonLogger logger = DaemonLogger.getInstance(TAG);
 
     private static final String DB_PATH = com.overdrive.app.util.DaemonStorage.rebase("/data/local/tmp/overdrive_recordings_h2");
-    // DB_CLOSE_ON_EXIT=FALSE to avoid H2's JVM shutdown hook racing the
-    // daemon close path. Same justification as TripDatabase — the orphaned
-    // lock file would otherwise block the next CameraDaemon boot with
-    // "Locked by another process".
-    //
-    // FILE_LOCK=SOCKET: process-level lock via a localhost socket, NOT
-    // suitable for cross-UID coordination. App UID never opens this DB
-    // directly; it reads via /api/recordings.
-    // AUTO_COMPACT_FILL_RATE=50: idle-CPU tuning shared by all seven H2 stores
-    // (see SocHistoryDatabase.JDBC_URL for the full rationale).
-    private static final String JDBC_URL = "jdbc:h2:file:" + DB_PATH +
-            ";FILE_LOCK=SOCKET;TRACE_LEVEL_FILE=0;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1" +
-            ";AUTO_COMPACT_FILL_RATE=50";
+
 
     // Filename patterns mirror RecordingsApiHandler exactly. Kept in sync
     // there too because the parser is the single point of truth — any

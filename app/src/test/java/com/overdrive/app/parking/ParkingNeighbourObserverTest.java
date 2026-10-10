@@ -31,7 +31,7 @@ public class ParkingNeighbourObserverTest {
 
     @Before
     public void setUp() {
-        store = new ParkingStore("jdbc:h2:mem:obs_" + System.nanoTime() + ";DB_CLOSE_DELAY=-1");
+        store = new ParkingStore("sqlite:mem:obs_" + System.nanoTime());
         assertTrue(store.open());
         session = new ParkingSession();
         session.sessionId = "park_test";
