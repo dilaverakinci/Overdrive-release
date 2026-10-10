@@ -186,6 +186,30 @@ public final class OverdriveSqliteMaster {
         return getBackend().rawQuery(sql, selectionArgs);
     }
 
+    public synchronized long executeInsert(String sql, Object[] bindArgs) {
+        execSQL(sql, bindArgs);
+        try (Cursor c = rawQuery("SELECT last_insert_rowid()", null)) {
+            if (c != null && c.moveToFirst()) {
+                return c.getLong(0);
+            }
+        } catch (Throwable t) {
+            logger.warn("executeInsert failed to retrieve last_insert_rowid: " + t.getMessage());
+        }
+        return -1L;
+    }
+
+    public synchronized int executeUpdateDelete(String sql, Object[] bindArgs) {
+        execSQL(sql, bindArgs);
+        try (Cursor c = rawQuery("SELECT changes()", null)) {
+            if (c != null && c.moveToFirst()) {
+                return c.getInt(0);
+            }
+        } catch (Throwable t) {
+            logger.warn("executeUpdateDelete failed to retrieve changes(): " + t.getMessage());
+        }
+        return 0;
+    }
+
     public SQLiteStatement compileStatement(String sql) {
         return getRawDatabase().compileStatement(sql);
     }
@@ -250,6 +274,31 @@ public final class OverdriveSqliteMaster {
                     + ");");
             execSQL("CREATE INDEX IF NOT EXISTS idx_parking_sessions_started ON parking_sessions(started_ms DESC);");
             execSQL("CREATE INDEX IF NOT EXISTS idx_parking_sessions_ended ON parking_sessions(ended_ms);");
+
+            // 1b. Parking Neighbours
+            execSQL("CREATE TABLE IF NOT EXISTS parking_neighbours ("
+                    + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + "session_id TEXT NOT NULL,"
+                    + "neighbour_key TEXT,"
+                    + "side INTEGER NOT NULL,"
+                    + "kind TEXT NOT NULL,"
+                    + "class_group TEXT,"
+                    + "status TEXT,"
+                    + "confirmed INTEGER DEFAULT 0,"
+                    + "first_seen_ms INTEGER DEFAULT 0,"
+                    + "arrived_ms INTEGER DEFAULT 0,"
+                    + "departed_ms INTEGER DEFAULT 0,"
+                    + "last_seen_ms INTEGER DEFAULT 0,"
+                    + "cx REAL DEFAULT 0, cy REAL DEFAULT 0, w REAL DEFAULT 0, h REAL DEFAULT 0,"
+                    + "proximity TEXT,"
+                    + "arrival_event TEXT,"
+                    + "departure_event TEXT,"
+                    + "actor_ids TEXT,"
+                    + "frames_json TEXT,"
+                    + "updated_ms INTEGER DEFAULT 0"
+                    + ");");
+            execSQL("CREATE INDEX IF NOT EXISTS idx_parking_neighbours_session ON parking_neighbours(session_id);");
+            execSQL("CREATE UNIQUE INDEX IF NOT EXISTS idx_parking_neighbours_key ON parking_neighbours(session_id, neighbour_key);");
 
             // 2. Persistent Notifications
             execSQL("CREATE TABLE IF NOT EXISTS notifications ("
