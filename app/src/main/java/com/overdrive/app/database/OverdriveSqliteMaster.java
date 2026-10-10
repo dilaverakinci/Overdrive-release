@@ -466,6 +466,32 @@ public final class OverdriveSqliteMaster {
             execSQL("CREATE INDEX IF NOT EXISTS idx_cps_session ON charging_power_samples(session_id, timestamp_ms ASC);");
             execSQL("CREATE INDEX IF NOT EXISTS idx_acc_events_ts ON acc_events(timestamp_ms DESC);");
 
+            // 7. RoadSense Hazards
+            execSQL("CREATE TABLE IF NOT EXISTS roadsense_hazards ("
+                    + "id TEXT PRIMARY KEY,"
+                    + "lat REAL NOT NULL,"
+                    + "lng REAL NOT NULL,"
+                    + "tile INTEGER NOT NULL,"
+                    + "type INTEGER NOT NULL,"
+                    + "severity INTEGER NOT NULL,"
+                    + "heading REAL,"
+                    + "confidence REAL,"
+                    + "speed_kmh REAL,"
+                    + "a_vert_peak REAL,"
+                    + "altitude REAL,"
+                    + "observations INTEGER DEFAULT 1,"
+                    + "status INTEGER DEFAULT 0,"
+                    + "human_verified INTEGER DEFAULT 0,"
+                    + "source INTEGER DEFAULT 0,"
+                    + "device_id TEXT,"
+                    + "created_ms INTEGER NOT NULL,"
+                    + "updated_ms INTEGER NOT NULL"
+                    + ");");
+            execSQL("CREATE INDEX IF NOT EXISTS idx_rs_tile ON roadsense_hazards(tile);");
+            execSQL("CREATE INDEX IF NOT EXISTS idx_rs_tile_updated ON roadsense_hazards(tile, updated_ms);");
+            execSQL("CREATE INDEX IF NOT EXISTS idx_rs_source_updated ON roadsense_hazards(source, updated_ms);");
+            execSQL("CREATE INDEX IF NOT EXISTS idx_rs_lat_lng ON roadsense_hazards(lat, lng);");
+
             setTransactionSuccessful();
         } finally {
             endTransaction();
