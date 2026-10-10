@@ -1284,6 +1284,58 @@
     }
     ensureCollapseScript();
 
+    // Auto-inject PWA manifest, theme-color, and iOS meta tags if missing.
+    // Preserves existing theme tokens (#00876C, #0E1311) without touching HTML files.
+    function ensurePwaMetaTags() {
+        if (!document.head) return;
+        if (!document.querySelector('link[rel="manifest"]')) {
+            var m = document.createElement('link');
+            m.rel = 'manifest';
+            m.href = '/manifest.json';
+            document.head.appendChild(m);
+        }
+        if (!document.querySelector('meta[name="theme-color"]')) {
+            var t = document.createElement('meta');
+            t.name = 'theme-color';
+            t.content = '#00876C';
+            document.head.appendChild(t);
+        }
+        if (!document.querySelector('meta[name="apple-mobile-web-app-capable"]')) {
+            var a = document.createElement('meta');
+            a.name = 'apple-mobile-web-app-capable';
+            a.content = 'yes';
+            document.head.appendChild(a);
+        }
+        if (!document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')) {
+            var sb = document.createElement('meta');
+            sb.name = 'apple-mobile-web-app-status-bar-style';
+            sb.content = 'black-translucent';
+            document.head.appendChild(sb);
+        }
+        if (!document.querySelector('link[rel="apple-touch-icon"]')) {
+            var icon = document.createElement('link');
+            icon.rel = 'apple-touch-icon';
+            icon.href = '/shared/app-icon-dark.webp';
+            document.head.appendChild(icon);
+        }
+    }
+    ensurePwaMetaTags();
+
+    // Auto-load PWA bootstrap (Service Worker & Web Push) on remote browsers,
+    // skipping cleanly when viewed inside the car's native cockpit WebView.
+    function ensurePwaInitScript() {
+        if (typeof window.AndroidBridge !== 'undefined') return;
+        if (document.querySelector('script[src*="pwa-init.js"]')) return;
+        var s = document.createElement('script');
+        s.src = '../shared/pwa-init.js';
+        s.setAttribute('data-overdrive-pwa', '1');
+        s.async = true;
+        var ref = document.querySelector('script[src*="app-shell.js"]');
+        if (ref && ref.parentNode) ref.parentNode.insertBefore(s, ref.nextSibling);
+        else document.head.appendChild(s);
+    }
+    ensurePwaInitScript();
+
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', mount);
     } else {

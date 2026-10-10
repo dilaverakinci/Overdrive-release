@@ -8,6 +8,7 @@ data class NavigationRailOption(
     val key: String,
     @StringRes val labelRes: Int,
     @DrawableRes val iconRes: Int,
+    @StringRes val categoryRes: Int? = null,
 )
 
 /**
@@ -22,35 +23,38 @@ object NavigationRailCatalog {
     const val VEHICLE = "vehicle"
     const val SEAT_POSITIONS = "seat_positions"
     const val PROJECTION = "projection"
-    const val TRIPS = "trips"
     const val CHARGING = "charging"
+    const val TRIPS = "trips"
+    const val ROAD_SENSE = "road_sense"
+    const val MAP = "map"
     const val AUTOMATIONS = "automations"
     const val KEY_MAPPING = "key_mapping"
     const val INTEGRATIONS = "integrations"
-    const val ROAD_SENSE = "road_sense"
-    const val MAP = "map"
     const val NETWORK = "network"
     const val DIAGNOSTICS = "diagnostics"
 
     val customizableOptions: List<NavigationRailOption> = listOf(
         NavigationRailOption(ASSISTANT, R.string.rail_assistant, R.drawable.ic_smart_toy),
-        NavigationRailOption(LIVE, R.string.rail_live, R.drawable.ic_live),
-        NavigationRailOption(RECORDINGS, R.string.rail_recordings, R.drawable.ic_recording),
-        // Parking Intelligence. A new catalog key is shown by default even on
-        // installs that already customised the rail (NavigationVisibilityPolicy).
-        NavigationRailOption(PARKING, R.string.rail_parking, R.drawable.ic_parking),
-        NavigationRailOption(VEHICLE, R.string.rail_vehicle, R.drawable.ic_vehicle_control),
-        NavigationRailOption(SEAT_POSITIONS, R.string.rail_seat_positions, R.drawable.ic_seat_positions),
-        NavigationRailOption(PROJECTION, R.string.rail_projection, R.drawable.ic_projection),
-        NavigationRailOption(TRIPS, R.string.rail_trips, R.drawable.ic_trips),
-        NavigationRailOption(CHARGING, R.string.rail_charging, R.drawable.ic_charging),
-        NavigationRailOption(AUTOMATIONS, R.string.rail_automations, R.drawable.ic_automations),
-        NavigationRailOption(KEY_MAPPING, R.string.rail_key_mapping, R.drawable.ic_key_mapping),
-        NavigationRailOption(INTEGRATIONS, R.string.rail_integrations, R.drawable.ic_integrations),
-        NavigationRailOption(ROAD_SENSE, R.string.rail_roadsense, R.drawable.ic_roadsense),
-        NavigationRailOption(MAP, R.string.rail_hazard_map, R.drawable.ic_roadsense_map),
-        NavigationRailOption(NETWORK, R.string.rail_network, R.drawable.ic_hotspot),
-        NavigationRailOption(DIAGNOSTICS, R.string.rail_diagnostics, R.drawable.ic_diagnostics),
+        // Kameralar
+        NavigationRailOption(LIVE, R.string.rail_live, R.drawable.ic_live, R.string.rail_section_cameras),
+        NavigationRailOption(RECORDINGS, R.string.rail_recordings, R.drawable.ic_recording, R.string.rail_section_cameras),
+        NavigationRailOption(PARKING, R.string.rail_parking, R.drawable.ic_parking, R.string.rail_section_cameras),
+        // Kontroller
+        NavigationRailOption(VEHICLE, R.string.rail_vehicle, R.drawable.ic_vehicle_control, R.string.rail_section_controls),
+        NavigationRailOption(SEAT_POSITIONS, R.string.rail_seat_positions, R.drawable.ic_seat_positions, R.string.rail_section_controls),
+        NavigationRailOption(PROJECTION, R.string.rail_projection, R.drawable.ic_projection, R.string.rail_section_controls),
+        NavigationRailOption(CHARGING, R.string.rail_charging, R.drawable.ic_charging, R.string.rail_section_controls),
+        // Sürüş
+        NavigationRailOption(TRIPS, R.string.rail_trips, R.drawable.ic_trips, R.string.rail_section_driving),
+        NavigationRailOption(ROAD_SENSE, R.string.rail_roadsense, R.drawable.ic_roadsense, R.string.rail_section_driving),
+        NavigationRailOption(MAP, R.string.rail_hazard_map, R.drawable.ic_roadsense_map, R.string.rail_section_driving),
+        // Otomasyon
+        NavigationRailOption(AUTOMATIONS, R.string.rail_automations, R.drawable.ic_automations, R.string.rail_section_automation),
+        NavigationRailOption(KEY_MAPPING, R.string.rail_key_mapping, R.drawable.ic_key_mapping, R.string.rail_section_automation),
+        NavigationRailOption(INTEGRATIONS, R.string.rail_integrations, R.drawable.ic_integrations, R.string.rail_section_automation),
+        // Sistem
+        NavigationRailOption(NETWORK, R.string.rail_network, R.drawable.ic_hotspot, R.string.rail_section_system),
+        NavigationRailOption(DIAGNOSTICS, R.string.rail_diagnostics, R.drawable.ic_diagnostics, R.string.rail_section_system),
     )
 
     val customizableKeys: Set<String> = customizableOptions.mapTo(linkedSetOf()) { it.key }

@@ -63,7 +63,12 @@ public class TariffProfile {
 
     public TariffProfile(String label, double lat, double lng, int radiusMeters,
                          double acRate, double dcRate, String currency) {
-        this.id = UUID.randomUUID().toString().substring(0, 8);
+        this(UUID.randomUUID().toString().substring(0, 8), label, lat, lng, radiusMeters, acRate, dcRate, currency);
+    }
+
+    public TariffProfile(String id, String label, double lat, double lng, int radiusMeters,
+                         double acRate, double dcRate, String currency) {
+        this.id = (id != null && !id.isEmpty()) ? id : UUID.randomUUID().toString().substring(0, 8);
         this.label = sanitizeLabel(label);
         this.latitude = clampLat(lat);
         this.longitude = clampLng(lng);

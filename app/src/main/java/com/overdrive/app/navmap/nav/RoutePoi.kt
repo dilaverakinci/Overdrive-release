@@ -21,7 +21,14 @@ data class RoutePoi(
     val kind: PoiKind,
     val name: String,
     val lat: Double,
-    val lng: Double
+    val lng: Double,
+    val operator: String = "",
+    val powerKw: Double = 0.0,
+    val socketCount: Int = 0,
+    val acPrice: Double = 0.0,
+    val dcPrice: Double = 0.0,
+    val chargingType: String = "",
+    val address: String = ""
 )
 
 /**

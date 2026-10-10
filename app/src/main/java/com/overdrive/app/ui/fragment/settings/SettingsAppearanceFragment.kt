@@ -190,7 +190,20 @@ class SettingsAppearanceFragment : Fragment() {
             NavigationRailCatalog.customizableKeys
         )
 
+        var lastCategoryRes: Int? = null
+
         NavigationRailCatalog.customizableOptions.forEach { option ->
+            if (option.categoryRes != null && option.categoryRes != lastCategoryRes) {
+                lastCategoryRes = option.categoryRes
+                val header = layoutInflater.inflate(
+                    R.layout.item_navigation_category_header,
+                    container,
+                    false
+                )
+                header.findViewById<TextView>(R.id.categoryHeaderLabel).setText(option.categoryRes)
+                container.addView(header)
+            }
+
             val row = layoutInflater.inflate(
                 R.layout.item_navigation_toggle,
                 container,

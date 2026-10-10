@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:background="@drawable/bg_parking_filter_normal"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingHorizontal="12dp"
+    android:paddingVertical="6dp">
+
+    <!-- Aperture Name -->
+    <TextView
+        android:id="@+id/tvWindowName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+        android:textColor="?attr/colorOnSurface"
+        android:textStyle="bold"
+        tools:text="Front left" />
+
+    <!-- Current % Readout -->
+    <TextView
+        android:id="@+id/tvWindowPercent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="12dp"
+        android:fontFamily="monospace"
+        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+        android:textColor="?attr/colorOutline"
+        tools:text="0%" />
+
+    <!-- 5 Preset Buttons -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnPreset0"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="54dp"
+        android:layout_height="36dp"
+        android:layout_marginEnd="4dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:padding="0dp"
+        android:text="@string/vc_preset_0"
+        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+        app:cornerRadius="8dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnPreset25"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="54dp"
+        android:layout_height="36dp"
+        android:layout_marginEnd="4dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:padding="0dp"
+        android:text="@string/vc_preset_25"
+        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+        app:cornerRadius="8dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnPreset50"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="54dp"
+        android:layout_height="36dp"
+        android:layout_marginEnd="4dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:padding="0dp"
+        android:text="@string/vc_preset_50"
+        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+        app:cornerRadius="8dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnPreset75"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="54dp"
+        android:layout_height="36dp"
+        android:layout_marginEnd="4dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:padding="0dp"
+        android:text="@string/vc_preset_75"
+        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+        app:cornerRadius="8dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnPreset100"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="54dp"
+        android:layout_height="36dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:padding="0dp"
+        android:text="@string/vc_preset_100"
+        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+        app:cornerRadius="8dp" />
+
+</LinearLayout>

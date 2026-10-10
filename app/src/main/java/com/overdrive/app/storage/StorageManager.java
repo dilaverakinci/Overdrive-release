@@ -101,20 +101,7 @@ public class StorageManager {
      * recovery-first comment in CameraDaemon.main().
      */
     private static int waitForBounded(Process p, long timeoutMs, String label) {
-        try {
-            if (p.waitFor(timeoutMs, TimeUnit.MILLISECONDS)) {
-                return p.exitValue();
-            }
-            logWarn(label + ": timed out after " + timeoutMs + "ms — killing child");
-            p.destroyForcibly();
-            // Give the kernel a moment to reap, but bound this too.
-            try { p.waitFor(500, TimeUnit.MILLISECONDS); } catch (InterruptedException ignored) {}
-            return -1;
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            try { p.destroyForcibly(); } catch (Exception ignored) {}
-            return -1;
-        }
+        return StorageHealthCheck.waitForBounded(p, timeoutMs, label);
     }
     
     private static void logDebug(String msg) {
@@ -146,62 +133,12 @@ public class StorageManager {
     /**
      * Drain a child process's stdout (and optionally stderr) with a HARD
      * deadline on the whole read, then reap the child.
-     *
-     * <p>FIX (audit: SD-outage review, subprocess bounding): the `sm
-     * list-volumes` / `sm mount` call sites used to run a bare
-     * {@code readLine()} loop and only then call {@link #waitForBounded} —
-     * so the timeout bounded the post-EOF wait, NOT the read. A vendored
-     * {@code sm} that hangs mid-write without closing its pipe (observed on
-     * BYD ROMs with a wedged vold) blocked the caller forever, and every one
-     * of those callers holds {@code mountLock}. Same drain-thread idiom as
-     * {@link #listFilesViaShellChecked}: on deadline we kill the child
-     * (which EOFs the reader) and return whatever was drained, flagged
-     * incomplete.
-     *
-     * @param drainTimeoutMs deadline for the whole output read. For commands
-     *        whose output only appears at completion (sm mount) this must
-     *        cover the command's own runtime.
      */
     private static ProcessLines readProcessLinesBounded(Process p, boolean includeStderr,
             long drainTimeoutMs, String label) {
-        final java.util.List<String> lines =
-            java.util.Collections.synchronizedList(new java.util.ArrayList<String>());
-        Thread drain = new Thread(() -> {
-            try (BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
-                String line;
-                while ((line = r.readLine()) != null) lines.add(line);
-            } catch (Exception ignored) {
-                // Stream closed by destroyForcibly on timeout, or read error.
-            }
-            if (includeStderr) {
-                try (BufferedReader r = new BufferedReader(new InputStreamReader(p.getErrorStream()))) {
-                    String line;
-                    while ((line = r.readLine()) != null) lines.add("ERR: " + line);
-                } catch (Exception ignored) {}
-            }
-        }, label + "-drain");
-        drain.setDaemon(true);
-        drain.start();
-        boolean complete = false;
-        try {
-            drain.join(drainTimeoutMs);
-            complete = !drain.isAlive();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        int exit;
-        if (!complete) {
-            logWarn(label + ": output drain exceeded " + drainTimeoutMs
-                + "ms — killing child (partial output, " + lines.size() + " lines)");
-            try { p.destroyForcibly(); } catch (Exception ignored) {}
-            try { drain.join(500); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
-            exit = -1;
-        } else {
-            exit = waitForBounded(p, 2_000, label);
-        }
-        synchronized (lines) {
-            return new ProcessLines(new java.util.ArrayList<>(lines), complete, exit);
-        }
+        StorageHealthCheck.ProcessLines result = StorageHealthCheck.readProcessLinesBounded(
+                p, includeStderr, drainTimeoutMs, label);
+        return new ProcessLines(result.lines, result.complete, result.exitCode);
     }
     
     // Base directories for Overdrive files
@@ -2088,35 +2025,8 @@ public class StorageManager {
      * @return "INTERNAL", "SD_CARD", "USB", or {@code null} if unclassifiable
      */
     public String classifyStorageForPath(String absPath) {
-        if (absPath == null || absPath.isEmpty()) return null;
-        // Internal base (and the legacy app-files dir) → INTERNAL.
-        if (absPath.startsWith(INTERNAL_BASE_DIR)
-                || absPath.startsWith(LEGACY_APP_FILES_DIR)) {
-            return StorageType.INTERNAL.name();
-        }
-        // Live mount roots take precedence — exact-volume match.
-        final String sd = sdCardPath;
-        final String usb = usbPath;
-        if (sd != null && !sd.isEmpty() && absPath.startsWith(sd)) {
-            return StorageType.SD_CARD.name();
-        }
-        if (usb != null && !usb.isEmpty() && absPath.startsWith(usb)) {
-            return StorageType.USB.name();
-        }
-        // Path is external (under /storage/<uuid>/...) but doesn't match a
-        // currently-resolved root — most likely an SD card written in a prior
-        // session/swap. /storage/emulated is always the internal emulated
-        // volume on this platform; treat that as INTERNAL, every other
-        // /storage/ subtree as SD_CARD (the dominant external on BYD head
-        // units; a USB stick that's since been unplugged is rare and the
-        // badge degrades gracefully to "SD_CARD" rather than mislabeling).
-        if (absPath.startsWith("/storage/emulated")) {
-            return StorageType.INTERNAL.name();
-        }
-        if (absPath.startsWith("/storage/") || absPath.startsWith("/mnt/")) {
-            return StorageType.SD_CARD.name();
-        }
-        return null;
+        return StorageMountMonitor.classifyPath(
+                absPath, INTERNAL_BASE_DIR, LEGACY_APP_FILES_DIR, sdCardPath, usbPath);
     }
 
     /**
@@ -4928,11 +4838,7 @@ public class StorageManager {
      */
     private static boolean nameMatchesCategoryPrefix(String name, String primaryPrefix,
                                                      String[] auxPrefixes) {
-        if (primaryPrefix != null && name.startsWith(primaryPrefix)) return true;
-        for (String aux : auxPrefixes) {
-            if (name.startsWith(aux)) return true;
-        }
-        return false;
+        return RetentionPolicyEngine.nameMatchesCategoryPrefix(name, primaryPrefix, auxPrefixes);
     }
 
     /**
@@ -7528,10 +7434,7 @@ public class StorageManager {
      * to match sidecars. Handles compound extensions like ".jsonl.gz".
      */
     private static String stemForName(String fileName, String primaryExt) {
-        if (fileName.endsWith(primaryExt)) {
-            return fileName.substring(0, fileName.length() - primaryExt.length());
-        }
-        return fileName;
+        return RetentionPolicyEngine.stemForName(fileName, primaryExt);
     }
 
     /**
@@ -8079,15 +7982,7 @@ public class StorageManager {
      * use the first underscore after the aux prefix.
      */
     private static int lastIndexOfActorMarker(String name, int from) {
-        for (int i = name.length() - 2; i >= from; i--) {
-            if (name.charAt(i) != '_') continue;
-            if (i + 1 >= name.length() || name.charAt(i + 1) != 'a') continue;
-            // Require a digit after "_a" so we don't match arbitrary text.
-            if (i + 2 < name.length() && Character.isDigit(name.charAt(i + 2))) {
-                return i;
-            }
-        }
-        return -1;
+        return RetentionPolicyEngine.lastIndexOfActorMarker(name, from);
     }
 
     /**
@@ -8225,14 +8120,7 @@ public class StorageManager {
     // ==================== Utility ====================
     
     public static String formatSize(long bytes) {
-        if (bytes >= 1_000_000_000) {
-            return String.format("%.1f GB", bytes / 1_000_000_000.0);
-        } else if (bytes >= 1_000_000) {
-            return String.format("%.1f MB", bytes / 1_000_000.0);
-        } else if (bytes >= 1_000) {
-            return String.format("%.1f KB", bytes / 1_000.0);
-        }
-        return bytes + " B";
+        return StorageQuotaEngine.formatSize(bytes);
     }
     
     public static long getMinLimitMb() {

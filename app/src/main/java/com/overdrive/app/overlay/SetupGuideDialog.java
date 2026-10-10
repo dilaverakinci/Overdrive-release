@@ -39,12 +39,25 @@ public class SetupGuideDialog {
     private static final String KEY_LAST_SEEN_INSTALL_TIME = "last_seen_install_time";
     private static final long AUTOSTART_SERVICE_WAIT_MS = 5000L;
     private static final long AUTOSTART_SERVICE_POLL_MS = 200L;
+    private static java.lang.ref.WeakReference<AlertDialog> activeDialogRef;
 
     /**
      * Show the setup guide if the app's last install/update time has advanced
      * past the stored marker. Returns true if the dialog was shown.
      */
     public static boolean showIfNeeded(Context context) {
+        if (context instanceof android.app.Activity) {
+            android.app.Activity activity = (android.app.Activity) context;
+            if (activity.isFinishing() || activity.isDestroyed()) {
+                return false;
+            }
+        }
+        if (activeDialogRef != null) {
+            AlertDialog current = activeDialogRef.get();
+            if (current != null && current.isShowing()) {
+                return false;
+            }
+        }
         long currentInstallTime = getCurrentInstallTime(context);
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         long lastSeen = prefs.getLong(KEY_LAST_SEEN_INSTALL_TIME, 0L);
@@ -68,6 +81,19 @@ public class SetupGuideDialog {
      *                 the user understands why it reappeared.
      */
     public static void show(Context context, boolean isUpdate) {
+        if (context instanceof android.app.Activity) {
+            android.app.Activity activity = (android.app.Activity) context;
+            if (activity.isFinishing() || activity.isDestroyed()) {
+                return;
+            }
+        }
+        if (activeDialogRef != null) {
+            AlertDialog current = activeDialogRef.get();
+            if (current != null && current.isShowing()) {
+                return;
+            }
+        }
+
         View view = LayoutInflater.from(context).inflate(R.layout.dialog_setup_guide, null);
 
         // Version banner — only when re-showing after an update, not on first install.
@@ -192,6 +218,13 @@ public class SetupGuideDialog {
                 }
             });
         }
+
+        activeDialogRef = new java.lang.ref.WeakReference<>(dialog);
+        dialog.setOnDismissListener(d -> {
+            if (activeDialogRef != null && activeDialogRef.get() == d) {
+                activeDialogRef = null;
+            }
+        });
 
         // "Remind me later" — soft nag: do NOT update the seen marker, so the
         // dialog reappears on next launch. Autostart is load-bearing; a single

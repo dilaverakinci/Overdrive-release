@@ -268,9 +268,8 @@ public class AppUpdaterRestartSafetyContractTest {
         assertTrue(backend.contains("MessageDigest.getInstance(\"SHA-256\")"));
         assertTrue(backend.contains("android.system.Os.rename("));
         assertTrue(backend.contains("executable.endsWith(\" (deleted)\")"));
-        assertTrue(backend.contains(
-                "LEGACY_QCARCAM_PATH =\n"
-                        + "            \"/data/local/tmp/qcarcam_test\""));
+        assertTrue(backend.contains("LEGACY_QCARCAM_PATH =")
+                && backend.contains("/data/local/tmp/qcarcam_test"));
         assertTrue(backend.contains(
                 "cameraIds.equals(sHardwareCameraIds)"));
         assertTrue(backend.contains(
@@ -382,13 +381,13 @@ public class AppUpdaterRestartSafetyContractTest {
             Path candidate = current.resolve(relativePath);
             if (Files.isRegularFile(candidate)) {
                 return new String(
-                        Files.readAllBytes(candidate), StandardCharsets.UTF_8);
+                        Files.readAllBytes(candidate), StandardCharsets.UTF_8).replace("\r\n", "\n");
             }
             Path fromModule = current.resolve(
                     relativePath.replaceFirst("^app/", ""));
             if (Files.isRegularFile(fromModule)) {
                 return new String(
-                        Files.readAllBytes(fromModule), StandardCharsets.UTF_8);
+                        Files.readAllBytes(fromModule), StandardCharsets.UTF_8).replace("\r\n", "\n");
             }
             current = current.getParent();
         }

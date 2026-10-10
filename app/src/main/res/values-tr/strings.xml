@@ -616,23 +616,149 @@
     <!-- M3 Revamp: navigation rail + settings sub-rail + theme picker  -->
     <!-- ============================================================== -->
     <!-- Top-level destinations (navigation rail labels) -->
-    <string name="rail_dashboard">Tablo</string>
+    <string name="rail_dashboard">Dashboard</string>
+    <string name="rail_assistant">Asistan</string>
     <string name="rail_live">Canlı</string>
     <string name="rail_recordings">Kayıtlar</string>
     <string name="rail_vehicle">Araç</string>
+    <string name="rail_vehicle_native" translatable="false">Vehicle (Native)</string>
+    <string name="rail_vehicle_legacy" translatable="false">Vehicle (Eski)</string>
+
+    <!-- Vehicle Screen Strings -->
+    <string name="vc_title">Araç</string>
+    <string name="vc_status_no_data">VERİ YOK</string>
+    <string name="vc_status_locked">KİLİTLİ</string>
+    <string name="vc_status_unlocked">KİLİT AÇIK</string>
+    <string name="vc_cloud_connected">Bulut bağlı</string>
+    <string name="vc_cloud_not_connected">BYD hesabı bağlı değil</string>
+    <string name="vc_mode_3d">3D</string>
+    <string name="vc_mode_2d">2D</string>
+    <string name="vc_model_unselected">Model Seçin</string>
+    <string name="vc_model_select_title">Araç Modeli Seçin</string>
+    <string name="vc_model_none">Model Seçilmedi (Silüet)</string>
+    <string name="vc_model_cleared">Araç modeli seçimi temizlendi</string>
+    <string name="vc_model_selected_msg">Seçilen: %1$s</string>
+    <string name="vc_door_open">Kapı açık</string>
+    <string name="vc_doors_open">%d kapı açık</string>
+    <string name="vc_trunk_is_open">Bagaj açık</string>
+
+    <!-- TPMS -->
+    <string name="vc_tpms_front_left">Ön sol</string>
+    <string name="vc_tpms_front_right">Ön sağ</string>
+    <string name="vc_tpms_rear_left">Arka sol</string>
+    <string name="vc_tpms_rear_right">Arka sağ</string>
+    <string name="vc_tpms_unit_psi">PSI</string>
+    <string name="vc_tpms_unit_kpa">kPa</string>
+    <string name="vc_tpms_unit_c">°C</string>
+
+    <!-- 10 Tabs -->
+    <string name="vc_tab_security">Güvenlik</string>
+    <string name="vc_tab_trunk">Bagaj</string>
+    <string name="vc_tab_climate">Klima</string>
+    <string name="vc_tab_seats">Koltuklar</string>
+    <string name="vc_tab_windows">Camlar</string>
+    <string name="vc_tab_lights">Işıklar</string>
+    <string name="vc_tab_adas">ADAS</string>
+    <string name="vc_tab_charging">Şarj</string>
+    <string name="vc_tab_sound">Ses</string>
+    <string name="vc_tab_system">Sistem</string>
+
+    <!-- Action Tiles -->
+    <string name="vc_action_lock">Kilitle</string>
+    <string name="vc_action_unlock">Kilit Aç</string>
+    <string name="vc_action_flash">Flaşör</string>
+    <string name="vc_action_find_car">Araç Bul</string>
+    <string name="vc_action_trunk_open">Aç</string>
+    <string name="vc_action_trunk_close">Kapat</string>
+    <string name="vc_action_ac_on">Klima Aç</string>
+    <string name="vc_action_ac_off">Klima Kapat</string>
+    <string name="vc_action_battery_heat">Batarya Isıtma</string>
+    <string name="vc_action_target_temp">Kabin Sıcaklığı</string>
+    <string name="vc_action_driver_seat">Sürücü Koltuğu</string>
+    <string name="vc_action_passenger_seat">Yolcu Koltuğu</string>
+    <string name="vc_action_seat_heat">Isıtma</string>
+    <string name="vc_action_seat_cool">Havalandırma</string>
+    <string name="vc_action_steering_heat">Direksiyon Isıtma</string>
+    <string name="vc_action_vent_all">Tümünü Havalandır</string>
+    <string name="vc_action_close_all">Tümünü Kapat</string>
+    <string name="vc_action_open_all">Tümünü Aç</string>
+    <string name="vc_action_daytime_lights">Gündüz Farları</string>
+    <string name="vc_action_ambient_light">Ambiyans Aydınlatma</string>
+    <string name="vc_action_speed_limit">Hız Sınırı Uyarısı</string>
+    <string name="vc_action_child_presence">Çocuk Varlık Tespiti</string>
+    <string name="vc_action_start_charging">Şarjı Başlat</string>
+    <string name="vc_action_charge_cap">Şarj Limiti</string>
+    <string name="vc_action_ac_current_limit">AC Akım Limiti</string>
+    <string name="vc_action_avas_sound">AVAS Sesi</string>
+    <string name="vc_action_engine_sound">Motor Sesi</string>
+    <string name="vc_action_ivi_reboot">Sistemi Yeniden Başlat</string>
+    <string name="vc_action_ivi_reboot_confirm">Multimedya sistemi şimdi yeniden başlatılsın mı? (Yalnızca park halindeyken)</string>
+    <string name="vc_action_reboot">Yeniden Başlat</string>
+    <string name="vc_action_seat_off">Kapalı</string>
+    <string name="vc_action_seat_level">Seviye %d</string>
+    <string name="vc_sound_tone_1">Ton 1</string>
+    <string name="vc_sound_tone_2">Ton 2</string>
+    <string name="vc_sound_stop">Durdur</string>
+    <string name="vc_color_cyan">Camgöbeği</string>
+    <string name="vc_color_blue">Mavi</string>
+    <string name="vc_color_purple">Mor</string>
+    <string name="vc_cmd_sent">Komut gönderildi</string>
+    <string name="vc_cmd_failed">Komut gönderilemedi</string>
     <string name="rail_projection">Yansıtma</string>
-    <string name="rail_trips">Seyahatler</string>
+    <string name="rail_trips">Yolculuklar</string>
     <string name="rail_parking">Park</string>
-    <string name="rail_integrations">Entegreler</string>
-    <string name="rail_diagnostics">Teşhisler</string>
+
+    <!-- Parking Screen Strings (1:1 with parking.html) -->
+    <string name="parking_tab_sessions">Oturumlar</string>
+    <string name="parking_tab_settings">Ayarlar</string>
+    <string name="parking_filter_7_days">7 Gün</string>
+    <string name="parking_filter_30_days">30 Gün</string>
+    <string name="parking_filter_90_days">90 Gün</string>
+    <string name="parking_filter_all">Tümü</string>
+    <string name="parking_disabled_title">Park Zekası kapalı</string>
+    <string name="parking_disabled_body">Açıldığında, her stop ediş bir park oturumu açar: aracın nerede olduğu, uzaklaştığınızda 4 kamera fotoğrafı, nöbetçinin izlediği sırada yanınıza gelen veya ayrılan araçlar ve döndüğünüzde bir \'Araca dönüş\' özeti. Kapalıyken hiçbir şey çalışmaz.</string>
+    <string name="parking_enable_btn">Park Zekasını Aç</string>
+    <string name="parking_no_sessions_title">Henüz park oturumu bulunmuyor</string>
+    <string name="parking_no_sessions_body">Araç stop edildiğinde ilk oturum otomatik başlatılır.</string>
+    <string name="parking_settings_title">Park Zekası</string>
+    <string name="parking_status_off">KAPALI</string>
+    <string name="parking_status_on">AÇIK</string>
+    <string name="parking_settings_enabled">Park Zekasını Etkinleştir</string>
+    <string name="parking_settings_enabled_desc">Her araç stop edildiğinde otomatik oturum açar: konum ve GPS tazeliği, araçtan uzaklaştığınızda ve geri döndüğünüzde 4 kamera fotoğrafı, nöbetçinin izlediği sırada yanınıza gelen veya ayrılan araçlar ve 2 bildirim (\'Parked\', \'Back at car\'). Kapalı = iş parçacığı yok, depolama yok, hesaplama yok.</string>
+    <string name="parking_settings_end_trigger">Oturum sonu</string>
+    <string name="parking_settings_end_trigger_desc">Park oturumunun ne zaman kapanacağı. \'Geri döndüğümde\': ilk kapı açılması veya kilit açmada (veya kontak açmada). \'Araç çalıştığında\': kapı ve kilit sadece dönüş fotoğraflarını yeniler. \'Sürüşe başladığımda\': vites P\'den çıkana kadar bekler; vites bilgisi yoksa kontak açıldıktan ~2 dakika sonra kapanır.</string>
+    <string name="parking_trigger_return">Geri döndüğümde</string>
+    <string name="parking_trigger_power_on">Araç çalıştığında</string>
+    <string name="parking_trigger_drive_away">Sürüşe başladığımda</string>
+    <string name="parking_settings_snapshots">Varış ve Dönüş Fotoğrafları</string>
+    <string name="parking_settings_snapshots_desc">Stop edildikten ~90 sn sonra ve ilk kapı açılışı/kilit açılışında 4 kamera fotoğrafı. Ayrıca bildirimlerdeki görsel.</string>
+    <string name="parking_settings_neighbours">Komşu Araç Takibi</string>
+    <string name="parking_settings_neighbours_desc">Nöbetçi taban çizgisi ve sonlandırılmış olaylardan yanınıza gelen veya ayrılan araçları takip eder ve her birinin en net karelerini saklar. Nöbetçi devrede olmalıdır.</string>
+    <string name="parking_settings_signage">Otopark Tabelası OCR (v2)</string>
+    <string name="parking_settings_signage_desc">Cihaz içi OCR (PP-OCRv3, ~5.5 MB) ile fotoğraflardan ve yaklaşma klibinin son dakikasından kat / bölge / park yeri metnini okur. Varış fotoğraflarından hemen sonra bir kez çalışır, böylece Parked mesajı kat bilgisini taşır.</string>
+    <string name="parking_settings_geocoding">Adres Çözümleme</string>
+    <string name="parking_settings_geocoding_desc">Park GPS konumunu Parked bildirimi ve oturum listesi için ilçe / cadde etiketine dönüştürür.</string>
+    <string name="parking_settings_online">Çevrimiçi Coğrafi Kodlama</string>
+    <string name="parking_settings_online_desc">Çevrimdışı eşleşme bulunamadığında Nominatim / OSM üzerinden çevrimiçi adres aramasına izin ver.</string>
+    <string name="parking_settings_retention">Saklama Süresi</string>
+    <string name="parking_settings_retention_desc">Otomatik temizlemeden önce kaç günlük park geçmişi ve komşu klip saklanacağı.</string>
+    <string name="parking_settings_storage">Maksimum Depolama Sınırı</string>
+    <string name="parking_settings_storage_desc">Eski oturumlar temizlenmeden önce park fotoğrafları ve klipler için izin verilen maksimum megabayt.</string>
+    <string name="parking_unit_days">gün</string>
+    <string name="parking_unit_mb">MB</string>
+    <string name="rail_integrations">Entegrasyonlar</string>
+    <string name="rail_diagnostics">Tanılama</string>
     <string name="rail_settings">Ayarlar</string>
+    <string name="rail_seat_positions">Koltuk Konumları</string>
+    <string name="rail_key_mapping">Tuş Atama</string>
+    <string name="rail_network">Ağ</string>
     <!-- Settings sub-rail -->
     <string name="settings_section_appearance">Görünüm</string>
     <string name="settings_section_recording">Kayıt</string>
     <string name="settings_section_surveillance">Gözetim</string>
-    <string name="settings_section_daemons">Şeytanlar</string>
+    <string name="settings_section_daemons">Arka Plan Servisleri</string>
     <string name="settings_section_privacy">Gizlilik &amp; Veriler</string>
-    <string name="settings_section_overlay">Durum örtüsü</string>
+    <string name="settings_section_overlay">Durum Göstergesi</string>
     <string name="settings_section_security">Güvenlik</string>
     <string name="settings_overlay_subtitle">Uçan durum hapının hangi bölümlerinin görünür kalmasını seçin.</string>
     <string name="settings_overlay_camera_title">Kamera göstergesi</string>
@@ -643,8 +769,8 @@
          the About page, so the menu / rail label is now just "About". -->
     <string name="settings_section_about">Hakkında</string>
     <!-- Settings sub-rail (landscape) — overline + a11y -->
-    <string name="settings_subrail_overline">SETIMLER</string>
-    <string name="cd_settings_subrail">Yapılandırma alt demiryolu</string>
+    <string name="settings_subrail_overline">AYARLAR</string>
+    <string name="cd_settings_subrail">Yapılandırma alt menüsü</string>
     <!-- Settings → Vehicle data placeholder pane -->
     <!-- Settings → Privacy pane copy -->
     <string name="settings_privacy_title">Gizlilik &amp; Veriler</string>
@@ -679,9 +805,9 @@
     <string name="settings_about_thanks_empty">İnsanlar katıldıkça liste dolmaya başlar.</string>
     <!-- Settings → General -->
     <string name="settings_theme_label">Tema</string>
-    <string name="settings_theme_auto">Otomatik (önderleme sistemi)</string>
-    <string name="settings_theme_light">Işık</string>
-    <string name="settings_theme_dark">Karanlık</string>
+    <string name="settings_theme_auto">Otomatik (Sistem)</string>
+    <string name="settings_theme_light">Açık</string>
+    <string name="settings_theme_dark">Koyu</string>
     <string name="settings_language_label">Dil</string>
     <!-- Recordings page (header + segmented control + page actions) -->
     <string name="recordings_title">Kayıtlar</string>
@@ -828,8 +954,8 @@
     <!-- ============================================================ -->
     <string name="settings_appearance_subtitle">Tema, dil ve görsel tercihler.</string>
     <string name="settings_theme_active_auto_caption">Otomatik sistem temasını takip eder.</string>
-    <string name="settings_theme_active_light_caption">Işık teması her zaman açık.</string>
-    <string name="settings_theme_active_dark_caption">Karanlık konu her zaman açık.</string>
+    <string name="settings_theme_active_light_caption">Açık tema her zaman etkin.</string>
+    <string name="settings_theme_active_dark_caption">Koyu tema her zaman etkin.</string>
     <string name="settings_language_count_format">%1$d\'den %2$d dillerinde mevcut</string>
     <string name="settings_language_card_title">Gösterim dili</string>
     <!-- ============================================================ -->
@@ -1098,6 +1224,7 @@
     <string name="roadsense_map_stop_added">Durak eklendi</string>
     <string name="roadsense_map_remove_stop_action">Durağı kaldır</string>
     <string name="roadsense_map_poi_navigate">Buraya git</string>
+    <string name="roadsense_map_poi_external_nav">Harita uygulamasında aç</string>
     <string name="roadsense_map_poi_kind_charging">Şarj istasyonu</string>
     <string name="roadsense_map_poi_kind_fuel">Yakıt istasyonu</string>
     <string name="roadsense_map_poi_charging_generic">Şarj istasyonu</string>
@@ -1349,4 +1476,641 @@
     <string name="rail_section_automation">Otomasyon</string>
     <string name="rail_section_system">Sistem</string>
     <string name="rail_collapse_label">Daralt</string>
+
+    <!-- Seat Positions Native -->
+    <string name="rail_seat_positions_native" translatable="false">Koltuk Konumları (Native)</string>
+    <string name="rail_seat_positions_legacy" translatable="false">Koltuk Konumları (Eski)</string>
+    <string name="seatpos_current" translatable="false">Mevcut konum</string>
+    <string name="seatpos_current_unavailable" translatable="false">Koltuk konumu okunamadı</string>
+    <string name="seatpos_matches" translatable="false">%1$s ile eşleşiyor</string>
+    <string name="seatpos_not_saved" translatable="false">Mevcut konum (kaydedilmemiş)</string>
+    <string name="seatpos_save_as_new" translatable="false">Yeni olarak kaydet</string>
+    <string name="seatpos_my_positions" translatable="false">Konumlarım</string>
+    <string name="seatpos_empty_title" translatable="false">Henüz kayıtlı konum yok</string>
+    <string name="seatpos_empty" translatable="false">Araçta koltuk ve aynaları ayarlayın, ardından Yeni olarak kaydet\'e basın.</string>
+    <string name="seatpos_show_details" translatable="false">Detayları göster</string>
+    <string name="seatpos_hide_details" translatable="false">Detayları gizle</string>
+    <string name="seatpos_group_seat" translatable="false">Koltuk</string>
+    <string name="seatpos_group_mirrors" translatable="false">Aynalar</string>
+    <string name="seatpos_gate_acc_off" translatable="false">Araç kapalı olduğu için koltuk motorlarında güç yok. Aracı açana kadar uygulama ve kaydetme çalışmaz.</string>
+    <string name="seatpos_gate_moving" translatable="false">Vites P\'de değil — vites P\'ye alınana kadar uygulama kapalıdır. Kaydetme ve yeniden adlandırma çalışır.</string>
+    <string name="seatpos_gate_ready" translatable="false">Park halinde ve güç açık — konumlar uygulanabilir.</string>
+    <string name="seatpos_unconfirmed_note" translatable="false">Bu adresler BYD Seal üzerinde doğrulanmıştır. Okuma ve kaydetme güvenlidir; uygulama öncesi sorulur.</string>
+    <string name="seatpos_unconfirmed_title" translatable="false">Bu araç için doğrulanmadı</string>
+    <string name="seatpos_unconfirmed_body" translatable="false">Koltuk ve ayna konumları BYD Seal üzerinde doğrulanmış adreslerle okunmaktadır ve aracınız farklı adresler kullanıyor olabilir. Yine de uygulansın mı?</string>
+    <string name="seatpos_unconfirmed_confirm" translatable="false">Yine de uygula</string>
+    <string name="seatpos_applied" translatable="false">Uygulandı</string>
+    <string name="seatpos_apply" translatable="false">Uygula</string>
+    <string name="seatpos_applied_toast" translatable="false">%1$s uygulandı</string>
+    <string name="seatpos_apply_failed" translatable="false">Konum uygulanamadı</string>
+    <string name="seatpos_from_car_slot" translatable="false">Araçtan · hafıza %1$d</string>
+    <string name="seatpos_car_slot_label" translatable="false">Tuş %1$d</string>
+    <string name="seatpos_used_by_one" translatable="false">1 otomasyonda kullanılıyor</string>
+    <string name="seatpos_save_here" translatable="false">Mevcut ayarları buraya kaydet</string>
+    <string name="seatpos_change_colour" translatable="false">Rengi değiştir</string>
+    <string name="seatpos_rename" translatable="false">Yeniden adlandır</string>
+    <string name="seatpos_set_alias" translatable="false">Araç hafıza tuşuna ata</string>
+    <string name="seatpos_delete" translatable="false">Sil</string>
+    <string name="seatpos_save_new_title" translatable="false">Mevcut konumu kaydet</string>
+    <string name="seatpos_save_new_body" translatable="false">Aracın şu anki koltuk ve ayna geometrisini kaydeder.</string>
+    <string name="seatpos_name_hint" translatable="false">Konum adı</string>
+    <string name="seatpos_parts_all" translatable="false">Her şey</string>
+    <string name="seatpos_parts_all_hint" translatable="false">Koltuk, aynalar ve iç ortam aydınlatması</string>
+    <string name="seatpos_parts_geometry" translatable="false">Koltuk &amp; aynalar</string>
+    <string name="seatpos_parts_geometry_hint" translatable="false">Aracın şu an bulunduğu konum</string>
+    <string name="seatpos_parts_ambient" translatable="false">Ortam aydınlatması</string>
+    <string name="seatpos_parts_ambient_hint" translatable="false">Renk, parlaklık ve ışık modları</string>
+    <string name="seatpos_save" translatable="false">Kaydet</string>
+    <string name="seatpos_saved_toast" translatable="false">%1$s kaydedildi</string>
+    <string name="seatpos_save_failed" translatable="false">Konum kaydedilemedi</string>
+    <string name="seatpos_default_name" translatable="false">Konumum</string>
+    <string name="seatpos_overwrite_title" translatable="false">%1$s üzerine yazılsın mı?</string>
+    <string name="seatpos_overwrite_body" translatable="false">Mevcut koltuk ve ayna ayarları bu isim altında saklanan ayarların yerine geçecektir. Bu işlem geri alınamaz.</string>
+    <string name="seatpos_overwrite_used" translatable="false">Bu otomasyonlar yeni ayarları uygulamaya başlayacaktır.</string>
+    <string name="seatpos_rename_title" translatable="false">Konumu yeniden adlandır</string>
+    <string name="seatpos_rename_failed" translatable="false">Konum yeniden adlandırılamadı</string>
+    <string name="seatpos_alias_car_1" translatable="false">Araç tuşu 1</string>
+    <string name="seatpos_alias_car_2" translatable="false">Araç tuşu 2</string>
+    <string name="seatpos_alias_car_3" translatable="false">Araç tuşu 3</string>
+    <string name="seatpos_clear_alias" translatable="false">Tuş atamasını temizle</string>
+    <string name="seatpos_alias_failed" translatable="false">Tuş ataması güncellenemedi</string>
+    <string name="seatpos_colour_title" translatable="false">Rengi değiştir</string>
+    <string name="seatpos_colour_body" translatable="false">Bu konumda saklanan ortam ışığı rengini ayarlar. Konum uygulanana kadar araçtaki ışık değişmez.</string>
+    <string name="seatpos_colour_failed" translatable="false">Renk değiştirilemedi</string>
+    <string name="seatpos_delete_title" translatable="false">%1$s silinsin mi?</string>
+    <string name="seatpos_delete_used" translatable="false">Bu otomasyonlar çalışmayı durdurur.</string>
+    <string name="seatpos_delete_unused" translatable="false">Bu konumu kullanan otomasyon yok.</string>
+    <string name="seatpos_delete_failed" translatable="false">Konum silinemedi</string>
+    <string name="common_cancel" translatable="false">İptal</string>
+    <string name="common_more" translatable="false">Daha Fazla</string>
+    <string name="common_delete" translatable="false">Sil</string>
+    <string name="common_edit" translatable="false">Düzenle</string>
+    <string name="common_save" translatable="false">Kaydet</string>
+    <string name="common_apply_changes" translatable="false">Değişiklikleri Uygula</string>
+
+    <!-- Charging Native (TR) -->
+    <string name="rail_charging_native" translatable="false">Şarj (Native)</string>
+    <string name="rail_charging_legacy" translatable="false">Şarj (Eski)</string>
+    <string name="charge_page_title" translatable="false">Şarj</string>
+    <string name="charge_page_subtitle" translatable="false">Şarj oturumlarınızı ve enerji kullanımınızı takip edin</string>
+    <string name="charge_filter_7d" translatable="false">7 gün</string>
+    <string name="charge_filter_30d" translatable="false">30 gün</string>
+    <string name="charge_filter_all" translatable="false">Tüm zamanlar</string>
+    <string name="charge_filter_custom" translatable="false">Özel</string>
+    <string name="charge_range_from" translatable="false">Başlangıç</string>
+    <string name="charge_range_to" translatable="false">Bitiş</string>
+    <string name="charge_range_apply" translatable="false">Uygula</string>
+    <string name="charge_tab_sessions" translatable="false">Oturumlar</string>
+    <string name="charge_tab_stats" translatable="false">İstatistikler</string>
+    <string name="charge_tab_stations" translatable="false">İstasyonlar</string>
+    <string name="charge_tab_settings" translatable="false">Ayarlar</string>
+    <string name="charge_stations_title" translatable="false">Yakındaki Şarj İstasyonları</string>
+    <string name="charge_stations_search_hint" translatable="false">İstasyon veya operatör ara...</string>
+    <string name="charge_stations_filter_all" translatable="false">Tümü</string>
+    <string name="charge_stations_filter_dc" translatable="false">DC Hızlı</string>
+    <string name="charge_stations_filter_ac" translatable="false">AC</string>
+    <string name="charge_stations_navigate" translatable="false">Yol Tarifi</string>
+    <string name="charge_stations_empty" translatable="false">Bu mesafede şarj istasyonu bulunamadı</string>
+    <string name="charge_stations_sockets" translatable="false">%d Soket</string>
+    <string name="charge_stations_radius_5km" translatable="false">5 km</string>
+    <string name="charge_stations_radius_15km" translatable="false">15 km</string>
+    <string name="charge_stations_radius_50km" translatable="false">50 km</string>
+    <string name="charge_stations_count" translatable="false">Çevrede %d istasyon bulundu</string>
+    <string name="charge_stations_power" translatable="false">Güç</string>
+    <string name="charge_stations_distance" translatable="false">Mesafe: %s</string>
+    <string name="charge_stations_nav_start" translatable="false">Yol Tarifi Başlat</string>
+    <string name="charge_stations_nav_error" translatable="false">Navigasyon uygulaması açılamadı</string>
+    <string name="charge_stations_view_list" translatable="false">Liste</string>
+    <string name="charge_stations_view_map" translatable="false">Harita</string>
+    <string name="charge_stations_show_on_map" translatable="false">Haritada Göster</string>
+    <string name="charge_stations_open_roadsense" translatable="false">RoadSense Haritasında Aç</string>
+    <string name="charge_stations_map_recenter" translatable="false">Konumuma Odakla</string>
+    <string name="charge_state_charging" translatable="false">Şarj ediliyor</string>
+    <string name="charge_state_plugged" translatable="false">Kablo takılı</string>
+    <string name="charge_summary_sessions" translatable="false">Oturum</string>
+    <string name="charge_summary_sessions_desc" translatable="false">Toplam şarj oturumu</string>
+    <string name="charge_summary_energy" translatable="false">Enerji</string>
+    <string name="charge_summary_energy_desc" translatable="false">Toplam aktarılan enerji</string>
+    <string name="charge_summary_cost" translatable="false">Maliyet</string>
+    <string name="charge_summary_cost_desc" translatable="false">Toplam şarj maliyeti</string>
+    <string name="charge_summary_dc_ac" translatable="false">DC / AC</string>
+    <string name="charge_summary_dc_ac_desc" translatable="false">DC / AC oturumları</string>
+    <string name="charge_summary_range_gained" translatable="false">Eklenen Menzil</string>
+    <string name="charge_summary_range_desc" translatable="false">Toplam eklenen menzil</string>
+    <string name="charge_sessions_title" translatable="false">Şarj oturumları</string>
+    <string name="charge_no_sessions_yet" translatable="false">Henüz şarj oturumu yok</string>
+    <string name="charge_no_sessions_hint" translatable="false">Aracı şarja taktığınızda oturumlar otomatik olarak burada görünecektir</string>
+    <string name="charge_stats_intro" translatable="false">Şarj içgörüleri ve kullanım trendleri</string>
+    <string name="charge_chart_soc_title" translatable="false">Zaman içinde şarj durumu</string>
+    <string name="charge_period_24h" translatable="false">24s</string>
+    <string name="charge_period_7d" translatable="false">7g</string>
+    <string name="charge_period_30d" translatable="false">30g</string>
+    <string name="charge_hero_avg_power" translatable="false">Ortalama güç</string>
+    <string name="charge_hero_cost" translatable="false">kWh başına maliyet</string>
+    <string name="charge_hero_soc" translatable="false">Şarj durumu</string>
+    <string name="charge_lifetime_stats_title" translatable="false">Toplam istatistikler</string>
+    <string name="charge_lifetime_energy" translatable="false">Toplam enerji</string>
+    <string name="charge_lifetime_sessions" translatable="false">Toplam oturum</string>
+    <string name="charge_lifetime_cost" translatable="false">Toplam maliyet</string>
+    <string name="charge_settings_title" translatable="false">Şarj Analitiği</string>
+    <string name="charge_settings_auto_record" translatable="false">Şarj oturumlarını otomatik kaydet</string>
+    <string name="charge_settings_auto_record_desc" translatable="false">Her şarjı güç, maliyet ve batarya verileriyle oturum olarak günlüğe kaydeder</string>
+    <string name="charge_settings_rate" translatable="false">Elektrik Tarifesi</string>
+    <string name="charge_settings_rate_desc" translatable="false">kWh başına ücret (Sürüşler ile paylaşılır)</string>
+    <string name="charge_settings_dc_rate" translatable="false">DC Hızlı Şarj Tarifesi (isteğe bağlı)</string>
+    <string name="charge_settings_dc_rate_desc" translatable="false">DC hızlı şarj için ayrı tarife; temel tarifeyi kullanmak için 0 bırakın</string>
+    <string name="charge_baking_note" translatable="false">Ayrıntılı metrikler yeni şarjlar tamamlandıkça doldurulur</string>
+    <string name="charge_tariffs_title" translatable="false">Konuma Göre Tarifeler</string>
+    <string name="charge_tariffs_desc" translatable="false">Bir konum için ücret kaydedin; yakınındaki şarjlar otomatik olarak bu ücretle fiyatlandırılır.</string>
+    <string name="charge_tariffs_empty" translatable="false">Henüz konuma göre tarife yok</string>
+    <string name="charge_tariffs_empty_hint" translatable="false">Şarj ettiğiniz yere park halindeyken bir tane ekleyin.</string>
+    <string name="charge_tariff_add_here" translatable="false">Bu konum için tarife ekle</string>
+    <string name="charge_tariff_new_title" translatable="false">Bu Konum İçin Tarife Ekle</string>
+    <string name="charge_tariff_edit_title" translatable="false">Konum Tarifesini Düzenle</string>
+    <string name="charge_tariff_label" translatable="false">Etiket</string>
+    <string name="charge_tariff_label_hint" translatable="false">Ev, İş Yeri, Hızlı Şarj…</string>
+    <string name="charge_tariff_ac_rate" translatable="false">AC Ücreti</string>
+    <string name="charge_tariff_dc_rate" translatable="false">DC Ücreti (İsteğe bağlı)</string>
+    <string name="charge_tariff_dc_rate_hint" translatable="false">DC için AC ücretini kullanmak üzere boş bırakın</string>
+    <string name="charge_tariff_radius" translatable="false">Eşleşme Yarıçapı</string>
+    <string name="charge_tariff_radius_hint" translatable="false">25 ile 2000 m arası</string>
+    <string name="charge_tariff_location" translatable="false">Konum</string>
+    <string name="charge_tariff_no_gps" translatable="false">GPS bekleniyor…</string>
+    <string name="charge_tariff_pill_here" translatable="false">burada aktif</string>
+    <string name="charge_tariff_pill_default" translatable="false">varsayılan</string>
+    <string name="charge_tariff_set_default" translatable="false">Eşleşmeyen konumlarda kullan</string>
+    <string name="charge_tariff_used_count" translatable="false">%1$d× kullanıldı</string>
+    <string name="charge_tariff_delete_confirm" translatable="false">Bu tarife silinsin mi? Bununla fiyatlandırılan şarjlar diğer ücretlerinize geri dönecektir.</string>
+    <string name="charge_tariff_err_no_rate" translatable="false">Bir AC veya DC ücreti girin</string>
+    <string name="charge_tariff_err_rate_range" translatable="false">Ücretler 0 ile 100000 arasında olmalıdır</string>
+    <string name="charge_tariff_err_radius" translatable="false">Eşleşme yarıçapı 25 ile 2000 m arasında olmalıdır</string>
+    <string name="charge_tariff_err_label" translatable="false">Etiket çok uzun (en fazla 48 karakter)</string>
+    <string name="charge_tariff_err_label_required" translatable="false">Bu konum için bir etiket girin</string>
+    <string name="charge_tariff_err_dupe_label" translatable="false">Bu etikete sahip bir tarife zaten mevcut</string>
+    <string name="charge_tariff_err_save" translatable="false">Tarife kaydedilemedi</string>
+    <string name="charge_tariff_err_delete" translatable="false">Tarife silinemedi</string>
+    <string name="charge_tariff_saved" translatable="false">Tarife kaydedildi</string>
+    <string name="charge_tariff_deleted" translatable="false">Tarife silindi</string>
+    <string name="charge_tariff_auto_hint" translatable="false">Kaydedildi. Buraya %1$d m mesafedeki şarjlar bu tarifeyi otomatik olarak kullanacak.</string>
+    <string name="charge_tariff_fallback_default" translatable="false">Tarife dışındaki tüm şarjlar “%1$s” tarifesini kullanır.</string>
+    <string name="charge_tariff_fallback_global" translatable="false">Tarife dışındaki tüm şarjlar %1$s/kWh kullanır.</string>
+    <string name="charge_tariff_no_rate" translatable="false">Ücret belirtilmedi</string>
+    <string name="charge_tariff_unnamed" translatable="false">İsimsiz tarife</string>
+    <string name="charge_tariff_ac_short" translatable="false">AC</string>
+    <string name="charge_tariff_dc_short" translatable="false">DC</string>
+    <string name="charge_sort_recent" translatable="false">En yeniden eskiye</string>
+    <string name="charge_sort_oldest" translatable="false">En eskiden yeniye</string>
+    <string name="charge_settings_data_title" translatable="false">Veri</string>
+    <string name="charge_settings_clear" translatable="false">Şarj geçmişini temizle</string>
+    <string name="charge_settings_clear_desc" translatable="false">Kayıtlı tüm şarj oturumlarını ve eğrilerini kalıcı olarak siler</string>
+    <string name="charge_settings_saved" translatable="false">Şarj ayarları kaydedildi</string>
+    <string name="charge_settings_save_failed" translatable="false">Şarj ayarları kaydedilemedi</string>
+    <string name="charge_clear_history_title" translatable="false">Şarj geçmişi temizlensin mi?</string>
+    <string name="charge_clear_history_confirm_msg" translatable="false">Bu işlem kaydedilen tüm şarj oturumlarını, güç eğrilerini ve sıcaklık günlüklerini kalıcı olarak siler. Bu işlem geri alınamaz.</string>
+    <string name="charge_clear_history_success" translatable="false">Şarj geçmişi temizlendi</string>
+    <string name="charge_clear_history_failed" translatable="false">Şarj geçmişi temizlenemedi</string>
+    <string name="charge_detail_back" translatable="false">Oturumlara dön</string>
+    <string name="charge_delete_session_title" translatable="false">Oturumu sil</string>
+    <string name="charge_delete_confirm_msg" translatable="false">Bu şarj oturumunu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</string>
+    <string name="charge_delete_success" translatable="false">Oturum silindi</string>
+    <string name="charge_delete_failed" translatable="false">Oturum silinemedi</string>
+    <string name="charge_detail_duration" translatable="false">Süre</string>
+    <string name="charge_detail_location" translatable="false">Konum</string>
+    <string name="charge_detail_metrics" translatable="false">Metrikler</string>
+    <string name="charge_detail_energy_added" translatable="false">Eklenen enerji</string>
+    <string name="charge_detail_avg_power" translatable="false">Ortalama güç</string>
+    <string name="charge_detail_peak_power" translatable="false">Zirve güç</string>
+    <string name="charge_detail_range_gained" translatable="false">Eklenen menzil</string>
+    <string name="charge_detail_cost" translatable="false">Maliyet</string>
+    <string name="charge_detail_temp" translatable="false">Batarya sıcaklığı</string>
+    <string name="charge_chart_power_title" translatable="false">Şarj gücü &amp; eğrisi</string>
+    <string name="charge_chart_power_sub" translatable="false">Zaman içinde Güç (kW) &amp; SoC (%)</string>
+    <string name="charge_chart_temp_title" translatable="false">Hücre sıcaklığı</string>
+    <string name="charge_chart_temp_sub" translatable="false">Zaman içinde hücre sıcaklıkları (Yüksek, Ort, Düşük)</string>
+    <string name="charge_type_dc" translatable="false">DC Hızlı</string>
+    <string name="charge_type_fast" translatable="false">AC Hızlı</string>
+    <string name="charge_type_slow" translatable="false">AC Yavaş</string>
+    <string name="charge_in_progress" translatable="false">Şarj ediliyor</string>
+    <string name="charge_rate_hint" translatable="false">0.00</string>
+    <string name="charge_dc_rate_hint" translatable="false">0.00</string>
+    <string name="charge_cost_hint" translatable="false">0.00</string>
+    <string name="charge_edit_cost_title" translatable="false">Oturum maliyetini düzenle</string>
+    <string name="charge_edit_cost_desc" translatable="false">Bu tamamlanan oturumun maliyetini güncelleyin veya sıfırlayın. Bir maliyet girin ya da yeniden hesaplanması için boş bırakın / -1 girin.</string>
+    <string name="charge_cost_saved" translatable="false">Oturum maliyeti güncellendi</string>
+    <string name="charge_cost_save_failed" translatable="false">Oturum maliyeti güncellenemedi</string>
+
+    <!-- Trips Native Screen Strings (TR) -->
+    <string name="rail_trips_native" translatable="false">Yolculuklar (Native)</string>
+    <string name="rail_trips_legacy" translatable="false">Yolculuklar (Eski)</string>
+    <string name="trip_page_title" translatable="false">Yolculuklar</string>
+    <string name="trip_page_subtitle" translatable="false">Yolculuklarınızı, verimliliği ve sürüş puanlarınızı analiz edin</string>
+    <string name="trip_filter_7d" translatable="false">7 Gün</string>
+    <string name="trip_filter_14d" translatable="false">14 Gün</string>
+    <string name="trip_filter_30d" translatable="false">30 Gün</string>
+    <string name="trip_filter_all" translatable="false">Tümü</string>
+    <string name="trip_tab_trips" translatable="false">Sürüşler</string>
+    <string name="trip_tab_stats" translatable="false">İstatistikler</string>
+    <string name="trip_tab_storage" translatable="false">Depolama</string>
+    <string name="trip_summary_trips" translatable="false">Sürüş Sayısı</string>
+    <string name="trip_summary_distance" translatable="false">Mesafe</string>
+    <string name="trip_summary_duration" translatable="false">Süre</string>
+    <string name="trip_summary_energy" translatable="false">Enerji</string>
+    <string name="trip_summary_cost" translatable="false">Maliyet</string>
+    <string name="trip_empty_title" translatable="false">Henüz kayıtlı yolculuk yok</string>
+    <string name="trip_empty_message" translatable="false">Sürüş analitiğini etkinleştirin ve sürüşlerinizi burada görmek için aracı kullanın</string>
+    <string name="trip_stats_driver_score" translatable="false">Sürücü Puanı</string>
+    <string name="trip_stats_personalized_range" translatable="false">Kişiselleştirilmiş Menzil</string>
+    <string name="trip_stats_range_note" translatable="false">Kişisel menzili görmek için daha fazla yolculuk yapın</string>
+    <string name="trip_stats_cost_per_km" translatable="false">Km Başına Maliyet</string>
+    <string name="trip_stats_driving_dna" translatable="false">Sürüş DNA\'sı</string>
+    <string name="trip_storage_settings_title" translatable="false">Yolculuk Depolama &amp; Analitik</string>
+    <string name="trip_setting_analytics_title" translatable="false">Sürüş Analitiği</string>
+    <string name="trip_setting_analytics_desc" translatable="false">Yolculukları otomatik kaydet ve sürüş puanlarını hesapla</string>
+    <string name="trip_setting_rate_title" translatable="false">Elektrik Tarifesi</string>
+    <string name="trip_setting_rate_desc" translatable="false">Yolculuk maliyeti hesabı için kWh başına ücret</string>
+    <string name="trip_setting_unit_title" translatable="false">Mesafe Birimi</string>
+    <string name="trip_setting_unit_desc" translatable="false">Mesafeleri ve hızları km veya mil olarak göster</string>
+    <string name="trip_setting_storage_location" translatable="false">Kayıt Konumu</string>
+    <string name="trip_setting_storage_location_desc" translatable="false">Yolculuk telemetrisinin nereye kaydedileceğini seçin</string>
+    <string name="trip_recovery_title" translatable="false">Yolculuk Geçmişini Kurtarma</string>
+    <string name="trip_recovery_desc" translatable="false">Depolamadaki telemetri dosyalarından eksik yolculukları yeniden oluştur</string>
+    <string name="trip_recover_button" translatable="false">Yolculukları Kurtar</string>
+    <string name="trip_detail_back" translatable="false">Yolculuklara Dön</string>
+    <string name="trip_rescore_button" translatable="false">Sürüş puanlarını hesapla</string>
+    <string name="trip_chart_speed_pedal" translatable="false">Hız &amp; Pedal Grafiği</string>
+    <string name="trip_chart_speed_dist" translatable="false">Hız Dağılımı</string>
+    <string name="trip_dialog_delete_title" translatable="false">Yolculuğu Sil</string>
+    <string name="trip_dialog_delete_message" translatable="false">Bu yolculuğu ve telemetri verisini silmek istediğinizden emin misiniz?</string>
+    <string name="trip_filter_custom" translatable="false">Özel</string>
+    <string name="trip_period_summary" translatable="false">Dönem Özeti</string>
+    <string name="trip_summary_hours" translatable="false">Saat</string>
+    <string name="trip_summary_avg_score" translatable="false">Ort. Puan</string>
+    <string name="trip_enable_now" translatable="false">Sürüş kaydını başlat</string>
+    <string name="trip_range_from" translatable="false">Başlangıç</string>
+    <string name="trip_range_to" translatable="false">Bitiş</string>
+    <string name="trip_range_apply" translatable="false">Uygula</string>
+    <string name="trip_no_trips_yet" translatable="false">Henüz kayıtlı sürüş yok</string>
+    <string name="trip_no_trips_hint" translatable="false">Sürüş analizini etkinleştirin ve sürüşlerinizi burada görmek için aracı kullanın</string>
+    <string name="trip_map_fit_route" translatable="false">Rotayı Sığdır</string>
+    <string name="trip_map_focus_car" translatable="false">Araca Odaklan</string>
+    <string name="trip_map_zoom_in" translatable="false">Yakınlaştır</string>
+    <string name="trip_map_zoom_out" translatable="false">Uzaklaştır</string>
+
+    <!-- Automations Native Screen Strings -->
+    <string name="rail_automations_native" translatable="false">Otomasyonlar (Native)</string>
+    <string name="rail_automations_legacy" translatable="false">Otomasyonlar (Eski)</string>
+    <string name="automation_page_title" translatable="false">Otomasyonlar</string>
+    <string name="automation_page_subtitle" translatable="false">Olay tetikleyicileri, güvenlik koşulları ve özel araç rutinleri oluşturun</string>
+    <string name="automation_tab_rules" translatable="false">Kurallar</string>
+    <string name="automation_tab_groups" translatable="false">Eylem Grupları</string>
+    <string name="automation_tab_safety" translatable="false">Güvenlik Korumaları</string>
+    <string name="automation_tab_settings" translatable="false">Ayarlar</string>
+    <string name="automation_empty_title" translatable="false">Yapılandırılmış Otomasyon Yok</string>
+    <string name="automation_empty_desc" translatable="false">Araç ayarlarını, şarj rutinlerini veya aksesuarları otomatikleştirmek için özel kurallar ekleyin</string>
+    <string name="automation_groups_empty_title" translatable="false">Eylem Grubu Yok</string>
+    <string name="automation_groups_empty_desc" translatable="false">Birden çok kuralda tetiklemek üzere yeniden kullanılabilir araç eylem dizileri tanımlayın</string>
+    <string name="automation_safety_warning_desc" translatable="false">Güvenlik korumaları araç hareket halindeyken (Vites != P veya Hız &gt; 0 km/s) tehlikeli eylemleri engeller.</string>
+    <string name="safety_guard_door_locks" translatable="false">Kapı Kilit Koruması</string>
+    <string name="safety_guard_door_locks_desc" translatable="false">Sürüş esnasında kapı kilidi açma otomasyonlarını engeller</string>
+    <string name="safety_guard_trunk" translatable="false">Bagaj Koruması</string>
+    <string name="safety_guard_trunk_desc" translatable="false">Araç hareket halindeyken bagaj açma/kapatmayı engeller</string>
+    <string name="safety_guard_mirror_fold" translatable="false">Ayna Katlama Koruması</string>
+    <string name="safety_guard_mirror_fold_desc" translatable="false">Hareket halindeyken yan aynaların katlanmasını engeller</string>
+    <string name="safety_guard_positioning" translatable="false">Koltuk &amp; Ayna Pozisyon Koruması</string>
+    <string name="safety_guard_positioning_desc" translatable="false">Sürüş esnasında koltuk ve ayna pozisyonu değişimlerini engeller</string>
+    <string name="safety_guard_headlight_off" translatable="false">Far Kapatma Koruması</string>
+    <string name="safety_guard_headlight_off_desc" translatable="false">Hız &gt; 0 km/s iken farların kapanmasını engeller</string>
+    <string name="safety_guard_display_brightness" translatable="false">Ekran Parlaklık Koruması</string>
+    <string name="safety_guard_display_brightness_desc" translatable="false">Sürüş esnasında ekran parlaklığının tamamen sıfırlanmasını engeller</string>
+    <string name="safety_guard_display_power" translatable="false">Ekran Güç Koruması</string>
+    <string name="safety_guard_display_power_desc" translatable="false">Sürüş esnasında ana konsol ekranının kapatılmasını engeller</string>
+    <string name="safety_guard_screen_media" translatable="false">Ekran Medya Koruması</string>
+    <string name="safety_guard_screen_media_desc" translatable="false">Medya oynatma otomasyon kısıtlamalarını denetler</string>
+    <string name="automation_allow_shell" translatable="false">Kabuk Komutlarına İzin Ver</string>
+    <string name="automation_allow_shell_desc" translatable="false">Otomasyonlarda ham kabuk komutlarının çalıştırılmasına izin verir. Dikkatle etkinleştirin.</string>
+    <string name="automation_backup_title" translatable="false">Otomasyon Depolama &amp; Güvenlik</string>
+    <string name="automation_backup_desc" translatable="false">Otomasyonlar cihazda yerel olarak saklanır. Kurallar çalıştırılmadan önce güvenlik korumaları kontrol edilir.</string>
+    <string name="automation_dialog_delete_title" translatable="false">Otomasyonu Sil</string>
+    <string name="automation_dialog_delete_msg" translatable="false">Bu otomasyon kuralını silmek istediğinizden emin misiniz?</string>
+    <string name="automation_mode_automatic" translatable="false">Otomatik</string>
+    <string name="automation_mode_manual" translatable="false">Yalnızca Manuel</string>
+    <string name="automation_mode_disabled" translatable="false">Devre Dışı</string>
+    <string name="automation_label_when" translatable="false">ŞU OLDUĞUNDA</string>
+    <string name="automation_label_if" translatable="false">EĞER</string>
+    <string name="automation_label_then" translatable="false">ÖYLEYSE</string>
+    <string name="automation_label_else" translatable="false">AKSİ HALDE</string>
+    <string name="automation_btn_test" translatable="false">Test Et</string>
+    <string name="automation_btn_run_group" translatable="false">Çalıştır</string>
+
+    <!-- Key Mapping Native Screen Strings -->
+    <string name="rail_key_mapping_native" translatable="false">Tuş Atama (Native)</string>
+    <string name="rail_key_mapping_legacy" translatable="false">Tuş Atama (Eski)</string>
+    <string name="keymap_page_title" translatable="false">Tuş Atama</string>
+    <string name="keymap_page_subtitle" translatable="false">Direksiyon ve ön konsol tuşlarını araç komutlarına atayın</string>
+    <string name="keymap_tab_bindings" translatable="false">Atamalar</string>
+    <string name="keymap_tab_add" translatable="false">Atama Ekle</string>
+    <string name="keymap_master_enable" translatable="false">Tuş atamayı etkinleştir</string>
+    <string name="keymap_master_enable_desc" translatable="false">Ana anahtar. Kapalıyken tuşlar standart araç işlevlerini yürütür.</string>
+    <string name="keymap_allow_advanced" translatable="false">Gelişmiş eylemler</string>
+    <string name="keymap_allow_advanced_desc" translatable="false">Özel kabuk (shell) komutları çalıştıran atamalara izin verir.</string>
+    <string name="keymap_double_tap_speed" translatable="false">Çift basma hızı</string>
+    <string name="keymap_double_tap_desc" translatable="false">Tek basma eylemini çalıştırmadan önce çift basma algılama zaman aşımı süresi.</string>
+    <string name="keymap_empty_title" translatable="false">Kayıtlı Tuş Ataması Yok</string>
+    <string name="keymap_empty_hint" translatable="false">Direksiyon veya konsol tuşunu bir araç eylemine bağlamak için yeni atama oluşturun.</string>
+    <string name="keymap_a11y_needed_title" translatable="false">Erişilebilirlik Hizmeti Gerekli</string>
+    <string name="keymap_a11y_needed_desc" translatable="false">Direksiyon ve donanım tuşlarının yakalanabilmesi için OverDrive erişilebilirlik servisi açık olmalıdır.</string>
+    <string name="keymap_a11y_open_settings" translatable="false">Erişilebilirlik Ayarlarını Aç</string>
+    <string name="keymap_press_single" translatable="false">Tek Basma</string>
+    <string name="keymap_press_double" translatable="false">Çift Basma</string>
+    <string name="keymap_press_long" translatable="false">Uzun Basma</string>
+    <string name="keymap_button_label" translatable="false">Tuş</string>
+    <string name="keymap_capture_button" translatable="false">Tuşu Yakala</string>
+    <string name="keymap_capturing" translatable="false">Direksiyon veya konsoldaki bir tuşa basın...</string>
+    <string name="keymap_press_type_label" translatable="false">Basma Tipi</string>
+    <string name="keymap_block_single" translatable="false">Tek Tıklama Eylemini Engelle</string>
+    <string name="keymap_block_single_desc" translatable="false">Çift basma beklenirken aracın varsayılan tek tıklama eylemini bastırır.</string>
+    <string name="keymap_action_kind_label" translatable="false">Eylem Türü</string>
+    <string name="keymap_kind_curated" translatable="false">Araç Eylemi</string>
+    <string name="keymap_kind_app" translatable="false">Uygulama Aç</string>
+    <string name="keymap_kind_shell" translatable="false">Kabuk (Shell) Komutu</string>
+    <string name="keymap_vehicle_action_label" translatable="false">Araç Eylemi Seçin</string>
+    <string name="keymap_payload_label" translatable="false">Değer / Parametre</string>
+    <string name="keymap_app_label" translatable="false">Uygulama Seçin</string>
+    <string name="keymap_app_split" translatable="false">Bölünmüş Ekranda Aç</string>
+    <string name="keymap_shell_cmd_label" translatable="false">Kabuk Komutu</string>
+    <string name="keymap_steps_label" translatable="false">Zincirleme Eylem Dizisi</string>
+    <string name="keymap_add_step" translatable="false">Adım Ekle</string>
+    <string name="keymap_save_binding" translatable="false">Tuş Atamasını Kaydet</string>
+    <string name="keymap_delete_confirm_title" translatable="false">Tuş Atamasını Sil</string>
+    <string name="keymap_delete_confirm_msg" translatable="false">%s tuş atamasını silmek istediğinizden emin misiniz?</string>
+    <string name="keymap_test_action" translatable="false">Test Et</string>
+    <string name="keymap_tab_add_short" translatable="false">Ekle</string>
+    <string name="keymap_cluster_size" translatable="false">Gösterge paneli boyutu</string>
+    <string name="keymap_cluster_size_desc" translatable="false">Bunu gösterge panelinizle eşleştirin. Kör nokta gösterge görünümüyle paylaşılır. Görüntü gerilmiş veya kırpılmış görünüyorsa başka bir seçenek deneyin.</string>
+    <string name="keymap_cluster_1025" translatable="false">10.25\" gösterge paneli</string>
+    <string name="keymap_cluster_123" translatable="false">12.3\" gösterge paneli</string>
+    <string name="keymap_cluster_88" translatable="false">8.8\" gösterge paneli</string>
+    <string name="keymap_list_title" translatable="false">Atamalarınız</string>
+    <string name="keymap_btn_add_binding" translatable="false">Atama ekle</string>
+    <string name="keymap_add_title" translatable="false">Atama Ekle</string>
+    <string name="keymap_choose_button" translatable="false">Bir tuş seçin...</string>
+    <string name="keymap_custom_capture" translatable="false">Özel / tuş yakala...</string>
+    <string name="keymap_capture_hint" translatable="false">“Tuşu Yakala” düğmesine dokunun, ardından direksiyon veya konsol tuşuna basın.</string>
+    <string name="keymap_capture_idle" translatable="false">Tuş yakalanmadı</string>
+    <string name="keymap_capture_cta" translatable="false">Bir tuş yakala</string>
+    <string name="keymap_manual_keycode" translatable="false">Veya bir tuş kodu girin</string>
+    <string name="keymap_manual_keycode_help" translatable="false">Android KeyEvent kodu, örn. 87 = sonraki parça, 88 = önceki.</string>
+    <string name="keymap_action" translatable="false">Eylem</string>
+    <string name="keymap_app_split_desc" translatable="false">Uygulamayı tam ekran yerine ekranın bir yarısına bölünmüş olarak açın.</string>
+    <string name="keymap_shell_warn" translatable="false">Her basışta arka plan servisi yetkileriyle çalışır. Hatalı komut ekran ünitesini bozabilir. “Gelişmiş eylemler” açık olmalıdır.</string>
+    <string name="keymap_sequence_hint" translatable="false">Tek bir eylem ekleyin veya bir tuşla hepsini çalıştırmak için “Adım Ekle” ile zincirleyin.</string>
+    <string name="keymap_qc_title" translatable="false">Veya kontrol paneli düğmesi olarak ekleyin</string>
+    <string name="keymap_qc_desc" translatable="false">Yukarıdaki eylemi fiziksel tuş gerekmeden kontrol panelindeki Hızlı Kontroller altına bir düğme olarak kaydeder.</string>
+    <string name="keymap_qc_label" translatable="false">Düğme etiketi</string>
+    <string name="keymap_qc_save" translatable="false">Kontrol paneli düğmesi ekle</string>
+    <string name="keymap_qc_empty" translatable="false">Henüz kontrol paneli düğmesi yok.</string>
+
+    <!-- Integrations Native Screen Strings -->
+    <string name="rail_integrations_native" translatable="false">Entegrasyonlar (Native)</string>
+    <string name="rail_integrations_legacy" translatable="false">Entegrasyonlar (Eski)</string>
+    <string name="integrations_tab_overview" translatable="false">Genel Bakış</string>
+    <string name="integrations_tab_telegram" translatable="false">Telegram</string>
+    <string name="integrations_tab_abrp" translatable="false">ABRP</string>
+    <string name="integrations_tab_mqtt" translatable="false">MQTT</string>
+    <string name="integrations_tab_byd_cloud" translatable="false">BYD Cloud</string>
+    <string name="integrations_open_legacy" translatable="false">Eski Web Görünümü</string>
+    <string name="integrations_configure_native" translatable="false">Yapılandır</string>
+    <string name="integrations_service_connected" translatable="false">Bağlandı</string>
+    <string name="integrations_service_stopped" translatable="false">Durduruldu</string>
+    
+    <string name="tg_bot_token_title" translatable="false">Telegram Bot Belirteci (Token)</string>
+    <string name="tg_bot_token_desc" translatable="false">Telegram üzerinde @BotFather ile bir bot oluşturup API anahtarını buraya girin.</string>
+    <string name="tg_save_token" translatable="false">Kaydet ve Doğrula</string>
+    <string name="tg_clear_token" translatable="false">Belirteci Temizle</string>
+    <string name="tg_pairing_title" translatable="false">Bot Eşleştirme</string>
+    <string name="tg_pairing_desc" translatable="false">6 haneli bir PIN kodu üretip Telegram botunuza göndererek hesabınızı bağlayın.</string>
+    <string name="tg_generate_pin" translatable="false">Eşleştirme PIN\'i Üret</string>
+    <string name="tg_unpair_button" translatable="false">Eşleştirmeyi Kaldır</string>
+    <string name="tg_prefs_title" translatable="false">Bildirim Tercihleri</string>
+    <string name="tg_pref_critical" translatable="false">Kritik Güvenlik Uyarıları</string>
+    <string name="tg_pref_motion" translatable="false">Hareket ve Nöbetçi Uyarıları</string>
+    <string name="tg_pref_video" translatable="false">Hareket Video Kliplerini Yükle</string>
+    <string name="tg_pref_tyre" translatable="false">Lastik Basıncı Uyarıları</string>
+    <string name="tg_save_prefs" translatable="false">Ayarları Kaydet</string>
+    
+    <string name="abrp_telemetry_service" translatable="false">ABRP Telemetri Servisi</string>
+    <string name="abrp_telemetry_desc" translatable="false">Canlı batarya doluluğu, hız ve GPS verilerini periyodik olarak A Better Routeplanner\'a aktarır.</string>
+    <string name="abrp_user_token_title" translatable="false">ABRP Kullanıcı Belirteci</string>
+    <string name="abrp_user_token_hint" translatable="false">Kullanıcı belirteci (ABRP uygulaması &gt; Ayarlar &gt; Araç)</string>
+    <string name="abrp_save_config" translatable="false">Kaydet ve Bağlan</string>
+    <string name="abrp_clear_token" translatable="false">Belirteci Sil</string>
+    <string name="abrp_live_data_title" translatable="false">Canlı Telemetri Özeti</string>
+    
+    <string name="mqtt_brokers_title" translatable="false">Yapılandırılmış MQTT Sunucuları</string>
+    <string name="mqtt_no_brokers" translatable="false">Kayıtlı MQTT sunucusu bulunamadı</string>
+    <string name="mqtt_add_broker_title" translatable="false">Sunucu Ekle / Düzenle</string>
+    <string name="mqtt_broker_name_hint" translatable="false">Bağlantı Adı (örn. Home Assistant)</string>
+    <string name="mqtt_broker_host_hint" translatable="false">Sunucu IP / Adresi (örn. 192.168.1.100)</string>
+    <string name="mqtt_broker_port_hint" translatable="false">Port (varsayılan: 1883)</string>
+    <string name="mqtt_username_hint" translatable="false">Kullanıcı Adı (isteğe bağlı)</string>
+    <string name="mqtt_password_hint" translatable="false">Şifre (isteğe bağlı)</string>
+    <string name="mqtt_topic_hint" translatable="false">Konu Öneki (örn. overdrive)</string>
+    <string name="mqtt_tls_label" translatable="false">SSL / TLS Şifrelemesi Kullan</string>
+    <string name="mqtt_save_broker" translatable="false">Sunucuyu Kaydet</string>
+    
+    <string name="byd_cloud_credentials_title" translatable="false">BYD Cloud Hesap Girişi</string>
+    <string name="byd_cloud_credentials_desc" translatable="false">Kapı açma/kilitleme, korna ve ışık yakma gibi uzaktan komutları etkinleştirmek için giriş yapın.</string>
+    <string name="byd_cloud_email_hint" translatable="false">E-posta / Telefon Numarası</string>
+    <string name="byd_cloud_password_hint" translatable="false">Hesap Şifresi</string>
+    <string name="byd_cloud_pin_hint" translatable="false">Kontrol PIN Kodu (6 haneli)</string>
+    <string name="byd_cloud_login_button" translatable="false">Kaydet ve Giriş Yap</string>
+    <string name="byd_cloud_test_lights" translatable="false">Işıkları Yak/Söndür</string>
+    <string name="byd_cloud_test_horn" translatable="false">Kornayı Çal</string>
+    <string name="byd_cloud_clear_button" translatable="false">Bilgileri Temizle</string>
+    <string name="automation_tab_automations" translatable="false">Otomasyonlar</string>
+    <string name="automation_tab_add" translatable="false">Ekle</string>
+    <string name="automation_tab_groups_short" translatable="false">Gruplar</string>
+    <string name="automation_tab_safety_short" translatable="false">Güvenlik</string>
+    <string name="automation_tab_community" translatable="false">Topluluk</string>
+    <string name="automation_list_title" translatable="false">Otomasyonlarınız</string>
+    <string name="automation_btn_add" translatable="false">Otomasyon Ekle</string>
+    <string name="automation_empty_p" translatable="false">Yapılandırılmış otomasyon yok. Bir otomasyon ekleyin.</string>
+    <string name="automation_empty_hint" translatable="false">Bir araç olayı koşullarınızla eşleştiğinde eylem tetiklemek için bir tane oluşturun.</string>
+    <string name="automation_allow_shell_full" translatable="false">Kabuk (Shell) eylemlerine izin ver</string>
+    <string name="automation_allow_shell_full_desc" translatable="false">Koşullar eşleştiğinde otomasyonların arka planda doğrudan kabuk komutu çalıştırmasına izin verir. Otomasyonlarınızdan emin değilseniz kapalı bırakın.</string>
+    <string name="automation_cluster_size" translatable="false">Gösterge paneli boyutu</string>
+    <string name="automation_cluster_size_desc" translatable="false">Bunu gösterge panelinizle eşleştirin. Kör nokta gösterge görünümüyle paylaşılır.</string>
+    <string name="automation_backup_restore_title" translatable="false">Yedekleme ve Geri Yükleme</string>
+    <string name="automation_backup_export_import" translatable="false">Dışa Aktar / İçe Aktar</string>
+    <string name="automation_backup_export_import_desc" translatable="false">Tüm otomasyonlarınızı bir dosyaya kaydedin veya bir yedekten geri yükleyin.</string>
+    <string name="automation_btn_export" translatable="false">Dışa Aktar</string>
+    <string name="automation_btn_import" translatable="false">İçe Aktar</string>
+    <string name="automation_audio_library_title" translatable="false">Ses Kütüphanesi</string>
+    <string name="automation_audio_uploaded" translatable="false">Yüklenen sesler</string>
+    <string name="automation_audio_uploaded_desc" translatable="false">MP3, WAV veya MP4 sesleri yükleyin (maks 48 MB). Ses Çal eylemi ve tuş eşleme buradaki herhangi bir sesi çalabilir.</string>
+    <string name="automation_btn_upload" translatable="false">Yükle</string>
+    <string name="automation_audio_empty" translatable="false">Henüz ses yüklenmedi.</string>
+    <string name="automation_form_add_title" translatable="false">Otomasyon Ekle</string>
+    <string name="automation_form_exec_mode" translatable="false">Yürütme modu</string>
+    <string name="automation_form_name_hint" translatable="false">örn. Gece nöbet modunu devreye al</string>
+    <string name="automation_form_on_change" translatable="false">Değiştiğinde</string>
+    <string name="automation_form_on_change_desc" translatable="false">Bu otomasyonu tetiklerken izlenecek olaylar.</string>
+    <string name="automation_form_save" translatable="false">Otomasyonu Kaydet</string>
+    <string name="automation_groups_title" translatable="false">Eylem grupları</string>
+    <string name="automation_groups_new" translatable="false">Yeni grup</string>
+    <string name="automation_groups_empty_hint" translatable="false">Bir kez eylem grubu oluşturun, ardından "Eylem grubunu çalıştır" ile herhangi bir otomasyondan çağırın.</string>
+    <string name="automation_safety_title" translatable="false">Sürüş güvenlik korumaları</string>
+    <string name="automation_safety_warning" translatable="false">Bu korumalar OverDrive\'ın Otomasyonları, Eylem Grupları, Tuş Eşleme ve Araç Kontrolleri üzerinden başlatılan eylemler için geçerlidir.</string>
+    <string name="automation_community_title" translatable="false">Topluluk otomasyonları</string>
+    <string name="automation_community_empty" translatable="false">Henüz topluluk otomasyonu yok. İlkini siz yayınlayın.</string>
+    <string name="automation_community_empty_hint" translatable="false">Paylaşmak için Otomasyonlar sekmesinden bir otomasyonunuzu yayınlayın.</string>
+    <string name="automation_search_hint" translatable="false">Otomasyonlarda ara</string>
+    <string name="integrations_back_to_overview" translatable="false">Entegrasyonlar</string>
+    <string name="integrations_subtab_bot" translatable="false">Bot</string>
+    <string name="integrations_subtab_pair" translatable="false">Eşleme</string>
+    <string name="integrations_subtab_preferences" translatable="false">Tercihler</string>
+    <string name="integrations_subtab_status" translatable="false">Durum</string>
+    <string name="integrations_subtab_token" translatable="false">Belirteç</string>
+    <string name="integrations_subtab_telemetry" translatable="false">Telemetri</string>
+    <string name="integrations_subtab_connections" translatable="false">Bağlantılar</string>
+    <string name="integrations_subtab_add" translatable="false">Ekle</string>
+    <string name="integrations_subtab_account" translatable="false">Hesap</string>
+    <string name="integrations_subtab_advanced" translatable="false">Gelişmiş</string>
+
+    <!-- RoadSense Native Strings (TR) -->
+    <string name="rail_roadsense_native" translatable="false">RoadSense (Native)</string>
+    <string name="rail_roadsense_legacy" translatable="false">RoadSense (Eski)</string>
+    <string name="roadsense_native_title" translatable="false">RoadSense</string>
+    <string name="roadsense_native_subtitle" translatable="false">Yol tehlikesi algılama, harita projeksiyonu, uyarılar ve kör nokta</string>
+    <string name="roadsense_tab_general" translatable="false">Genel</string>
+    <string name="roadsense_tab_map" translatable="false">Harita</string>
+    <string name="roadsense_tab_warnings" translatable="false">Uyarılar</string>
+    <string name="roadsense_tab_data" translatable="false">Veri</string>
+    <string name="roadsense_tab_blindspot" translatable="false">Kör Nokta</string>
+
+    <string name="roadsense_master_title" translatable="false">RoadSense</string>
+    <string name="roadsense_master_enable" translatable="false">RoadSense\'i Etkinleştir</string>
+    <string name="roadsense_master_desc" translatable="false">Hareket ve GPS verilerinden yol tehlikelerini (tümsek, çukur, kasis) algılar ve bilinen tehlikeler öncesinde uyarır.</string>
+    <string name="roadsense_detect_title" translatable="false">Algılama Hassasiyeti</string>
+    <string name="roadsense_detect_desc" translatable="false">Tümsek ve çukurların ne kadar kolay algılanacağını belirler. %50 varsayılandır.</string>
+    <string name="roadsense_detect_min" translatable="false">Daha Az</string>
+    <string name="roadsense_detect_max" translatable="false">Daha Fazla</string>
+    <string name="roadsense_calib_title" translatable="false">Kalibrasyon Modu</string>
+    <string name="roadsense_calib_enable" translatable="false">Algılamaları ekranda onayla</string>
+    <string name="roadsense_calib_desc" translatable="false">Algılanan her tehlikeyi ekranda onayla/düzelt butonlarıyla göstererek RoadSense\'i eğitmenizi sağlar.</string>
+    <string name="roadsense_overlay_title" translatable="false">Ekran Yer Paylaşımı</string>
+    <string name="roadsense_overlay_enable" translatable="false">Ekranda yüzen paneli göster</string>
+    <string name="roadsense_overlay_desc" translatable="false">Ekranda yüzen RoadSense hapını ve tehlike kartını gösterir. Gizlendiğinde sesli uyarılar ve arka plan algılama aktif kalır.</string>
+
+    <string name="roadsense_map_open_title" translatable="false">Tehlike Haritası</string>
+    <string name="roadsense_map_open_desc" translatable="false">Güzergah aramak, navigasyon başlatmak ve yol tehlikelerini görmek için tam ekran haritayı açın.</string>
+    <string name="roadsense_map_open_btn" translatable="false">Haritayı Aç</string>
+    <string name="roadsense_routing_title" translatable="false">Adım Adım Yönlendirme (BYOK)</string>
+    <string name="roadsense_routing_desc" translatable="false">Temel harita ücretsizdir. Adım adım yönlendirme için kişisel Valhalla / Stadia Maps anahtarınızı girebilirsiniz. Cihazda şifreli saklanır.</string>
+    <string name="roadsense_routing_endpoint" translatable="false">Yönlendirme Uç Noktası</string>
+    <string name="roadsense_routing_key" translatable="false">Yönlendirme API Anahtarı</string>
+    <string name="roadsense_routing_key_hint" translatable="false">API anahtarınızı yapıştırın</string>
+    <string name="roadsense_routing_save" translatable="false">Anahtarı Kaydet</string>
+    <string name="roadsense_routing_clear" translatable="false">Anahtarı Temizle</string>
+    <string name="roadsense_routing_configured" translatable="false">Anahtar Ayarlandı</string>
+    <string name="roadsense_routing_not_configured" translatable="false">Anahtar Ayarlanmadı</string>
+    <string name="roadsense_cluster_proj_title" translatable="false">Gösterge Paneli Projeksiyonu</string>
+    <string name="roadsense_cluster_project" translatable="false">Haritayı gösterge paneline yansıt</string>
+    <string name="roadsense_cluster_project_desc" translatable="false">Tam haritayı direksiyon arkasındaki gösterge paneli ekranına yansıtır.</string>
+    <string name="roadsense_cluster_auto" translatable="false">ACC açıldığında otomatik yansıt</string>
+    <string name="roadsense_cluster_auto_desc" translatable="false">Araç her çalıştığında haritayı otomatik olarak göstergeye yansıtır.</string>
+    <string name="roadsense_cluster_layout" translatable="false">Gösterge Ekran Boyutu</string>
+    <string name="roadsense_cluster_1025" translatable="false">10.25\" Gösterge (Varsayılan)</string>
+    <string name="roadsense_cluster_123" translatable="false">12.3\" Gösterge</string>
+    <string name="roadsense_cluster_88" translatable="false">8.8\" Gösterge</string>
+
+    <string name="roadsense_warn_ahead_title" translatable="false">Tehlike Uyarıları</string>
+    <string name="roadsense_warn_ahead_enable" translatable="false">Bilinen tehlikeleri önceden bildir</string>
+    <string name="roadsense_warn_ahead_desc" translatable="false">Güzergahınızda RoadSense\'in önceden bildiği bir tehlikeye yaklaşırken sizi uyarır.</string>
+    <string name="roadsense_warn_style_title" translatable="false">Uyarı Tarzı</string>
+    <string name="roadsense_warn_style_visual" translatable="false">Görsel</string>
+    <string name="roadsense_warn_style_audio" translatable="false">Sesli</string>
+    <string name="roadsense_warn_style_both" translatable="false">Her İkisi</string>
+    <string name="roadsense_sound_channel_title" translatable="false">Ses Kanalı</string>
+    <string name="roadsense_sound_channel_desc" translatable="false">Navigasyon kanalı müzik sesini kısarak uyarının net duyulmasını sağlar.</string>
+    <string name="roadsense_chime_volume_title" translatable="false">Zil Sesi Seviyesi</string>
+    <string name="roadsense_test_chime" translatable="false">Zil Sesini Test Et</string>
+    <string name="roadsense_warn_lead_title" translatable="false">Öncü Uyarı Süresi</string>
+    <string name="roadsense_warn_lead_desc" translatable="false">Uyarının tehlikeden kaç saniye önce verileceğini belirler.</string>
+    <string name="roadsense_warn_conf_title" translatable="false">Minimum Güven Eşiği</string>
+    <string name="roadsense_warn_conf_desc" translatable="false">Yalnızca bu güven eşiğinin üzerindeki tehlikeler için uyarı verilir.</string>
+    <string name="roadsense_sev_title" translatable="false">Şiddete Göre Uyarılar</string>
+
+    <string name="roadsense_crowd_title" translatable="false">Topluluk Paylaşımı</string>
+    <string name="roadsense_crowd_note" translatable="false">Varsayılan olarak tüm algılamalar cihazda kalır. Yükleme ve indirme birbirinden bağımsızdır.</string>
+    <string name="roadsense_crowd_upload" translatable="false">Algılamalarımı yükle</string>
+    <string name="roadsense_crowd_upload_desc" translatable="false">Algılanan tehlikeleri anonim olarak paylaşılan harita ağına gönderir.</string>
+    <string name="roadsense_crowd_download" translatable="false">Paylaşılan tehlikeleri indir</string>
+    <string name="roadsense_crowd_download_desc" translatable="false">Diğer sürücülerden gelen tehlikeleri indirerek daha önce geçmediğiniz yollarda da uyarılmanızı sağlar.</string>
+    <string name="roadsense_sync_worker" translatable="false">Senkronizasyon Sunucusu URL</string>
+    <string name="roadsense_calib_data_title" translatable="false">Kalibrasyon Verileri</string>
+    <string name="roadsense_delete_local_title" translatable="false">Yerel kalibrasyonları sil</string>
+    <string name="roadsense_delete_local_desc" translatable="false">Cihazda depolanan tüm tehlike algılamalarını ve kalibrasyon etiketlerini siler. Geri alınamaz.</string>
+    <string name="roadsense_delete_local_btn" translatable="false">Yerel Verileri Sil</string>
+    <string name="roadsense_delete_cloud_title" translatable="false">Bulut kalibrasyonlarını sil</string>
+    <string name="roadsense_delete_cloud_desc" translatable="false">Yüklediğiniz tehlike verilerini paylaşılan bulut veritabanından kaldırır. Geri alınamaz.</string>
+    <string name="roadsense_delete_cloud_btn" translatable="false">Bulut Verilerini Sil</string>
+    <string name="roadsense_confirm_delete_local" translatable="false">Tüm yerel kalibrasyonları ve tehlike verilerini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</string>
+    <string name="roadsense_confirm_delete_cloud" translatable="false">Buluta yüklediğiniz algılamaları silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</string>
+
+    <string name="roadsense_bs_title" translatable="false">Kör Nokta</string>
+    <string name="roadsense_bs_enable" translatable="false">Kör Nokta Görünümünü Etkinleştir</string>
+    <string name="roadsense_bs_enable_desc" translatable="false">Sinyal verildiğinde ilgili kör nokta kamera görüntüsünü ekranda gösterir.</string>
+    <string name="roadsense_bs_cameras_title" translatable="false">Gösterilen Kameralar</string>
+    <string name="roadsense_bs_merge_both" translatable="false">Arka + Yan</string>
+    <string name="roadsense_bs_merge_side" translatable="false">Yalnızca Yan</string>
+    <string name="roadsense_bs_merge_rear" translatable="false">Yalnızca Arka</string>
+    <string name="roadsense_bs_rotation_left" translatable="false">Döndürme — Sol</string>
+    <string name="roadsense_bs_rotation_right" translatable="false">Döndürme — Sağ</string>
+    <string name="roadsense_bs_rectify_title" translatable="false">Balıkgözü Düzeltme</string>
+    <string name="roadsense_bs_rectify_desc" translatable="false">Tek kamera görünümleri için lens eğriliğini düzleştirir.</string>
+    <string name="roadsense_bs_when_title" translatable="false">Görünme Koşulları</string>
+    <string name="roadsense_bs_speed_range" translatable="false">Hız Aralığı (km/h)</string>
+    <string name="roadsense_bs_speed_range_desc" translatable="false">Kör noktayı yalnızca belirtilen hız aralığında göster. Her hız için 0 - 0 bırakın.</string>
+    <string name="roadsense_bs_apply_speed" translatable="false">Hız Aralığını Uygula</string>
+    <string name="roadsense_bs_hide_reverse" translatable="false">Geri Viteste Gizle</string>
+    <string name="roadsense_bs_hide_reverse_desc" translatable="false">Geri vitese takıldığında geri görüş kamerasını kapatmaması için kör noktayı gizler.</string>
+    <string name="roadsense_bs_layout_title" translatable="false">Görüntüleme ve Konum</string>
+    <string name="roadsense_bs_target" translatable="false">Görüntüleme Ekranı</string>
+    <string name="roadsense_bs_target_headunit" translatable="false">Bilgi-Eğlence Ekranı</string>
+    <string name="roadsense_bs_target_cluster" translatable="false">Gösterge Ekranı</string>
+    <string name="roadsense_bs_size" translatable="false">Pencere Boyutu</string>
+    <string name="roadsense_bs_pos_left" translatable="false">Konum — Sol</string>
+    <string name="roadsense_bs_pos_right" translatable="false">Konum — Sağ</string>
+    <string name="roadsense_bs_corner_tl" translatable="false">Sol-Üst</string>
+    <string name="roadsense_bs_corner_tr" translatable="false">Sağ-Üst</string>
+    <string name="roadsense_bs_corner_bl" translatable="false">Sol-Alt</string>
+    <string name="roadsense_bs_corner_br" translatable="false">Sağ-Alt</string>
+    <string name="roadsense_bs_corner_center" translatable="false">Orta</string>
+    <string name="roadsense_bs_apply_display" translatable="false">Değişiklikleri Uygula</string>
+    <string name="roadsense_bs_align_title" translatable="false">Canlı Hizalama Ayarları</string>
+    <string name="roadsense_bs_preview_left" translatable="false">Sol Görünümü Aç</string>
+    <string name="roadsense_bs_preview_right" translatable="false">Sağ Görünümü Aç</string>
+    <string name="roadsense_bs_preview_hide" translatable="false">Önizlemeyi Gizle</string>
+    <string name="roadsense_bs_rear_fov" translatable="false">Genişlik A (Arka FOV)</string>
+    <string name="roadsense_bs_side_fov" translatable="false">Genişlik B (Yan FOV)</string>
+    <string name="roadsense_bs_yaw" translatable="false">Birleşme Noktası</string>
+    <string name="roadsense_bs_roll" translatable="false">Eğim</string>
+    <string name="roadsense_bs_pitch" translatable="false">Yükseklik</string>
+    <string name="roadsense_bs_feather" translatable="false">Yumuşatma</string>
+    <string name="roadsense_bs_proj_exp" translatable="false">Yan Yayılma</string>
+    <string name="roadsense_bs_rear_roll" translatable="false">Arka Seviye</string>
+    <string name="roadsense_bs_rear_pitch" translatable="false">Arka Eğim</string>
+    <string name="roadsense_bs_save_align" translatable="false">Hizalamayı Kaydet</string>
+    <string name="roadsense_bs_reset_align" translatable="false">Varsayılana Sıfırla</string>
+    <string name="status_on">AÇIK</string>
+    <string name="status_off">KAPALI</string>
+    <string name="trip_timeline_play">Oynat</string>
+    <string name="trip_timeline_pause">Duraklat</string>
+    <string name="trip_elevation_title">Yükseklik Profili</string>
+    <string name="trip_elevation_uphill">Yukarı</string>
+    <string name="trip_elevation_downhill">Aşağı</string>
+    <string name="trip_elevation_flat">Düz</string>
+    <string name="trip_elevation_gain">Çıkış</string>
+    <string name="trip_elevation_loss">İniş</string>
 </resources>

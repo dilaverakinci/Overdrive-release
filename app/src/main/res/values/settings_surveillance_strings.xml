@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_surveillance_title">Surveillance Settings</string>
+    <string name="settings_surveillance_subtitle">Parked sentry mode, motion detection, AI object recognition and deterrence.</string>
+    <string name="settings_surveillance_master_enable">Enable Surveillance</string>
+    <string name="settings_surveillance_master_enable_desc">Monitor cameras for motion and threats while parked</string>
+    <string name="settings_surveillance_mode_title">Sentry Mode &amp; Power</string>
+    <string name="settings_surveillance_op_mode">Operating Mode</string>
+    <string name="settings_surveillance_op_on_off">On &amp; Off</string>
+    <string name="settings_surveillance_op_on_off_desc">Keep watching while parked</string>
+    <string name="settings_surveillance_op_on_only">On Only</string>
+    <string name="settings_surveillance_op_on_only_desc">Sleep when vehicle turns off</string>
+    <string name="settings_surveillance_arm_mode">Arm Mode</string>
+    <string name="settings_surveillance_arm_lock">On Lock</string>
+    <string name="settings_surveillance_arm_power">On Power-Off</string>
+    <string name="settings_surveillance_accoff_mode">Parked Capture Mode</string>
+    <string name="settings_surveillance_accoff_smart">Smart (AI)</string>
+    <string name="settings_surveillance_accoff_continuous">Continuous</string>
+    <string name="settings_surveillance_low_power">Low-Power Mode While Parked</string>
+    <string name="settings_surveillance_low_power_desc">Drops camera to 5 FPS when quiet; ramps to full FPS instantly on motion</string>
+    <string name="settings_surveillance_low_soc">Low Battery Cutoff</string>
+    <string name="settings_surveillance_low_soc_desc">Stop surveillance when main battery drops below this percentage</string>
+    <string name="settings_surveillance_usb_power">Keep USB Powered While Parked</string>
+    <string name="settings_surveillance_usb_power_desc">Maintains power to USB ports and SD card while parked</string>
+    <string name="settings_surveillance_mobile_data">Keep Mobile Data Awake</string>
+    <string name="settings_surveillance_mobile_data_desc">Prevents vehicle data module from sleeping while parked</string>
+
+    <string name="settings_surveillance_detection_title">Detection &amp; AI Recognition</string>
+    <string name="settings_surveillance_env_preset">Environment Preset</string>
+    <string name="settings_surveillance_env_outdoor">Outdoor</string>
+    <string name="settings_surveillance_env_garage">Garage</string>
+    <string name="settings_surveillance_env_street">Street</string>
+    <string name="settings_surveillance_sensitivity">Motion Sensitivity</string>
+    <string name="settings_surveillance_detection_zone">Detection Zone</string>
+    <string name="settings_surveillance_zone_close">Close (~3m)</string>
+    <string name="settings_surveillance_zone_normal">Normal (~6m)</string>
+    <string name="settings_surveillance_zone_extended">Extended</string>
+    <string name="settings_surveillance_loitering">Loitering Time</string>
+    <string name="settings_surveillance_loitering_desc">Seconds a person must stay near vehicle before recording</string>
+    <string name="settings_surveillance_ai_objects">AI Object Tracking</string>
+    <string name="settings_surveillance_obj_person">Person</string>
+    <string name="settings_surveillance_obj_vehicle">Vehicle</string>
+    <string name="settings_surveillance_obj_bicycle">Bicycle</string>
+    <string name="settings_surveillance_obj_animal">Animal</string>
+    <string name="settings_surveillance_camera_controls">Active Cameras</string>
+    <string name="settings_surveillance_cam_front">Front</string>
+    <string name="settings_surveillance_cam_rear">Rear</string>
+    <string name="settings_surveillance_cam_left">Left</string>
+    <string name="settings_surveillance_cam_right">Right</string>
+
+    <string name="settings_surveillance_buffer_title">Buffer &amp; Video Quality</string>
+    <string name="settings_surveillance_pre_buffer">Pre-event Buffer</string>
+    <string name="settings_surveillance_post_buffer">Post-event Buffer</string>
+    <string name="settings_surveillance_quality_tier">Surveillance Quality</string>
+    <string name="settings_surveillance_fps">Surveillance FPS</string>
+    <string name="settings_surveillance_telemetry">Show Telemetry on Sentry Clips</string>
+    <string name="settings_surveillance_telemetry_desc">Overlays speed, date, and battery stats on parked clips</string>
+
+    <string name="settings_surveillance_deterrent_title">Deterrent Actions</string>
+    <string name="settings_surveillance_screen_warning">Display Warning on Motion</string>
+    <string name="settings_surveillance_screen_warning_desc">Wakes the head-unit screen and displays a red sentry warning</string>
+    <string name="settings_surveillance_warning_duration">Warning Duration</string>
+    <string name="settings_surveillance_test_warning">Test Screen Warning</string>
+    <string name="settings_surveillance_test_triggered">Screen warning test triggered</string>
+    <string name="settings_surveillance_saved">Settings updated</string>
+</resources>

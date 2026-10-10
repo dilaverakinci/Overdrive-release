@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_recording_title">Recording Settings</string>
+    <string name="settings_recording_subtitle">Configure dashcam, quality, storage and audio capture.</string>
+    <string name="settings_recording_mode_title">Recording Mode (ACC ON)</string>
+    <string name="settings_recording_mode_subtitle">Choose when OverDrive records while driving</string>
+    <string name="settings_recording_mode_none">None (Default)</string>
+    <string name="settings_recording_mode_none_desc">No recording — saves battery and storage</string>
+    <string name="settings_recording_mode_continuous">Continuous</string>
+    <string name="settings_recording_mode_continuous_desc">Record all the time while cameras are active</string>
+    <string name="settings_recording_mode_drive">Drive Mode</string>
+    <string name="settings_recording_mode_drive_desc">Record only when driving in gear (D/R/S/M)</string>
+    <string name="settings_recording_mode_proximity">Proximity Guard</string>
+    <string name="settings_recording_mode_proximity_desc">Record when nearby movement or objects approach</string>
+
+    <string name="settings_recording_layout_title">Camera Layout</string>
+    <string name="settings_recording_layout_standard">Standard (360 Grid)</string>
+    <string name="settings_recording_layout_dashcam">Dashcam (Forward + Sides)</string>
+    <string name="settings_recording_layout_windshield">Use Windshield Camera in Dashcam Layout</string>
+    <string name="settings_recording_layout_windshield_desc">Use dedicated windshield sensor for top road view when available</string>
+
+    <string name="settings_recording_quality_title">Video Quality &amp; Codec</string>
+    <string name="settings_recording_quality_tier">Quality Tier</string>
+    <string name="settings_recording_codec">Video Codec</string>
+    <string name="settings_recording_codec_h264">H.264</string>
+    <string name="settings_recording_codec_h265">H.265 (HEVC)</string>
+    <string name="settings_recording_fps">Camera Frame Rate</string>
+    <string name="settings_recording_clip_duration">Clip Duration</string>
+    <string name="settings_recording_rectify">Fisheye Lens Correction</string>
+    <string name="settings_recording_rectify_desc">Straightens peripheral camera distortion</string>
+
+    <string name="settings_recording_telemetry_title">Telemetry &amp; Audio</string>
+    <string name="settings_recording_telemetry_overlay">Burn-in Telemetry Overlay</string>
+    <string name="settings_recording_telemetry_overlay_desc">Overlays speed, power, gear and timestamp on recorded clips</string>
+    <string name="settings_recording_audio">Record Cabin Audio</string>
+    <string name="settings_recording_audio_desc">Captures microphone audio during drive recordings</string>
+
+    <string name="settings_recording_storage_title">Storage &amp; Auto-Cleanup</string>
+    <string name="settings_recording_storage_location">Storage Location</string>
+    <string name="settings_recording_storage_internal">Internal</string>
+    <string name="settings_recording_storage_sd">SD Card</string>
+    <string name="settings_recording_storage_usb">USB</string>
+    <string name="settings_recording_storage_limit">Storage Limit</string>
+    <string name="settings_recording_storage_cleanup">Auto-delete oldest clips when limit is reached</string>
+    <string name="settings_recording_saved">Settings updated</string>
+</resources>

@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.Material3.CardView.Filled"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    app:strokeColor="?attr/colorOutlineVariant"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <!-- Trip Icon Squircle -->
+        <FrameLayout
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_pill_state"
+            android:backgroundTint="#1A00D4AA">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_trips"
+                app:tint="#00D4AA" />
+        </FrameLayout>
+
+        <!-- Main Info -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Date, Duration & Kinematic tag -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvTripDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textStyle="bold"
+                    tools:text="Today, 14:30" />
+
+                <TextView
+                    android:id="@+id/tvTripDuration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    tools:text="• 35 min" />
+
+                <TextView
+                    android:id="@+id/tvKinematicTag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_pill_state"
+                    android:backgroundTint="?attr/colorSurfaceContainerHigh"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="1dp"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:visibility="gone"
+                    tools:text="URBAN"
+                    tools:visibility="visible" />
+            </LinearLayout>
+
+            <!-- Metrics: Distance, Energy, Avg Speed -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvTripDistance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                    android:textColor="#00D4AA"
+                    android:textStyle="bold"
+                    tools:text="24.5 km" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="6dp"
+                    android:text="•"
+                    android:textColor="?attr/colorOutline" />
+
+                <TextView
+                    android:id="@+id/tvTripEnergy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    tools:text="4.2 kWh (17.1 kWh/100km)" />
+
+                <TextView
+                    android:id="@+id/tvTripSpeed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                    android:textColor="?attr/colorOutline"
+                    tools:text="avg 42 km/h" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Cost & Score Column -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvTripCost"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
+                android:textColor="#B388FF"
+                android:textStyle="bold"
+                tools:text="12.50 ₺" />
+
+            <!-- Score badge -->
+            <LinearLayout
+                android:id="@+id/layoutScoreBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/bg_pill_state"
+                android:backgroundTint="#2500D4AA"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="2dp">
+
+                <TextView
+                    android:id="@+id/tvScoreStar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="★ "
+                    android:textColor="#00D4AA"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/tvScoreValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#00D4AA"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    tools:text="88" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Delete Trip Button -->
+        <ImageButton
+            android:id="@+id/btnDeleteTrip"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="10dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/common_delete"
+            android:padding="8dp"
+            android:src="@drawable/ic_delete"
+            app:tint="?attr/colorOutline" />
+
+        <!-- Chevron -->
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="4dp"
+            android:src="@drawable/ic_chevron_right"
+            app:tint="?attr/colorOutline" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

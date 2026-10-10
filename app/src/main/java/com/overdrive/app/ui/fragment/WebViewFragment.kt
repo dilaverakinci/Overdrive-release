@@ -135,12 +135,14 @@ class WebViewFragment : Fragment() {
         @Volatile private var liveWebView: WebView? = null
         @JvmStatic @Volatile var captureArmed: Boolean = false
             private set
+        @JvmStatic @Volatile var nativeCaptureListener: ((Int) -> Unit)? = null
 
         /** Called by the a11y dispatcher (app process) when a hardware key
          *  arrives during capture. Pushes the keycode into the page on the UI
          *  thread. No-op if no page is live. Best-effort. */
         @JvmStatic
         fun onCapturedKey(keyCode: Int) {
+            nativeCaptureListener?.invoke(keyCode)
             val wv = liveWebView ?: return
             wv.post {
                 try {
@@ -153,6 +155,12 @@ class WebViewFragment : Fragment() {
 
         /** Page toggles capture mode via AndroidBridge.setKeyCapture(). */
         @JvmStatic fun setCaptureArmed(armed: Boolean) { captureArmed = armed }
+
+        /** Native fragment capture hook */
+        @JvmStatic fun setNativeCapture(armed: Boolean, listener: ((Int) -> Unit)? = null) {
+            captureArmed = armed
+            nativeCaptureListener = listener
+        }
 
         // CDN strategy short-circuit. The fetch loop tries HTTP-proxy →
         // SOCKS-proxy → direct in order. On the head unit's mobile data

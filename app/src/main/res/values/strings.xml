@@ -977,13 +977,164 @@
 
     <!-- Top-level destinations (navigation rail labels) -->
     <string name="rail_dashboard">Dashboard</string>
+    <string name="rail_dashboard_native" translatable="false">Dashboard (Native)</string>
+    <string name="rail_dashboard_legacy" translatable="false">Dashboard (Eski)</string>
     <string name="rail_assistant">Assistant</string>
+    <string name="rail_assistant_native" translatable="false">Assistant (Native)</string>
+    <string name="rail_assistant_legacy" translatable="false">Assistant (Eski)</string>
     <string name="rail_live">Live</string>
+    <string name="rail_live_native" translatable="false">Live (Native)</string>
+    <string name="rail_live_legacy" translatable="false">Live (Eski)</string>
     <string name="rail_recordings">Recordings</string>
+    <string name="rail_recordings_native" translatable="false">Recordings (Native)</string>
+    <string name="rail_recordings_legacy" translatable="false">Recordings (Eski)</string>
     <string name="rail_vehicle">Vehicle</string>
+    <string name="rail_vehicle_native" translatable="false">Vehicle (Native)</string>
+    <string name="rail_vehicle_legacy" translatable="false">Vehicle (Eski)</string>
+
+    <!-- Vehicle Screen Strings -->
+    <string translatable="false" name="vc_title">Vehicle</string>
+    <string translatable="false" name="vc_status_no_data">NO DATA</string>
+    <string translatable="false" name="vc_status_locked">LOCKED</string>
+    <string translatable="false" name="vc_status_unlocked">UNLOCKED</string>
+    <string translatable="false" name="vc_cloud_connected">Cloud connected</string>
+    <string translatable="false" name="vc_cloud_not_connected">BYD account not connected</string>
+    <string translatable="false" name="vc_mode_3d">3D</string>
+    <string translatable="false" name="vc_mode_2d">2D</string>
+    <string translatable="false" name="vc_model_unselected">Select Model</string>
+    <string translatable="false" name="vc_model_select_title">Select Vehicle Model</string>
+    <string translatable="false" name="vc_model_none">No Model Selected (Silhouette)</string>
+    <string translatable="false" name="vc_model_cleared">Vehicle model selection cleared</string>
+    <string translatable="false" name="vc_model_selected_msg">Selected: %1$s</string>
+    <string translatable="false" name="vc_door_open">Door open</string>
+    <string translatable="false" name="vc_doors_open">%d doors open</string>
+    <string translatable="false" name="vc_trunk_is_open">Trunk open</string>
+
+    <!-- TPMS -->
+    <string translatable="false" name="vc_tpms_front_left">Front left</string>
+    <string translatable="false" name="vc_tpms_front_right">Front right</string>
+    <string translatable="false" name="vc_tpms_rear_left">Rear left</string>
+    <string translatable="false" name="vc_tpms_rear_right">Rear right</string>
+    <string translatable="false" name="vc_tpms_unit_psi">PSI</string>
+    <string translatable="false" name="vc_tpms_unit_kpa">kPa</string>
+    <string translatable="false" name="vc_tpms_unit_c">°C</string>
+
+    <!-- 10 Tabs -->
+    <string translatable="false" name="vc_tab_security">Security</string>
+    <string translatable="false" name="vc_tab_trunk">Trunk</string>
+    <string translatable="false" name="vc_tab_climate">Climate</string>
+    <string translatable="false" name="vc_tab_seats">Seats</string>
+    <string translatable="false" name="vc_tab_windows">Windows</string>
+    <string translatable="false" name="vc_tab_lights">Lights</string>
+    <string translatable="false" name="vc_tab_adas">ADAS</string>
+    <string translatable="false" name="vc_tab_charging">Charging</string>
+    <string translatable="false" name="vc_tab_sound">Sound</string>
+    <string translatable="false" name="vc_tab_system">System</string>
+
+    <!-- Action Tiles -->
+    <string translatable="false" name="vc_action_lock">Lock</string>
+    <string translatable="false" name="vc_action_unlock">Unlock</string>
+    <string translatable="false" name="vc_action_flash">Flash</string>
+    <string translatable="false" name="vc_action_find_car">Find car</string>
+    <string translatable="false" name="vc_action_trunk_open">Open</string>
+    <string translatable="false" name="vc_action_trunk_close">Close</string>
+    <string translatable="false" name="vc_action_ac_on">AC On</string>
+    <string translatable="false" name="vc_action_ac_off">AC Off</string>
+    <string translatable="false" name="vc_action_battery_heat">Battery heat</string>
+    <string translatable="false" name="vc_action_target_temp">Cabin Temp</string>
+    <string translatable="false" name="vc_action_driver_seat">Driver</string>
+    <string translatable="false" name="vc_action_passenger_seat">Passenger</string>
+    <string translatable="false" name="vc_action_seat_heat">Heat</string>
+    <string translatable="false" name="vc_action_seat_cool">Vent</string>
+    <string translatable="false" name="vc_action_steering_heat">Steering Wheel Heat</string>
+    <string translatable="false" name="vc_action_vent_all">Vent All</string>
+    <string translatable="false" name="vc_action_close_all">Close All</string>
+    <string translatable="false" name="vc_action_open_all">Open All</string>
+    <string translatable="false" name="vc_action_daytime_lights">Daytime Lights</string>
+    <string translatable="false" name="vc_action_ambient_light">Ambient Light</string>
+    <string translatable="false" name="vc_action_speed_limit">Speed Limit Warning</string>
+    <string translatable="false" name="vc_action_child_presence">Child Presence Detection</string>
+    <string translatable="false" name="vc_action_start_charging">Start Charging</string>
+    <string translatable="false" name="vc_action_charge_cap">Charge Limit</string>
+    <string translatable="false" name="vc_action_ac_current_limit">AC Current Limit</string>
+    <string translatable="false" name="vc_action_avas_sound">AVAS Sound</string>
+    <string translatable="false" name="vc_action_engine_sound">Engine Sound</string>
+    <string translatable="false" name="vc_action_ivi_reboot">Reboot Head Unit</string>
+    <string translatable="false" name="vc_action_ivi_reboot_confirm">Reboot the head unit system now? (Only while parked)</string>
+    <string translatable="false" name="vc_action_reboot">Reboot</string>
+    <string translatable="false" name="vc_action_seat_off">Off</string>
+    <string translatable="false" name="vc_action_seat_level">Level %d</string>
+    <string translatable="false" name="vc_sound_tone_1">Tone 1</string>
+    <string translatable="false" name="vc_sound_tone_2">Tone 2</string>
+    <string translatable="false" name="vc_sound_stop">Stop</string>
+    <string translatable="false" name="vc_color_cyan">Cyan</string>
+    <string translatable="false" name="vc_color_blue">Blue</string>
+    <string translatable="false" name="vc_color_purple">Purple</string>
+    <string translatable="false" name="vc_cmd_sent">Command sent</string>
+    <string translatable="false" name="vc_cmd_failed">Command failed</string>
+    <string translatable="false" name="vc_seat_pos_1">Pos 1</string>
+    <string translatable="false" name="vc_seat_pos_2">Pos 2</string>
+    <string translatable="false" name="vc_seat_pos_saved">Position %d saved</string>
+    <string translatable="false" name="vc_seat_pos_recalled">Position %d recalled</string>
+    <string translatable="false" name="vc_fan_label">Fan</string>
+    <string translatable="false" name="vc_avas_ding_dong">Ding-dong</string>
+    <string translatable="false" name="vc_avas_triple_beep">Triple beep</string>
+    <string translatable="false" name="vc_avas_chime">Chime</string>
+    <string translatable="false" name="vc_avas_alarm">Alarm</string>
+    <string translatable="false" name="vc_sunroof">Sunroof</string>
+    <string translatable="false" name="vc_sunshade">Sunshade</string>
+    <string translatable="false" name="vc_all_windows">All Windows</string>
+    <string translatable="false" name="vc_vent">Vent</string>
+    <string translatable="false" name="vc_ac_max">Max</string>
+    <string translatable="false" name="vc_preset_0">0%</string>
+    <string translatable="false" name="vc_preset_25">25%</string>
+    <string translatable="false" name="vc_preset_50">50%</string>
+    <string translatable="false" name="vc_preset_75">75%</string>
+    <string translatable="false" name="vc_preset_100">100%</string>
     <string name="rail_projection">Projection</string>
     <string name="rail_trips">Trips</string>
     <string name="rail_parking">Parking</string>
+    <string name="rail_parking_native" translatable="false">Parking (Native)</string>
+    <string name="rail_parking_legacy" translatable="false">Parking (Eski)</string>
+
+    <!-- Parking Screen Strings (1:1 with parking.html) -->
+    <string translatable="false" name="parking_tab_sessions">Sessions</string>
+    <string translatable="false" name="parking_tab_settings">Settings</string>
+    <string translatable="false" name="parking_filter_7_days">7 Days</string>
+    <string translatable="false" name="parking_filter_30_days">30 Days</string>
+    <string translatable="false" name="parking_filter_90_days">90 Days</string>
+    <string translatable="false" name="parking_filter_all">All</string>
+    <string translatable="false" name="parking_disabled_title">Parking Intelligence is off</string>
+    <string translatable="false" name="parking_disabled_body">When on, every switch-off opens a parking session: where the car is, a four-camera still after you walk away, which vehicles arrived or left next to you while sentry watched, and a \"Back at car\" summary when you return. Nothing runs while it is off.</string>
+    <string translatable="false" name="parking_enable_btn">Turn on Parking Intelligence</string>
+    <string translatable="false" name="parking_no_sessions_title">No parking sessions yet</string>
+    <string translatable="false" name="parking_no_sessions_body">The first one is created the next time the car is switched off.</string>
+    <string translatable="false" name="parking_settings_title">Parking Intelligence</string>
+    <string translatable="false" name="parking_status_off">OFF</string>
+    <string translatable="false" name="parking_status_on">ON</string>
+    <string translatable="false" name="parking_settings_enabled">Enable Parking Intelligence</string>
+    <string translatable="false" name="parking_settings_enabled_desc">Opens a session at every switch-off: location and GPS freshness, four-camera stills when you walk away and when you return, the vehicles that arrived or left next to you while sentry watched, and two notifications (\"Parked\", \"Back at car\"). Off = no threads, no store, no compute.</string>
+    <string translatable="false" name="parking_settings_end_trigger">Session ends</string>
+    <string translatable="false" name="parking_settings_end_trigger_desc">When a parking session closes. \"When I return\": first door open or unlock (or power-on). \"When the car powers on\": door and unlock only refresh the returned stills. \"When I drive away\": waits until the gear leaves P; without a usable gear reading it closes ~2 minutes after power-on.</string>
+    <string translatable="false" name="parking_trigger_return">When I return</string>
+    <string translatable="false" name="parking_trigger_power_on">When the car powers on</string>
+    <string translatable="false" name="parking_trigger_drive_away">When I drive away</string>
+    <string translatable="false" name="parking_settings_snapshots">Arrived / returned stills</string>
+    <string translatable="false" name="parking_settings_snapshots_desc">Four-camera stills ~90 s after switch-off and at the first door open or unlock. Also the image on the notifications.</string>
+    <string translatable="false" name="parking_settings_neighbours">Neighbour timeline</string>
+    <string translatable="false" name="parking_settings_neighbours_desc">Track vehicles that arrive or leave next to you from the sentry baseline and finalized events, and keep the sharpest frames of each. Needs sentry armed.</string>
+    <string translatable="false" name="parking_settings_signage">Read garage signage (v2)</string>
+    <string translatable="false" name="parking_settings_signage_desc">Read level / zone / bay text from the stills and the last minute of the approach clip with the bundled on-device OCR (PP-OCRv3, ~5.5 MB). Runs once right after the arrival stills so the Parked message carries the level; a read deferred by a recording sentry clip is retried later. Language-specific models can be side-loaded to Overdrive/models/.</string>
+    <string translatable="false" name="parking_settings_geocoding">Address lookup</string>
+    <string translatable="false" name="parking_settings_geocoding_desc">Turn the parking GPS fix into a district / street label for the Parked message and the session list. Until you set it here, parking follows your sentry or dashcam place-tagging choice.</string>
+    <string translatable="false" name="parking_settings_online">Online geocoding</string>
+    <string translatable="false" name="parking_settings_online_desc">Allow looking up places online via Nominatim / OSM when no offline matches are found.</string>
+    <string translatable="false" name="parking_settings_retention">Retention</string>
+    <string translatable="false" name="parking_settings_retention_desc">How many days of parking history and neighbour clips to keep before automatic prune.</string>
+    <string translatable="false" name="parking_settings_storage">Max storage cap</string>
+    <string translatable="false" name="parking_settings_storage_desc">Maximum megabytes used by parking stills and clips before older sessions are purged.</string>
+    <string translatable="false" name="parking_unit_days">days</string>
+    <string translatable="false" name="parking_unit_mb">MB</string>
     <string name="rail_charging">Charging</string>
     <string name="rail_automations">Automations</string>
     <string name="rail_key_mapping">Key Mapping</string>
@@ -1709,6 +1860,7 @@
     <string name="roadsense_map_stop_added">Stop added</string>
     <string name="roadsense_map_remove_stop_action">Remove stop</string>
     <string name="roadsense_map_poi_navigate">Navigate here</string>
+    <string name="roadsense_map_poi_external_nav">Open in navigation app</string>
     <string name="roadsense_map_poi_kind_charging">Charging station</string>
     <string name="roadsense_map_poi_kind_fuel">Fuel station</string>
     <string name="roadsense_map_poi_charging_generic">Charging station</string>
@@ -1928,4 +2080,732 @@
     <string name="vehicle_dialog_value_pending">—</string>
 
     <string name="roi_tap_to_add_points">Tap to add points (%1$d-%2$d)</string>
+
+    <!-- OverDrive Native Assistant (Faz 4.2) -->
+    <string name="assistant_title" translatable="false">OverDrive Assistant</string>
+    <string name="assistant_state_off_title" translatable="false">GenAI is off</string>
+    <string name="assistant_state_off_desc" translatable="false">The master kill switch is off. No provider transport or background AI work is active.</string>
+    <string name="assistant_state_setup_title" translatable="false">Setup needed</string>
+    <string name="assistant_state_setup_desc" translatable="false">GenAI is enabled but no provider or API key is configured.</string>
+    <string name="assistant_state_ready_title" translatable="false">Ready: %1$s</string>
+    <string name="assistant_state_ready_desc" translatable="false">Using %1$s. Available while parked.</string>
+    <string name="assistant_configure" translatable="false">Configure</string>
+    <string name="assistant_routines_title" translatable="false">Routine suggestions</string>
+    <string name="assistant_routines_empty" translatable="false">Off by default. Enable local routine learning under Privacy.</string>
+    <string name="assistant_incidents_title" translatable="false">Incident evidence packs</string>
+    <string name="assistant_incidents_empty" translatable="false">Create a pack from a recording on the Events page.</string>
+    <string name="assistant_empty_title" translatable="false">Ask about your vehicle</string>
+    <string name="assistant_empty_desc" translatable="false">Text is the default. Vehicle data is attached only when you choose a grounded action or explicitly ask for it.</string>
+    <string name="assistant_input_hint" translatable="false">Ask OverDrive…</string>
+    <string name="assistant_voice_note" translatable="false">Voice appears only for providers with native realtime audio; OverDrive does not add speech-to-text fallback.</string>
+    <string name="assistant_tab_assistant" translatable="false">Assistant</string>
+    <string name="assistant_tab_provider" translatable="false">Provider</string>
+    <string name="assistant_tab_privacy" translatable="false">Privacy</string>
+    <string name="assistant_provider_title" translatable="false">Bring your own provider</string>
+    <string name="assistant_enable_title" translatable="false">Enable GenAI</string>
+    <string name="assistant_enable_desc" translatable="false">Master kill switch. Off cancels active requests and releases the provider transport.</string>
+    <string name="assistant_provider_label" translatable="false">Provider</string>
+    <string name="assistant_text_model_label" translatable="false">Text model</string>
+    <string name="assistant_custom_model_label" translatable="false">Custom model ID</string>
+    <string name="assistant_base_url_label" translatable="false">Provider base URL</string>
+    <string name="assistant_base_url_hint" translatable="false">HTTPS is recommended. HTTP is accepted for a trusted local compatible endpoint.</string>
+    <string name="assistant_api_key_label" translatable="false">API key</string>
+    <string name="assistant_api_key_hint" translatable="false">Leave blank to keep the saved key.</string>
+    <string name="assistant_max_tokens_label" translatable="false">Maximum output tokens</string>
+    <string name="assistant_realtime_model_label" translatable="false">Realtime voice model (optional)</string>
+    <string name="assistant_save" translatable="false">Save</string>
+    <string name="assistant_test_provider" translatable="false">Test provider</string>
+    <string name="assistant_privacy_title" translatable="false">Privacy and runtime</string>
+    <string name="assistant_routine_learn_title" translatable="false">Learn my routines locally</string>
+    <string name="assistant_routine_learn_desc" translatable="false">Opt-in. Stores only bounded climate and sunshade action patterns on this vehicle. No provider call is used, and accepted suggestions save as manual-only automations.</string>
+    <string name="assistant_parked_label" translatable="false">Parked availability</string>
+    <string name="assistant_transport_label" translatable="false">Current transport</string>
+    <string name="assistant_proxy_label" translatable="false">Proxy policy</string>
+    <string name="assistant_active_requests_label" translatable="false">Active requests</string>
+    <string name="assistant_save_routine" translatable="false">Save routine setting</string>
+    <string name="assistant_reset_routines" translatable="false">Reset learned patterns</string>
+    <string name="assistant_clear_key" translatable="false">Disable and clear API key</string>
+    <string name="assistant_send_message" translatable="false">Send</string>
+    <string name="assistant_voice_action" translatable="false">Voice</string>
+
+    <!-- Seat Positions Native -->
+    <string name="rail_seat_positions_native" translatable="false">Seat Positions (Native)</string>
+    <string name="rail_seat_positions_legacy" translatable="false">Seat Positions (Eski)</string>
+    <string name="seatpos_current" translatable="false">Current position</string>
+    <string name="seatpos_current_unavailable" translatable="false">Could not read the seat</string>
+    <string name="seatpos_matches" translatable="false">Matches %1$s</string>
+    <string name="seatpos_not_saved" translatable="false">Current position (unsaved)</string>
+    <string name="seatpos_save_as_new" translatable="false">Save as new</string>
+    <string name="seatpos_my_positions" translatable="false">My positions</string>
+    <string name="seatpos_empty_title" translatable="false">No saved positions yet</string>
+    <string name="seatpos_empty" translatable="false">Adjust the seat and mirrors in the car, then press Save as new.</string>
+    <string name="seatpos_show_details" translatable="false">Show details</string>
+    <string name="seatpos_hide_details" translatable="false">Hide details</string>
+    <string name="seatpos_group_seat" translatable="false">Seat</string>
+    <string name="seatpos_group_mirrors" translatable="false">Mirrors</string>
+    <string name="seatpos_gate_acc_off" translatable="false">The car is off, so the seat motors have no power. Apply and save will do nothing until you turn it on.</string>
+    <string name="seatpos_gate_moving" translatable="false">Not in Park — apply is off until the gear is in P. Saving and renaming still work.</string>
+    <string name="seatpos_gate_ready" translatable="false">Parked and powered — positions can be applied.</string>
+    <string name="seatpos_unconfirmed_note" translatable="false">These addresses are confirmed on a BYD Seal. Reading and saving are safe; apply will ask first.</string>
+    <string name="seatpos_unconfirmed_title" translatable="false">Not confirmed for this car</string>
+    <string name="seatpos_unconfirmed_body" translatable="false">Seat and mirror positions are read using addresses confirmed on a BYD Seal, and your car may use different ones. Every value being sent was read back from this same car when the position was captured, and the car must be parked, so the likely worst case is that something other than the seat moves slightly. Worth checking the numbers first: capture a position, move the seat, capture another, and see whether the values follow the seat.</string>
+    <string name="seatpos_unconfirmed_confirm" translatable="false">Apply anyway</string>
+    <string name="seatpos_applied" translatable="false">Applied</string>
+    <string name="seatpos_apply" translatable="false">Apply</string>
+    <string name="seatpos_applied_toast" translatable="false">Applied %1$s</string>
+    <string name="seatpos_apply_failed" translatable="false">Could not apply the position</string>
+    <string name="seatpos_from_car_slot" translatable="false">From car · slot %1$d</string>
+    <string name="seatpos_car_slot_label" translatable="false">Button %1$d</string>
+    <string name="seatpos_used_by_one" translatable="false">Used by 1 automation</string>
+    <string name="seatpos_save_here" translatable="false">Save current settings here</string>
+    <string name="seatpos_change_colour" translatable="false">Change the colour</string>
+    <string name="seatpos_rename" translatable="false">Rename</string>
+    <string name="seatpos_set_alias" translatable="false">Assign to car memory button</string>
+    <string name="seatpos_delete" translatable="false">Delete</string>
+    <string name="seatpos_save_new_title" translatable="false">Save current position</string>
+    <string name="seatpos_save_new_body" translatable="false">Stores the seat and mirror geometry the car is in right now.</string>
+    <string name="seatpos_name_hint" translatable="false">Position name</string>
+    <string name="seatpos_parts_all" translatable="false">Everything</string>
+    <string name="seatpos_parts_all_hint" translatable="false">Seat, mirrors and the interior lighting</string>
+    <string name="seatpos_parts_geometry" translatable="false">Seat &amp; mirrors</string>
+    <string name="seatpos_parts_geometry_hint" translatable="false">The position the car is in right now</string>
+    <string name="seatpos_parts_ambient" translatable="false">Ambient light</string>
+    <string name="seatpos_parts_ambient_hint" translatable="false">Colour, brightness and the light modes</string>
+    <string name="seatpos_save" translatable="false">Save</string>
+    <string name="seatpos_saved_toast" translatable="false">Saved %1$s</string>
+    <string name="seatpos_save_failed" translatable="false">Could not save the position</string>
+    <string name="seatpos_default_name" translatable="false">My Position</string>
+    <string name="seatpos_overwrite_title" translatable="false">Overwrite %1$s?</string>
+    <string name="seatpos_overwrite_body" translatable="false">The current seat and mirror geometry replaces what is stored under this name. This cannot be undone.</string>
+    <string name="seatpos_overwrite_used" translatable="false">These automations will start applying the new geometry.</string>
+    <string name="seatpos_rename_title" translatable="false">Rename position</string>
+    <string name="seatpos_rename_failed" translatable="false">Could not rename the position</string>
+    <string name="seatpos_alias_car_1" translatable="false">Car button 1</string>
+    <string name="seatpos_alias_car_2" translatable="false">Car button 2</string>
+    <string name="seatpos_alias_car_3" translatable="false">Car button 3</string>
+    <string name="seatpos_clear_alias" translatable="false">Clear button assignment</string>
+    <string name="seatpos_alias_failed" translatable="false">Could not update button assignment</string>
+    <string name="seatpos_colour_title" translatable="false">Change the colour</string>
+    <string name="seatpos_colour_body" translatable="false">Sets the colour stored on this position. The car is not changed until the position is applied.</string>
+    <string name="seatpos_colour_failed" translatable="false">Could not change the colour</string>
+    <string name="seatpos_delete_title" translatable="false">Delete %1$s?</string>
+    <string name="seatpos_delete_used" translatable="false">These automations stop working.</string>
+    <string name="seatpos_delete_unused" translatable="false">Nothing references this position.</string>
+    <string name="seatpos_delete_failed" translatable="false">Could not delete the position</string>
+    <string name="common_cancel" translatable="false">Cancel</string>
+    <string name="common_more" translatable="false">More</string>
+    <string name="common_delete" translatable="false">Delete</string>
+    <string name="common_edit" translatable="false">Edit</string>
+    <string name="common_save" translatable="false">Save</string>
+    <string name="common_apply_changes" translatable="false">Apply Changes</string>
+
+    <!-- Charging Native -->
+    <string name="rail_charging_native" translatable="false">Charging (Native)</string>
+    <string name="rail_charging_legacy" translatable="false">Charging (Eski)</string>
+    <string name="charge_page_title" translatable="false">Charging</string>
+    <string name="charge_page_subtitle" translatable="false">Monitor your charging sessions and energy usage</string>
+    <string name="charge_filter_7d" translatable="false">7 days</string>
+    <string name="charge_filter_30d" translatable="false">30 days</string>
+    <string name="charge_filter_all" translatable="false">All time</string>
+    <string name="charge_filter_custom" translatable="false">Custom</string>
+    <string name="charge_range_from" translatable="false">From</string>
+    <string name="charge_range_to" translatable="false">To</string>
+    <string name="charge_range_apply" translatable="false">Apply</string>
+    <string name="charge_tab_sessions" translatable="false">Sessions</string>
+    <string name="charge_tab_stats" translatable="false">Stats</string>
+    <string name="charge_tab_stations" translatable="false">Stations</string>
+    <string name="charge_tab_settings" translatable="false">Settings</string>
+    <string name="charge_stations_title" translatable="false">Nearby Charging Stations</string>
+    <string name="charge_stations_search_hint" translatable="false">Search station or operator...</string>
+    <string name="charge_stations_filter_all" translatable="false">All</string>
+    <string name="charge_stations_filter_dc" translatable="false">DC Fast</string>
+    <string name="charge_stations_filter_ac" translatable="false">AC</string>
+    <string name="charge_stations_navigate" translatable="false">Navigate</string>
+    <string name="charge_stations_empty" translatable="false">No charging stations found in range</string>
+    <string name="charge_stations_sockets" translatable="false">%d Sockets</string>
+    <string name="charge_stations_radius_5km" translatable="false">5 km</string>
+    <string name="charge_stations_radius_15km" translatable="false">15 km</string>
+    <string name="charge_stations_radius_50km" translatable="false">50 km</string>
+    <string name="charge_stations_count" translatable="false">%d stations found nearby</string>
+    <string name="charge_stations_power" translatable="false">Power</string>
+    <string name="charge_stations_distance" translatable="false">Distance: %s</string>
+    <string name="charge_stations_nav_start" translatable="false">Start Navigation</string>
+    <string name="charge_stations_nav_error" translatable="false">Could not open navigation application</string>
+    <string name="charge_stations_view_list" translatable="false">List</string>
+    <string name="charge_stations_view_map" translatable="false">Map</string>
+    <string name="charge_stations_show_on_map" translatable="false">Show on Map</string>
+    <string name="charge_stations_open_roadsense" translatable="false">Open in RoadSense Map</string>
+    <string name="charge_stations_map_recenter" translatable="false">My Location</string>
+    <string name="charge_state_charging" translatable="false">Charging now</string>
+    <string name="charge_state_plugged" translatable="false">Plugged in</string>
+    <string name="charge_summary_sessions" translatable="false">Sessions</string>
+    <string name="charge_summary_sessions_desc" translatable="false">Total charging sessions</string>
+    <string name="charge_summary_energy" translatable="false">Energy</string>
+    <string name="charge_summary_energy_desc" translatable="false">Total energy delivered</string>
+    <string name="charge_summary_cost" translatable="false">Cost</string>
+    <string name="charge_summary_cost_desc" translatable="false">Total charging cost</string>
+    <string name="charge_summary_dc_ac" translatable="false">DC / AC</string>
+    <string name="charge_summary_dc_ac_desc" translatable="false">DC / AC sessions</string>
+    <string name="charge_summary_range_gained" translatable="false">Range added</string>
+    <string name="charge_summary_range_desc" translatable="false">Total range added</string>
+    <string name="charge_sessions_title" translatable="false">Charging sessions</string>
+    <string name="charge_no_sessions_yet" translatable="false">No charging sessions yet</string>
+    <string name="charge_no_sessions_hint" translatable="false">Sessions appear automatically when you plug in to charge</string>
+    <string name="charge_stats_intro" translatable="false">Charging insights and usage trends</string>
+    <string name="charge_chart_soc_title" translatable="false">State of charge over time</string>
+    <string name="charge_period_24h" translatable="false">24h</string>
+    <string name="charge_period_7d" translatable="false">7d</string>
+    <string name="charge_period_30d" translatable="false">30d</string>
+    <string name="charge_hero_avg_power" translatable="false">Average power</string>
+    <string name="charge_hero_cost" translatable="false">Cost per kWh</string>
+    <string name="charge_hero_avg_power_sub" translatable="false">Available after a recorded charge</string>
+    <string name="charge_power_live" translatable="false">Live measured power</string>
+    <string name="charge_power_period" translatable="false">Across the selected period</string>
+    <string name="charge_power_waiting" translatable="false">Available after a recorded charge</string>
+    <string name="charge_hero_cost_session" translatable="false">Cost this session</string>
+    <string name="charge_hero_cost_period" translatable="false">Cost this period</string>
+    <string name="charge_cost_estimated" translatable="false">estimated</string>
+    <string name="charge_cost_configured" translatable="false">set rate</string>
+    <string name="charge_metric_ttf" translatable="false">Time to full</string>
+    <string name="charge_completion_complete" translatable="false">Complete</string>
+    <string name="charge_completion_waiting" translatable="false">Waiting</string>
+    <string name="charge_completion_full_at" translatable="false">Full at %1$s</string>
+    <string name="charge_estimated_values" translatable="false">Estimated values</string>
+    <string name="charge_estimated_explanation" translatable="false">OverDrive labels a value as estimated when the vehicle does not provide a direct reading. Estimated power is calculated from battery data; estimated energy and cost use battery/SOC changes and the configured tariff. Peak power is shown only from real power samples.</string>
+    <string name="charge_hero_soc" translatable="false">State of charge</string>
+    <string name="charge_lifetime_stats_title" translatable="false">Lifetime stats</string>
+    <string name="charge_lifetime_energy" translatable="false">Total energy</string>
+    <string name="charge_lifetime_sessions" translatable="false">Total sessions</string>
+    <string name="charge_lifetime_cost" translatable="false">Total cost</string>
+    <string name="charge_settings_title" translatable="false">Charging Analytics</string>
+    <string name="charge_settings_auto_record" translatable="false">Automatically record charging sessions</string>
+    <string name="charge_settings_auto_record_desc" translatable="false">Logs each charge as a session with power, cost and battery data</string>
+    <string name="charge_settings_rate" translatable="false">Electricity Rate</string>
+    <string name="charge_settings_rate_desc" translatable="false">Cost per kWh, shared with Trips</string>
+    <string name="charge_settings_dc_rate" translatable="false">DC Fast Rate (optional)</string>
+    <string name="charge_settings_dc_rate_desc" translatable="false">Separate tariff for DC fast charging; leave 0 to use the base rate</string>
+    <string name="charge_baking_note" translatable="false">Detailed metrics fill in as you complete new charges</string>
+    <string name="charge_tariffs_title" translatable="false">Tariffs by Location</string>
+    <string name="charge_tariffs_desc" translatable="false">Save a rate for a place; charges near it are priced with it automatically.</string>
+    <string name="charge_tariffs_empty" translatable="false">No location tariffs yet</string>
+    <string name="charge_tariffs_empty_hint" translatable="false">Add one while parked where you charge.</string>
+    <string name="charge_tariff_add_here" translatable="false">Add tariff for this location</string>
+    <string name="charge_tariff_new_title" translatable="false">Add Tariff for This Location</string>
+    <string name="charge_tariff_edit_title" translatable="false">Edit Location Tariff</string>
+    <string name="charge_tariff_label" translatable="false">Label</string>
+    <string name="charge_tariff_label_hint" translatable="false">Home, Office, Fast Charger…</string>
+    <string name="charge_tariff_ac_rate" translatable="false">AC Rate</string>
+    <string name="charge_tariff_dc_rate" translatable="false">DC Rate (optional)</string>
+    <string name="charge_tariff_dc_rate_hint" translatable="false">Leave blank to use AC rate for DC charges</string>
+    <string name="charge_tariff_radius" translatable="false">Match Radius</string>
+    <string name="charge_tariff_radius_hint" translatable="false">How close a charge must be (25 - 2000 m)</string>
+    <string name="charge_tariff_location" translatable="false">Location</string>
+    <string name="charge_tariff_no_gps" translatable="false">Waiting for GPS…</string>
+    <string name="charge_tariff_pill_here" translatable="false">auto here</string>
+    <string name="charge_tariff_pill_default" translatable="false">default</string>
+    <string name="charge_tariff_set_default" translatable="false">Use when nothing matches</string>
+    <string name="charge_tariff_used_count" translatable="false">%1$d× used</string>
+    <string name="charge_tariff_delete_confirm" translatable="false">Delete this tariff? Charges priced with it will fall back to your other rates.</string>
+    <string name="charge_tariff_err_no_rate" translatable="false">Enter an AC or DC rate</string>
+    <string name="charge_tariff_err_rate_range" translatable="false">Rates must be between 0 and 100000</string>
+    <string name="charge_tariff_err_radius" translatable="false">Match radius must be between 25 and 2000 m</string>
+    <string name="charge_tariff_err_label" translatable="false">Label is too long (max 48 characters)</string>
+    <string name="charge_tariff_err_label_required" translatable="false">Enter a label for this location</string>
+    <string name="charge_tariff_err_dupe_label" translatable="false">A tariff with that label already exists</string>
+    <string name="charge_tariff_err_save" translatable="false">Could not save tariff</string>
+    <string name="charge_tariff_err_delete" translatable="false">Could not delete tariff</string>
+    <string name="charge_tariff_saved" translatable="false">Tariff saved</string>
+    <string name="charge_tariff_deleted" translatable="false">Tariff deleted</string>
+    <string name="charge_tariff_auto_hint" translatable="false">Saved. Charges within %1$d m of here will use this tariff automatically.</string>
+    <string name="charge_tariff_fallback_default" translatable="false">Charges outside every tariff use “%1$s”.</string>
+    <string name="charge_tariff_fallback_global" translatable="false">Charges outside every tariff use %1$s/kWh.</string>
+    <string name="charge_tariff_no_rate" translatable="false">No rate set</string>
+    <string name="charge_tariff_unnamed" translatable="false">Unnamed tariff</string>
+    <string name="charge_tariff_ac_short" translatable="false">AC</string>
+    <string name="charge_tariff_dc_short" translatable="false">DC</string>
+    <string name="charge_sort_recent" translatable="false">Most recent</string>
+    <string name="charge_sort_oldest" translatable="false">Oldest first</string>
+    <string name="charge_settings_data_title" translatable="false">Data</string>
+    <string name="charge_settings_clear" translatable="false">Clear charging history</string>
+    <string name="charge_settings_clear_desc" translatable="false">Permanently delete all recorded charging sessions and curves</string>
+    <string name="charge_settings_saved" translatable="false">Charging settings saved</string>
+    <string name="charge_settings_save_failed" translatable="false">Could not save charging settings</string>
+    <string name="charge_clear_history_title" translatable="false">Clear charging history?</string>
+    <string name="charge_clear_history_confirm_msg" translatable="false">This permanently removes every recorded charging session, fine-grained power curve, and temperature log. This cannot be undone.</string>
+    <string name="charge_clear_history_success" translatable="false">Charging history cleared</string>
+    <string name="charge_clear_history_failed" translatable="false">Failed to clear charging history</string>
+    <string name="charge_detail_back" translatable="false">Back to sessions</string>
+    <string name="charge_delete_session_title" translatable="false">Delete session</string>
+    <string name="charge_delete_confirm_msg" translatable="false">Are you sure you want to delete this charging session? This cannot be undone.</string>
+    <string name="charge_delete_success" translatable="false">Session deleted</string>
+    <string name="charge_delete_failed" translatable="false">Could not delete session</string>
+    <string name="charge_detail_duration" translatable="false">Duration</string>
+    <string name="charge_detail_location" translatable="false">Location</string>
+    <string name="charge_detail_metrics" translatable="false">Metrics</string>
+    <string name="charge_detail_energy_added" translatable="false">Energy added</string>
+    <string name="charge_detail_avg_power" translatable="false">Average power</string>
+    <string name="charge_detail_peak_power" translatable="false">Peak power</string>
+    <string name="charge_detail_range_gained" translatable="false">Range gained</string>
+    <string name="charge_detail_cost" translatable="false">Cost</string>
+    <string name="charge_detail_temp" translatable="false">Battery temp</string>
+    <string name="charge_chart_power_title" translatable="false">Charge power &amp; curve</string>
+    <string name="charge_chart_power_sub" translatable="false">Power (kW) &amp; SoC (%) over time</string>
+    <string name="charge_chart_temp_title" translatable="false">Cell temperature</string>
+    <string name="charge_chart_temp_sub" translatable="false">Cell temperatures (High, Avg, Low) over time</string>
+    <string name="charge_type_dc" translatable="false">DC Fast</string>
+    <string name="charge_type_fast" translatable="false">AC Fast</string>
+    <string name="charge_type_slow" translatable="false">AC Slow</string>
+    <string name="charge_in_progress" translatable="false">Charging now</string>
+    <string name="charge_rate_hint" translatable="false">0.00</string>
+    <string name="charge_dc_rate_hint" translatable="false">0.00</string>
+    <string name="charge_cost_hint" translatable="false">0.00</string>
+    <string name="charge_edit_cost_title" translatable="false">Edit session cost</string>
+    <string name="charge_edit_cost_desc" translatable="false">Update or reset this completed session\'s cost. Enter a cost, or leave empty / enter -1 to recalculate.</string>
+    <string name="charge_cost_saved" translatable="false">Session cost updated</string>
+    <string name="charge_cost_save_failed" translatable="false">Could not update session cost</string>
+
+    <!-- Trips Native Screen Strings -->
+    <string name="rail_trips_native" translatable="false">Trips (Native)</string>
+    <string name="rail_trips_legacy" translatable="false">Trips (Eski)</string>
+    <string name="trip_page_title" translatable="false">Trips</string>
+    <string name="trip_page_subtitle" translatable="false">Analyze your trips, efficiency, and driving scores</string>
+    <string name="trip_filter_7d" translatable="false">7 Days</string>
+    <string name="trip_filter_14d" translatable="false">14 Days</string>
+    <string name="trip_filter_30d" translatable="false">30 Days</string>
+    <string name="trip_filter_all" translatable="false">All</string>
+    <string name="trip_tab_trips" translatable="false">Trips</string>
+    <string name="trip_tab_stats" translatable="false">Stats</string>
+    <string name="trip_tab_storage" translatable="false">Storage</string>
+    <string name="trip_summary_trips" translatable="false">Trips</string>
+    <string name="trip_summary_distance" translatable="false">Distance</string>
+    <string name="trip_summary_duration" translatable="false">Duration</string>
+    <string name="trip_summary_energy" translatable="false">Energy</string>
+    <string name="trip_summary_cost" translatable="false">Cost</string>
+    <string name="trip_empty_title" translatable="false">No trips recorded yet</string>
+    <string name="trip_empty_message" translatable="false">Enable trip analytics and start driving to see your trips here</string>
+    <string name="trip_stats_driver_score" translatable="false">Driver Score</string>
+    <string name="trip_stats_personalized_range" translatable="false">Personalized Range</string>
+    <string name="trip_stats_range_note" translatable="false">Drive more trips to unlock personalized range</string>
+    <string name="trip_stats_cost_per_km" translatable="false">Cost per km</string>
+    <string name="trip_stats_driving_dna" translatable="false">Driving DNA</string>
+    <string name="trip_storage_settings_title" translatable="false">Trip Storage &amp; Analytics</string>
+    <string name="trip_setting_analytics_title" translatable="false">Trip Analytics</string>
+    <string name="trip_setting_analytics_desc" translatable="false">Automatically record trips and compute driving scores</string>
+    <string name="trip_setting_rate_title" translatable="false">Electricity Rate</string>
+    <string name="trip_setting_rate_desc" translatable="false">Cost per kWh for trip cost calculation</string>
+    <string name="trip_setting_unit_title" translatable="false">Distance Unit</string>
+    <string name="trip_setting_unit_desc" translatable="false">Display distances and speeds in km or miles</string>
+    <string name="trip_setting_storage_location" translatable="false">Storage Location</string>
+    <string name="trip_setting_storage_location_desc" translatable="false">Choose where to save trip telemetry</string>
+    <string name="trip_recovery_title" translatable="false">Trip History Recovery</string>
+    <string name="trip_recovery_desc" translatable="false">Rebuild missing trip records from surviving telemetry files</string>
+    <string name="trip_recover_button" translatable="false">Recover Trips</string>
+    <string name="trip_detail_back" translatable="false">Back to Trips</string>
+    <string name="trip_rescore_button" translatable="false">Compute driving scores</string>
+    <string name="trip_chart_speed_pedal" translatable="false">Speed &amp; Pedal Timeline</string>
+    <string name="trip_chart_speed_dist" translatable="false">Speed Distribution</string>
+    <string name="trip_dialog_delete_title" translatable="false">Delete Trip</string>
+    <string name="trip_dialog_delete_message" translatable="false">Are you sure you want to delete this trip and its telemetry?</string>
+    <string name="trip_filter_custom" translatable="false">Custom</string>
+    <string name="trip_period_summary" translatable="false">Period Summary</string>
+    <string name="trip_summary_hours" translatable="false">Hours</string>
+    <string name="trip_summary_avg_score" translatable="false">Avg Score</string>
+    <string name="trip_enable_now" translatable="false">Turn on trip recording</string>
+    <string name="trip_range_from" translatable="false">From</string>
+    <string name="trip_range_to" translatable="false">To</string>
+    <string name="trip_range_apply" translatable="false">Apply</string>
+    <string name="trip_no_trips_yet" translatable="false">No trips recorded yet</string>
+    <string name="trip_no_trips_hint" translatable="false">Enable trip analytics and start driving to see your trips here</string>
+    <string name="trip_timeline_title" translatable="false">Trip Timeline</string>
+    <string name="trip_timeline_speed" translatable="false">Speed</string>
+    <string name="trip_timeline_accel" translatable="false">Accel</string>
+    <string name="trip_timeline_brake" translatable="false">Brake</string>
+    <string name="trip_timeline_soc" translatable="false">SoC</string>
+    <string name="trip_route_title" translatable="false">Route</string>
+    <string name="trip_map_fit_route" translatable="false">Fit Route</string>
+    <string name="trip_map_focus_car" translatable="false">Focus Vehicle</string>
+    <string name="trip_map_zoom_in" translatable="false">Zoom In</string>
+    <string name="trip_map_zoom_out" translatable="false">Zoom Out</string>
+    <string name="trip_route_speed_low" translatable="false">&lt;40 km/h</string>
+    <string name="trip_route_speed_mid" translatable="false">40–80 km/h</string>
+    <string name="trip_route_speed_high" translatable="false">&gt;80 km/h</string>
+    <string name="trip_timeline_accelerating" translatable="false">Accelerating</string>
+    <string name="trip_timeline_coasting" translatable="false">Coasting</string>
+    <string name="trip_timeline_braking" translatable="false">Braking</string>
+    <string name="trip_timeline_play" translatable="false">Play</string>
+    <string name="trip_timeline_pause" translatable="false">Pause</string>
+    <string name="trip_elevation_title" translatable="false">Elevation Profile</string>
+    <string name="trip_elevation_uphill" translatable="false">Uphill</string>
+    <string name="trip_elevation_downhill" translatable="false">Downhill</string>
+    <string name="trip_elevation_flat" translatable="false">Flat</string>
+    <string name="trip_elevation_gain" translatable="false">Gain</string>
+    <string name="trip_elevation_loss" translatable="false">Loss</string>
+    <string name="trip_dna_breakdown_title" translatable="false">Driving DNA Breakdown</string>
+    <string name="trip_dna_coaching_hint" translatable="false">Tap rows for coaching 💡</string>
+    <string name="trip_dna_anticipation_title" translatable="false">Anticipation</string>
+    <string name="trip_dna_anticipation_desc" translatable="false">Measures how well you read traffic ahead and lift off the accelerator early before braking. Higher scores mean less energy wasted on sudden stops.</string>
+    <string name="trip_dna_anticipation_tip" translatable="false">💡 Tip: Coast more before red lights and slow traffic. Lift off the pedal 3–5 seconds earlier than usual.</string>
+    <string name="trip_dna_smoothness_title" translatable="false">Smoothness</string>
+    <string name="trip_dna_smoothness_desc" translatable="false">Tracks how gradually you apply and release the accelerator and brake pedals. Jerky inputs waste energy and reduce comfort.</string>
+    <string name="trip_dna_smoothness_tip" translatable="false">💡 Tip: Pretend there\'s a glass of water on the dashboard. Smooth pedal transitions keep it from spilling.</string>
+    <string name="trip_dna_speed_disc_title" translatable="false">Speed Discipline</string>
+    <string name="trip_dna_speed_disc_desc" translatable="false">Evaluates how consistently you maintain appropriate speeds. Frequent speeding and large speed variations reduce this score.</string>
+    <string name="trip_dna_speed_disc_tip" translatable="false">💡 Tip: Use cruise control on highways. Keeping within 5 km/h of the limit saves significant energy.</string>
+    <string name="trip_dna_efficiency_title" translatable="false">Efficiency</string>
+    <string name="trip_dna_efficiency_desc" translatable="false">Compares your energy consumption per km against the optimal baseline for your vehicle, route, and conditions.</string>
+    <string name="trip_dna_efficiency_tip" translatable="false">💡 Tip: Pre-condition the cabin while plugged in. Avoid full-throttle launches from stops.</string>
+    <string name="trip_dna_consistency_title" translatable="false">Consistency</string>
+    <string name="trip_dna_consistency_desc" translatable="false">Measures how uniform your driving style is throughout the trip. Erratic behavior (alternating aggressive and calm) lowers this score.</string>
+    <string name="trip_dna_consistency_tip" translatable="false">💡 Tip: Pick a driving style and stick with it. Consistent habits build muscle memory for efficiency.</string>
+
+    <!-- Automations Native Screen Strings -->
+    <string name="rail_automations_native" translatable="false">Automations (Native)</string>
+    <string name="rail_automations_legacy" translatable="false">Automations (Eski)</string>
+    <string name="automation_page_title" translatable="false">Automations</string>
+    <string name="automation_page_subtitle" translatable="false">Build event triggers, safety conditions, and custom car routines</string>
+    <string name="automation_tab_rules" translatable="false">Rules</string>
+    <string name="automation_tab_groups" translatable="false">Action Groups</string>
+    <string name="automation_tab_safety" translatable="false">Safety Guards</string>
+    <string name="automation_tab_settings" translatable="false">Settings</string>
+    <string name="automation_tab_automations" translatable="false">Automations</string>
+    <string name="automation_tab_add" translatable="false">Add</string>
+    <string name="automation_tab_groups_short" translatable="false">Groups</string>
+    <string name="automation_tab_safety_short" translatable="false">Safety</string>
+    <string name="automation_tab_community" translatable="false">Community</string>
+    <string name="automation_list_title" translatable="false">Your automations</string>
+    <string name="automation_btn_add" translatable="false">Add Automation</string>
+    <string name="automation_empty_p" translatable="false">No Automations configured. Add an automation.</string>
+    <string name="automation_empty_hint" translatable="false">Create one to trigger an action when a vehicle event matches your conditions.</string>
+    <string name="automation_allow_shell_full" translatable="false">Allow shell actions</string>
+    <string name="automation_allow_shell_full_desc" translatable="false">Let automations run a raw shell command automatically when their conditions match. This runs unattended in the background — leave off unless you are certain what your automations do.</string>
+    <string name="automation_cluster_size" translatable="false">Cluster size</string>
+    <string name="automation_cluster_size_desc" translatable="false">Match this to your instrument cluster. Shared with the blind-spot cluster view. If the projection looks stretched or cropped, try another option.</string>
+    <string name="automation_backup_restore_title" translatable="false">Backup &amp; Restore</string>
+    <string name="automation_backup_export_import" translatable="false">Export / Import</string>
+    <string name="automation_backup_export_import_desc" translatable="false">Save all your automations to a file, or restore them from a backup. Importing merges into your current automations (existing ones with the same id are replaced).</string>
+    <string name="automation_btn_export" translatable="false">Export</string>
+    <string name="automation_btn_import" translatable="false">Import</string>
+    <string name="automation_audio_library_title" translatable="false">Audio Library</string>
+    <string name="automation_audio_uploaded" translatable="false">Uploaded sounds</string>
+    <string name="automation_audio_uploaded_desc" translatable="false">Upload MP3, WAV or MP4 sounds (max 48 MB). The Play Audio action and key mapping can play any sound here.</string>
+    <string name="automation_btn_upload" translatable="false">Upload</string>
+    <string name="automation_audio_empty" translatable="false">No sounds uploaded yet.</string>
+    <string name="automation_form_add_title" translatable="false">Add Automation</string>
+    <string name="automation_form_exec_mode" translatable="false">Execution mode</string>
+    <string name="automation_form_name_hint" translatable="false">e.g. Arm sentry at night</string>
+    <string name="automation_form_on_change" translatable="false">On Change</string>
+    <string name="automation_form_on_change_desc" translatable="false">What events to watch for when triggering this Automation. When any of these values change, this automation will be checked against the conditions.</string>
+    <string name="automation_form_save" translatable="false">Save Automation</string>
+    <string name="automation_groups_title" translatable="false">Action groups</string>
+    <string name="automation_groups_new" translatable="false">New group</string>
+    <string name="automation_groups_empty_hint" translatable="false">Create a group of actions once, then run it from any automation or key binding with \"Run action group\".</string>
+    <string name="automation_safety_title" translatable="false">Driving safety guards</string>
+    <string name="automation_safety_warning" translatable="false">These guards apply to matching vehicle actions started through OverDrive\'s Automations, Action Groups, Key Mapping, Quick Controls, MQTT, Vehicle Controls, and saved seat positions. Turning one off lets OverDrive attempt that action while the car is moving or its state is unknown. Advanced raw shell, CAN, and diagnostic actions are outside these guards.</string>
+    <string name="automation_community_title" translatable="false">Community automations</string>
+    <string name="automation_community_empty" translatable="false">No community automations yet. Be the first to publish one.</string>
+    <string name="automation_community_empty_hint" translatable="false">Publish one of your automations from the Automations tab to share it.</string>
+    <string name="automation_search_hint" translatable="false">Search automations</string>
+    <string name="automation_empty_title" translatable="false">No Automations Configured</string>
+    <string name="automation_empty_desc" translatable="false">Create custom rules to automate car settings, charging routines, or accessories</string>
+    <string name="automation_groups_empty_title" translatable="false">No Action Groups</string>
+    <string name="automation_groups_empty_desc" translatable="false">Define reusable sequences of car actions to trigger across multiple rules</string>
+    <string name="automation_safety_warning_desc" translatable="false">Safety guards prevent dangerous car actions while the vehicle is in motion (Gear != P or Speed &gt; 0 km/h).</string>
+    <string name="safety_guard_door_locks" translatable="false">Door Locks Guard</string>
+    <string name="safety_guard_door_locks_desc" translatable="false">Block door unlock automations when driving</string>
+    <string name="safety_guard_trunk" translatable="false">Trunk Guard</string>
+    <string name="safety_guard_trunk_desc" translatable="false">Block opening or closing trunk while vehicle is moving</string>
+    <string name="safety_guard_mirror_fold" translatable="false">Mirror Folding Guard</string>
+    <string name="safety_guard_mirror_fold_desc" translatable="false">Prevent folding side mirrors when moving</string>
+    <string name="safety_guard_positioning" translatable="false">Seat &amp; Mirror Position Guard</string>
+    <string name="safety_guard_positioning_desc" translatable="false">Block automatic seat and mirror position adjustments while in motion</string>
+    <string name="safety_guard_headlight_off" translatable="false">Headlights Off Guard</string>
+    <string name="safety_guard_headlight_off_desc" translatable="false">Block turning off headlights when speed &gt; 0 km/h</string>
+    <string name="safety_guard_display_brightness" translatable="false">Display Brightness Guard</string>
+    <string name="safety_guard_display_brightness_desc" translatable="false">Prevent dimming display brightness to zero while driving</string>
+    <string name="safety_guard_display_power" translatable="false">Display Power Guard</string>
+    <string name="safety_guard_display_power_desc" translatable="false">Prevent turning off center console display while driving</string>
+    <string name="safety_guard_screen_media" translatable="false">Screen Media Guard</string>
+    <string name="safety_guard_screen_media_desc" translatable="false">Guard media playback automation constraints</string>
+    <string name="automation_allow_shell" translatable="false">Allow Shell Commands</string>
+    <string name="automation_allow_shell_desc" translatable="false">Enable execution of raw shell scripts in automations. Exercise caution when enabling.</string>
+    <string name="automation_backup_title" translatable="false">Automations Storage &amp; Safety</string>
+    <string name="automation_backup_desc" translatable="false">Automations are stored locally on device. Rules are checked against safety guards before execution.</string>
+    <string name="automation_dialog_delete_title" translatable="false">Delete Automation</string>
+    <string name="automation_dialog_delete_msg" translatable="false">Are you sure you want to delete this automation rule?</string>
+    <string name="automation_mode_automatic" translatable="false">Automatic</string>
+    <string name="automation_mode_manual" translatable="false">Manual Only</string>
+    <string name="automation_mode_disabled" translatable="false">Disabled</string>
+    <string name="automation_label_when" translatable="false">WHEN</string>
+    <string name="automation_label_if" translatable="false">IF</string>
+    <string name="automation_label_then" translatable="false">THEN</string>
+    <string name="automation_label_else" translatable="false">ELSE</string>
+    <string name="automation_btn_test" translatable="false">Test</string>
+    <string name="automation_btn_run_group" translatable="false">Run</string>
+
+    <!-- Key Mapping Native Screen Strings -->
+    <string name="rail_key_mapping_native" translatable="false">Key Mapping (Native)</string>
+    <string name="rail_key_mapping_legacy" translatable="false">Key Mapping (Eski)</string>
+    <string name="keymap_page_title" translatable="false">Key Mapping</string>
+    <string name="keymap_page_subtitle" translatable="false">Remap steering wheel and dashboard buttons to vehicle commands</string>
+    <string name="keymap_tab_bindings" translatable="false">Bindings</string>
+    <string name="keymap_tab_add" translatable="false">Add</string>
+    <string name="keymap_master_enable" translatable="false">Enable key mapping</string>
+    <string name="keymap_master_enable_desc" translatable="false">Master switch. When off, all hardware buttons behave exactly as stock — no key is intercepted.</string>
+    <string name="keymap_allow_advanced" translatable="false">Advanced actions</string>
+    <string name="keymap_allow_advanced_desc" translatable="false">Allow bindings that run a raw shell command. Leave off unless you know exactly what you\'re sending.</string>
+    <string name="keymap_double_tap_speed" translatable="false">Double-tap speed</string>
+    <string name="keymap_double_tap_desc" translatable="false">How long to wait for a second tap before a double-tap binding gives up and the single-tap fires. Raise it if your double-taps often trigger the single action; lower it if a single tap feels laggy.</string>
+    <string name="keymap_empty_title" translatable="false">No key bindings yet.</string>
+    <string name="keymap_empty_hint" translatable="false">Press a hardware button to capture it, then choose what it should do.</string>
+    <string name="keymap_a11y_needed_title" translatable="false">Accessibility Service Required</string>
+    <string name="keymap_a11y_needed_desc" translatable="false">OverDrive accessibility service is required to detect steering wheel and hardware buttons.</string>
+    <string name="keymap_a11y_open_settings" translatable="false">Open accessibility settings</string>
+    <string name="keymap_press_single" translatable="false">Single press</string>
+    <string name="keymap_press_double" translatable="false">Double press</string>
+    <string name="keymap_press_long" translatable="false">Long press</string>
+    <string name="keymap_button_label" translatable="false">Button</string>
+    <string name="keymap_choose_button" translatable="false">Choose a button...</string>
+    <string name="keymap_custom_capture" translatable="false">Custom / capture...</string>
+    <string name="keymap_capture_button" translatable="false">Capture Key</string>
+    <string name="keymap_capture_hint" translatable="false">Tap “Capture”, then press the steering-wheel or dash button. Some buttons are handled by the car\'s firmware and never reach here — if nothing appears, enter its keycode below.</string>
+    <string name="keymap_capture_idle" translatable="false">No key captured</string>
+    <string name="keymap_capture_cta" translatable="false">Capture a key</string>
+    <string name="keymap_capturing" translatable="false">Press a button on your steering wheel or dashboard...</string>
+    <string name="keymap_manual_keycode" translatable="false">Or enter a keycode</string>
+    <string name="keymap_manual_keycode_help" translatable="false">Android KeyEvent code, e.g. 87 = next track, 88 = previous.</string>
+    <string name="keymap_press_type_label" translatable="false">Press type</string>
+    <string name="keymap_block_single" translatable="false">Block single-click action</string>
+    <string name="keymap_block_single_desc" translatable="false">Stop the button\'s normal single-click from firing before your double-click action. A single tap still works, just after a short delay.</string>
+    <string name="keymap_action" translatable="false">Action</string>
+    <string name="keymap_action_kind_label" translatable="false">Action</string>
+    <string name="keymap_kind_curated" translatable="false">Vehicle action</string>
+    <string name="keymap_kind_app" translatable="false">Open app</string>
+    <string name="keymap_kind_shell" translatable="false">Advanced: shell</string>
+    <string name="keymap_vehicle_action_label" translatable="false">Vehicle action</string>
+    <string name="keymap_payload_label" translatable="false">Value</string>
+    <string name="keymap_app_label" translatable="false">App</string>
+    <string name="keymap_app_split" translatable="false">Split screen</string>
+    <string name="keymap_app_split_desc" translatable="false">Open the app docked to one half of the screen instead of full-screen.</string>
+    <string name="keymap_shell_cmd_label" translatable="false">Shell command</string>
+    <string name="keymap_shell_warn" translatable="false">Runs as the daemon on every press. A bad command can disrupt the head unit. Requires “Advanced actions” enabled.</string>
+    <string name="keymap_steps_label" translatable="false">Chained action sequence</string>
+    <string name="keymap_add_step" translatable="false">Add step</string>
+    <string name="keymap_save_binding" translatable="false">Add binding</string>
+    <string name="keymap_sequence_hint" translatable="false">Add one action, or chain several with “Add step” to fire them all from one button.</string>
+    <string name="keymap_qc_title" translatable="false">Or add it as a dashboard button</string>
+    <string name="keymap_qc_desc" translatable="false">Saves the action above as a button under Quick controls on the dashboard, with no physical key needed.</string>
+    <string name="keymap_qc_label" translatable="false">Button label</string>
+    <string name="keymap_qc_save" translatable="false">Add dashboard button</string>
+    <string name="keymap_qc_empty" translatable="false">No dashboard buttons yet.</string>
+    <string name="keymap_delete_confirm_title" translatable="false">Delete Key Binding</string>
+    <string name="keymap_delete_confirm_msg" translatable="false">Are you sure you want to delete the mapping for button %s?</string>
+    <string name="keymap_test_action" translatable="false">Test</string>
+    <string name="keymap_tab_add_short" translatable="false">Add</string>
+    <string name="keymap_add_title" translatable="false">Add a binding</string>
+    <string name="keymap_cluster_size" translatable="false">Cluster size</string>
+    <string name="keymap_cluster_size_desc" translatable="false">Match this to your instrument cluster. Shared with the blind-spot cluster view. If the projection looks stretched or cropped, try another option.</string>
+    <string name="keymap_cluster_1025" translatable="false">10.25\" cluster</string>
+    <string name="keymap_cluster_123" translatable="false">12.3\" cluster</string>
+    <string name="keymap_cluster_88" translatable="false">8.8\" cluster</string>
+    <string name="keymap_list_title" translatable="false">Your bindings</string>
+    <string name="keymap_btn_add_binding" translatable="false">Add binding</string>
+
+    <!-- Integrations Native Screen Strings -->
+    <string name="rail_integrations_native" translatable="false">Integrations (Native)</string>
+    <string name="rail_integrations_legacy" translatable="false">Integrations (Eski)</string>
+    <string name="integrations_tab_overview" translatable="false">Overview</string>
+    <string name="integrations_tab_telegram" translatable="false">Telegram</string>
+    <string name="integrations_tab_abrp" translatable="false">ABRP</string>
+    <string name="integrations_tab_mqtt" translatable="false">MQTT</string>
+    <string name="integrations_tab_byd_cloud" translatable="false">BYD Cloud</string>
+    <string name="integrations_open_legacy" translatable="false">Legacy Web</string>
+    <string name="integrations_configure_native" translatable="false">Configure</string>
+    <string name="integrations_service_connected" translatable="false">Connected</string>
+    <string name="integrations_service_stopped" translatable="false">Stopped</string>
+    
+    <string name="tg_bot_token_title" translatable="false">Telegram Bot Token</string>
+    <string name="tg_bot_token_desc" translatable="false">Create a bot with @BotFather on Telegram and paste the API token here.</string>
+    <string name="tg_save_token" translatable="false">Save &amp; Validate</string>
+    <string name="tg_clear_token" translatable="false">Clear Token</string>
+    <string name="tg_pairing_title" translatable="false">Bot Pairing</string>
+    <string name="tg_pairing_desc" translatable="false">Generate a 6-digit PIN and send it to your bot in Telegram to authorize your account.</string>
+    <string name="tg_generate_pin" translatable="false">Generate Pairing PIN</string>
+    <string name="tg_unpair_button" translatable="false">Unpair Account</string>
+    <string name="tg_prefs_title" translatable="false">Alert Notifications</string>
+    <string name="tg_pref_critical" translatable="false">Critical Security Alerts</string>
+    <string name="tg_pref_motion" translatable="false">Motion &amp; Sentry Warnings</string>
+    <string name="tg_pref_video" translatable="false">Upload Motion Video Clips</string>
+    <string name="tg_pref_tyre" translatable="false">Tyre Pressure Alerts</string>
+    <string name="tg_save_prefs" translatable="false">Save Preferences</string>
+    
+    <string name="abrp_telemetry_service" translatable="false">ABRP Telemetry Service</string>
+    <string name="abrp_telemetry_desc" translatable="false">Periodically upload live battery SoC, speed, and GPS location to A Better Routeplanner.</string>
+    <string name="abrp_user_token_title" translatable="false">ABRP User Token</string>
+    <string name="abrp_user_token_hint" translatable="false">User token (from ABRP app &gt; Settings &gt; Car)</string>
+    <string name="abrp_save_config" translatable="false">Save &amp; Connect</string>
+    <string name="abrp_clear_token" translatable="false">Clear Token</string>
+    <string name="abrp_live_data_title" translatable="false">Live Telemetry Snapshot</string>
+    
+    <string name="mqtt_brokers_title" translatable="false">Configured MQTT Brokers</string>
+    <string name="mqtt_no_brokers" translatable="false">No MQTT brokers configured</string>
+    <string name="mqtt_add_broker_title" translatable="false">Add / Configure Broker</string>
+    <string name="mqtt_broker_name_hint" translatable="false">Broker Name (e.g. Home Assistant)</string>
+    <string name="mqtt_broker_host_hint" translatable="false">Broker Host (e.g. 192.168.1.100)</string>
+    <string name="mqtt_broker_port_hint" translatable="false">Port (default: 1883)</string>
+    <string name="mqtt_username_hint" translatable="false">Username (optional)</string>
+    <string name="mqtt_password_hint" translatable="false">Password (optional)</string>
+    <string name="mqtt_topic_hint" translatable="false">Topic Prefix (e.g. overdrive)</string>
+    <string name="mqtt_tls_label" translatable="false">Use SSL / TLS Encryption</string>
+    <string name="mqtt_save_broker" translatable="false">Save Broker</string>
+    
+    <string name="byd_cloud_credentials_title" translatable="false">BYD Cloud Account Login</string>
+    <string name="byd_cloud_credentials_desc" translatable="false">Sign in to enable remote commands like door unlock, horn, and light flashing.</string>
+    <string name="byd_cloud_email_hint" translatable="false">Email / Phone Number</string>
+    <string name="byd_cloud_password_hint" translatable="false">Account Password</string>
+    <string name="byd_cloud_pin_hint" translatable="false">Control PIN (6 digits)</string>
+    <string name="byd_cloud_login_button" translatable="false">Save &amp; Authenticate</string>
+    <string name="byd_cloud_test_lights" translatable="false">Flash Lights</string>
+    <string name="byd_cloud_test_horn" translatable="false">Honk Horn</string>
+    <string name="byd_cloud_clear_button" translatable="false">Clear Credentials</string>
+
+    <!-- Sub-Integration Navigation Strings -->
+    <string name="integrations_back_to_overview" translatable="false">Integrations</string>
+    <string name="integrations_subtab_bot" translatable="false">Bot</string>
+    <string name="integrations_subtab_pair" translatable="false">Pair</string>
+    <string name="integrations_subtab_preferences" translatable="false">Preferences</string>
+    <string name="integrations_subtab_status" translatable="false">Status</string>
+    <string name="integrations_subtab_token" translatable="false">Token</string>
+    <string name="integrations_subtab_telemetry" translatable="false">Telemetry</string>
+    <string name="integrations_subtab_connections" translatable="false">Connections</string>
+    <string name="integrations_subtab_add" translatable="false">Add</string>
+    <string name="integrations_subtab_account" translatable="false">Account</string>
+    <string name="integrations_subtab_advanced" translatable="false">Advanced</string>
+    <!-- RoadSense Native Strings -->
+    <string name="rail_roadsense_native" translatable="false">RoadSense (Native)</string>
+    <string name="rail_roadsense_legacy" translatable="false">RoadSense (Eski)</string>
+    <string name="roadsense_native_title" translatable="false">RoadSense</string>
+    <string name="roadsense_native_subtitle" translatable="false">Road hazard detection, map projection, warnings, and blind spot</string>
+    <string name="roadsense_tab_general" translatable="false">General</string>
+    <string name="roadsense_tab_map" translatable="false">Map</string>
+    <string name="roadsense_tab_warnings" translatable="false">Warnings</string>
+    <string name="roadsense_tab_data" translatable="false">Data</string>
+    <string name="roadsense_tab_blindspot" translatable="false">Blind Spot</string>
+
+    <string name="roadsense_master_title" translatable="false">RoadSense</string>
+    <string name="roadsense_master_enable" translatable="false">Enable RoadSense</string>
+    <string name="roadsense_master_desc" translatable="false">Detects road hazards (bumps, potholes, speed breakers) from motion and GPS, and warns ahead of known ones.</string>
+    <string name="roadsense_detect_title" translatable="false">Detection Sensitivity</string>
+    <string name="roadsense_detect_desc" translatable="false">How easily RoadSense flags a bump, pothole or speed breaker. 50% is default tuning.</string>
+    <string name="roadsense_detect_min" translatable="false">Less</string>
+    <string name="roadsense_detect_max" translatable="false">More</string>
+    <string name="roadsense_calib_title" translatable="false">Calibration Mode</string>
+    <string name="roadsense_calib_enable" translatable="false">Confirm detections on screen</string>
+    <string name="roadsense_calib_desc" translatable="false">Shows each detected hazard on screen overlay with confirm/correct buttons so you can teach RoadSense.</string>
+    <string name="roadsense_overlay_title" translatable="false">On-screen Overlay</string>
+    <string name="roadsense_overlay_enable" translatable="false">Show floating overlay on screen</string>
+    <string name="roadsense_overlay_desc" translatable="false">Shows the floating RoadSense pill and hazard card. Hiding it keeps audio warnings and background detection active.</string>
+
+    <string name="roadsense_map_open_title" translatable="false">Hazard Map</string>
+    <string name="roadsense_map_open_desc" translatable="false">Open full-screen MapLibre map to search routes, navigate, and see road hazards along the way.</string>
+    <string name="roadsense_map_open_btn" translatable="false">Open Map</string>
+    <string name="roadsense_routing_title" translatable="false">Turn-by-turn Routing (BYOK)</string>
+    <string name="roadsense_routing_desc" translatable="false">Basemap is free. Turn-by-turn routing needs your personal Valhalla / Stadia Maps key. Stored encrypted on-device.</string>
+    <string name="roadsense_routing_endpoint" translatable="false">Routing Endpoint</string>
+    <string name="roadsense_routing_key" translatable="false">Routing API Key</string>
+    <string name="roadsense_routing_key_hint" translatable="false">Paste your routing API key</string>
+    <string name="roadsense_routing_save" translatable="false">Save Key</string>
+    <string name="roadsense_routing_clear" translatable="false">Clear Key</string>
+    <string name="roadsense_routing_configured" translatable="false">Routing Key Set</string>
+    <string name="roadsense_routing_not_configured" translatable="false">No Routing Key</string>
+    <string name="roadsense_cluster_proj_title" translatable="false">Cluster Projection</string>
+    <string name="roadsense_cluster_project" translatable="false">Project map to driver cluster</string>
+    <string name="roadsense_cluster_project_desc" translatable="false">Shows the full map on the instrument cluster screen behind the steering wheel.</string>
+    <string name="roadsense_cluster_auto" translatable="false">Auto-project on ACC-on</string>
+    <string name="roadsense_cluster_auto_desc" translatable="false">Starts projecting the map to the cluster each time the vehicle powers on.</string>
+    <string name="roadsense_cluster_layout" translatable="false">Cluster Size</string>
+    <string name="roadsense_cluster_1025" translatable="false">10.25\" cluster (Default)</string>
+    <string name="roadsense_cluster_123" translatable="false">12.3\" cluster</string>
+    <string name="roadsense_cluster_88" translatable="false">8.8\" cluster</string>
+
+    <string name="roadsense_warn_ahead_title" translatable="false">Hazard Warnings</string>
+    <string name="roadsense_warn_ahead_enable" translatable="false">Warn ahead of known hazards</string>
+    <string name="roadsense_warn_ahead_desc" translatable="false">Alerts you as you approach a hazard RoadSense already knows about.</string>
+    <string name="roadsense_warn_style_title" translatable="false">Warning Style</string>
+    <string name="roadsense_warn_style_visual" translatable="false">Visual</string>
+    <string name="roadsense_warn_style_audio" translatable="false">Audio</string>
+    <string name="roadsense_warn_style_both" translatable="false">Both</string>
+    <string name="roadsense_sound_channel_title" translatable="false">Sound Channel</string>
+    <string name="roadsense_sound_channel_desc" translatable="false">Navigation channel ducks background music so the chime is always heard clearly.</string>
+    <string name="roadsense_chime_volume_title" translatable="false">Chime Volume</string>
+    <string name="roadsense_test_chime" translatable="false">Test Chime</string>
+    <string name="roadsense_warn_lead_title" translatable="false">Lead Time</string>
+    <string name="roadsense_warn_lead_desc" translatable="false">How many seconds before the hazard the warning fires.</string>
+    <string name="roadsense_warn_conf_title" translatable="false">Minimum Confidence</string>
+    <string name="roadsense_warn_conf_desc" translatable="false">Only warn about hazards RoadSense is at least this confident of.</string>
+    <string name="roadsense_sev_title" translatable="false">Warn by Severity</string>
+
+    <string name="roadsense_crowd_title" translatable="false">Crowdsourcing</string>
+    <string name="roadsense_crowd_note" translatable="false">By default all detections stay strictly on this device. Upload and download operate independently.</string>
+    <string name="roadsense_crowd_upload" translatable="false">Upload my detections</string>
+    <string name="roadsense_crowd_upload_desc" translatable="false">Anonymously uploads hazard detections to the shared network.</string>
+    <string name="roadsense_crowd_download" translatable="false">Download shared hazards</string>
+    <string name="roadsense_crowd_download_desc" translatable="false">Pulls hazards detected by other drivers so you are warned ahead of new routes.</string>
+    <string name="roadsense_sync_worker" translatable="false">Sync Worker URL</string>
+    <string name="roadsense_calib_data_title" translatable="false">Calibration Data</string>
+    <string name="roadsense_delete_local_title" translatable="false">Delete local calibrations</string>
+    <string name="roadsense_delete_local_desc" translatable="false">Removes all local hazard detections and ground-truth labels from this device. Cannot be undone.</string>
+    <string name="roadsense_delete_local_btn" translatable="false">Delete Local</string>
+    <string name="roadsense_delete_cloud_title" translatable="false">Delete cloud calibrations</string>
+    <string name="roadsense_delete_cloud_desc" translatable="false">Removes uploaded detections from the shared cloud database. Cannot be undone.</string>
+    <string name="roadsense_delete_cloud_btn" translatable="false">Delete Cloud</string>
+    <string name="roadsense_confirm_delete_local" translatable="false">Are you sure you want to delete all local calibrations and hazards? This cannot be undone.</string>
+    <string name="roadsense_confirm_delete_cloud" translatable="false">Are you sure you want to delete your uploaded detections from the cloud? This cannot be undone.</string>
+
+    <string name="roadsense_bs_title" translatable="false">Blind Spot</string>
+    <string name="roadsense_bs_enable" translatable="false">Enable Blind Spot</string>
+    <string name="roadsense_bs_enable_desc" translatable="false">Shows camera view in a floating window when the turn signal is active.</string>
+    <string name="roadsense_bs_cameras_title" translatable="false">Cameras Shown</string>
+    <string name="roadsense_bs_merge_both" translatable="false">Rear + Side</string>
+    <string name="roadsense_bs_merge_side" translatable="false">Side Only</string>
+    <string name="roadsense_bs_merge_rear" translatable="false">Rear Only</string>
+    <string name="roadsense_bs_rotation_left" translatable="false">Rotation — Left</string>
+    <string name="roadsense_bs_rotation_right" translatable="false">Rotation — Right</string>
+    <string name="roadsense_bs_rectify_title" translatable="false">Fisheye Correction</string>
+    <string name="roadsense_bs_rectify_desc" translatable="false">Straighten barrel curve for single-camera views.</string>
+    <string name="roadsense_bs_when_title" translatable="false">When It Appears</string>
+    <string name="roadsense_bs_speed_range" translatable="false">Speed Range (km/h)</string>
+    <string name="roadsense_bs_speed_range_desc" translatable="false">Only show blind spot view within this speed window. 0 - 0 for any speed.</string>
+    <string name="roadsense_bs_apply_speed" translatable="false">Apply Speed Range</string>
+    <string name="roadsense_bs_hide_reverse" translatable="false">Hide in Reverse</string>
+    <string name="roadsense_bs_hide_reverse_desc" translatable="false">Hides blind spot view while reverse gear is engaged so reversing camera is visible.</string>
+    <string name="roadsense_bs_layout_title" translatable="false">Display &amp; Position</string>
+    <string name="roadsense_bs_target" translatable="false">Display Target</string>
+    <string name="roadsense_bs_target_headunit" translatable="false">Infotainment Screen</string>
+    <string name="roadsense_bs_target_cluster" translatable="false">Driver Cluster</string>
+    <string name="roadsense_bs_size" translatable="false">Overlay Size</string>
+    <string name="roadsense_bs_pos_left" translatable="false">Position — Left</string>
+    <string name="roadsense_bs_pos_right" translatable="false">Position — Right</string>
+    <string name="roadsense_bs_corner_tl" translatable="false">Top-Left</string>
+    <string name="roadsense_bs_corner_tr" translatable="false">Top-Right</string>
+    <string name="roadsense_bs_corner_bl" translatable="false">Bottom-Left</string>
+    <string name="roadsense_bs_corner_br" translatable="false">Bottom-Right</string>
+    <string name="roadsense_bs_corner_center" translatable="false">Center</string>
+    <string name="roadsense_bs_apply_display" translatable="false">Apply Changes</string>
+    <string name="roadsense_bs_align_title" translatable="false">Live Alignment Tuning</string>
+    <string name="roadsense_bs_preview_left" translatable="false">Show Left View</string>
+    <string name="roadsense_bs_preview_right" translatable="false">Show Right View</string>
+    <string name="roadsense_bs_preview_hide" translatable="false">Hide Preview</string>
+    <string name="roadsense_bs_rear_fov" translatable="false">Width A (Rear FOV)</string>
+    <string name="roadsense_bs_side_fov" translatable="false">Width B (Side FOV)</string>
+    <string name="roadsense_bs_yaw" translatable="false">Blend Point</string>
+    <string name="roadsense_bs_roll" translatable="false">Tilt</string>
+    <string name="roadsense_bs_pitch" translatable="false">Height</string>
+    <string name="roadsense_bs_feather" translatable="false">Blend Softness</string>
+    <string name="roadsense_bs_proj_exp" translatable="false">Side Spread</string>
+    <string name="roadsense_bs_rear_roll" translatable="false">Rear Level</string>
+    <string name="roadsense_bs_rear_pitch" translatable="false">Rear Tilt</string>
+    <string name="roadsense_bs_save_align" translatable="false">Apply Alignment</string>
+    <string name="roadsense_bs_reset_align" translatable="false">Reset to Defaults</string>
+    <string name="status_on">ON</string>
+    <string name="status_off">OFF</string>
 </resources>

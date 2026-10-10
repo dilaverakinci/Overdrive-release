@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardParkingSession"
+    style="@style/Widget.Material3.CardView.Filled"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="160dp"
+    android:layout_margin="6dp"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="0dp"
+    app:strokeColor="?attr/colorOutlineVariant"
+    app:strokeWidth="1dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="160dp"
+        android:padding="16dp">
+
+        <!-- Top Row: Time, Live Tag (aligned left) and Sentry Badge (aligned right) -->
+        <LinearLayout
+            android:id="@+id/layoutSessionTopRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/tvSentryEventsBadge"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvSessionTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="14:32"
+                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                android:textColor="?attr/colorOnSurface"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvSessionLiveTag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_pill_state"
+                android:backgroundTint="@color/brand_cyan_glow"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="1dp"
+                android:text="LIVE"
+                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:textColor="@color/brand_primary"
+                android:textStyle="bold"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Circular Sentry Badge Top-Right -->
+        <TextView
+            android:id="@+id/tvSentryEventsBadge"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/bg_parking_badge_none"
+            android:fontFamily="monospace"
+            android:gravity="center"
+            android:text="0"
+            android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+            android:textColor="?attr/colorOutline"
+            android:textStyle="bold" />
+
+        <!-- Place and Signage Level -->
+        <TextView
+            android:id="@+id/tvSessionPlace"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/layoutSessionTopRow"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="6dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="Kadıköy Katlı Otopark"
+            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <!-- Capsules / Info Items at Bottom -->
+        <LinearLayout
+            android:id="@+id/layoutSessionCapsules"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tvSessionPlace"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical">
+
+            <!-- Duration -->
+            <LinearLayout
+                android:id="@+id/layoutSessionDuration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:contentDescription="Duration"
+                    android:src="@drawable/ic_security_timer"
+                    app:tint="@color/brand_primary" />
+
+                <TextView
+                    android:id="@+id/tvSessionDuration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="2s 15dk"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
+
+            <!-- Energy / SOC (conditional) -->
+            <LinearLayout
+                android:id="@+id/layoutSessionEnergy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:contentDescription="Energy"
+                    android:src="@drawable/ic_charging"
+                    app:tint="@color/brand_primary" />
+
+                <TextView
+                    android:id="@+id/tvSessionEnergy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="0.4 kWh"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
+
+            <!-- Level / Signage (conditional) -->
+            <LinearLayout
+                android:id="@+id/layoutSessionSignage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:contentDescription="Signage"
+                    android:src="@drawable/ic_parking"
+                    app:tint="@color/brand_primary" />
+
+                <TextView
+                    android:id="@+id/tvSessionSignage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="KAT -2"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                    android:textColor="@color/brand_primary"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Neighbours -->
+            <LinearLayout
+                android:id="@+id/layoutSessionNeighbours"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/ivNeighboursIcon"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:contentDescription="Neighbours"
+                    android:src="@drawable/ic_directions_car"
+                    app:tint="@color/brand_primary" />
+
+                <TextView
+                    android:id="@+id/tvSessionNeighbours"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="0 komşu"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                    android:textColor="?attr/colorOutline" />
+            </LinearLayout>
+
+            <!-- GPS Status -->
+            <LinearLayout
+                android:id="@+id/layoutSessionGps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:contentDescription="GPS"
+                    android:src="@drawable/ic_location_pin"
+                    app:tint="@color/brand_primary" />
+
+                <TextView
+                    android:id="@+id/tvSessionGps"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="GPS güncel"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
+
+            <!-- Sentry Status -->
+            <LinearLayout
+                android:id="@+id/layoutSessionSentry"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:contentDescription="Sentry"
+                    android:src="@drawable/ic_sentry"
+                    app:tint="@color/brand_primary" />
+
+                <TextView
+                    android:id="@+id/tvSessionSentry"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="Nöbetçi devrede"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
+        </LinearLayout>
+    </RelativeLayout>
+</com.google.android.material.card.MaterialCardView>

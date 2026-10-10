@@ -1951,7 +1951,7 @@ public class TripDatabase {
             logger.warn("recover: scoring from telemetry failed: " + t.getMessage());
         } finally {
             target.avgSpeedKmh = avg;
-            target.maxSpeedKmh = max;
+            target.maxSpeedKmh = max > 0 ? max : target.maxSpeedKmh;
         }
     }
 
@@ -2220,6 +2220,9 @@ public class TripDatabase {
             TripRecord fresh = getTrip(tripId);
             if (fresh == null || fresh.endTime == 0) return null;
             copyTelemetryScores(scratch, fresh);
+            if (fresh.maxSpeedKmh == 0 && scratch.maxSpeedKmh > 0) {
+                fresh.maxSpeedKmh = scratch.maxSpeedKmh;
+            }
             if (fresh.elevationGainM == 0 && fresh.elevationLossM == 0) {
                 fresh.elevationGainM = scratch.elevationGainM;
                 fresh.elevationLossM = scratch.elevationLossM;

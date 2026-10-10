@@ -114,6 +114,8 @@ public class TripTelemetryRecorder {
     // channel only after that proof; until then GPS carries the distance. Reset
     // per trip in startRecording so one bad trip can't poison the next.
     private boolean speedChannelEverLive = false;
+    // Last observed valid gear mode (persisted across momentary dropouts)
+    private int lastKnownGearMode = GearMonitor.GEAR_P;
 
     // GPS coverage tracking — how many samples landed valid lat/lon. Logged
     // at trip end so the daemon log alone tells us why a trip's map is blank
@@ -199,6 +201,7 @@ public class TripTelemetryRecorder {
         this.sampleCountTotal = 0;
         this.sampleCountWithGps = 0;
         this.speedChannelEverLive = false;
+        this.lastKnownGearMode = GearMonitor.GEAR_P;
 
         synchronized (bufferLock) {
             buffer.clear();
@@ -447,13 +450,17 @@ public class TripTelemetryRecorder {
         try {
             long now = System.currentTimeMillis();
 
-            // Read speed/accel/brake/brakePedalPressed from TelemetryDataCollector
-            TelemetryDataCollector collector = telemetryDataCollector;
-            TelemetrySnapshot snapshot = collector != null ? collector.getLatestSnapshot() : null;
+            // ── 1. Read dynamics from BydDataCollector (primary vehicle collector) ──
+            com.overdrive.app.byd.BydDataCollector byd = null;
+            try {
+                byd = com.overdrive.app.byd.BydDataCollector.getInstance();
+            } catch (Throwable ignored) {}
+
             int speedKmh = 0;
             int accelPedal = 0;
             int brakePedal = 0;
             boolean brakePedalPressed = false;
+            int gearMode = com.overdrive.app.byd.BydVehicleData.UNAVAILABLE;
             // True when we couldn't read a fresh dynamics snapshot this tick.
             // Such a sample carries synthetic zeros — fine to persist in the raw
             // .jsonl.gz for timeline continuity, but it must NOT feed the scoring
@@ -461,27 +468,112 @@ public class TripTelemetryRecorder {
             // manufacture a phantom stop / launch / coast and dilute the jerk and
             // consistency windows.
             boolean dynamicsStale = true;
-            if (snapshot != null) {
-                // Check if snapshot is stale (older than 2 seconds means poller may have died)
-                long snapshotAge = now - snapshot.timestampMs;
-                if (snapshotAge < 2000) {
-                    speedKmh = snapshot.speedKmh;
-                    accelPedal = snapshot.accelPedalPercent;
-                    brakePedal = snapshot.brakePedalPercent;
-                    brakePedalPressed = snapshot.brakePedalPressed;
-                    dynamicsStale = false;
-                } else {
-                    // Stale snapshot — record zeros instead of frozen values
-                    if (snapshotAge < 5000) {
-                        // Only log once per staleness episode (within first 5s)
-                        logger.warn("Telemetry snapshot stale (" + snapshotAge + "ms old), recording zeros");
+
+            if (byd != null) {
+                // Check fast-dynamics tuple (active when RoadSense fast poll is running)
+                com.overdrive.app.byd.BydDataCollector.FastDynamics fast = byd.getFastDynamics();
+                if (fast != null && (now - fast.timestamp < 2000)) {
+                    if (!Double.isNaN(fast.speedKmh) && fast.speedKmh >= 0) {
+                        speedKmh = (int) Math.round(fast.speedKmh);
+                        dynamicsStale = false;
+                    }
+                    if (fast.accelPercent >= 0 && fast.accelPercent <= 100) {
+                        accelPedal = fast.accelPercent;
+                        dynamicsStale = false;
+                    }
+                    if (fast.brakePercent >= 0 && fast.brakePercent <= 100) {
+                        brakePedal = fast.brakePercent;
+                        brakePedalPressed = brakePedal > 0;
+                        dynamicsStale = false;
+                    }
+                    if (fast.gearMode > 0 && fast.gearMode != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE) {
+                        gearMode = fast.gearMode;
+                    }
+                }
+
+                // If fast dynamics didn't provide speed or is not active, try live single-signal reads
+                if (dynamicsStale) {
+                    double liveSpeed = byd.readSpeedNowKmh();
+                    if (!Double.isNaN(liveSpeed) && liveSpeed >= 0) {
+                        speedKmh = (int) Math.round(liveSpeed);
+                        dynamicsStale = false;
+                    }
+                    int liveAccel = byd.readAccelNow();
+                    if (liveAccel >= 0 && liveAccel <= 100) {
+                        accelPedal = liveAccel;
+                        dynamicsStale = false;
+                    }
+                    int liveBrake = byd.readBrakeNow();
+                    if (liveBrake >= 0 && liveBrake <= 100) {
+                        brakePedal = liveBrake;
+                        brakePedalPressed = brakePedal > 0;
+                        dynamicsStale = false;
+                    }
+                    int liveGear = byd.readGearNow();
+                    if (liveGear > 0 && liveGear != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE) {
+                        gearMode = liveGear;
                     }
                 }
             }
 
-            // Read GPS from GpsMonitor — ONE immutable snapshot so all fields
-            // (position, altitude, both accuracies, source flag) belong to the
-            // SAME fix rather than mixing two IPC publications.
+            // ── 2. Fallback to TelemetryDataCollector (video overlay collector) ──
+            TelemetryDataCollector collector = telemetryDataCollector;
+            TelemetrySnapshot snapshot = collector != null ? collector.getLatestSnapshot() : null;
+            if (snapshot != null) {
+                long snapshotAge = now - snapshot.timestampMs;
+                if (snapshotAge < 2000) {
+                    if (dynamicsStale || (speedKmh == 0 && snapshot.speedKmh > 0)) {
+                        speedKmh = snapshot.speedKmh;
+                        dynamicsStale = false;
+                    }
+                    if (accelPedal == 0 && snapshot.accelPedalPercent > 0) {
+                        accelPedal = snapshot.accelPedalPercent;
+                    }
+                    if (brakePedal == 0 && (snapshot.brakePedalPercent > 0 || snapshot.brakePedalPressed)) {
+                        brakePedal = snapshot.brakePedalPercent;
+                        brakePedalPressed = snapshot.brakePedalPressed;
+                    }
+                    if (gearMode <= 0 || gearMode == com.overdrive.app.byd.BydVehicleData.UNAVAILABLE) {
+                        if (snapshot.gearMode > 0 && snapshot.gearMode != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE) {
+                            gearMode = snapshot.gearMode;
+                        }
+                    }
+                } else if (dynamicsStale && snapshotAge < 5000) {
+                    logger.warn("Telemetry snapshot stale (" + snapshotAge + "ms old), recording zeros");
+                }
+            }
+
+            // ── 3. Gear resolution with fallbacks ──
+            if (gearMode <= 0 || gearMode == com.overdrive.app.byd.BydVehicleData.UNAVAILABLE) {
+                int gmGear = GearMonitor.getInstance().getCurrentGear();
+                if (gmGear > 0 && gmGear != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE) {
+                    gearMode = gmGear;
+                }
+            }
+            if (gearMode <= 0 || gearMode == com.overdrive.app.byd.BydVehicleData.UNAVAILABLE) {
+                if (byd != null) {
+                    com.overdrive.app.byd.BydVehicleData snap = byd.getData();
+                    if (snap != null && snap.gearMode > 0 && snap.gearMode != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE) {
+                        gearMode = snap.gearMode;
+                    }
+                }
+            }
+            if (gearMode > 0 && gearMode != com.overdrive.app.byd.BydVehicleData.UNAVAILABLE) {
+                lastKnownGearMode = gearMode;
+            } else if (lastKnownGearMode > 0) {
+                gearMode = lastKnownGearMode;
+            } else {
+                gearMode = GearMonitor.GEAR_P;
+            }
+
+            // Check if CAN/wheel speed channel has EVER produced a positive value this trip
+            boolean canSpeedLiveThisTick = !dynamicsStale && speedKmh > 0;
+            if (canSpeedLiveThisTick) {
+                speedChannelEverLive = true;
+            }
+            boolean canSpeedUsable = !dynamicsStale && speedChannelEverLive;
+
+            // ── 4. GPS Fix and GPS Speed Fallback ──
             GpsMonitor gps = GpsMonitor.getInstance();
             GpsMonitor.GpsFixSnapshot fix = gps.getFixSnapshot();
             double lat = fix.latitude;
@@ -489,8 +581,20 @@ public class TripTelemetryRecorder {
             double altitude = fix.altitude;
             float gpsAccuracy = fix.accuracy;
 
-            // Read gear from GearMonitor
-            int gearMode = GearMonitor.getInstance().getCurrentGear();
+            boolean gpsFresh = !fix.loadedFromCache && fix.lastUpdate > 0 && (now - fix.lastUpdate < 3000);
+            boolean gpsAccuracyOk = gpsAccuracy > 0 && gpsAccuracy <= GPS_ACCURACY_GATE_M;
+
+            // When CAN speed is NOT live/usable (e.g. DiLink5 missing device, emulator, sensor delay),
+            // use GPS Doppler speed so the timeline, stats, and scores reflect real vehicle motion.
+            if ((!speedChannelEverLive || dynamicsStale) && gpsFresh && gpsAccuracyOk) {
+                float gpsSpeedKmh = fix.speed * 3.6f;
+                int candidateSpeed = Math.round(gpsSpeedKmh);
+                if (candidateSpeed < 2) candidateSpeed = 0; // Filter stationary GPS jitter
+                if (candidateSpeed <= 300) {
+                    speedKmh = candidateSpeed;
+                    dynamicsStale = false; // Valid speed observed from GPS
+                }
+            }
 
             TelemetrySample sample = new TelemetrySample(
                     now, speedKmh, accelPedal, brakePedal,
@@ -510,69 +614,21 @@ public class TripTelemetryRecorder {
 
             // Does the CAN/wheel speed channel look USABLE, not merely fresh?
             //
-            // `dynamicsStale` only tests snapshot AGE. On a trim where the
-            // BYDAutoSpeedDevice bind failed, TelemetryDataCollector still
-            // publishes a heartbeat snapshot every 750ms with speedKmh left at its
-            // 0 initialiser — so the snapshot is FRESH and the primary branch adds
-            // `0 * dt` forever. Because the GPS haversine used to be an `else if`,
-            // it was then structurally unreachable, distanceKm stayed 0.0, every
-            // trip failed MIN_TRIP_DISTANCE_KM (0.2), and handleTripDiscarded
-            // DELETED the telemetry file — so nothing survived for recovery either.
-            // That is a permanent "no trips ever recorded" on such a unit, and it
-            // is independent of the enable flag.
-            //
-            // Fix: treat a fresh-but-flat speed channel as unusable for THIS tick
-            // and let GPS carry the distance.
-            //
-            // CRITICAL: the test is "has this channel EVER produced a non-zero
-            // reading in this trip", NOT "is it non-zero right now". `speedKmh` is
-            // an int, so a genuinely stopped car also reads 0 — gating on the
-            // instantaneous value would route EVERY standstill tick into the GPS
-            // haversine on every unit, healthy or not. Parked jitter (~3 m/fix,
-            // over the 2 m MIN_GPS_SEGMENT_KM floor, with a loose 50 m accuracy
-            // gate) then integrates at ~0.18 km/min, so ~2 minutes of idling in
-            // gear — or the 120s park debounce alone, which is inside the
-            // recording window — would clear MIN_TRIP_DISTANCE_KM and fabricate a
-            // phantom trip with a garbage score, folded into the rollups. The old
-            // `!dynamicsStale` test prevented that by accident; this preserves the
-            // protection deliberately while still rescuing a dead speed channel.
-            if (!dynamicsStale && speedKmh > 0) speedChannelEverLive = true;
-            boolean speedUsable = !dynamicsStale && speedChannelEverLive;
-            if (speedUsable && dtMs > 0) {
+            // If CAN speed channel is live and proven for this trip, integrate wheel/CAN speed.
+            // If CAN speed is unproven or dead, GPS haversine carries the distance.
+            if (canSpeedUsable && dtMs > 0) {
                 // PRIMARY: integrate wheel/CAN speed. Reads ~0 km/h when stopped,
                 // so idle dwell adds nothing and GPS jitter is irrelevant. Robust
                 // through tunnels/garages where GPS drops out entirely.
                 //   km = (km/h) × (hours)
                 totalDistanceKm += speedKmh * (dtMs / 3_600_000.0);
             } else if (haveGps && hasLastGps && lastLat != 0 && lastLon != 0) {
-                // FALLBACK: no fresh dynamics this tick (speed unknown). Use GPS
-                // haversine, but only when the fix is trustworthy and the segment
-                // is above the stationary-jitter floor.
-                // Require a positive, trustworthy accuracy. A live fix always
-                // carries a real horizontal accuracy (the sidecar populates it,
-                // same field RoadSense gates on); accuracy <= 0 means "unreported"
-                // — typically a cache-loaded fix with no live update yet — and is
-                // rejected rather than trusted as a perfect 0 m fix.
+                // FALLBACK: no fresh CAN dynamics this tick. Use GPS haversine,
+                // but only when the fix is trustworthy and the segment is above the
+                // stationary-jitter floor.
                 boolean accuracyOk = gpsAccuracy > 0 && gpsAccuracy <= GPS_ACCURACY_GATE_M;
                 double dist = haversineKm(lastLat, lastLon, lat, lon);
-                // Reject impossible jumps (>500m/tick) and sub-jitter wiggle.
-                //
-                // ALSO reject when a speed channel we TRUST says we are stopped.
-                //
-                // Both halves matter. `speedChannelEverLive` means the channel has
-                // produced a non-zero reading at some point this trip, so a 0 now
-                // genuinely means stopped — reject the jitter. Without that half we
-                // would reject on a DEAD channel too (which also reads a fresh 0
-                // while the car is moving), re-breaking the very defect this fix
-                // exists for. Without the freshness half, a stale snapshot's
-                // synthetic 0 would suppress real GPS distance.
-                //
-                // Net effect per case:
-                //   healthy + moving      -> primary branch, never here
-                //   healthy + stopped     -> here, rejected (no phantom distance)
-                //   dead channel + moving -> here, ACCEPTED (GPS carries the trip)
-                //   stale snapshot        -> here, accepted (pre-existing behaviour)
-                boolean trustedStop = !dynamicsStale && speedChannelEverLive && speedKmh == 0;
+                boolean trustedStop = canSpeedUsable && speedKmh == 0;
                 if (accuracyOk && !trustedStop
                         && dist >= MIN_GPS_SEGMENT_KM && dist < 0.5) {
                     totalDistanceKm += dist;
