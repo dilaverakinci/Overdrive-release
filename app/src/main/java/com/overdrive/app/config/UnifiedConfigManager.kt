@@ -3145,7 +3145,7 @@ object UnifiedConfigManager {
         return updateSection("updates", JSONObject().put("channel", channel))
     }
 
-    const val DEFAULT_UPDATE_REPO = "yash-srivastava/Overdrive-release"
+    const val DEFAULT_UPDATE_REPO = "dilaverakinci/better-overdrive"
 
     @JvmStatic
     fun getUpdateRepo(): String {

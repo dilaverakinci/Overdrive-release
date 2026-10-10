@@ -39,7 +39,7 @@ import okhttp3.Response;
 public class AppUpdater {
 
     private static final String TAG = "AppUpdater";
-    public static final String GITHUB_REPO = "yash-srivastava/Overdrive-release";
+    public static final String GITHUB_REPO = "dilaverakinci/better-overdrive";
 
     public static String getGithubRepo() {
         try {
