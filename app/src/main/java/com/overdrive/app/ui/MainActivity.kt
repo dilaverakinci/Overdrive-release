@@ -543,9 +543,14 @@ open class MainActivity : AppCompatActivity() {
             "seat_positions", "seat_positions_legacy" -> R.id.seatPositionsFragment
             "dashboard", "dashboard_legacy" -> R.id.dashboardFragment
             "assistant", "assistant_legacy" -> R.id.genAiFragment
-            "keymapping", "keymapping_legacy" -> R.id.keyMappingFragment
+            "keymapping", "keymapping_legacy", "key_mapping" -> R.id.keyMappingFragment
             "automations", "automations_legacy" -> R.id.automationsFragment
             "integrations", "integrations_legacy" -> R.id.integrationsFragment
+            "projection", "projection_legacy" -> R.id.projectionFragment
+            "network", "network_legacy" -> R.id.networkFragment
+            "diagnostics", "diagnostics_legacy" -> R.id.diagnosticsFragment
+            "settings", "settings_legacy" -> R.id.settingsFragment
+            "about", "about_legacy" -> R.id.settingsAboutFragment
             else -> return
         }
         // navigateToRailDestination self-defers via pendingRailDestination when

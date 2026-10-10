@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_navigation_title">Gezinme Menüsü</string>
+    <string name="settings_navigation_subtitle">Sol menüde sabitlenecek isteğe bağlı öğeleri seçin.</string>
+    <string name="settings_navigation_fixed_hint">Dashboard, Ayarlar ve Hakkında her zaman sabit olarak görünür kalır.</string>
+    <string name="settings_navigation_reset">Varsayılana Sıfırla</string>
+    <string name="settings_navigation_reset_done">Menü görünürlüğü varsayılana sıfırlandı</string>
+    <string name="settings_navigation_shown">gösteriliyor</string>
+    <string name="settings_navigation_hidden">gizlendi</string>
+    <string name="settings_navigation_option_state">%1$s, menüde %2$s</string>
+</resources>

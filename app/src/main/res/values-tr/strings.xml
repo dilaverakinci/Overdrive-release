@@ -756,9 +756,9 @@
     <string name="settings_section_appearance">Görünüm</string>
     <string name="settings_section_recording">Kayıt</string>
     <string name="settings_section_surveillance">Gözetim</string>
-    <string name="settings_section_daemons">Şeytanlar</string>
+    <string name="settings_section_daemons">Arka Plan Servisleri</string>
     <string name="settings_section_privacy">Gizlilik &amp; Veriler</string>
-    <string name="settings_section_overlay">Durum örtüsü</string>
+    <string name="settings_section_overlay">Durum Göstergesi</string>
     <string name="settings_section_security">Güvenlik</string>
     <string name="settings_overlay_subtitle">Uçan durum hapının hangi bölümlerinin görünür kalmasını seçin.</string>
     <string name="settings_overlay_camera_title">Kamera göstergesi</string>
@@ -769,8 +769,8 @@
          the About page, so the menu / rail label is now just "About". -->
     <string name="settings_section_about">Hakkında</string>
     <!-- Settings sub-rail (landscape) — overline + a11y -->
-    <string name="settings_subrail_overline">SETIMLER</string>
-    <string name="cd_settings_subrail">Yapılandırma alt demiryolu</string>
+    <string name="settings_subrail_overline">AYARLAR</string>
+    <string name="cd_settings_subrail">Yapılandırma alt menüsü</string>
     <!-- Settings → Vehicle data placeholder pane -->
     <!-- Settings → Privacy pane copy -->
     <string name="settings_privacy_title">Gizlilik &amp; Veriler</string>
@@ -805,9 +805,9 @@
     <string name="settings_about_thanks_empty">İnsanlar katıldıkça liste dolmaya başlar.</string>
     <!-- Settings → General -->
     <string name="settings_theme_label">Tema</string>
-    <string name="settings_theme_auto">Otomatik (önderleme sistemi)</string>
-    <string name="settings_theme_light">Işık</string>
-    <string name="settings_theme_dark">Karanlık</string>
+    <string name="settings_theme_auto">Otomatik (Sistem)</string>
+    <string name="settings_theme_light">Açık</string>
+    <string name="settings_theme_dark">Koyu</string>
     <string name="settings_language_label">Dil</string>
     <!-- Recordings page (header + segmented control + page actions) -->
     <string name="recordings_title">Kayıtlar</string>
@@ -954,8 +954,8 @@
     <!-- ============================================================ -->
     <string name="settings_appearance_subtitle">Tema, dil ve görsel tercihler.</string>
     <string name="settings_theme_active_auto_caption">Otomatik sistem temasını takip eder.</string>
-    <string name="settings_theme_active_light_caption">Işık teması her zaman açık.</string>
-    <string name="settings_theme_active_dark_caption">Karanlık konu her zaman açık.</string>
+    <string name="settings_theme_active_light_caption">Açık tema her zaman etkin.</string>
+    <string name="settings_theme_active_dark_caption">Koyu tema her zaman etkin.</string>
     <string name="settings_language_count_format">%1$d\'den %2$d dillerinde mevcut</string>
     <string name="settings_language_card_title">Gösterim dili</string>
     <!-- ============================================================ -->
