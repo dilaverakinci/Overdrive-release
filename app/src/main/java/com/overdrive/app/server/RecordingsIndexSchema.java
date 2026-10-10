@@ -48,8 +48,9 @@ final class RecordingsIndexSchema {
             statement.execute("UPDATE recordings SET type = 'replay'"
                     + " WHERE type <> 'replay'"
                     + " AND filename LIKE 'replay\\_%' ESCAPE '\\'");
-            statement.execute("MERGE INTO recordings_meta KEY(meta_key) VALUES"
-                    + "('schema_version', '" + VERSION + "')");
+            statement.execute("INSERT INTO recordings_meta (meta_key, meta_value) VALUES"
+                    + "('schema_version', '" + VERSION + "') "
+                    + "ON CONFLICT(meta_key) DO UPDATE SET meta_value = excluded.meta_value");
         }
     }
 

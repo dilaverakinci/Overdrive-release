@@ -94,11 +94,8 @@ public class SocHistoryDatabaseChargingAccountingContractTest {
             throws Exception {
         Path journal = Files.createTempFile("charging-average-points", ".json");
         Files.deleteIfExists(journal);
-        Class.forName("org.h2.Driver");
         SocHistoryDatabase database = new SocHistoryDatabase(journal.toFile());
-        try (Connection connection = DriverManager.getConnection(
-                "jdbc:h2:mem:charging-average-" + System.nanoTime()
-                        + ";DB_CLOSE_DELAY=-1", "sa", "");
+        try (Connection connection = openTestConnection();
              Statement statement = connection.createStatement()) {
             statement.execute("CREATE TABLE charging_power_samples ("
                     + "session_start_time BIGINT NOT NULL, power_kw REAL)");
@@ -140,18 +137,13 @@ public class SocHistoryDatabaseChargingAccountingContractTest {
         Path journal = Files.createTempFile(
                 "charging-energy-quality", ".json");
         Files.deleteIfExists(journal);
-        Class.forName("org.h2.Driver");
         SocHistoryDatabase database =
                 new SocHistoryDatabase(journal.toFile());
         long now = System.currentTimeMillis();
         long start = now - 26 * 60 * 60_000L;
         long end = now - 30 * 60_000L;
         try (Connection connection =
-                     DriverManager.getConnection(
-                             "jdbc:h2:mem:charging-energy-quality-"
-                                     + System.nanoTime()
-                                     + ";DB_CLOSE_DELAY=-1",
-                             "sa", "");
+                     openTestConnection();
              Statement statement = connection.createStatement()) {
             statement.execute(
                     "CREATE TABLE charging_sessions ("
@@ -232,18 +224,13 @@ public class SocHistoryDatabaseChargingAccountingContractTest {
         Path journal = Files.createTempFile(
                 "charging-legacy-quality", ".json");
         Files.deleteIfExists(journal);
-        Class.forName("org.h2.Driver");
         SocHistoryDatabase database =
                 new SocHistoryDatabase(journal.toFile());
         long now = System.currentTimeMillis();
         long start = now - 90 * 60_000L;
         long end = now - 30 * 60_000L;
         try (Connection connection =
-                     DriverManager.getConnection(
-                             "jdbc:h2:mem:charging-legacy-quality-"
-                                     + System.nanoTime()
-                                     + ";DB_CLOSE_DELAY=-1",
-                             "sa", "");
+                     openTestConnection();
              Statement statement = connection.createStatement()) {
             statement.execute(
                     "CREATE TABLE charging_sessions ("
@@ -296,17 +283,12 @@ public class SocHistoryDatabaseChargingAccountingContractTest {
         Path journal = Files.createTempFile(
                 "charging-v2-null-quality", ".json");
         Files.deleteIfExists(journal);
-        Class.forName("org.h2.Driver");
         SocHistoryDatabase database =
                 new SocHistoryDatabase(journal.toFile());
         long start = System.currentTimeMillis() - 60_000L;
         long end = start + 30_000L;
         try (Connection connection =
-                     DriverManager.getConnection(
-                             "jdbc:h2:mem:charging-v2-null-quality-"
-                                     + System.nanoTime()
-                                     + ";DB_CLOSE_DELAY=-1",
-                             "sa", "");
+                     openTestConnection();
              Statement statement = connection.createStatement()) {
             statement.execute(
                     "CREATE TABLE charging_sessions ("
@@ -384,16 +366,11 @@ public class SocHistoryDatabaseChargingAccountingContractTest {
         Path journal = Files.createTempFile(
                 "charging-last-rate-type", ".json");
         Files.deleteIfExists(journal);
-        Class.forName("org.h2.Driver");
         SocHistoryDatabase database =
                 new SocHistoryDatabase(journal.toFile());
         long now = System.currentTimeMillis();
         try (Connection connection =
-                     DriverManager.getConnection(
-                             "jdbc:h2:mem:charging-last-rate-type-"
-                                     + System.nanoTime()
-                                     + ";DB_CLOSE_DELAY=-1",
-                             "sa", "");
+                     openTestConnection();
              Statement statement = connection.createStatement()) {
             statement.execute(
                     "CREATE TABLE charging_sessions ("
@@ -506,12 +483,9 @@ public class SocHistoryDatabaseChargingAccountingContractTest {
         Path journal = Files.createTempFile(
                 "charging-open-type", ".json");
         Files.deleteIfExists(journal);
-        Class.forName("org.h2.Driver");
         SocHistoryDatabase database =
                 new SocHistoryDatabase(journal.toFile());
-        try (Connection connection = DriverManager.getConnection(
-                "jdbc:h2:mem:charging-open-type-" + System.nanoTime()
-                        + ";DB_CLOSE_DELAY=-1", "sa", "");
+        try (Connection connection = openTestConnection();
              Statement statement = connection.createStatement()) {
             statement.execute("CREATE TABLE charging_power_samples ("
                     + "id IDENTITY PRIMARY KEY,"
@@ -605,11 +579,8 @@ public class SocHistoryDatabaseChargingAccountingContractTest {
             throws Exception {
         Path journal = Files.createTempFile("charging-missing-rate-thermal", ".json");
         Files.deleteIfExists(journal);
-        Class.forName("org.h2.Driver");
         SocHistoryDatabase database = new SocHistoryDatabase(journal.toFile());
-        try (Connection connection = DriverManager.getConnection(
-                "jdbc:h2:mem:charging-missing-rate-" + System.nanoTime()
-                        + ";DB_CLOSE_DELAY=-1", "sa", "");
+        try (Connection connection = openTestConnection();
              Statement statement = connection.createStatement()) {
             statement.execute("CREATE TABLE charging_sessions (id BIGINT PRIMARY KEY,"
                     + " start_time BIGINT NOT NULL)");
@@ -655,12 +626,9 @@ public class SocHistoryDatabaseChargingAccountingContractTest {
         Path journal = Files.createTempFile(
                 "charging-invalid-power-gap", ".json");
         Files.deleteIfExists(journal);
-        Class.forName("org.h2.Driver");
         SocHistoryDatabase database =
                 new SocHistoryDatabase(journal.toFile());
-        try (Connection connection = DriverManager.getConnection(
-                "jdbc:h2:mem:charging-invalid-power-gap-" + System.nanoTime()
-                        + ";DB_CLOSE_DELAY=-1", "sa", "");
+        try (Connection connection = openTestConnection();
              Statement statement = connection.createStatement()) {
             statement.execute("CREATE TABLE charging_sessions ("
                     + "start_time BIGINT PRIMARY KEY,"
@@ -2342,11 +2310,8 @@ public class SocHistoryDatabaseChargingAccountingContractTest {
             throws Exception {
         Path journal = Files.createTempFile("charging-lifecycle-gap", ".json");
         Files.deleteIfExists(journal);
-        Class.forName("org.h2.Driver");
         SocHistoryDatabase database = new SocHistoryDatabase(journal.toFile());
-        try (Connection connection = DriverManager.getConnection(
-                "jdbc:h2:mem:charging-gap-" + System.nanoTime()
-                        + ";DB_CLOSE_DELAY=-1", "sa", "");
+        try (Connection connection = openTestConnection();
              Statement statement = connection.createStatement()) {
             statement.execute("CREATE TABLE charging_sessions ("
                     + "start_time BIGINT PRIMARY KEY, end_time BIGINT,"
@@ -2891,5 +2856,8 @@ public class SocHistoryDatabaseChargingAccountingContractTest {
         Method method = target.getClass().getDeclaredMethod(name, types);
         method.setAccessible(true);
         return method.invoke(target, args);
+    }
+    private static Connection openTestConnection() {
+        return com.overdrive.app.database.OverdriveSqliteMaster.useInMemoryForTesting().asJdbcConnection();
     }
 }

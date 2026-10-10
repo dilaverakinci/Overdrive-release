@@ -133,8 +133,6 @@ public class RecordingsIndexStatsDedupTest {
     }
 
     private static Connection open(String name) throws Exception {
-        Class.forName("org.h2.Driver");
-        return DriverManager.getConnection(
-                "jdbc:h2:mem:statsdedup_" + name + ";DB_CLOSE_DELAY=-1", "sa", "");
+        return com.overdrive.app.database.OverdriveSqliteMaster.useInMemoryForTesting().asJdbcConnection();
     }
 }

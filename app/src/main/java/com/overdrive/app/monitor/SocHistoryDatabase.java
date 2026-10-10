@@ -1,5 +1,6 @@
 package com.overdrive.app.monitor;
 
+import com.overdrive.app.database.OverdriveSqliteMaster;
 import com.overdrive.app.logging.DaemonLogger;
 
 import org.json.JSONArray;
@@ -441,15 +442,6 @@ public class SocHistoryDatabase {
 
     SocHistoryDatabase(java.io.File chargingLifecycleJournalFile) {
         this.chargingLifecycleJournalFile = chargingLifecycleJournalFile;
-        // Load the H2 JDBC driver (pure Java - always works)
-        try {
-            Class.forName("org.h2.Driver");
-            logger.info("H2 JDBC Driver loaded successfully");
-        } catch (ClassNotFoundException e) {
-            logger.error("H2 Driver not found! Check gradle dependencies.", e);
-        } catch (Exception e) {
-            logger.error("Failed to load H2 Driver: " + e.getMessage(), e);
-        }
     }
     
     public static SocHistoryDatabase getInstance() {
@@ -471,53 +463,21 @@ public class SocHistoryDatabase {
         synchronized (lock) {
             if (isInitialized) return;  // Double-check after acquiring lock
             
-            logger.info("Initializing H2 database at: " + DB_PATH);
-            // The sidecar owns lifecycle durability while H2 is unavailable. Load it before attempting
-            // JDBC so a process that cannot open H2 at all can still journal its first physical ON edge.
+            logger.info("Initializing SOC database via OverdriveSqliteMaster");
+            // The sidecar owns lifecycle durability while DB is unavailable. Load it before attempting
+            // JDBC so a process that cannot open DB at all can still journal its first physical ON edge.
             loadChargingLifecycleJournal();
             
-            int maxRetries = 3;
-            int retryDelayMs = 1000;
-            
-            for (int attempt = 1; attempt <= maxRetries; attempt++) {
-                try {
-                    // Open H2 connection (pure Java - no native code)
-                    connection = DriverManager.getConnection(JDBC_URL, "sa", "");
-                    logger.info("H2 connection established");
-                    
-                    // Tune H2 for embedded daemon use
-                    try (Statement stmt = connection.createStatement()) {
-                        stmt.execute("SET CACHE_SIZE 8192");  // 8MB cache
-                    }
-                    
-                    // Create tables
-                    createTables();
-                    
-                    isInitialized = true;
-                    reconcileChargingLifecycleJournalWithDatabase();
-                    replayPendingChargingPostCommitMetadata();
-                    logger.info("SOC History Database initialized via H2 (Pure Java): " + DB_PATH);
-                    return;  // Success - exit
-                    
-                } catch (Exception e) {
-                    String msg = e.getMessage();
-                    boolean isLockError = msg != null && (msg.contains("Locked by another process") || 
-                        msg.contains("lock.db") || msg.contains("already in use"));
-                    
-                    if (isLockError && attempt < maxRetries) {
-                        logger.warn("Database locked (attempt " + attempt + "/" + maxRetries + "), cleaning up stale locks...");
-                        cleanupStaleLocks(attempt >= 2);
-                        try {
-                            Thread.sleep(retryDelayMs * attempt);  // Exponential backoff
-                        } catch (InterruptedException ie) {
-                            Thread.currentThread().interrupt();
-                            break;
-                        }
-                    } else {
-                        logger.error("Failed to initialize SOC database: " + e.getClass().getName() + " - " + msg, e);
-                        break;
-                    }
-                }
+            try {
+                // Open connection (previously DriverManager.getConnection(JDBC_URL, "sa", ""))
+                connection = OverdriveSqliteMaster.getInstance().asJdbcConnection();
+                createTables();
+                isInitialized = true;
+                reconcileChargingLifecycleJournalWithDatabase();
+                replayPendingChargingPostCommitMetadata();
+                logger.info("SOC History Database initialized via OverdriveSqliteMaster");
+            } catch (Exception e) {
+                logger.error("Failed to initialize SOC database: " + e.getMessage(), e);
             }
         }
     }
@@ -1034,7 +994,7 @@ public class SocHistoryDatabase {
                     try { connection.close(); } catch (Exception ignored) { /* already dead */ }
                     connection = null;
                 }
-                connection = DriverManager.getConnection(JDBC_URL, "sa", "");
+                connection = OverdriveSqliteMaster.getInstance().asJdbcConnection();
                 // Re-assert the schema BEFORE flagging ready. If the store
                 // file was wiped or recreated, H2 hands back a fresh EMPTY
                 // database — flagging initialized without this would leave
@@ -4002,6 +3962,13 @@ public class SocHistoryDatabase {
         try (java.nio.channels.FileChannel channel = java.nio.channels.FileChannel.open(
                 directory.toPath(), java.nio.file.StandardOpenOption.READ)) {
             channel.force(true);
+        } catch (java.io.IOException | UnsupportedOperationException | SecurityException e) {
+            // Windows NTFS does not support opening a FileChannel on a directory (throws
+            // FileSystemException / AccessDeniedException). On Android/Linux POSIX ext4/f2fs,
+            // directory fd fsync succeeds.
+            if (!System.getProperty("os.name", "").toLowerCase().contains("win")) {
+                throw e;
+            }
         }
     }
 

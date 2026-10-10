@@ -15,11 +15,8 @@ public class SocHistoryDatabaseManualCostTest {
     @Test
     public void manualCostUpdateIsAtomicValidatedAndRebuildsTheDailyRollup()
             throws Exception {
-        Class.forName("org.h2.Driver");
         SocHistoryDatabase database = new SocHistoryDatabase(null);
-        try (Connection connection = DriverManager.getConnection(
-                "jdbc:h2:mem:manual-cost-" + System.nanoTime()
-                        + ";DB_CLOSE_DELAY=-1", "sa", "");
+        try (Connection connection = com.overdrive.app.database.OverdriveSqliteMaster.useInMemoryForTesting().asJdbcConnection();
              Statement statement = connection.createStatement()) {
             statement.execute("CREATE TABLE charging_sessions ("
                     + "id BIGINT PRIMARY KEY, start_time BIGINT, end_time BIGINT,"

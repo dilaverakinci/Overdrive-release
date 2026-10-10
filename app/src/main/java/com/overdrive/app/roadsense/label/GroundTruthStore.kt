@@ -40,11 +40,10 @@ class GroundTruthStore private constructor() {
         synchronized(lock) {
             if (initialized) return
             try {
-                Class.forName("org.h2.Driver")
-                connection = DriverManager.getConnection(JDBC_URL)
+                connection = com.overdrive.app.database.OverdriveSqliteMaster.getInstance().asJdbcConnection()
                 createTable()
                 initialized = true
-                logger.info("GroundTruthStore initialized at $DB_PATH")
+                logger.info("GroundTruthStore initialized via OverdriveSqliteMaster")
             } catch (e: Exception) {
                 logger.error("GroundTruthStore init failed: " + e.message, e)
             }

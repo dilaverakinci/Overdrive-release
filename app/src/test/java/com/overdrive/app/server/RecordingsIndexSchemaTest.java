@@ -98,8 +98,7 @@ public class RecordingsIndexSchemaTest {
     }
 
     private static Connection open(String name) throws Exception {
-        Class.forName("org.h2.Driver");
-        return DriverManager.getConnection("jdbc:h2:mem:" + name + ";DB_CLOSE_DELAY=-1", "sa", "");
+        return com.overdrive.app.database.OverdriveSqliteMaster.useInMemoryForTesting().asJdbcConnection();
     }
 
     private static void createV3(Connection connection) throws Exception {

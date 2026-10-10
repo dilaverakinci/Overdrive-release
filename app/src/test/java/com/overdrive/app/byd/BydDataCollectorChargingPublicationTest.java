@@ -2632,8 +2632,7 @@ public class BydDataCollectorChargingPublicationTest {
                 SocHistoryDatabase.class.getDeclaredConstructor();
         constructor.setAccessible(true);
         SocHistoryDatabase database = constructor.newInstance();
-        Connection connection = DriverManager.getConnection(
-                "jdbc:h2:mem:" + name + ";DB_CLOSE_DELAY=-1", "sa", "");
+        Connection connection = com.overdrive.app.database.OverdriveSqliteMaster.useInMemoryForTesting().asJdbcConnection();
         try (Statement statement = connection.createStatement()) {
             statement.execute("CREATE TABLE charging_sessions ("
                     + "start_time BIGINT PRIMARY KEY, end_time BIGINT,"

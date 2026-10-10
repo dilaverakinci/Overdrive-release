@@ -1,5 +1,6 @@
 package com.overdrive.app.trips;
 
+import com.overdrive.app.database.OverdriveSqliteMaster;
 import com.overdrive.app.logging.DaemonLogger;
 
 import java.sql.Connection;
@@ -47,68 +48,17 @@ public class TripDatabase {
     public void init() {
         if (isInitialized) return;
 
-        logger.info("Initializing H2 trip database at: " + DB_PATH);
+        logger.info("Initializing SQLite trip database via OverdriveSqliteMaster");
 
-        // Load H2 JDBC driver
         try {
-            Class.forName("org.h2.Driver");
-        } catch (ClassNotFoundException e) {
-            logger.error("H2 Driver not found! Check gradle dependencies.", e);
+            connection = OverdriveSqliteMaster.getInstance().asJdbcConnection();
+            createTables();
+            isInitialized = true;
+            logger.info("Trip Database initialized via OverdriveSqliteMaster");
+            runBackfillIfNeeded();
             return;
-        }
-
-        int maxRetries = 3;
-        int retryDelayMs = 1000;
-
-        for (int attempt = 1; attempt <= maxRetries; attempt++) {
-            try {
-                connection = DriverManager.getConnection(JDBC_URL, "sa", "");
-                logger.info("H2 connection established");
-
-                // Tune H2 for embedded daemon use
-                try (Statement stmt = connection.createStatement()) {
-                    stmt.execute("SET CACHE_SIZE 8192");
-                }
-
-                createTables();
-                isInitialized = true;
-                logger.info("Trip Database initialized via H2 (Pure Java): " + DB_PATH);
-
-                // Kick off the one-shot size_bytes backfill for legacy
-                // rows. Runs on its own daemon thread, no-op when every
-                // row already has a size, never blocks init.
-                runBackfillIfNeeded();
-                return;
-
-            } catch (Exception e) {
-                // Same invariant as reconnect()/forceReconnect(): SET CACHE_SIZE or
-                // createTables() can throw AFTER the handle is live. Left assigned,
-                // a table-less handle passes ensureConnection() (isClosed()==false,
-                // SELECT 1 needs no table) and every DAO fails "table not found"
-                // forever. On the retry path it also still holds the H2 file lock —
-                // the very thing the retry is waiting out. Close and null it first.
-                if (connection != null) {
-                    try { connection.close(); } catch (Exception ignored) { }
-                    connection = null;
-                }
-                String msg = e.getMessage();
-                boolean isLockError = msg != null && (msg.contains("Locked by another process") ||
-                        msg.contains("lock.db") || msg.contains("already in use"));
-
-                if (isLockError && attempt < maxRetries) {
-                    logger.warn("Database locked (attempt " + attempt + "/" + maxRetries + "), cleaning up stale locks...");
-                    cleanupStaleLocks(attempt >= 2);
-                    try {
-                        Thread.sleep(retryDelayMs * attempt); // Exponential backoff
-                    } catch (InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
-                } else {
-                    logger.error("Failed to initialize trip database: " + e.getClass().getName() + " - " + msg, e);
-                    break;
-                }
-            }
+        } catch (Exception e) {
+            logger.error("Failed to initialize trip database: " + e.getMessage(), e);
         }
     }
 
@@ -143,24 +93,13 @@ public class TripDatabase {
     private synchronized void reconnect() {
         try {
             if (connection == null || connection.isClosed()) {
-                connection = DriverManager.getConnection(JDBC_URL, "sa", "");
-                // Idempotent (IF NOT EXISTS throughout). A reopen against a wiped
-                // or replaced .mv.db would otherwise yield a table-less store that
-                // probe() still calls healthy (SELECT 1 needs no table), turning
-                // every DAO call into "table not found" instead of self-healing.
+                connection = OverdriveSqliteMaster.getInstance().asJdbcConnection();
                 createTables();
                 isInitialized = true;
-                logger.info("H2 trip database connection re-established");
+                logger.info("SQLite trip database connection re-established");
             }
         } catch (Exception e) {
-            logger.error("Failed to reconnect to H2 trip database", e);
-            // createTables() can throw AFTER the handle is live (corrupt store,
-            // full disk, read-only mount). Leaving that handle assigned would make
-            // the next ensureConnection() pass — isClosed()==false and probe()'s
-            // SELECT 1 needs no table — so every DAO would fail "table not found"
-            // permanently with no further reopen attempt. Close and null it so
-            // the next call retries from scratch instead of trusting a possibly
-            // table-less store.
+            logger.error("Failed to reconnect to SQLite trip database", e);
             if (connection != null) {
                 try { connection.close(); } catch (Exception ignored) { }
                 connection = null;
@@ -168,11 +107,6 @@ public class TripDatabase {
         }
     }
 
-    // Liveness check that actually talks to the engine. Connection.isClosed()
-    // reports only whether close() was called on THIS Connection object — it
-    // knows nothing about the H2 engine behind it. If the engine shut down
-    // underneath the handle (e.g. H2's own shutdown hook fired), isClosed()
-    // keeps returning false while every real statement throws.
     private synchronized boolean probe() {
         if (connection == null) return false;
         try (Statement stmt = connection.createStatement()) {
@@ -183,20 +117,16 @@ public class TripDatabase {
         }
     }
 
-    // Drop a handle that failed probe() and reopen. Only reachable from the
-    // already-synchronized ensureConnection(), AFTER its
-    // `!isInitialized && connection == null` guard has passed — so this cannot
-    // resurrect a deliberately close()d store (see close() above).
     private synchronized void forceReconnect() {
         if (connection != null) {
             try { connection.close(); } catch (Exception ignored) { }
             connection = null;
         }
         try {
-            connection = DriverManager.getConnection(JDBC_URL, "sa", "");
-            createTables();   // idempotent; see reconnect()
+            connection = OverdriveSqliteMaster.getInstance().asJdbcConnection();
+            createTables();
             isInitialized = true;
-            logger.warn("H2 trip database force-reconnected after failed liveness probe");
+            logger.warn("SQLite trip database force-reconnected after failed liveness probe");
         } catch (Exception e) {
             logger.error("Force reconnect failed", e);
             if (connection != null) {
