@@ -144,7 +144,7 @@ public class ParkingControllerLifecycleTest {
         tmp = Files.createTempDirectory("parking-test").toFile();
         source = new FakeSource();
         env = new FakeEnv(tmp);
-        final String url = "jdbc:h2:mem:ctl_" + System.nanoTime() + ";DB_CLOSE_DELAY=-1";
+        final String url = "sqlite:mem:ctl_" + System.nanoTime();
         controller = new ParkingController(source, env, () -> new ParkingStore(url));
     }
 

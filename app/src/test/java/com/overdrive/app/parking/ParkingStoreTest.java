@@ -12,14 +12,14 @@ import org.junit.Test;
 
 import java.util.List;
 
-/** ParkingStore against in-memory H2 (same engine the daemon uses on disk). */
+/** ParkingStore against in-memory SQLite (same engine the daemon uses on disk). */
 public class ParkingStoreTest {
 
     private ParkingStore store;
 
     @Before
     public void open() {
-        store = new ParkingStore("jdbc:h2:mem:parking_" + System.nanoTime() + ";DB_CLOSE_DELAY=-1");
+        store = new ParkingStore("sqlite:mem:parking_" + System.nanoTime());
         assertTrue(store.open());
     }
 
